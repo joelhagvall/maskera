@@ -8,11 +8,8 @@
       "coverage",
       "training/.venv",
       "training/model",
-      "training/student-model",
       "training/onnx-model",
-      "training/student-onnx",
-      "training/student-trimmed",
-      "training/student-trimmed-onnx",
+      "training/student-*",
       "training/data",
       "apps/demo/public/models"
     ]
