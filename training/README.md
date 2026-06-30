@@ -27,7 +27,27 @@ uv run python train.py            # -> model/
 
 # 4. Generalisation check on out-of-gazetteer entities
 uv run python infer.py
+
+# 5. Export to ONNX + int8 quantization (Transformers.js-compatible layout)
+uv pip install optimum-onnx onnx onnxruntime
+uv run python export_onnx.py     # -> onnx-model/onnx/model_quantized.onnx
 ```
+
+## ONNX export & size
+
+`export_onnx.py` exports to ONNX and applies dynamic int8 quantization:
+
+| Format     | Size    |
+| ---------- | ------- |
+| fp32 ONNX  | ~497 MB |
+| int8 ONNX  | ~125 MB (4× smaller) |
+
+Quality is preserved through quantization (verified on held-out sentences). The
+int8 model runs through `@maska/ner` end-to-end — model entities (PER/LOC/ORG/
+ADR) plus the rule layer's structured PII, merged by the stable-placeholder
+engine. **125 MB is fine for server/Electron use but still ~8× the ~15 MB
+browser target** — reaching that needs distillation into a smaller student
+architecture (KB-BERT is 110M params; quantization alone can't close that gap).
 
 On an M4 Pro (MPS) step 3 takes ~8–9 minutes for 3 epochs over 9k examples.
 

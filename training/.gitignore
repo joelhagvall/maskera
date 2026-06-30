@@ -1,6 +1,7 @@
 # Training artifacts — regenerate locally, don't commit
 .venv/
 model/
+onnx-model/
 data/
 *.log
 __pycache__/
