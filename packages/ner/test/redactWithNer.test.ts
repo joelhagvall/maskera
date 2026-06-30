@@ -40,4 +40,21 @@ describe("redactWithNer", () => {
     const { text } = await redactWithNer("Lars är här.", { recognizer, detectors: [] })
     expect(text).toBe("[PERSON_1] är här.")
   })
+
+  it("drops model fragments that overlap a structured rule (IBAN not shredded)", async () => {
+    const input = "Konto IBAN SE4550000000058398257466 men ring Lars."
+    // The model wrongly tags digit chunks of the IBAN as addresses, and a name.
+    const recognizer = fakeRecognizer((t) => {
+      const i = t.indexOf("SE45")
+      const lars = t.indexOf("Lars")
+      return [
+        { start: t.indexOf("IBAN"), end: i + 4, value: "IBAN SE45", label: "ADR" },
+        { start: i + 6, end: i + 12, value: "000000", label: "ADR" },
+        { start: lars, end: lars + 4, value: "Lars", label: "PER" },
+      ]
+    })
+    const { text, redactions } = await redactWithNer(input, { recognizer })
+    expect(text).toBe("Konto IBAN [IBAN_1] men ring [PER_1].")
+    expect(redactions.map((r) => r.label).sort()).toEqual(["IBAN", "PER"])
+  })
 })
