@@ -177,23 +177,27 @@ eval set (60→121 sentences) barely moved the scores, so the gap is stable. Run
 public NER dataset labeled by others, with no shared author. Restricted to
 PER/LOC/ORG (public sets don't annotate addresses). 500 test sentences.
 
-| Model                   | WikiANN F1 | our-set F1 |
+| Model (v3)              | WikiANN F1 | our-set F1 |
 | ----------------------- | ---------- | ---------- |
-| teacher (KB-BERT)       | 0.668      | 0.899      |
-| **student (distilled)** | **0.696**  | 0.874      |
+| teacher (KB-BERT)       | 0.711      | 0.899      |
+| **student (shipped)**   | **0.647**  | 0.895      |
 | Rampart                 | 0.392      | 0.621      |
 
-1. **The gap to Rampart holds and widens** — student 0.70 vs Rampart 0.39.
-   Rampart is effectively broken on Swedish here: **ORG F1 = 0.00**, **LOC
-   recall = 0.09**.
-2. **Our absolute scores drop on out-of-domain text** (0.87 → 0.70) — the honest
-   domain-shift effect. WikiANN is encyclopedic Wikipedia text, unlike the
-   support/healthcare/legal style our model targets.
+The honest reality this surfaced:
 
-WikiANN is **silver-standard** (auto-derived from wiki links, noisy), so
-absolute numbers are depressed for *all* models equally — the comparison is
-valid, the exact values are not gospel. Run `python evaluate_public.py` to
-reproduce.
+1. **Beats Rampart on both** — 0.65 vs 0.39 independent (Rampart: ORG F1 = 0.00,
+   LOC recall = 0.09). The core claim holds everywhere.
+2. **The v3 data rounds lifted our own eval far more than the independent one**
+   (0.82 → 0.90 on ours; ~flat/slightly down on WikiANN). That's the synthetic
+   ceiling showing — more synthetic diversity increasingly *chases our own
+   distribution*, not general Swedish.
+3. **WikiANN under-rates us for this use case**: it's encyclopedic (rarer vocab,
+   which our PII-tuned vocab-trim drops) and silver-standard (noisy). The truth
+   for the target domain (support/healthcare/legal) sits between 0.65 and 0.90.
+
+**Conclusion: stop optimising synthetic data — the real next gain is a real
+labelled Swedish eval set**, needed even just to measure honestly. Run
+`python evaluate_public.py` to reproduce.
 
 ## Publish to Hugging Face (single hosted source)
 
