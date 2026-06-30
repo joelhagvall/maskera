@@ -520,10 +520,36 @@ const person = () => {
   if (r < 0.3) return `${pick(FIRST)} ${pick(LAST)}-${pick(LAST)}`
   return `${pick(FIRST)} ${pick(LAST)}`
 }
-const place = () => (chance(0.55) ? pick(CITIES) : pick(DISTRICTS))
+const FOREIGN = [
+  "Oslo",
+  "Köpenhamn",
+  "Helsingfors",
+  "Reykjavik",
+  "Berlin",
+  "London",
+  "Bryssel",
+  "Tallinn",
+]
+const place = () => {
+  const r = rand()
+  if (r < 0.5) return pick(CITIES)
+  if (r < 0.8) return pick(DISTRICTS)
+  return pick(FOREIGN)
+}
 const address = () =>
   `${pick(STREET_STEMS)}${pick(STREET_SUFFIX)} ${1 + Math.floor(rand() * 119)}${chance(0.25) ? pick(["A", "B", "C", "D"]) : ""}`
-const org = () => pick(ORGS)
+// Institutions are organisations too — composed names the model kept missing.
+const INSTITUTION = () => {
+  const r = rand()
+  if (r < 0.25) return `${pick(CITIES)} lasarett`
+  if (r < 0.45) return `${pick(CITIES)} kommun`
+  if (r < 0.6)
+    return `Region ${pick(["Skåne", "Halland", "Stockholm", "Värmland", "Dalarna", "Jämtland", "Uppsala"])}`
+  if (r < 0.75) return `${pick(STREET_STEMS)}gårdens äldreboende`
+  if (r < 0.88) return `${pick(CITIES)} universitet`
+  return `${pick(STREET_STEMS)}skolan`
+}
+const org = () => (chance(0.3) ? INSTITUTION() : pick(ORGS))
 
 const SLOTS = { PER: person, LOC: place, ORG: org, ADR: address }
 const TEMPLATES = [
@@ -612,6 +638,21 @@ const TEMPLATES = [
   "Handläggningstiden är för närvarande cirka två veckor.",
   "Det regnade hela dagen och tåget var försenat.",
   "En björn sågs i skogen utanför byn i tisdags.",
+  // number distractors — digit groups are NOT addresses/entities
+  "Beloppet 12 345 kr betalades i tid.",
+  "Ring 070-123 45 67 vid frågor.",
+  "Referensnummer 2024-1187 noterades i akten.",
+  "Summan 1 299 kronor drogs felaktigt.",
+  "Fakturanummer 5567 och 8890 är betalda.",
+  "Klockan 14 30 öppnar receptionen.",
+  "Avtalet löper i 24 månader från start.",
+  // org in subject position (fights org-as-name confusion)
+  "{ORG} meddelade ett driftstopp i natt.",
+  "Enligt {ORG} är leveranserna försenade.",
+  "{ORG} och {ORG} ingick ett samarbete.",
+  "Det var {ORG}, inte {ORG}, som skickade fakturan.",
+  "Beställningen från {ORG} kom aldrig fram.",
+  "Vi bytte leverantör från {ORG} till {ORG}.",
 ]
 
 function tokenizeFiller(str) {

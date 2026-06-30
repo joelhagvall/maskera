@@ -34,10 +34,10 @@ from transformers import (
 
 import sys
 
-TEACHER = "model"
-# usage: distill.py [num_layers] [out_dir]
+# usage: distill.py [num_layers] [out_dir] [teacher_dir]
 N_LAYERS = int(sys.argv[1]) if len(sys.argv) > 1 else 6
 OUT = sys.argv[2] if len(sys.argv) > 2 else "student-model"
+TEACHER = sys.argv[3] if len(sys.argv) > 3 else "model"
 MAX_LEN = 128
 ALPHA = 0.5        # weight on hard-label CE vs soft distillation
 TEMPERATURE = 2.0

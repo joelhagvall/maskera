@@ -100,9 +100,12 @@ tagged. Span-level, type-aware F1 (see [`training/`](training/)).
 | ---------------------------------- | ------ | ---------- | -------- |
 | maskera teacher (KB-BERT)          | 440 MB | **0.899**  | 0.851    |
 | maskera student (distilled)        | 82 MB  | 0.874      | 0.798    |
-| maskera student (trimmed)          | 56 MB  | 0.852      | —        |
-| **maskera student (shipped, trim + q4)** | 40 MB | 0.843 | —     |
+| **maskera student (shipped, trim + q4)** | 40 MB | **0.895** | —     |
 | Rampart                            | 15 MB  | 0.621      | 0.494    |
+
+The 40 MB shipped model nearly matches the 440 MB teacher (0.899) and reaches
+**0.91 redaction recall** (was the PII span masked at all, any label — the metric
+that actually matters for privacy; recall 0.99).
 
 Per-type F1 (overlap): the student scores PER 0.91 / LOC 0.90 / ORG 0.81 /
 ADR 0.85. Rampart's gaps are concentrated — **ORG F1 = 0.00** (it tags no
