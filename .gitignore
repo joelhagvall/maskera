@@ -10,3 +10,5 @@ training/.publish-*
 .turbo/
 .idea/
 .vscode/
+training/.benchmark/
+packages/ner/eval/corpus-domain.mjs

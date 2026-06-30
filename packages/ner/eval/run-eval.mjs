@@ -23,8 +23,12 @@
  *   MASKERA_DTYPE       quantization dtype (default: q4)
  */
 
-import { corpus } from "./corpus.mjs"
 import { evaluate } from "./score.mjs"
+
+// Default to the bundled gold corpus, or point CORPUS_FILE at your own domain
+// set (see corpus-domain.template.mjs) to grade the model on YOUR real text.
+const CORPUS_FILE = process.env.CORPUS_FILE ?? "./corpus.mjs"
+const { corpus } = await import(CORPUS_FILE)
 
 const F1_FLOOR = Number(process.env.MASKERA_F1_FLOOR ?? "0.80")
 const MODEL = process.env.MASKERA_MODEL ?? "maskera-sv-ner"
