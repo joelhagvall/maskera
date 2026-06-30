@@ -131,12 +131,35 @@ failures are concentrated: **ORG F1 = 0.00** (it tags no Swedish organisations �
 eval set (60→121 sentences) barely moved the scores, so the gap is stable. Run
 `python evaluate.py` to reproduce.
 
-> **Honest caveats.** The eval set is small (60 sentences, single annotator) and
-> shares an author with the data generator — treat it as a strong directional
-> signal, not a definitive number. Some labels are genuinely ambiguous (a
-> hospital as ORG vs LOC). Next: grow the set, add a second annotator, and pull
-> in real (non-authored) Swedish text. The Rampart gap is large and consistent
+> **Honest caveats.** The eval set is modest (121 sentences, single annotator)
+> and shares an author with the data generator — treat it as a strong
+> directional signal, not a definitive number. Some labels are genuinely
+> ambiguous (a hospital as ORG vs LOC). The Rampart gap is large and consistent
 > enough to trust the direction.
+
+### Independent benchmark (third-party data)
+
+`evaluate_public.py` runs the same comparison on **WikiANN (Swedish)** — a
+public NER dataset labeled by others, with no shared author. Restricted to
+PER/LOC/ORG (public sets don't annotate addresses). 500 test sentences.
+
+| Model                   | WikiANN F1 | our-set F1 |
+| ----------------------- | ---------- | ---------- |
+| teacher (KB-BERT)       | 0.668      | 0.899      |
+| **student (distilled)** | **0.696**  | 0.874      |
+| Rampart                 | 0.392      | 0.621      |
+
+1. **The gap to Rampart holds and widens** — student 0.70 vs Rampart 0.39.
+   Rampart is effectively broken on Swedish here: **ORG F1 = 0.00**, **LOC
+   recall = 0.09**.
+2. **Our absolute scores drop on out-of-domain text** (0.87 → 0.70) — the honest
+   domain-shift effect. WikiANN is encyclopedic Wikipedia text, unlike the
+   support/healthcare/legal style our model targets.
+
+WikiANN is **silver-standard** (auto-derived from wiki links, noisy), so
+absolute numbers are depressed for *all* models equally — the comparison is
+valid, the exact values are not gospel. Run `python evaluate_public.py` to
+reproduce.
 
 ## Base model & license
 

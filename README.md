@@ -64,11 +64,18 @@ Per-type F1 (overlap): the student scores PER 0.91 / LOC 0.90 / ORG 0.81 /
 ADR 0.85. Rampart's gaps are concentrated — **ORG F1 = 0.00** (it tags no
 Swedish organisations, 0/67) and **LOC recall = 0.39**.
 
-> **Honest caveats.** The eval set is modest (121 sentences, single annotator)
-> and shares an author with the synthetic data generator — treat it as a strong
-> *directional* signal, not a final number. Doubling the set (60→121) barely
-> moved the scores, which is reassuring. The structured-PII rules are not in this
-> table because they're deterministic, not learned.
+An **independent** check on third-party data (WikiANN Swedish, no shared author)
+confirms the direction: student **0.70** vs Rampart **0.39** overlap F1 — the gap
+holds and widens, with Rampart again at ORG F1 = 0.00. Absolute scores drop on
+that out-of-domain encyclopedic text (honest domain shift); see
+[`training/README.md`](training/README.md).
+
+> **Honest caveats.** The hand-authored eval set is modest (121 sentences,
+> single annotator) and shares an author with the synthetic data generator —
+> treat it as a strong *directional* signal, not a final number. WikiANN is
+> silver-standard (noisy), so its absolute values are depressed for all models
+> equally. The structured-PII rules aren't in these tables because they're
+> deterministic, not learned.
 
 ## Live demo
 
