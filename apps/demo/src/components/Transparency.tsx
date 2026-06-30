@@ -5,10 +5,10 @@ export function Transparency({ onBack }: { onBack: () => void }) {
   return (
     <div className="app">
       <div className="topbar">
-        <span className="wordmark">maska</span>
         <button type="button" className="back" onClick={onBack}>
           ← Tillbaka till demon
         </button>
+        <span className="wordmark">maska</span>
       </div>
 
       <article className="prose">

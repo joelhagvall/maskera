@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Controls } from "./components/Controls"
 import { Footer } from "./components/Footer"
 import { Header } from "./components/Header"
@@ -13,6 +13,11 @@ export function App() {
   const [text, setText] = useState<string>(scenarios[0].text)
   const [view, setView] = useState<"demo" | "transparency">("demo")
   const ner = useSwedishNer(text)
+
+  // Always land at the top when switching between demo and transparency.
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [view])
 
   function pick(s: Scenario) {
     setActive(s)
