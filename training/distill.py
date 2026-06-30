@@ -32,8 +32,12 @@ from transformers import (
     TrainingArguments,
 )
 
+import sys
+
 TEACHER = "model"
-OUT = "student-model"
+# usage: distill.py [num_layers] [out_dir]
+N_LAYERS = int(sys.argv[1]) if len(sys.argv) > 1 else 6
+OUT = sys.argv[2] if len(sys.argv) > 2 else "student-model"
 MAX_LEN = 128
 ALPHA = 0.5        # weight on hard-label CE vs soft distillation
 TEMPERATURE = 2.0
@@ -52,10 +56,13 @@ teacher = AutoModelForTokenClassification.from_pretrained(TEACHER).to(device).ev
 for p in teacher.parameters():
     p.requires_grad_(False)
 
-# --- student: half-depth BERT, initialized from the teacher ---
-STUDENT_LAYERS = 6
-KEEP = [0, 2, 4, 6, 8, 10][:STUDENT_LAYERS]  # which teacher layers to copy
+# --- student: shallower BERT, initialized from the teacher ---
+STUDENT_LAYERS = N_LAYERS
 tcfg = teacher.config
+L = tcfg.num_hidden_layers
+# evenly spaced teacher layers to copy, including first and last
+KEEP = sorted({round(i * (L - 1) / (STUDENT_LAYERS - 1)) for i in range(STUDENT_LAYERS)})
+print(f"== student {STUDENT_LAYERS} layers, copying teacher layers {KEEP} -> {OUT} ==")
 student_cfg = BertConfig(
     vocab_size=tcfg.vocab_size,
     hidden_size=tcfg.hidden_size,
