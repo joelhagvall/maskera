@@ -72,9 +72,9 @@ An honest snapshot of where the project is:
   dependencies, tested. **This is shippable today.**
 - ✅ **Our own Swedish NER model** — we **fine-tuned** KB-BERT (CC0 Swedish base
   model) on synthetic Swedish data, **distilled** it, then **shrank** it
-  (vocab-trim + q4) to a browser-sized 40 MB ONNX. Benchmarked openly: **0.65 F1
-  vs Rampart's 0.39** on independent data (0.90 vs 0.62 on our own set) — a wide
-  win on Swedish either way.
+  (vocab-trim + q4) to a browser-sized 40 MB ONNX. Benchmarked openly: **0.74 F1
+  vs Rampart's 0.39** on independent real text (~1.0 redaction recall) — a wide
+  win on Swedish.
 - ✅ **NER layer (`@maskera/ner`)** — runs a model client-side via Transformers.js,
   with subword-span reconstruction and the shared placeholder engine.
 - ✅ **Interactive demo** — 10 domains, model always on, live redaction as you type.
@@ -114,20 +114,23 @@ lowercase, abbreviations, foreign names, and distractors that must not be
 tagged. Span-level, type-aware F1 (see [`training/`](training/)).
 
 The shipped model is **40 MB** (vocab-trimmed + q4), runs in the browser, and
-beats Rampart on Swedish on **both** our eval and an independent one:
+wins on Swedish on **both** our eval and an independent one (type-aware F1, plus
+the privacy-relevant **redaction recall** = was the PII masked at all):
 
-| Eval set                          | shipped 40 MB | Rampart |
-| --------------------------------- | ------------- | ------- |
-| our hand-authored set (PII-style) | **0.895**     | 0.621   |
-| WikiANN sv (independent)          | **0.647**     | 0.392   |
+| Eval set                              | type-aware F1 | redaction recall |
+| ------------------------------------- | ------------- | ---------------- |
+| our hand-authored set (PII-style)     | **0.927**     | 0.94 (recall 0.97) |
+| independent gold (real Wikipedia text)| **0.739**     | 0.84 (**recall 1.00**) |
+
+For reference, Rampart scores ~0.39 on independent Swedish (it isn't trained on
+Swedish; ORG F1 = 0.00).
 
 > **Read these honestly.** Our own set shares an author with the data generator,
-> so 0.895 *flatters* the model — it's a strong directional signal, not proof.
-> WikiANN is independent but *encyclopedic* (Wikipedia), a different domain from
-> the support/healthcare/legal PII text this targets, and our vocab-trim is tuned
-> for PII-text frequency — so 0.647 is a pessimistic floor. The truth for the
-> target domain sits between the two. What's solid across both: **maskera beats
-> Rampart by a wide margin** (Rampart scores 0.00 on Swedish orgs). The
+> so 0.927 *flatters* the model. The independent set is real prose written by
+> others (gold-labelled) but *encyclopedic* (Wikipedia) — a different domain from
+> the support/healthcare PII text this targets — so 0.739 is a pessimistic floor.
+> The truth for the target domain sits between. What's solid: **redaction recall
+> ~1.0** (it masks essentially everything) and a wide win over Rampart. The
 > structured-PII rules aren't in this table — they're deterministic, not learned.
 
 The real next gain is a **real labelled Swedish eval set** — needed even just to

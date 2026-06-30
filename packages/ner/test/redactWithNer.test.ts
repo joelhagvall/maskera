@@ -1,6 +1,17 @@
 import type { Detection } from "@maskera/core"
 import { describe, expect, it } from "vitest"
-import { type NerRecognizer, redactWithNer } from "../src/index"
+import { type NerRecognizer, isWholeWord, redactWithNer } from "../src/index"
+
+describe("isWholeWord (drops mid-word model fragments)", () => {
+  it("rejects a fragment inside a larger word", () => {
+    expect(isWholeWord("Motpart företräds", 3, 6)).toBe(false) // "par" in Motpart
+    expect(isWholeWord("journalen", 4, 6)).toBe(false) // "na" in journalen
+  })
+  it("accepts real word-boundary spans", () => {
+    expect(isWholeWord("Lars Eriksson", 0, 4)).toBe(true) // "Lars"
+    expect(isWholeWord("bor i Stockholm.", 6, 15)).toBe(true) // "Stockholm"
+  })
+})
 
 /** A fake recognizer so we can test the merge logic without loading a model. */
 function fakeRecognizer(detections: (text: string) => Detection[]): NerRecognizer {
