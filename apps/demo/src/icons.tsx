@@ -22,6 +22,35 @@ function Svg({ size = 16, children, ...rest }: IconProps & { children: ReactNode
   )
 }
 
+// --- brand mark ---------------------------------------------------------
+
+/**
+ * maska logomark: redacted text (two bars) inside placeholder brackets — the
+ * shape of the product's own output, `[PERSONNUMMER_1]`.
+ */
+export function MaskaMark({ size = 22, ...rest }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden {...rest}>
+      <path
+        d="M9 4H6v16h3"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M15 4h3v16h-3"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <rect x="8.5" y="8.7" width="7" height="2.3" rx="1.15" fill="currentColor" />
+      <rect x="8.5" y="13" width="4.6" height="2.3" rx="1.15" fill="currentColor" />
+    </svg>
+  )
+}
+
 // --- domain icons -------------------------------------------------------
 
 export const HealthIcon = (p: IconProps) => (

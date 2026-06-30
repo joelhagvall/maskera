@@ -1,11 +1,14 @@
 import { GITHUB } from "../constants"
-import { ArrowUpRightIcon } from "../icons"
+import { ArrowUpRightIcon, MaskaMark } from "../icons"
 
 export function Header() {
   return (
     <header className="header">
       <div className="head-row">
-        <span className="wordmark">maska</span>
+        <span className="wordmark">
+          <MaskaMark size={20} />
+          maska
+        </span>
         <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
           GitHub
           <ArrowUpRightIcon size={13} />

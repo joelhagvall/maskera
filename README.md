@@ -1,3 +1,5 @@
+<img src="logo.svg" alt="maska" width="56" align="left" />
+
 # maska
 
 > Swedish-first, client-side PII redaction for AI apps.
