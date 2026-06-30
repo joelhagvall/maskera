@@ -57,6 +57,15 @@ export interface NerOptions {
   labelMap?: LabelMap
   /** Progress callback while the model downloads. */
   onProgress?: (progress: unknown) => void
+  /**
+   * Transformers.js `env.localModelPath` — base URL/path for locally hosted
+   * models. Set this (plus `model`) to load your own model instead of the Hub.
+   */
+  localModelPath?: string
+  /** Transformers.js `env.allowRemoteModels` (default left untouched). */
+  allowRemoteModels?: boolean
+  /** Transformers.js `env.allowLocalModels` (default left untouched). */
+  allowLocalModels?: boolean
 }
 
 export interface NerRecognizer {
@@ -80,6 +89,9 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
     minScore = 0.5,
     labelMap = defaultLabelMap,
     onProgress,
+    localModelPath,
+    allowRemoteModels,
+    allowLocalModels,
   } = options
 
   let pipePromise: Promise<import("@huggingface/transformers").TokenClassificationPipeline> | null =
@@ -88,13 +100,18 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
   const load = () => {
     if (!pipePromise) {
       pipePromise = import("@huggingface/transformers")
-        .then((t) =>
-          t.pipeline("token-classification", model, {
+        .then((t) => {
+          // Configure env on the exact module instance we use, so a custom
+          // model path applies regardless of how the host bundles things.
+          if (localModelPath !== undefined) t.env.localModelPath = localModelPath
+          if (allowRemoteModels !== undefined) t.env.allowRemoteModels = allowRemoteModels
+          if (allowLocalModels !== undefined) t.env.allowLocalModels = allowLocalModels
+          return t.pipeline("token-classification", model, {
             dtype,
             device,
             progress_callback: onProgress,
-          }),
-        )
+          })
+        })
         .catch((err) => {
           pipePromise = null
           throw new Error(

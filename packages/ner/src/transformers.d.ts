@@ -34,4 +34,11 @@ declare module "@huggingface/transformers" {
     model?: string,
     options?: PipelineOptions,
   ): Promise<TokenClassificationPipeline>
+
+  export const env: {
+    localModelPath?: string
+    allowRemoteModels?: boolean
+    allowLocalModels?: boolean
+    [key: string]: unknown
+  }
 }

@@ -1,6 +1,7 @@
 node_modules/
 dist/
 coverage/
+apps/demo/public/models/
 *.log
 .DS_Store
 .turbo/

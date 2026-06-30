@@ -91,6 +91,10 @@ export const lagenhetsnummer: Detector = regexDetector(
 /** Swedish car registration plate: ABC 12A / ABC123. */
 export const regnummer: Detector = regexDetector("REGNUMMER", /\b[A-Z]{3}\s?\d{2}[A-Z0-9]\b/g)
 
+/**
+ * Off-state (no model): rules + the offline name gazetteer, so the demo still
+ * redacts names instantly with zero download.
+ */
 export const demoDetectors: Detector[] = [
   namn,
   adress,
@@ -98,3 +102,11 @@ export const demoDetectors: Detector[] = [
   regnummer,
   ...defaultDetectors,
 ]
+
+/**
+ * Model-state: drop the name gazetteer — the Swedish NER model handles names,
+ * places, orgs and addresses. We keep the structured rule detectors, because
+ * the model is *worse* at personnummer/org-nr/phone/IBAN than a regex+checksum.
+ * This is the hybrid: rules for structured IDs, model for free text.
+ */
+export const ruleDetectors: Detector[] = [lagenhetsnummer, regnummer, ...defaultDetectors]
