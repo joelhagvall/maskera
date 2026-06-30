@@ -63,18 +63,23 @@ every-other layer (DistilBERT-style) recovers the quality.
 
 ### The size ladder (honest)
 
-| Artifact                         | Size    | Swedish quality |
-| -------------------------------- | ------- | --------------- |
-| KB-BERT fp32 (teacher)           | ~440 MB | best            |
-| teacher int8 ONNX                | 125 MB  | ✅              |
-| **distilled student int8 ONNX**  | **82 MB** | ✅ (≈ teacher) |
-| Rampart (for comparison)         | 15 MB   | ❌ on Swedish   |
+| Artifact                            | Size    | Swedish quality |
+| ----------------------------------- | ------- | --------------- |
+| KB-BERT fp32 (teacher)              | ~440 MB | best            |
+| teacher int8 ONNX                   | 125 MB  | ✅              |
+| distilled student int8 ONNX         | 82 MB   | ✅ (≈ teacher)  |
+| **vocab-trimmed student int8 ONNX** | **56 MB** | ✅ (−0.04 F1) — **shipped** |
+| Rampart (for comparison)            | 15 MB   | ❌ on Swedish   |
 
-82 MB is browser-loadable (cached after first fetch) and **actually good on
-Swedish**, unlike the 15 MB Rampart. Closing the gap to ~15-30 MB further needs
-**vocabulary trimming** (KB-BERT's 50k-token vocab is ~47% of the student's
-params) plus q4 quantization — at some cost to quality. That's the next lever,
-not done here.
+**What didn't work:** q4 quantization (`quantize_q4.py`) made the model *bigger*
+(183 MB) — ONNX 4-bit only quantizes MatMul weights and leaves the embedding
+table fp32, and that table is ~half the model.
+
+**What did work:** **vocabulary trimming** (`trim_vocab.py`). KB-BERT's 50k vocab
+is ~half the params; Swedish PII text only uses a fraction. Trimming to the 16k
+most-used wordpieces (keeping all special + single-char pieces so any word still
+decomposes) cut 82 MB → 56 MB for −0.04 F1. This is the shipped model. Going
+further to ~15 MB needs a smaller architecture too, where quality starts to cost.
 
 On an M4 Pro (MPS) step 3 takes ~8–9 minutes for 3 epochs over 9k examples.
 
@@ -110,11 +115,12 @@ type-aware P/R/F1.
 
 **Overall F1:**
 
-| Model                     | Size   | Overlap F1 | Exact F1 |
-| ------------------------- | ------ | ---------- | -------- |
-| teacher (KB-BERT)         | 440 MB | **0.899**  | 0.851    |
-| **student (distilled)**   | 82 MB  | **0.874**  | 0.798    |
-| Rampart                   | 15 MB  | 0.621      | 0.494    |
+| Model                       | Size   | Overlap F1 | Exact F1 |
+| --------------------------- | ------ | ---------- | -------- |
+| teacher (KB-BERT)           | 440 MB | **0.899**  | 0.851    |
+| student (distilled)         | 82 MB  | 0.874      | 0.798    |
+| **student (vocab-trimmed)** | 56 MB  | **0.838**  | 0.749    |
+| Rampart                     | 15 MB  | 0.621      | 0.494    |
 
 **Per-type F1 (overlap):**
 

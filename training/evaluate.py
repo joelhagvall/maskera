@@ -156,6 +156,7 @@ def main():
     models = [
         ("teacher (KB-BERT)", load_local, "model", ours),
         ("student (distilled)", load_local, "student-model", ours),
+        ("student (trimmed 55MB)", load_local, "student-trimmed", ours),
         ("Rampart", lambda _: load_rampart(), None, rampart),
     ]
     summary = {}
