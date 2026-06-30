@@ -77,8 +77,14 @@ export const postnummer = regexDetector("POSTNUMMER", /\b\d{3}\s?\d{2}\b/g)
 
 // --- Payment identifiers --------------------------------------------------
 
-/** Bankgiro: NNN-NNNN or NNNN-NNNN. */
-export const bankgiro = regexDetector("BANKGIRO", /\b\d{3,4}-\d{4}\b/g)
+/**
+ * Bankgiro: NNN-NNNN or NNNN-NNNN, with a mod-10 (Luhn) check digit. The
+ * checksum is what separates a real bankgiro from look-alikes such as a year
+ * range ("2019-2024") or an arbitrary reference id.
+ */
+export const bankgiro = regexDetector("BANKGIRO", /\b\d{3,4}-\d{4}\b/g, (v) =>
+  luhnValid(v.replace(/\D/g, "")),
+)
 
 /** Plusgiro: N..N-N (1-7 digits, dash, single check digit). */
 export const plusgiro = regexDetector("PLUSGIRO", /\b\d{1,7}-\d\b/g)
@@ -88,7 +94,9 @@ export const iban = regexDetector("IBAN", /\bSE\d{2}(?:\s?\d){20}\b/gi)
 
 // --- Generic / international ----------------------------------------------
 
-export const creditCard = regexDetector("CREDIT_CARD", /\b(?:\d[ -]?){13,19}\b/g, (v) => {
+// Anchored on a digit at both ends so the captured value can't include a
+// trailing space or dash (the old `(?:\d[ -]?){13,19}` swallowed the separator).
+export const creditCard = regexDetector("CREDIT_CARD", /\b\d(?:[ -]?\d){12,18}\b/g, (v) => {
   const digits = v.replace(/\D/g, "")
   return digits.length >= 13 && digits.length <= 19 && luhnValid(digits)
 })
