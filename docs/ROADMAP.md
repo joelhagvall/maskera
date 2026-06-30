@@ -41,9 +41,12 @@ package stays tiny and dependency-free.
 - [ ] Vercel AI SDK middleware + Anthropic/OpenAI client wrappers
       (`beforeLLM`, `beforeLogging`, `beforeAnalytics`)
 
-### v0.5 — `@maska/ner` (opt-in ML)
-- [ ] Transformers.js loader for an ONNX token-classification model
-- [ ] Evaluate [Rampart](https://huggingface.co/nationaldesignstudio/rampart)
-      as a fallback recognizer; fine-tune a Swedish NER head when we have data
-- [ ] WASM + WebGPU backends, lazy model fetch
+### v0.5 — `@maska/ner` (opt-in ML) — scaffolded 🧪
+- [x] Transformers.js loader for an ONNX token-classification model
+- [x] `createNerRecognizer()` + `redactWithNer()` hybrid (rules win on overlap)
+- [x] Rampart confirmed CC BY 4.0 (commercial + redistribution + fine-tune OK,
+      attribution required — see `packages/ner/NOTICE`)
+- [x] WASM + WebGPU backends, lazy model fetch
+- [ ] **Measure Rampart recall on a real Swedish corpus** ← gating step
+- [ ] Fine-tune a Swedish NER head if recall is insufficient
 

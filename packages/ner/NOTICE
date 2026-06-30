@@ -1,0 +1,27 @@
+@maska/ner
+==========
+
+This package's CODE is licensed under the MIT License.
+
+DEFAULT MODEL ATTRIBUTION
+-------------------------
+The default NER model loaded by this package is "Rampart", created by
+National Design Studio, and is licensed under the Creative Commons
+Attribution 4.0 International License (CC BY 4.0).
+
+  Model:   https://huggingface.co/nationaldesignstudio/rampart
+  License: https://creativecommons.org/licenses/by/4.0/
+
+If you redistribute the model weights, or build a derivative / fine-tuned
+model from them, CC BY 4.0 requires that you:
+  1. Give appropriate credit to National Design Studio,
+  2. Provide a link to the CC BY 4.0 license,
+  3. Indicate if you made changes to the weights, and
+  4. Do not imply National Design Studio endorses you or your use.
+
+The model is trained on the ai4privacy/pii-masking-openpii-1.5m dataset,
+also licensed CC BY 4.0.
+
+Note: this package does not bundle the weights; they are downloaded at
+runtime from the Hugging Face Hub. If you choose to vendor the weights,
+ship this NOTICE and the model's CC BY 4.0 LICENSE alongside them.
