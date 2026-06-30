@@ -202,12 +202,21 @@ pnpm test       # run all tests (vitest)
 pnpm lint       # biome
 ```
 
+## Transparency & privacy
+
+Since maska is a privacy tool, it's explicit about its own workings:
+**redaction runs 100% on-device, nothing is sent anywhere, no telemetry**, and the
+model was trained on **fully synthetic data — no real PII, no scraping.** The only
+network calls are a one-time fetch of model weights/runtime (never your text), and
+everything is reproducible and self-hostable. Full details + FAQ:
+[`docs/TRANSPARENCY.md`](docs/TRANSPARENCY.md).
+
 ## A note on guarantees
 
 maska is **defense in depth, not a guarantee**. Regex + checksums catch
 structured data reliably; the NER layer catches most free-text names/places but
 no model is perfect. Treat it as a strong first line — keep server-side controls
-too.
+too. It is a data-minimisation aid, **not** a compliance guarantee.
 
 ## License
 
