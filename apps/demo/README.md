@@ -41,5 +41,21 @@ cp student-onnx/{config.json,tokenizer.json,tokenizer_config.json,special_tokens
 cp student-onnx/onnx/model_quantized.onnx ../apps/demo/public/models/maska-sv-ner/onnx/
 ```
 
-Without these files the demo still runs — the NER toggle just reports a load
-error, and the gazetteer fallback keeps working.
+Without these files the demo still runs — the model load reports an error and the
+gazetteer fallback keeps working.
+
+### Or use the hosted model (single source)
+
+Once the model is published to the Hugging Face Hub (see
+[`../../training`](../../training) → "Publish to Hugging Face"), point the demo at
+the hosted id instead of the local copy — then no large file lives in the repo:
+
+```ts
+import { MASKA_SV_NER_MODEL } from "@maska/ner"
+
+createNerRecognizer({ model: MASKA_SV_NER_MODEL, dtype: "q8" })
+// drop localModelPath / allowRemoteModels:false — it fetches from the Hub (browser-cached)
+```
+
+`MASKA_SV_NER_MODEL` is the one canonical id the demo and any future
+React/Node packages share.
