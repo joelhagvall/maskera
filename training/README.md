@@ -171,7 +171,30 @@ eval set (60→121 sentences) barely moved the scores, so the gap is stable. Run
 > ambiguous (a hospital as ORG vs LOC). The Rampart gap is large and consistent
 > enough to trust the direction.
 
-### Independent benchmark (third-party data)
+### Independent gold set (real text, hand-labelled)
+
+`eval/gold-real.txt` is 22 verbatim sentences from public Swedish Wikipedia
+(Stefan Löfven, Spotify) — **real prose written by others**, hand-labelled
+(gold). It removes WikiANN's silver/noisy-label caveat. PER/LOC/ORG only.
+
+| Model on gold-real (real text) | type-aware F1 | redaction recall |
+| ------------------------------ | ------------- | ---------------- |
+| **maskera (shipped 40 MB)**    | **0.667**     | 0.758 (**recall 1.00**) |
+
+Two honest reads:
+
+- **type-aware 0.667 confirms the ~0.65 independent number** (WikiANN gave 0.647)
+  — now on *gold* labels, so it's not a silver-noise artefact. The 0.895 on our
+  own set really was home-turf inflation.
+- **redaction recall caught every entity (1.00)** — on this set nothing leaked,
+  the model just over-tags (precision 0.61). For the privacy use case (was the
+  PII masked at all?), that's the number that matters, and it's strong.
+
+This is still encyclopedic domain (public figures), not the support/healthcare
+text maskera targets — the true target-domain number needs real user data. But
+it's an honest, independent, gold-labelled floor: **~0.67 type-aware, ~1.0 recall.**
+
+### Independent benchmark (WikiANN, silver)
 
 `evaluate_public.py` runs the same comparison on **WikiANN (Swedish)** — a
 public NER dataset labeled by others, with no shared author. Restricted to
