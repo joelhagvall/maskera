@@ -229,6 +229,23 @@ body {
 .editor textarea:focus {
   border-color: var(--fg);
 }
+/* the textarea text is transparent (overlay), so colour the placeholder explicitly */
+.editor textarea::placeholder {
+  color: var(--muted-2);
+  opacity: 1;
+}
+.clear {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  color: var(--muted-2);
+  cursor: pointer;
+}
+.clear:hover {
+  color: var(--fg);
+}
 .hl {
   /* background + underline colour come from inline per-category styles */
   border-radius: 2px;

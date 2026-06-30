@@ -21,9 +21,15 @@ export function InputCard({
       <div className="card-head">
         <span className="card-title">
           <PencilIcon size={14} />
-          Indata
+          Din text
         </span>
-        <span className="card-sub">{tagline}</span>
+        {text ? (
+          <button type="button" className="clear" onClick={() => onChange("")}>
+            Rensa
+          </button>
+        ) : (
+          <span className="card-sub">skriv eller klistra in</span>
+        )}
       </div>
       <div className="editor">
         <div className="backdrop" ref={backdropRef} aria-hidden>
@@ -32,6 +38,7 @@ export function InputCard({
         <textarea
           value={text}
           spellCheck={false}
+          placeholder={`Skriv eller klistra in egen text här — allt körs lokalt.\n\nExempel: ${tagline}`}
           onChange={(e) => onChange(e.target.value)}
           onScroll={(e) => {
             if (backdropRef.current) backdropRef.current.scrollTop = e.currentTarget.scrollTop
