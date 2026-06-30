@@ -1,0 +1,42 @@
+{
+  "name": "@maska/core",
+  "version": "0.1.0",
+  "description": "Swedish-first, zero-dependency PII detection & redaction. Runs in the browser, Node, and edge.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Joel Hägvall",
+  "keywords": [
+    "pii",
+    "redaction",
+    "anonymization",
+    "gdpr",
+    "swedish",
+    "personnummer",
+    "privacy",
+    "llm",
+    "ai"
+  ],
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
