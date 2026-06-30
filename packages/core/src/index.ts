@@ -1,4 +1,4 @@
-export { redact, restore } from "./redact"
+export { redact, redactFromDetections, restore } from "./redact"
 export {
   defaultDetectors,
   regexDetector,

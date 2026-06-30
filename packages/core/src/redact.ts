@@ -35,7 +35,6 @@ function resolveOverlaps(detections: Detection[]): Detection[] {
  */
 export function redact(input: string, options: RedactOptions = {}): RedactResult {
   const detectors = options.detectors ?? defaultDetectors
-  const placeholder = options.placeholder ?? defaultPlaceholder
 
   const all: Detection[] = []
   for (const detector of detectors) {
@@ -44,7 +43,23 @@ export function redact(input: string, options: RedactOptions = {}): RedactResult
     }
   }
 
-  const resolved = resolveOverlaps(all)
+  return redactFromDetections(input, all, options)
+}
+
+/**
+ * Lower-level entry point: turn a pre-computed list of detections into a
+ * {@link RedactResult}. Use this when detections come from somewhere async or
+ * external (e.g. an NER model in `@maska/ner`) and you want the same stable
+ * placeholder + overlap-resolution behaviour as {@link redact}.
+ */
+export function redactFromDetections(
+  input: string,
+  detections: Detection[],
+  options: Pick<RedactOptions, "placeholder"> = {},
+): RedactResult {
+  const placeholder = options.placeholder ?? defaultPlaceholder
+
+  const resolved = resolveOverlaps(detections)
 
   // Stable numbering: same value under the same label reuses its placeholder.
   const counters = new Map<PiiLabel, number>()

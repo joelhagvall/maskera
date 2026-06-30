@@ -1,0 +1,40 @@
+{
+  "name": "@maska/ner",
+  "version": "0.0.1",
+  "description": "Opt-in ONNX/Transformers.js NER layer for maska — detects free-text names, places and organisations the rule layer can't.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Joel Hägvall",
+  "keywords": ["pii", "ner", "transformers.js", "onnx", "swedish", "privacy", "redaction"],
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@maska/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "@huggingface/transformers": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "@huggingface/transformers": { "optional": true }
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

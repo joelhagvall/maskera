@@ -46,14 +46,19 @@ values never travel.
 
 This is a pnpm monorepo. Today the published, battle-tested piece is the core:
 
-| Package          | Status      | What it does                                          |
-| ---------------- | ----------- | ----------------------------------------------------- |
-| `@maska/core`    | ✅ ready    | Zero-dep Swedish PII detectors + redact/restore engine |
-| `@maska/react`   | 🚧 planned  | `usePrivacyGuard()` hook + `<RedactedInput />`         |
-| `@maska/node`    | 🚧 planned  | Express middleware + Vercel AI SDK / Anthropic wrapper |
+| Package          | Status          | What it does                                          |
+| ---------------- | --------------- | ----------------------------------------------------- |
+| `@maska/core`    | ✅ ready        | Zero-dep Swedish PII detectors + redact/restore engine |
+| `@maska/ner`     | 🧪 experimental | Opt-in ONNX/Transformers.js NER for free-text names/places |
+| `@maska/react`   | 🚧 planned      | `usePrivacyGuard()` hook + `<RedactedInput />`         |
+| `@maska/node`    | 🚧 planned      | Express middleware + Vercel AI SDK / Anthropic wrapper |
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the plan, including the optional
-ONNX/Transformers.js NER layer for free-text names and places.
+The `@maska/ner` default model is [Rampart](https://huggingface.co/nationaldesignstudio/rampart)
+(CC BY 4.0 — commercial use, redistribution and fine-tuning all permitted with
+attribution). It's Latin-script, not Swedish-specific — measure recall before
+relying on it; the rule layer is the dependable floor.
+
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full plan.
 
 ## Install
 
