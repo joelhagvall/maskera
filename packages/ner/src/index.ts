@@ -1,5 +1,5 @@
-import type { Detection, PiiLabel, RedactOptions, RedactResult } from "@maska/core"
-import { defaultDetectors, redactFromDetections } from "@maska/core"
+import type { Detection, PiiLabel, RedactOptions, RedactResult } from "@maskera/core"
+import { defaultDetectors, redactFromDetections } from "@maskera/core"
 
 /**
  * Default model: Rampart (nationaldesignstudio/rampart), a 14.7 MB 4-bit
@@ -10,15 +10,15 @@ import { defaultDetectors, redactFromDetections } from "@maska/core"
 export const DEFAULT_NER_MODEL = "nationaldesignstudio/rampart"
 
 /**
- * Canonical Hugging Face id for maska's own Swedish PII model — the single
+ * Canonical Hugging Face id for maskera's own Swedish PII model — the single
  * source the demo and future packages should point at once it's published:
- * `createNerRecognizer({ model: MASKA_SV_NER_MODEL, dtype: "q8" })`.
+ * `createNerRecognizer({ model: MASKERA_SV_NER_MODEL, dtype: "q8" })`.
  * Change the owner to your own HF username if you host your own copy.
  */
-export const MASKA_SV_NER_MODEL = "joelhagvall/maska-sv-ner"
+export const MASKERA_SV_NER_MODEL = "joelhagvall/maskera-sv-ner"
 
 /**
- * Map a model entity group (e.g. "GIVENNAME", "CITY") to a maska label.
+ * Map a model entity group (e.g. "GIVENNAME", "CITY") to a maskera label.
  * Return `null` to drop the entity. The default normalises a handful of
  * common OpenPII groups to coarse labels and upper-cases the rest.
  */
@@ -61,7 +61,7 @@ export interface NerOptions {
   device?: "wasm" | "webgpu" | "cpu" | "auto"
   /** Drop predictions below this confidence. Default: `0.5`. */
   minScore?: number
-  /** Map model entity groups to maska labels. Default: {@link defaultLabelMap}. */
+  /** Map model entity groups to maskera labels. Default: {@link defaultLabelMap}. */
   labelMap?: LabelMap
   /** Progress callback while the model downloads. */
   onProgress?: (progress: unknown) => void
@@ -79,7 +79,7 @@ export interface NerOptions {
 export interface NerRecognizer {
   /** Resolves once the model is loaded and ready. */
   ready: Promise<void>
-  /** Run the model and return maska-compatible detections. */
+  /** Run the model and return maskera-compatible detections. */
   detect(text: string): Promise<Detection[]>
 }
 
@@ -123,7 +123,7 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
         .catch((err) => {
           pipePromise = null
           throw new Error(
-            `@maska/ner: failed to load "${model}". Is the optional peer ` +
+            `@maskera/ner: failed to load "${model}". Is the optional peer ` +
               `dependency "@huggingface/transformers" installed?\n${String(err)}`,
           )
         })

@@ -1,6 +1,6 @@
 # Transparency & privacy
 
-maska is a privacy tool, so it should be honest about its own workings. This is
+maskera is a privacy tool, so it should be honest about its own workings. This is
 the short version of what it does, how the model was made, and where the limits
 are.
 
@@ -8,7 +8,7 @@ are.
 
 - **Redaction runs entirely on your device** — in the browser (WASM/WebGPU) or in
   your Node process. Your text is **never sent anywhere** for redaction.
-- **No telemetry, no analytics, no phone-home.** maska makes no network calls
+- **No telemetry, no analytics, no phone-home.** maskera makes no network calls
   with your content. You can verify this in the browser DevTools → Network tab:
   type into the demo and watch — your text triggers zero requests.
 - **The network calls that *do* exist** (full honesty): the NER **model file** is
@@ -16,7 +16,7 @@ are.
   Transformers.js **WASM runtime** loads from a CDN. Both are code/weights, fetched
   once and cached — **never your text.** Want zero external fetches? Self-host the
   model files and the WASM runtime; both are static assets.
-- The **rule layer** (`@maska/core`) has **no network dependency at all** and no
+- The **rule layer** (`@maskera/core`) has **no network dependency at all** and no
   model — pure functions.
 
 ## How the model was trained (honestly)
@@ -39,7 +39,7 @@ are.
 - **It is defense in depth, not a guarantee.** Structured PII (personnummer,
   org-nr, …) is caught deterministically by regex+checksum and is very reliable.
   Free-text names/places rely on a model and **will miss things.** Keep
-  server-side controls; don't treat maska as your only safeguard.
+  server-side controls; don't treat maskera as your only safeguard.
 
 ## FAQ
 
@@ -51,9 +51,9 @@ content.
 Synthetic Swedish text only — no real PII. See `training/generate_data.mjs`.
 
 **Is this GDPR-compliant?**
-maska is a **data-minimisation tool** that helps you avoid sending PII to third
+maskera is a **data-minimisation tool** that helps you avoid sending PII to third
 parties — that supports GDPR/EU AI Act goals. But compliance is about *your* whole
-system and you remain the data controller. maska is not a compliance guarantee and
+system and you remain the data controller. maskera is not a compliance guarantee and
 makes no legal claims.
 
 **Can I self-host / audit everything?**
@@ -61,7 +61,7 @@ Yes. Code is MIT and open. The model is CC0-derived and can be self-hosted. The
 training pipeline is reproducible.
 
 **Can I turn the model off and use only rules?**
-Yes — `@maska/core` works standalone with zero dependencies and zero model.
+Yes — `@maskera/core` works standalone with zero dependencies and zero model.
 
 **What does it not catch?**
 Non-Swedish PII, unusual free-text formulations, and anything outside its four

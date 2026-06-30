@@ -25,10 +25,10 @@ function Svg({ size = 16, children, ...rest }: IconProps & { children: ReactNode
 // --- brand mark ---------------------------------------------------------
 
 /**
- * maska logomark: redacted text (two bars) inside placeholder brackets — the
+ * maskera logomark: redacted text (two bars) inside placeholder brackets — the
  * shape of the product's own output, `[PERSONNUMMER_1]`.
  */
-export function MaskaMark({ size = 22, ...rest }: IconProps) {
+export function MaskeraMark({ size = 22, ...rest }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" {...rest}>
       <path

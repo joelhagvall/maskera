@@ -1,4 +1,4 @@
-import type { RedactResult } from "@maska/core"
+import type { RedactResult } from "@maskera/core"
 import { useMemo, useState } from "react"
 import { EyeIcon, EyeOffIcon } from "../icons"
 import { labelMeta } from "../labels"
@@ -16,7 +16,7 @@ function Stats({ result, protect }: { result: RedactResult; protect: boolean }) 
     <div className="stats">
       <div className="count">
         <span className="num">{result.redactions.length}</span>
-        <span className="num-l">{protect ? "uppgifter maskade" : "uppgifter exponerade"}</span>
+        <span className="num-l">{protect ? "uppgifter maskerade" : "uppgifter exponerade"}</span>
       </div>
       <div className="tags">
         {counts.map(([label, n]) => {
@@ -66,7 +66,7 @@ export function OutputCard({ result, original }: { result: RedactResult; origina
       <div className="card-head">
         <span className="card-title">
           {protect ? <EyeIcon size={14} /> : <EyeOffIcon size={14} />}
-          {protect ? "Vad AI:n ser" : "Utan maska"}
+          {protect ? "Vad AI:n ser" : "Utan maskera"}
         </span>
         <Switch checked={protect} onChange={setProtect} />
       </div>

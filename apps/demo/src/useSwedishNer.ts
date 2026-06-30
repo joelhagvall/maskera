@@ -1,5 +1,5 @@
-import { type RedactResult, redact } from "@maska/core"
-import { type NerRecognizer, createNerRecognizer, redactWithNer } from "@maska/ner"
+import { type RedactResult, redact } from "@maskera/core"
+import { type NerRecognizer, createNerRecognizer, redactWithNer } from "@maskera/ner"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { demoDetectors, ruleDetectors } from "./detectors"
 
@@ -55,7 +55,7 @@ export function useSwedishNer(text: string): SwedishNer {
   useEffect(() => {
     let cancelled = false
     const rec = createNerRecognizer({
-      model: "maska-sv-ner",
+      model: "maskera-sv-ner",
       localModelPath: "/models/",
       allowLocalModels: true,
       allowRemoteModels: false,

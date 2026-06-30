@@ -1,5 +1,5 @@
 """
-Independent benchmark: evaluate the maska models vs Rampart on a PUBLIC,
+Independent benchmark: evaluate the maskera models vs Rampart on a PUBLIC,
 third-party-labeled Swedish NER dataset (no shared author with our data).
 
 Restricted to PER / LOC / ORG — the types public NER sets share with us

@@ -1,5 +1,5 @@
 {
-  "name": "maska-monorepo",
+  "name": "maskera-monorepo",
   "version": "0.0.0",
   "private": true,
   "description": "Swedish-first, client-side PII redaction for AI apps",

@@ -1,7 +1,7 @@
 """
 Export the fine-tuned Swedish NER model to ONNX and quantize to int8.
 
-Produces a Transformers.js-compatible layout so it can drop into @maska/ner:
+Produces a Transformers.js-compatible layout so it can drop into @maskera/ner:
     onnx-model/
       config.json, tokenizer.json, ...
       onnx/model.onnx            (fp32)

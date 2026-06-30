@@ -1,14 +1,14 @@
-# @maska/core
+# @maskera/core
 
 Swedish-first, **zero-dependency** PII detection & redaction. Runs in the
-browser, Node, and edge runtimes. Part of [maska](https://github.com/joelhagvall/maska).
+browser, Node, and edge runtimes. Part of [maskera](https://github.com/joelhagvall/maskera).
 
 ```bash
-pnpm add @maska/core
+pnpm add @maskera/core
 ```
 
 ```ts
-import { redact } from "@maska/core"
+import { redact } from "@maskera/core"
 
 const { text, restore } = redact("Personnummer 19900101-0017, tel 070-123 45 67.")
 text // "Personnummer [PERSONNUMMER_1], tel [PHONE_1]."

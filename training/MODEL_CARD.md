@@ -15,10 +15,10 @@ tags:
   - transformers.js
 ---
 
-# maska-sv-ner — Swedish PII NER (free-text entities)
+# maskera-sv-ner — Swedish PII NER (free-text entities)
 
 A small, browser-deployable Swedish named-entity model for **PII redaction**,
-trained for [maska](https://github.com/joelhagvall/maska). It detects the
+trained for [maskera](https://github.com/joelhagvall/maskera). It detects the
 **free-text** entities a rule layer can't catch — people, places, organisations
 and street addresses — so structured PII (personnummer, org-nr, phone, IBAN…)
 stays with deterministic regex+checksum rules.
@@ -41,20 +41,20 @@ regex+checksum is strictly more reliable there.
 
 ```js
 import { pipeline } from "@huggingface/transformers"
-const ner = await pipeline("token-classification", "joelhagvall/maska-sv-ner", {
+const ner = await pipeline("token-classification", "joelhagvall/maskera-sv-ner", {
   dtype: "q8", // -> onnx/model_quantized.onnx
 })
 await ner("Min granne Lars Nordström bor på Kungsholmen och jobbar på Spotify.")
 // PER "Lars Nordström", LOC "Kungsholmen", ORG "Spotify"
 ```
 
-### Via @maska/ner (recommended — adds the rule layer + restore map)
+### Via @maskera/ner (recommended — adds the rule layer + restore map)
 
 ```ts
-import { createNerRecognizer, redactWithNer } from "@maska/ner"
-import { defaultDetectors } from "@maska/core"
+import { createNerRecognizer, redactWithNer } from "@maskera/ner"
+import { defaultDetectors } from "@maskera/core"
 
-const recognizer = createNerRecognizer({ model: "joelhagvall/maska-sv-ner", dtype: "q8" })
+const recognizer = createNerRecognizer({ model: "joelhagvall/maskera-sv-ner", dtype: "q8" })
 const { text } = await redactWithNer(input, { recognizer, detectors: defaultDetectors })
 ```
 
@@ -77,7 +77,7 @@ Span-level, type-aware F1 (overlap), vs Rampart:
 | WikiANN sv (independent, 500)   | 0.668   | **0.696**   | 0.392   |
 
 The student beats Rampart on Swedish by a wide margin; Rampart scores 0.00 on
-ORG. See the [maska training README](https://github.com/joelhagvall/maska/tree/main/training).
+ORG. See the [maskera training README](https://github.com/joelhagvall/maskera/tree/main/training).
 
 ## Limitations
 

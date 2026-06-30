@@ -33,17 +33,17 @@ package stays tiny and dependency-free.
 
 ### Framework wrappers — when demand exists (not built speculatively)
 
-`@maska/core` already works in React and Node today (it's just functions), so
+`@maskera/core` already works in React and Node today (it's just functions), so
 these are **DX conveniences, not capability**. We'll build them when real users
 ask — adapters for frameworks nobody uses yet is wasted surface area. If/when:
 
-- **`@maska/node` first** (highest real-world value — most LLM calls are
-  server-side): Express middleware `app.use(maska())`, and AI-SDK wrappers like
+- **`@maskera/node` first** (highest real-world value — most LLM calls are
+  server-side): Express middleware `app.use(maskera())`, and AI-SDK wrappers like
   `withPrivacyGuard(openai)` / `beforeLLM` / `beforeLogging`.
-- **`@maska/react`** if there's pull: `usePrivacyGuard()` hook and a
+- **`@maskera/react`** if there's pull: `usePrivacyGuard()` hook and a
   `<RedactedInput />` showing "3 känsliga uppgifter skyddades".
 
-### v0.5 — `@maska/ner` (opt-in ML) — done 🧪
+### v0.5 — `@maskera/ner` (opt-in ML) — done 🧪
 - [x] Transformers.js loader for an ONNX token-classification model
 - [x] `createNerRecognizer()` + `redactWithNer()` hybrid (rules win on overlap)
 - [x] Rampart confirmed CC BY 4.0 (commercial + redistribution + fine-tune OK)
@@ -59,5 +59,5 @@ ask — adapters for frameworks nobody uses yet is wasted surface area. If/when:
 - [x] **Result: student 0.874 F1 vs Rampart 0.621** (overlap, out-of-template)
 - [ ] Grow the eval set + second annotator + real (non-authored) text
 - [ ] Vocab trim + q4 toward ~20-30 MB browser size
-- [ ] Host the model and wire it as the Swedish default in `@maska/ner`
+- [ ] Host the model and wire it as the Swedish default in `@maskera/ner`
 

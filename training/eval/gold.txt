@@ -1,4 +1,4 @@
-# maska Swedish NER gold evaluation set
+# maskera Swedish NER gold evaluation set
 #
 # Hand-authored, deliberately OUT of the training-template distribution:
 # novel names/places/orgs not in the generator gazetteers, varied sentence

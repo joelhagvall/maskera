@@ -1,5 +1,5 @@
 ---
-"@maska/core": minor
+"@maskera/core": minor
 ---
 
 Initial release: Swedish-first PII detectors (personnummer, samordningsnummer,

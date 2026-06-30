@@ -49,7 +49,7 @@ export function redact(input: string, options: RedactOptions = {}): RedactResult
 /**
  * Lower-level entry point: turn a pre-computed list of detections into a
  * {@link RedactResult}. Use this when detections come from somewhere async or
- * external (e.g. an NER model in `@maska/ner`) and you want the same stable
+ * external (e.g. an NER model in `@maskera/ner`) and you want the same stable
  * placeholder + overlap-resolution behaviour as {@link redact}.
  */
 export function redactFromDetections(
