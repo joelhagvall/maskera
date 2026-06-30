@@ -56,8 +56,9 @@ An honest snapshot of where the project is:
   dependencies, tested. **This is shippable today.**
 - ✅ **Our own Swedish NER model** — we **fine-tuned** KB-BERT (CC0 Swedish base
   model) on synthetic Swedish data, **distilled** it, then **shrank** it
-  (vocab-trim + q4) to a browser-sized 40 MB ONNX. Benchmarked openly: **0.70 F1 vs Rampart's
-  0.39** on independent data — a wide win on Swedish.
+  (vocab-trim + q4) to a browser-sized 40 MB ONNX. Benchmarked openly: **0.65 F1
+  vs Rampart's 0.39** on independent data (0.90 vs 0.62 on our own set) — a wide
+  win on Swedish either way.
 - ✅ **NER layer (`@maskera/ner`)** — runs a model client-side via Transformers.js,
   with subword-span reconstruction and the shared placeholder engine.
 - ✅ **Interactive demo** — 10 domains, model always on, live redaction as you type.
@@ -96,33 +97,26 @@ deliberately outside the training distribution — novel names/places/orgs,
 lowercase, abbreviations, foreign names, and distractors that must not be
 tagged. Span-level, type-aware F1 (see [`training/`](training/)).
 
-| Model                              | Size   | Overlap F1 | Exact F1 |
-| ---------------------------------- | ------ | ---------- | -------- |
-| maskera teacher (KB-BERT)          | 440 MB | **0.899**  | 0.851    |
-| maskera student (distilled)        | 82 MB  | 0.874      | 0.798    |
-| **maskera student (shipped, trim + q4)** | 40 MB | **0.895** | —     |
-| Rampart                            | 15 MB  | 0.621      | 0.494    |
+The shipped model is **40 MB** (vocab-trimmed + q4), runs in the browser, and
+beats Rampart on Swedish on **both** our eval and an independent one:
 
-The 40 MB shipped model nearly matches the 440 MB teacher (0.899) and reaches
-**0.91 redaction recall** (was the PII span masked at all, any label — the metric
-that actually matters for privacy; recall 0.99).
+| Eval set                          | shipped 40 MB | Rampart |
+| --------------------------------- | ------------- | ------- |
+| our hand-authored set (PII-style) | **0.895**     | 0.621   |
+| WikiANN sv (independent)          | **0.647**     | 0.392   |
 
-Per-type F1 (overlap): the student scores PER 0.91 / LOC 0.90 / ORG 0.81 /
-ADR 0.85. Rampart's gaps are concentrated — **ORG F1 = 0.00** (it tags no
-Swedish organisations, 0/67) and **LOC recall = 0.39**.
+> **Read these honestly.** Our own set shares an author with the data generator,
+> so 0.895 *flatters* the model — it's a strong directional signal, not proof.
+> WikiANN is independent but *encyclopedic* (Wikipedia), a different domain from
+> the support/healthcare/legal PII text this targets, and our vocab-trim is tuned
+> for PII-text frequency — so 0.647 is a pessimistic floor. The truth for the
+> target domain sits between the two. What's solid across both: **maskera beats
+> Rampart by a wide margin** (Rampart scores 0.00 on Swedish orgs). The
+> structured-PII rules aren't in this table — they're deterministic, not learned.
 
-An **independent** check on third-party data (WikiANN Swedish, no shared author)
-confirms the direction: student **0.70** vs Rampart **0.39** overlap F1 — the gap
-holds and widens, with Rampart again at ORG F1 = 0.00. Absolute scores drop on
-that out-of-domain encyclopedic text (honest domain shift); see
-[`training/README.md`](training/README.md).
-
-> **Honest caveats.** The hand-authored eval set is modest (121 sentences,
-> single annotator) and shares an author with the synthetic data generator —
-> treat it as a strong *directional* signal, not a final number. WikiANN is
-> silver-standard (noisy), so its absolute values are depressed for all models
-> equally. The structured-PII rules aren't in these tables because they're
-> deterministic, not learned.
+The real next gain is a **real labelled Swedish eval set** — needed even just to
+measure the target domain honestly. More synthetic data now mostly lifts our own
+eval, not independent quality.
 
 ## Live demo
 

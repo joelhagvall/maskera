@@ -74,7 +74,7 @@ Span-level, type-aware F1 (overlap), vs Rampart:
 | Eval set                        | teacher | **shipped 40 MB** | Rampart |
 | ------------------------------- | ------- | ----------------- | ------- |
 | hand-authored (121 sents)       | 0.899   | **0.895**         | 0.621   |
-| WikiANN sv (independent, 500)   | 0.668   | ~0.70             | 0.392   |
+| WikiANN sv (independent, 500)   | 0.711   | 0.647             | 0.392   |
 
 The shipped ~40 MB model (vocab-trimmed + q4) beats Rampart on Swedish by a wide
 margin; Rampart scores 0.00 on ORG. See the

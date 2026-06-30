@@ -186,8 +186,8 @@ def main():
                         aggregation_strategy="simple")
 
     models = [
-        ("teacher (KB-BERT)", lambda: load_local("model"), ours),
-        ("student (distilled)", lambda: load_local("student-model"), ours),
+        ("teacher v3 (KB-BERT)", lambda: load_local("model-v3"), ours),
+        ("student v3 (shipped)", lambda: load_local("student-v3-trimmed"), ours),
         ("Rampart", load_rampart, rampart),
     ]
     summary = {}
