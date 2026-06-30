@@ -55,9 +55,10 @@ An honest snapshot of where the project is:
 stood on KB-BERT), modify Rampart's weights (we only wrap it as an option), claim
 GDPR compliance, or publish invented benchmark numbers.
 
-**Not done yet:** `@maska/react` / `@maska/node` packages, vocab-trim + q4 toward
-~15-30 MB, a larger independent eval set, and hosting the model on the Hub. See
-[`docs/ROADMAP.md`](docs/ROADMAP.md).
+**Not done yet:** vocab-trim + q4 toward ~15-30 MB, a larger independent eval
+set, and hosting the model on the Hub. Framework wrappers (`@maska/node`,
+`@maska/react`) are intentionally **demand-driven** — built when users ask, not
+speculatively. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Why it exists
 
@@ -129,8 +130,12 @@ This is a pnpm monorepo.
 | ---------------- | --------------- | ----------------------------------------------------- |
 | `@maska/core`    | ✅ ready        | Zero-dep Swedish PII detectors + redact/restore engine |
 | `@maska/ner`     | 🧪 experimental | Opt-in ONNX/Transformers.js NER for free-text names/places |
-| `@maska/react`   | 🚧 planned      | `usePrivacyGuard()` hook + `<RedactedInput />`         |
-| `@maska/node`    | 🚧 planned      | Express middleware + Vercel AI SDK / Anthropic wrapper |
+| `@maska/node`    | ⏳ on demand    | Express middleware + AI-SDK wrappers — built when users ask |
+| `@maska/react`   | ⏳ on demand    | `usePrivacyGuard()` hook + `<RedactedInput />` — if there's pull |
+
+> `@maska/core` already runs in React and Node today (it's just functions), so
+> the wrappers are DX conveniences, not capability — we build them when real
+> demand appears, not speculatively.
 
 ```
 maska/
