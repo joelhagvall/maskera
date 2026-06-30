@@ -11,14 +11,16 @@ Produces a Transformers.js-compatible layout so it can drop into @maska/ner:
 """
 import os
 import shutil
+import sys
 
 import torch
 from optimum.onnxruntime import ORTModelForTokenClassification, ORTQuantizer
 from optimum.onnxruntime.configuration import AutoQuantizationConfig
 from transformers import AutoTokenizer, pipeline
 
-SRC = "model"
-OUT = "onnx-model"
+SRC = sys.argv[1] if len(sys.argv) > 1 else "model"
+OUT = sys.argv[2] if len(sys.argv) > 2 else "onnx-model"
+print(f"== exporting {SRC} -> {OUT} ==")
 
 
 def mb(path):
