@@ -36,15 +36,31 @@ The same one-liner works before logging or analytics: `logger.info(redact(msg).t
 
 ---
 
-Two layers, inspired by [Rampart](https://huggingface.co/nationaldesignstudio/rampart)
-but built **Swedish-first**:
+Two layers, the same architecture as
+[Rampart](https://huggingface.co/nationaldesignstudio/rampart) — a deterministic
+rule layer plus a small browser NER model — **specialised for Swedish**:
 
 1. **A deterministic rule layer** (`@maskera/core`) — personnummer, samordningsnummer,
    organisationsnummer, Swedish phone numbers, postnummer, bankgiro/plusgiro and
    IBAN, all checksum-validated. Zero dependencies, runs everywhere.
 2. **An optional Swedish NER model** (`@maskera/ner`) — for the free-text entities
-   rules can't catch (names, places, organisations, addresses). We trained our
-   own, and **it beats Rampart on Swedish by a wide margin** (benchmark below).
+   rules can't catch (names, places, organisations, addresses), trained on Swedish.
+
+### How this relates to Rampart
+
+[Rampart](https://huggingface.co/nationaldesignstudio/rampart) (National Design
+Studio, CC BY 4.0) pioneered this design and does it well — 7 Latin-script
+languages, ~15 MB, rigorously evaluated. maskera is **not** trying to beat it
+across the board; it's the **Swedish specialisation** of the same idea. We win in
+exactly one place, and only there:
+
+- Rampart **isn't trained on Swedish** (its languages are en/es/fr/de/it/pt/nl), and
+- it **strips diacritics** (José→jose) — which destroys Swedish, where **å/ä/ö are
+  distinct letters**. maskera uses a *cased* Swedish base (KB-BERT) that keeps them.
+
+So **on Swedish text maskera wins measurably** (see the benchmark); on its own
+turf Rampart is excellent, smaller, and more thoroughly evaluated. Use Rampart for
+multilingual; use maskera for Swedish.
 
 ## What's built
 
