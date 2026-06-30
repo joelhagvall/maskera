@@ -1,3 +1,4 @@
+import { DOMAIN_ICONS } from "../icons"
 import { type Scenario, scenarios } from "../scenarios"
 import type { NerStatus } from "../useSwedishNer"
 
@@ -36,16 +37,20 @@ export function Controls({
   return (
     <div className="controls">
       <div className="tabs">
-        {scenarios.map((s) => (
-          <button
-            type="button"
-            key={s.id}
-            className={`tab ${s.id === activeId ? "on" : ""}`}
-            onClick={() => onPick(s)}
-          >
-            {s.name}
-          </button>
-        ))}
+        {scenarios.map((s) => {
+          const Icon = DOMAIN_ICONS[s.id]
+          return (
+            <button
+              type="button"
+              key={s.id}
+              className={`tab ${s.id === activeId ? "on" : ""}`}
+              onClick={() => onPick(s)}
+            >
+              {Icon && <Icon size={14} />}
+              {s.name}
+            </button>
+          )
+        })}
       </div>
       <ModelStatus status={status} progress={progress} analyzing={analyzing} />
     </div>

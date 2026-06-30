@@ -1,5 +1,6 @@
 import type { Redaction } from "@maska/core"
 import { useRef } from "react"
+import { PencilIcon } from "../icons"
 import { HighlightedText } from "../segments"
 
 export function InputCard({
@@ -18,7 +19,10 @@ export function InputCard({
   return (
     <section className="card">
       <div className="card-head">
-        <span className="card-title">Indata</span>
+        <span className="card-title">
+          <PencilIcon size={14} />
+          Indata
+        </span>
         <span className="card-sub">{tagline}</span>
       </div>
       <div className="editor">

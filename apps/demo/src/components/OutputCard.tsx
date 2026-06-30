@@ -1,6 +1,7 @@
 import type { RedactResult } from "@maska/core"
 import { useMemo, useState } from "react"
-import { labelSv } from "../labels"
+import { EyeIcon, EyeOffIcon } from "../icons"
+import { labelMeta } from "../labels"
 import { RedactedText } from "../segments"
 import { Switch } from "./ui"
 
@@ -18,12 +19,16 @@ function Stats({ result, protect }: { result: RedactResult; protect: boolean }) 
         <span className="num-l">{protect ? "uppgifter maskade" : "uppgifter exponerade"}</span>
       </div>
       <div className="tags">
-        {counts.map(([label, n]) => (
-          <span key={label} className="tag">
-            {labelSv(label)}
-            <span className="tag-n">{n}</span>
-          </span>
-        ))}
+        {counts.map(([label, n]) => {
+          const m = labelMeta(label)
+          return (
+            <span key={label} className="tag">
+              <span className="tag-dot" style={{ background: m.color }} />
+              {m.sv}
+              <span className="tag-n">{n}</span>
+            </span>
+          )
+        })}
       </div>
     </div>
   )
@@ -59,7 +64,10 @@ export function OutputCard({ result, original }: { result: RedactResult; origina
   return (
     <section className="card">
       <div className="card-head">
-        <span className="card-title">{protect ? "Vad AI:n ser" : "Utan maska"}</span>
+        <span className="card-title">
+          {protect ? <EyeIcon size={14} /> : <EyeOffIcon size={14} />}
+          {protect ? "Vad AI:n ser" : "Utan maska"}
+        </span>
         <Switch checked={protect} onChange={setProtect} />
       </div>
 

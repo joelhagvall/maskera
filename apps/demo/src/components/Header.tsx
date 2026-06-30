@@ -1,4 +1,5 @@
 import { GITHUB } from "../constants"
+import { ArrowUpRightIcon } from "../icons"
 
 export function Header() {
   return (
@@ -6,7 +7,8 @@ export function Header() {
       <div className="head-row">
         <span className="wordmark">maska</span>
         <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
-          GitHub ↗
+          GitHub
+          <ArrowUpRightIcon size={13} />
         </a>
       </div>
       <h1 className="title">Maska personuppgifter innan AI:n ser dem.</h1>
