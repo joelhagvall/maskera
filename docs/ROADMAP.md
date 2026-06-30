@@ -31,15 +31,17 @@ package stays tiny and dependency-free.
 - [ ] `redactStream()` for chat-as-you-type
 - [ ] Benchmark suite + a labelled Swedish test corpus
 
-### v0.3 — `@maska/react`
-- [ ] `usePrivacyGuard()` hook
-- [ ] `<RedactedInput />` showing "3 känsliga uppgifter skyddades"
-- [ ] Restore on the client only
+### Framework wrappers — when demand exists (not built speculatively)
 
-### v0.4 — `@maska/node`
-- [ ] Express middleware: `app.use(maska())`
-- [ ] Vercel AI SDK middleware + Anthropic/OpenAI client wrappers
-      (`beforeLLM`, `beforeLogging`, `beforeAnalytics`)
+`@maska/core` already works in React and Node today (it's just functions), so
+these are **DX conveniences, not capability**. We'll build them when real users
+ask — adapters for frameworks nobody uses yet is wasted surface area. If/when:
+
+- **`@maska/node` first** (highest real-world value — most LLM calls are
+  server-side): Express middleware `app.use(maska())`, and AI-SDK wrappers like
+  `withPrivacyGuard(openai)` / `beforeLLM` / `beforeLogging`.
+- **`@maska/react`** if there's pull: `usePrivacyGuard()` hook and a
+  `<RedactedInput />` showing "3 känsliga uppgifter skyddades".
 
 ### v0.5 — `@maska/ner` (opt-in ML) — done 🧪
 - [x] Transformers.js loader for an ONNX token-classification model
