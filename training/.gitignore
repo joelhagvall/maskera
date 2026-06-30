@@ -2,6 +2,8 @@
 .venv/
 model/
 onnx-model/
+student-model/
+student-onnx/
 data/
 *.log
 __pycache__/

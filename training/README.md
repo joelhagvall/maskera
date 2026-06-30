@@ -45,9 +45,36 @@ uv run python export_onnx.py     # -> onnx-model/onnx/model_quantized.onnx
 Quality is preserved through quantization (verified on held-out sentences). The
 int8 model runs through `@maska/ner` end-to-end — model entities (PER/LOC/ORG/
 ADR) plus the rule layer's structured PII, merged by the stable-placeholder
-engine. **125 MB is fine for server/Electron use but still ~8× the ~15 MB
-browser target** — reaching that needs distillation into a smaller student
-architecture (KB-BERT is 110M params; quantization alone can't close that gap).
+engine.
+
+## Distillation (toward browser size)
+
+`distill.py` shrinks the teacher into a smaller student. The key lesson:
+
+| Student                        | Params | Synthetic val F1 | Generalisation |
+| ------------------------------ | ------ | ---------------- | -------------- |
+| from-scratch (hidden 312, 4L)  | 20M    | **1.00**         | ❌ garbage — tagged `jobbar`/`innan` as entities |
+| **teacher-init (hidden 768, 6L)** | 82M | 1.00             | ✅ matches teacher (`Thorbjörn Fägerquist`→PER, `Northvolt`→ORG) |
+
+**A from-scratch small student memorises the synthetic templates (F1 1.00) but
+learns nothing transferable** — it lacks the Swedish pretraining that makes the
+teacher generalise. Initialising the student from the teacher's embeddings +
+every-other layer (DistilBERT-style) recovers the quality.
+
+### The size ladder (honest)
+
+| Artifact                         | Size    | Swedish quality |
+| -------------------------------- | ------- | --------------- |
+| KB-BERT fp32 (teacher)           | ~440 MB | best            |
+| teacher int8 ONNX                | 125 MB  | ✅              |
+| **distilled student int8 ONNX**  | **82 MB** | ✅ (≈ teacher) |
+| Rampart (for comparison)         | 15 MB   | ❌ on Swedish   |
+
+82 MB is browser-loadable (cached after first fetch) and **actually good on
+Swedish**, unlike the 15 MB Rampart. Closing the gap to ~15-30 MB further needs
+**vocabulary trimming** (KB-BERT's 50k-token vocab is ~47% of the student's
+params) plus q4 quantization — at some cost to quality. That's the next lever,
+not done here.
 
 On an M4 Pro (MPS) step 3 takes ~8–9 minutes for 3 epochs over 9k examples.
 
