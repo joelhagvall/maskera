@@ -233,19 +233,31 @@ export interface RedactWithNerOptions extends Pick<RedactOptions, "placeholder">
 /**
  * Hybrid redaction: run the deterministic rule detectors AND the NER model,
  * then merge everything through core's stable-placeholder / overlap engine.
- * Rule detections win ties (they're added first and are higher-confidence).
+ *
+ * **Rules win on overlap.** Structured PII (IBAN, card, phone, personnummer…) is
+ * deterministic and authoritative; the model can misread digit groups as
+ * addresses, so any model detection overlapping a rule detection is dropped.
+ * The model only fills the gaps the rules leave (free-text names/places).
  */
 export async function redactWithNer(
   input: string,
   options: RedactWithNerOptions,
 ): Promise<RedactResult> {
   const detectors = options.detectors ?? defaultDetectors
-  const detections: Detection[] = []
+
+  const ruleDetections: Detection[] = []
   for (const detector of detectors) {
     for (const m of detector.detect(input)) {
-      detections.push({ ...m, label: detector.label })
+      ruleDetections.push({ ...m, label: detector.label })
     }
   }
-  detections.push(...(await options.recognizer.detect(input)))
-  return redactFromDetections(input, detections, { placeholder: options.placeholder })
+
+  const modelDetections = await options.recognizer.detect(input)
+  const overlapsRule = (d: Detection) =>
+    ruleDetections.some((r) => d.start < r.end && r.start < d.end)
+  const keptModel = modelDetections.filter((d) => !overlapsRule(d))
+
+  return redactFromDetections(input, [...ruleDetections, ...keptModel], {
+    placeholder: options.placeholder,
+  })
 }
