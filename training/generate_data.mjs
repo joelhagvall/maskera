@@ -653,6 +653,19 @@ const TEMPLATES = [
   "Det var {ORG}, inte {ORG}, som skickade fakturan.",
   "Beställningen från {ORG} kom aldrig fram.",
   "Vi bytte leverantör från {ORG} till {ORG}.",
+  // common non-PII acronyms/terms — must NOT be tagged as ORG (all O)
+  "Sätt in EKG-svar och CRP i journalen.",
+  "Patienten genomgick MR och CT på avdelningen.",
+  "Bifoga ditt CV som PDF till ansökan.",
+  "Ange IBAN och BIC för betalningen.",
+  "Kontrollera moms och OCR på fakturan.",
+  "VAB-ansökan skickas digitalt med BankID.",
+  "Vi följer GDPR och loggar inget i vårt API.",
+  "BMI och blodtryck noterades vid besöket.",
+  "Betala med Swish eller ange OCR-nummer.",
+  "ROT- och RUT-avdrag dras automatiskt.",
+  "Frågor och svar finns under FAQ på sidan.",
+  "Hör av dig till HR eller IT vid problem.",
 ]
 
 function tokenizeFiller(str) {

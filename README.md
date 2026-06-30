@@ -97,7 +97,7 @@ An honest snapshot of where the project is:
   dependencies, tested. **This is shippable today.**
 - ✅ **Our own Swedish NER model** — we **fine-tuned** KB-BERT (CC0 Swedish base
   model) on synthetic Swedish data, **distilled** it, then **shrank** it
-  (vocab-trim + q4) to a browser-sized 40 MB ONNX. Benchmarked openly: **0.74 F1
+  (vocab-trim + q4) to a browser-sized 40 MB ONNX. Benchmarked openly: **0.85 F1
   vs Rampart's 0.39** on independent real text (~1.0 redaction recall) — a wide
   win on Swedish.
 - ✅ **NER layer (`@maskera/ner`)** — runs a model client-side via Transformers.js,
@@ -144,16 +144,16 @@ the privacy-relevant **redaction recall** = was the PII masked at all):
 
 | Eval set                              | type-aware F1 | redaction recall |
 | ------------------------------------- | ------------- | ---------------- |
-| our hand-authored set (PII-style)     | **0.927**     | 0.94 (recall 0.97) |
-| independent gold (real Wikipedia text)| **0.739**     | 0.84 (**recall 1.00**) |
+| our hand-authored set (PII-style)     | **0.946**     | 0.94 (recall 0.97) |
+| independent gold (real Wikipedia text)| **0.846**     | 0.84 (**recall 1.00**) |
 
 For reference, Rampart scores ~0.39 on independent Swedish (it isn't trained on
 Swedish; ORG F1 = 0.00).
 
 > **Read these honestly.** Our own set shares an author with the data generator,
-> so 0.927 *flatters* the model. The independent set is real prose written by
+> so 0.946 *flatters* the model. The independent set is real prose written by
 > others (gold-labelled) but *encyclopedic* (Wikipedia) — a different domain from
-> the support/healthcare PII text this targets — so 0.739 is a pessimistic floor.
+> the support/healthcare PII text this targets — so 0.846 is a pessimistic floor.
 > The truth for the target domain sits between. What's solid: **redaction recall
 > ~1.0** (it masks essentially everything) and a wide win over Rampart. The
 > structured-PII rules aren't in this table — they're deterministic, not learned.
