@@ -32,6 +32,33 @@ on two layers:
    catch (names, places, organisations, addresses). We trained our own, and
    **it beats Rampart on Swedish by a wide margin** (see the benchmark below).
 
+## What's built
+
+An honest snapshot of where the project is:
+
+- ✅ **Rule engine (`@maska/core`)** — built from scratch: regex + Luhn-checksum
+  detectors for structured Swedish PII (personnummer, org-nr, phone, email,
+  IBAN…), plus a redact/restore engine with stable placeholders. Zero
+  dependencies, tested. **This is shippable today.**
+- ✅ **Our own Swedish NER model** — we **fine-tuned** KB-BERT (CC0 Swedish base
+  model) on synthetic Swedish data, then **distilled** it into a browser-sized
+  student (~82 MB int8 ONNX). Benchmarked openly: **0.70 F1 vs Rampart's 0.39**
+  on independent data — a wide win on Swedish.
+- ✅ **NER layer (`@maska/ner`)** — runs a model client-side via Transformers.js,
+  with subword-span reconstruction and the shared placeholder engine.
+- ✅ **Interactive demo** — 10 domains, model always on, live redaction as you type.
+- ✅ **Honesty around it** — reproducible training pipeline, two benchmarks with
+  caveats, a [transparency doc + FAQ](docs/TRANSPARENCY.md), base-model license
+  verified (KB-BERT is CC0), and Hugging Face publishing prepared.
+
+**What we deliberately did _not_ do:** train a language model from scratch (we
+stood on KB-BERT), modify Rampart's weights (we only wrap it as an option), claim
+GDPR compliance, or publish invented benchmark numbers.
+
+**Not done yet:** `@maska/react` / `@maska/node` packages, vocab-trim + q4 toward
+~15-30 MB, a larger independent eval set, and hosting the model on the Hub. See
+[`docs/ROADMAP.md`](docs/ROADMAP.md).
+
 ## Why it exists
 
 > "I want to use AI, but I don't want to send personal data to the model."
