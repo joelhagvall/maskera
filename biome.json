@@ -11,6 +11,8 @@
       "training/student-model",
       "training/onnx-model",
       "training/student-onnx",
+      "training/student-trimmed",
+      "training/student-trimmed-onnx",
       "training/data",
       "apps/demo/public/models"
     ]

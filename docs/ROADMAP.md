@@ -54,11 +54,11 @@ ask — adapters for frameworks nobody uses yet is wasted surface area. If/when:
 - [x] Synthetic Swedish data generator (BIO, GDPR-safe)
 - [x] Fine-tune KB-BERT (PER/LOC/ORG/ADR); structured PII stays with rules
 - [x] Distill to a smaller student (DistilBERT-style, teacher-init)
-- [x] ONNX export + int8 quantization (497 MB → 82 MB → 56 MB vocab-trimmed)
+- [x] ONNX export + quantization (497 MB → 82 MB int8 → 56 MB vocab-trim → 40 MB +q4)
 - [x] Hand-authored Swedish eval set + benchmark harness
 - [x] **Result: student 0.874 F1 vs Rampart 0.621** (overlap, out-of-template)
 - [ ] Grow the eval set + second annotator + real (non-authored) text
-- [x] Vocab trim 50k→16k → 82 MB to 56 MB (−0.04 F1); q4 was a dead end (bigger)
-- [ ] Smaller architecture (fewer layers / MiniLM) toward ~15-30 MB if needed
+- [x] Vocab trim 50k→16k (82→56 MB) + combined q4-matmul/int8-embed (56→40 MB)
+- [ ] Smaller architecture (fewer layers / MiniLM) toward ~15 MB if needed
 - [ ] Host the model and wire it as the Swedish default in `@maskera/ner`
 

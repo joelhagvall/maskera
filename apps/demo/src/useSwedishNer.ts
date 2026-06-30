@@ -59,7 +59,7 @@ export function useSwedishNer(text: string): SwedishNer {
       localModelPath: "/models/",
       allowLocalModels: true,
       allowRemoteModels: false,
-      dtype: "q8",
+      dtype: "q4",
       device: "wasm",
       onProgress: (p) => {
         const prog = p as { status?: string; progress?: number }
