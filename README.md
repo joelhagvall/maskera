@@ -82,8 +82,12 @@ that out-of-domain encyclopedic text (honest domain shift); see
 An interactive playground shows redaction happening **as you type**, across real
 scenarios from healthcare, law, BRF/property, crisis response, HR, support,
 municipality, insurance, banking and schools — toggle the shield on/off to see
-exactly what the AI would otherwise receive, and toggle the NER model on to
-catch free-text names.
+exactly what the AI would otherwise receive.
+
+The Swedish NER model is **always on**: the demo auto-loads it in the browser on
+startup (no toggle). The rule layer works instantly meanwhile, so there's no
+blank wait — once the model finishes loading it takes over free-text name/place/
+org detection seamlessly. Rules and model both run; rules win on overlap.
 
 ```bash
 pnpm install
