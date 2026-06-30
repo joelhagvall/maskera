@@ -2,37 +2,49 @@
 
 # maska
 
-> Swedish-first, client-side PII redaction for AI apps.
+> **Swedish PII redaction, on-device — before your text reaches an LLM, a log, or analytics.**
 
-**maska** ("to mask" in Swedish) detects and redacts personal data **before it
-ever leaves the user's device** — before it hits an LLM, a log line, or an
-analytics event. The rule core is zero-dependency and runs anywhere JavaScript
-runs: the browser, Node, edge runtimes, React Native.
+```bash
+pnpm add @maska/core
+```
 
 ```ts
 import { redact } from "@maska/core"
 
-const { text, restore } = redact(
-  "Jag heter Anna och mitt personnummer är 19900101-0017. Maila anna@example.se.",
-)
-
-text
-// "Jag heter Anna och mitt personnummer är [PERSONNUMMER_1]. Maila [EMAIL_1]."
-
-// Send `text` to your LLM. When it answers using the placeholders, map back:
-restore(llmAnswer) // -> original values re-inserted locally
+redact("Mitt personnummer är 19900101-0017. Maila anna@example.se.").text
+// "Mitt personnummer är [PERSONNUMMER_1]. Maila [EMAIL_1]."
 ```
 
-It was inspired by [Rampart](https://huggingface.co/nationaldesignstudio/rampart)
-(browser-side PII redaction via a small ONNX model), but built **Swedish-first**
-on two layers:
+Zero dependencies. Runs anywhere JavaScript runs. Personnummer, samordningsnummer,
+org-nummer and the rest are checksum-validated, not guessed — and an optional
+Swedish model adds names, places and orgs. **[Live demo →](apps/demo)**
 
-1. **A deterministic rule layer** — personnummer, samordningsnummer,
+### Use it before an LLM call
+
+Redact on the way in, restore on the way out — the model never sees real data,
+your code still gets real answers:
+
+```ts
+import { redact } from "@maska/core"
+
+const { text: safePrompt, restore } = redact(userInput)
+const answer = await llm(safePrompt) // OpenAI / Anthropic / Vercel AI SDK — any
+const result = restore(answer) // placeholders → real values, locally
+```
+
+The same one-liner works before logging or analytics: `logger.info(redact(msg).text)`.
+
+---
+
+Two layers, inspired by [Rampart](https://huggingface.co/nationaldesignstudio/rampart)
+but built **Swedish-first**:
+
+1. **A deterministic rule layer** (`@maska/core`) — personnummer, samordningsnummer,
    organisationsnummer, Swedish phone numbers, postnummer, bankgiro/plusgiro and
    IBAN, all checksum-validated. Zero dependencies, runs everywhere.
-2. **An optional Swedish NER model** — for the free-text entities rules can't
-   catch (names, places, organisations, addresses). We trained our own, and
-   **it beats Rampart on Swedish by a wide margin** (see the benchmark below).
+2. **An optional Swedish NER model** (`@maska/ner`) — for the free-text entities
+   rules can't catch (names, places, organisations, addresses). We trained our
+   own, and **it beats Rampart on Swedish by a wide margin** (benchmark below).
 
 ## What's built
 
