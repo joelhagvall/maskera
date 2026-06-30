@@ -34,6 +34,31 @@ const result = restore(answer) // placeholders → real values, locally
 
 The same one-liner works before logging or analytics: `logger.info(redact(msg).text)`.
 
+<details>
+<summary>Full runnable example (<a href="examples/llm-roundtrip.ts"><code>examples/llm-roundtrip.ts</code></a>)</summary>
+
+```ts
+import { redact } from "@maskera/core"
+
+const userMessage =
+  "Hej, jag heter Anna Karlsson, personnummer 19900101-0017, " +
+  "och jag når er på 070-123 45 67 eller anna@example.se."
+
+const { text, map, restore } = redact(userMessage)
+
+console.log("Sent to LLM:\n", text)
+// Hej, jag heter Anna Karlsson, personnummer [PERSONNUMMER_1],
+// och jag når er på [PHONE_1] eller [EMAIL_1].
+
+// --- pretend this came back from your model ---
+const llmAnswer = "Tack! Jag har noterat [PHONE_1] som kontaktnummer och mejlar [EMAIL_1]."
+
+console.log("\nRestored locally:\n", restore(llmAnswer))
+// Tack! Jag har noterat 070-123 45 67 som kontaktnummer och mejlar anna@example.se.
+```
+
+</details>
+
 ---
 
 Two layers, the same architecture as
