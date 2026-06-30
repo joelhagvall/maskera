@@ -88,7 +88,8 @@ table fp32, which is ~half the model.
    runs in Transformers.js but not in optimum's Python path — fine, the browser
    is the target.)
 
-Net: **82 → 40 MB at 0.817 overlap F1**, still far ahead of Rampart's 0.62.
+Net: **82 → 40 MB at 0.843 overlap F1** (with the v2 diverse dataset), far ahead
+of Rampart's 0.62.
 Going to ~15 MB needs a smaller architecture, where quality starts to cost.
 
 On an M4 Pro (MPS) step 3 takes ~8–9 minutes for 3 epochs over 9k examples.
@@ -128,13 +129,18 @@ type-aware P/R/F1.
 | Model                       | Size   | Overlap F1 | Exact F1 |
 | --------------------------- | ------ | ---------- | -------- |
 | teacher (KB-BERT)           | 440 MB | **0.899**  | 0.851    |
-| student (distilled)         | 82 MB  | 0.874      | 0.798    |
-| student (vocab-trimmed)     | 56 MB  | 0.838      | 0.749    |
-| **student (trim + q4)**     | 40 MB  | **0.817**  | —        |
+| student (vocab-trimmed)     | 56 MB  | **0.852**  | —        |
+| **student (trim + q4) — shipped** | 40 MB | **0.843** | —    |
 | Rampart                     | 15 MB  | 0.621      | 0.494    |
 
-(The 40 MB combined-quant row is measured via Transformers.js on the same gold
-set; the others via the Python harness — numbers are consistent within ~0.01.)
+Numbers above use the **v2 diverse dataset** (see below). The 40/56 MB rows are
+measured via Transformers.js on the gold set; teacher via the Python harness.
+
+**Diverse data helped at every size.** Widening `generate_data.mjs` (90 templates,
+larger gazetteers, varied entity positions, augmentation) lifted the shipped
+40 MB model from **0.817 → 0.843** and the 56 MB from 0.838 → 0.852, *same size* —
+the 40 MB model now even beats the old 56 MB one. Synthetic data is still the
+ceiling; a real labelled Swedish set is the next real gain.
 
 **Per-type F1 (overlap):**
 
