@@ -208,9 +208,9 @@ function reconstruct(
     }
 
     const avg = group.reduce((s, p) => s + p.score, 0) / group.length
-    if (surface && avg >= minScore) {
+    if (surface && avg >= minScore && LETTER.test(surface)) {
       const idx = lower.indexOf(surface.toLowerCase(), cursor)
-      if (idx >= 0) {
+      if (idx >= 0 && isWholeWord(text, idx, idx + surface.length)) {
         const end = idx + surface.length
         const label = labelMap(base)
         if (label) {
@@ -222,6 +222,21 @@ function reconstruct(
     i = j
   }
   return out
+}
+
+const LETTER = /\p{L}/u
+
+/**
+ * The model emits subword pieces, so a fragment can land in the middle of an
+ * ordinary word (e.g. "par" inside "Motpart") or be pure digits ("14:20"). We
+ * only keep spans that sit on word boundaries — the char on each side must not
+ * be a letter — which drops both classes of false positive. Numbers are the
+ * rule layer's job anyway.
+ */
+export function isWholeWord(text: string, start: number, end: number): boolean {
+  const before = text[start - 1] ?? ""
+  const after = text[end] ?? ""
+  return !LETTER.test(before) && !LETTER.test(after)
 }
 
 export interface RedactWithNerOptions extends Pick<RedactOptions, "placeholder"> {

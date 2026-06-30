@@ -177,22 +177,28 @@ eval set (60→121 sentences) barely moved the scores, so the gap is stable. Run
 (Stefan Löfven, Spotify) — **real prose written by others**, hand-labelled
 (gold). It removes WikiANN's silver/noisy-label caveat. PER/LOC/ORG only.
 
-| Model on gold-real (real text) | type-aware F1 | redaction recall |
-| ------------------------------ | ------------- | ---------------- |
-| **maskera (shipped 40 MB)**    | **0.667**     | 0.758 (**recall 1.00**) |
+| Model on gold-real (real text)        | type-aware F1 | redaction recall |
+| ------------------------------------- | ------------- | ---------------- |
+| **maskera (shipped 40 MB pipeline)**  | **0.739**     | 0.84 (**recall 1.00**) |
 
 Two honest reads:
 
-- **type-aware 0.667 confirms the ~0.65 independent number** (WikiANN gave 0.647)
-  — now on *gold* labels, so it's not a silver-noise artefact. The 0.895 on our
-  own set really was home-turf inflation.
-- **redaction recall caught every entity (1.00)** — on this set nothing leaked,
-  the model just over-tags (precision 0.61). For the privacy use case (was the
-  PII masked at all?), that's the number that matters, and it's strong.
+- **type-aware 0.739 is the independent floor on gold labels** — real prose, not a
+  silver-noise artefact. The 0.927 on our own set is home-turf inflation; the
+  target-domain truth sits between.
+- **redaction recall caught every entity (1.00)** — on this set nothing leaked.
+  For the privacy use case (was the PII masked at all?), that's the number that
+  matters, and it's strong.
 
-This is still encyclopedic domain (public figures), not the support/healthcare
-text maskera targets — the true target-domain number needs real user data. But
-it's an honest, independent, gold-labelled floor: **~0.67 type-aware, ~1.0 recall.**
+> **Post-processing precision guard.** `@maskera/ner`'s `reconstruct()` keeps only
+> word-boundary-aligned spans with at least one letter — dropping the model's
+> mid-word fragments (e.g. "par" inside "Motpart") and bare digit groups (numbers
+> are the rule layer's job). This lifted the shipped pipeline **0.895 → 0.927** on
+> our set and **0.667 → 0.739** independent, raising precision with no recall loss.
+
+Still encyclopedic domain (public figures), not the support/healthcare text
+maskera targets — the true target-domain number needs real user data. But it's an
+honest, independent, gold-labelled floor: **~0.74 type-aware, ~1.0 recall.**
 
 ### Independent benchmark (WikiANN, silver)
 
