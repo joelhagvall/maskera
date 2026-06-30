@@ -100,6 +100,31 @@ On an M4 Pro (MPS) step 3 takes ~8–9 minutes for 3 epochs over 9k examples.
 - **Subword spans.** The HF pipeline can split an entity across subword tokens;
   `@maska/ner`'s `reconstruct()` merges them back into one span.
 
+## Benchmark (real eval set)
+
+`evaluate.py` scores models on `eval/gold.txt` — 60 hand-authored Swedish
+sentences (109 entities) deliberately outside the training templates: novel
+names/places/orgs, lowercase, abbreviations, and distractors (personnummer,
+dates) that must not be tagged. Span-level, type-aware P/R/F1.
+
+| Model                     | Size   | Overlap F1 | Exact F1 |
+| ------------------------- | ------ | ---------- | -------- |
+| teacher (KB-BERT)         | 440 MB | **0.906**  | 0.855    |
+| **student (distilled)**   | 82 MB  | **0.884**  | 0.815    |
+| Rampart                   | 15 MB  | 0.652      | 0.578    |
+
+The distilled student beats Rampart by **+23 F1** on Swedish. Rampart's failures
+are concentrated: **ORG F1 = 0.00** (it tags no Swedish organisations — 0/27)
+and **LOC recall = 0.43** (misses/mislabels Swedish places). Run
+`python evaluate.py` to reproduce.
+
+> **Honest caveats.** The eval set is small (60 sentences, single annotator) and
+> shares an author with the data generator — treat it as a strong directional
+> signal, not a definitive number. Some labels are genuinely ambiguous (a
+> hospital as ORG vs LOC). Next: grow the set, add a second annotator, and pull
+> in real (non-authored) Swedish text. The Rampart gap is large and consistent
+> enough to trust the direction.
+
 ## Base model & license
 
 Base: [`KBLab/bert-base-swedish-cased`](https://huggingface.co/KBLab/bert-base-swedish-cased)

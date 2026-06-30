@@ -1,0 +1,71 @@
+# maska Swedish NER gold evaluation set
+#
+# Hand-authored, deliberately OUT of the training-template distribution:
+# novel names/places/orgs not in the generator gazetteers, varied sentence
+# structures, lowercase, abbreviations, multi-clause text, and distractors
+# (personnummer, phone, email, dates, month names) that must NOT be tagged.
+#
+# Markup: [PER:..] person, [LOC:..] place/city/district, [ORG:..] organisation,
+# [ADR:..] street address (street + number). One example per line; blank lines
+# and #-comments ignored.
+
+Enligt anteckningarna skrevs [PER:Thorbjörn Cederström] in på [ORG:Sahlgrenska] i [LOC:Mölndal] den 3 mars.
+vårdnadshavaren [PER:Naveed Chowdhury] ringde och undrade om provsvaren.
+Fakturan skickades till [PER:Ingegerd Påhlsson], [ADR:Klockaregränd 7], [LOC:Hudiksvall].
+Handläggare [PER:Roland Tegnér] avslog ansökan; sökande [PER:Aigerim Bekova] överklagade.
+Vi bokade in ett möte med [ORG:Northvolt] och [ORG:Einride] nästa vecka.
+Patienten är född i [LOC:Piteå] men bor numera på [ADR:Sjötullsgatan 19B] i [LOC:Sandviken].
+hör av dig till [PER:Majlis Eldh] på avdelningen så ordnar hon det.
+[PER:Wei Zhang] började som utvecklare på [ORG:Truecaller] förra månaden.
+Ärendet gäller en tvist mellan [PER:Hjalmar Wallenberg] och [ORG:Norrtälje kommun].
+familjen [PER:Okonkwo] flyttade från [LOC:Tensta] till [ADR:Lärkstigen 4].
+Mötet hålls på [ORG:Karolinska] klockan nio, kontakta [PER:Dagny Forsell] vid frågor.
+Klienten [PER:Sixten Ångström] driver firman [ORG:Smögen Marin AB] i [LOC:Smögen].
+Hennes personnummer är 850623-1235 och hon nås på 070-123 45 67.
+Skicka beslutet till [PER:Priya Nair] som flyttat till [LOC:Lidingö].
+ring [PER:Knut Bjørnstad] innan fredag, han sitter på kontoret i [LOC:Kungälv].
+[ORG:Region Skåne] anlitade konsulten [PER:Mateusz Nowicki] för uppdraget.
+Eleven [PER:Tendai Moyo] i klass 9C har varit frånvarande sedan i måndags.
+Adressen är [ADR:Övre Husargatan 22], [LOC:Majorna], men posten går till boxadressen.
+[PER:Gunhild Romanov] anmälde skadan på sin bil till [ORG:Länsförsäkringar].
+Vi hittade inga uppgifter om [PER:Joaquín Vega] i registret.
+besöket ägde rum i [LOC:Hjärnarp] i januari, inte i februari som angavs.
+Företaget [ORG:Paradox Interactive] har sitt kontor i [LOC:Stockholm].
+Sökanden [PER:Ottilia Cervin] bor på [ADR:Bagaregatan 3] i [LOC:Trosa].
+[PER:Dimitrios Papadopoulos] arbetar deltid på [ORG:Willys] i [LOC:Partille].
+Maila [PER:Vidar Holmlund] på vidar.holmlund@exempel.se så återkommer han.
+Handlingen diariefördes av [ORG:Lantmäteriet] efter samtal med [PER:Birgit Sahlin].
+de bor inte längre i [LOC:Rosengård] utan har flyttat till [LOC:Hökarängen].
+Kontrollen utfördes av inspektör [PER:Helmer Ndlovu] från [ORG:Arbetsmiljöverket].
+Beställningen från [ORG:Mathem] levererades till [ADR:Tegelviksgatan 40].
+[PER:Selma Lagerkvist] undervisar svenska på [ORG:Hvitfeldtska gymnasiet].
+Ett klagomål inkom mot [ORG:Kry] gällande en utebliven återbetalning.
+chauffören [PER:Kwame Mensah] hämtade paketet på [ADR:Industrivägen 12].
+Hon växte upp i [LOC:Fjällbacka] men studerade i [LOC:Lund].
+Avtalet undertecknades av [PER:Yngve Dahlström] och [PER:Eleni Georgiou].
+Reklamationen gäller en produkt köpt hos [ORG:Boozt] i mars.
+Bostaden ligger på [ADR:Pilgatan 8], [LOC:Enköping], nära stationen.
+Polisen söker [PER:Bianca Petrov] som senast setts i [LOC:Flemingsberg].
+[ORG:CSN] skickade ett brev till [PER:Torgny Wikander] om återbetalning.
+glöm inte att ringa [PER:Maj-Britt Sjökvist], hon väntar på besked.
+Verkstaden [ORG:Däckcentralen Arvika AB] reparerade bilen åt [PER:Folke Rydberg].
+Patienten [PER:Ngozi Okafor] remitterades till [ORG:Akademiska sjukhuset] i [LOC:Uppsala].
+Mötet flyttades till [LOC:Sälen] eftersom [PER:Hjördis Aronsson] var sjuk.
+Fastigheten på [ADR:Skomakargatan 5] i [LOC:Visby] såldes i somras.
+[PER:Tobias Fredriksen] sa upp sig från [ORG:Polestar] i [LOC:Göteborg].
+Ansökan avser försörjningsstöd för [PER:Amina Said] och hennes två barn.
+inga personuppgifter får lämnas ut utan samtycke från den registrerade.
+Konsulten fakturerade [ORG:Tullverket] för arbetet i [LOC:Helsingborg].
+Brevet adresserades fel; det skulle till [ADR:Norra Strandgatan 14], inte söder.
+[PER:Sigbritt Lundkvist] klagade på bullret från grannen i [ADR:Repslagargatan 9].
+Vi samarbetar med [ORG:Storytel] och [ORG:Epidemic Sound] kring ljudboken.
+Eleven flyttade till [LOC:Robertsfors] mitt i terminen.
+[PER:Aleksandar Jovanović] registrerade sitt företag hos [ORG:Bolagsverket].
+mötet den 12 december ställdes in på grund av sjukdom.
+Sjuksköterskan [PER:Ulrika Bengtsdotter] noterade förbättring hos patienten.
+Hyresgästen på [ADR:Kvarngatan 2C] i [LOC:Ronneby] har sagt upp avtalet.
+[ORG:Hemnet] visade en lägenhet i [LOC:Vällingby] som intresserade köparen.
+Kontakta [PER:Per-Olof Mellqvist] eller [PER:Saga Thunberg] för mer information.
+Bilen med reg.nr ABC 123 stod parkerad på [ADR:Hamngatan 6] i [LOC:Karlshamn].
+[PER:Leandro Costa] arbetar som tolk åt [ORG:Migrationsverket].
+ingenting i journalen tyder på att [PER:Greta Hammar] varit inlagd tidigare.
