@@ -1,0 +1,6 @@
+# Training artifacts — regenerate locally, don't commit
+.venv/
+model/
+data/
+*.log
+__pycache__/
