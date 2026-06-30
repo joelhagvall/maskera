@@ -1,322 +1,187 @@
 /**
- * Synthetic Swedish PII training data generator.
+ * Synthetic Swedish PII training data generator (v2 — diverse).
  *
  * Emits word-level, BIO-tagged token-classification examples as JSONL:
  *   {"tokens": ["Patient","Anna","Karlsson",...], "tags": ["O","B-PER","I-PER",...]}
  *
- * We only teach the model the FREE-TEXT entities a rule layer can't reliably
- * catch — names, places, organisations, free addresses. Structured PII
+ * Teaches the FREE-TEXT entities a rule layer can't catch — names (PER), places
+ * (LOC), organisations (ORG), street addresses (ADR). Structured PII
  * (personnummer, org-nr, phone, IBAN…) stays with @maskera/core's detectors.
  *
- * Usage: node training/generate_data.mjs [trainCount] [valCount]
+ * v2 widens diversity to improve generalisation: ~90 templates, much larger
+ * gazetteers, entities in varied positions, light augmentation (lowercase start,
+ * dropped punctuation), and more negatives/distractors. The hand-authored eval
+ * set's specific full names are deliberately NOT included here.
+ *
+ * Usage: node generate_data.mjs [trainCount] [valCount]
  */
 import { writeFileSync } from "node:fs"
 
-// --- deterministic RNG so runs are reproducible -------------------------
 let seed = 1337
 const rand = () => {
   seed = (seed * 1103515245 + 12345) & 0x7fffffff
   return seed / 0x7fffffff
 }
-const pick = (arr) => arr[Math.floor(rand() * arr.length)]
+const pick = (a) => a[Math.floor(rand() * a.length)]
 const chance = (p) => rand() < p
 
 // --- gazetteers ---------------------------------------------------------
 const FIRST = [
-  "Anna",
-  "Lars",
-  "Erik",
-  "Maria",
-  "Johan",
-  "Sara",
-  "Björn",
-  "Astrid",
-  "Karin",
-  "Per",
-  "Eva",
-  "Nils",
-  "Lena",
-  "Anders",
-  "Margareta",
-  "Sven",
-  "Elsa",
-  "Oskar",
-  "Greta",
-  "Ingrid",
-  "Gustav",
-  "Linnéa",
-  "Emil",
-  "Stina",
-  "Olof",
-  "Hanna",
-  "Mattias",
-  "Sofia",
-  "Daniel",
-  "Emma",
-  "Henrik",
-  "Klara",
-  "Fredrik",
-  "Alice",
-  "Jonas",
-  "Wilma",
-  "Andreas",
-  "Maja",
-  "Markus",
-  "Ebba",
-  "Pär",
-  "Agnes",
-  "Ali",
-  "Ahmed",
-  "Fatima",
-  "Mohammed",
-  "Aisha",
-  "Hassan",
-  "Leila",
-  "Yusuf",
-  "Omar",
-  "Sofia",
-  "Ivan",
-  "Aleksandra",
-  "Mehmet",
-  "Zara",
-  "Amir",
-  "Nora",
-  "Elias",
-  "Liam",
-  "Astrid",
-  "Hugo",
-  "Selma",
-  "Vera",
-  "Ludvig",
-  "Tuva",
-  "Folke",
-  "Signe",
-  "Börje",
-  "Gunilla",
-  "Ronny",
-  "Siv",
-  "Bengt",
-  "Ulla",
-  "Kjell",
-  "Maj",
-  "Tore",
+  "Anna", "Lars", "Erik", "Maria", "Johan", "Sara", "Björn", "Astrid", "Karin", "Per", "Eva", "Nils",
+  "Lena", "Anders", "Margareta", "Sven", "Elsa", "Oskar", "Greta", "Ingrid", "Gustav", "Linnéa", "Emil",
+  "Stina", "Olof", "Hanna", "Mattias", "Sofia", "Daniel", "Emma", "Henrik", "Klara", "Fredrik", "Alice",
+  "Jonas", "Wilma", "Andreas", "Maja", "Markus", "Ebba", "Pär", "Agnes", "Ali", "Ahmed", "Fatima",
+  "Mohammed", "Aisha", "Hassan", "Leila", "Yusuf", "Omar", "Ivan", "Aleksandra", "Mehmet", "Zara", "Amir",
+  "Nora", "Elias", "Liam", "Hugo", "Vera", "Ludvig", "Tuva", "Folke", "Börje", "Gunilla", "Ronny", "Siv",
+  "Bengt", "Ulla", "Kjell", "Maj", "Tore", "Roland", "Sixten", "Yngve", "Knut", "Dagny", "Helmer",
+  "Torsten", "Majvor", "Rune", "Britt", "Gösta", "Åke", "Inger", "Solveig", "Ragnar", "Vendela", "Algot",
+  "Lovisa", "Teodor", "Valdemar", "Priya", "Wei", "Mateusz", "Tendai", "Kwame", "Ngozi", "Dimitrios",
+  "Eleni", "Bianca", "Joaquín", "Ahmad", "Yara", "Vladyslav", "Émile", "Dragan", "Amani", "Ibrahim",
+  "Wanjiru", "Feliks", "Désirée", "Abdullahi", "Nikola", "Stojan", "Mira", "Olga", "Hiroshi", "Mei",
+  "Sanna", "Tobias", "Cecilia", "Joakim", "Frida", "Viktor", "Amanda", "Robin", "Isabella", "Albin",
+  "Moa", "Felix", "Saga", "Vidar", "Linus", "Tilde", "Melker", "Noa", "Iris", "Ester",
 ]
 const LAST = [
-  "Karlsson",
-  "Eriksson",
-  "Andersson",
-  "Johansson",
-  "Nilsson",
-  "Larsson",
-  "Persson",
-  "Svensson",
-  "Gustafsson",
-  "Pettersson",
-  "Jonsson",
-  "Jansson",
-  "Hansson",
-  "Bengtsson",
-  "Lindberg",
-  "Lindström",
-  "Lindqvist",
-  "Lindgren",
-  "Berg",
-  "Bergström",
-  "Lundberg",
-  "Lundqvist",
-  "Lundgren",
-  "Berggren",
-  "Sandberg",
-  "Holmberg",
-  "Nyström",
-  "Holm",
-  "Öberg",
-  "Wikström",
-  "Isaksson",
-  "Fredriksson",
-  "Bergman",
-  "Forsberg",
-  "Sjöberg",
-  "Ek",
-  "Dahl",
-  "Al-Rashid",
-  "Hassan",
-  "Yilmaz",
-  "Demir",
-  "Nowak",
-  "Ahmadi",
-  "Khan",
-  "Söderberg",
-  "Blom",
+  "Karlsson", "Eriksson", "Andersson", "Johansson", "Nilsson", "Larsson", "Persson", "Svensson",
+  "Gustafsson", "Pettersson", "Jonsson", "Jansson", "Hansson", "Bengtsson", "Lindberg", "Lindström",
+  "Lindqvist", "Lindgren", "Berg", "Bergström", "Lundberg", "Lundqvist", "Lundgren", "Berggren",
+  "Sandberg", "Holmberg", "Nyström", "Holm", "Öberg", "Wikström", "Isaksson", "Fredriksson", "Bergman",
+  "Forsberg", "Sjöberg", "Ek", "Dahl", "Söderberg", "Blom", "Engström", "Eklund", "Lund", "Hedlund",
+  "Sundström", "Norberg", "Ström", "Åberg", "Falk", "Hagström", "Berglund", "Sandström", "Nyberg",
+  "Strandberg", "Holmgren", "Lindholm", "Backman", "Ekström", "Wallin", "Mårtensson", "Abrahamsson",
+  "Al-Rashid", "Hassan", "Yilmaz", "Demir", "Nowak", "Ahmadi", "Khan", "Nguyen", "Tran", "Kowalski",
+  "Petrov", "Ivanov", "Okafor", "Mensah", "Costa", "Silva", "Rossi", "Müller", "Schmidt", "Nakamura",
+  "Kovač", "Haddad", "Saleh", "Aziz", "Tornberg", "Bohlin", "Aronsson", "Bäckström", "Rydberg",
 ]
 const CITIES = [
-  "Stockholm",
-  "Göteborg",
-  "Malmö",
-  "Uppsala",
-  "Västerås",
-  "Örebro",
-  "Linköping",
-  "Helsingborg",
-  "Jönköping",
-  "Norrköping",
-  "Lund",
-  "Umeå",
-  "Gävle",
-  "Borås",
-  "Eskilstuna",
-  "Södertälje",
-  "Karlstad",
-  "Täby",
-  "Växjö",
-  "Halmstad",
-  "Sundsvall",
-  "Luleå",
-  "Trollhättan",
-  "Östersund",
-  "Borlänge",
-  "Falun",
-  "Kalmar",
-  "Kristianstad",
-  "Skövde",
-  "Karlskrona",
-  "Visby",
-  "Kiruna",
-  "Ystad",
-  "Sigtuna",
-  "Mariestad",
+  "Stockholm", "Göteborg", "Malmö", "Uppsala", "Västerås", "Örebro", "Linköping", "Helsingborg",
+  "Jönköping", "Norrköping", "Lund", "Umeå", "Gävle", "Borås", "Eskilstuna", "Södertälje", "Karlstad",
+  "Täby", "Växjö", "Halmstad", "Sundsvall", "Luleå", "Trollhättan", "Östersund", "Borlänge", "Falun",
+  "Kalmar", "Kristianstad", "Skövde", "Karlskrona", "Visby", "Kiruna", "Ystad", "Sigtuna", "Mariestad",
+  "Piteå", "Sandviken", "Hudiksvall", "Enköping", "Lidingö", "Vallentuna", "Åre", "Sälen", "Kungälv",
+  "Alingsås", "Tumba", "Gnesta", "Flen", "Smögen", "Arvika", "Ronneby", "Tranås", "Vimmerby", "Hagfors",
+  "Skellefteå", "Mölndal", "Partille", "Nyköping", "Trosa", "Uddevalla", "Karlshamn", "Strängnäs",
+  "Köping", "Motala", "Nässjö", "Värnamo", "Ängelholm", "Landskrona", "Trelleborg", "Boden", "Härnösand",
+  "Örnsköldsvik", "Avesta", "Ludvika", "Säffle", "Mariefred", "Vänersborg", "Lidköping", "Katrineholm",
 ]
 const DISTRICTS = [
-  "Kungsholmen",
-  "Södermalm",
-  "Östermalm",
-  "Vasastan",
-  "Norrmalm",
-  "Gamla stan",
-  "Hammarby Sjöstad",
-  "Solna",
-  "Sundbyberg",
-  "Nacka",
-  "Hisingen",
-  "Majorna",
-  "Möllevången",
-  "Limhamn",
-  "Gottsunda",
-  "Rosengård",
-  "Bergsjön",
-  "Husby",
+  "Kungsholmen", "Södermalm", "Östermalm", "Vasastan", "Norrmalm", "Gamla stan", "Hammarby Sjöstad",
+  "Solna", "Sundbyberg", "Nacka", "Hisingen", "Majorna", "Möllevången", "Limhamn", "Gottsunda",
+  "Rosengård", "Bergsjön", "Husby", "Vällingby", "Tensta", "Bagarmossen", "Hökarängen", "Skarpnäck",
+  "Flemingsberg", "Bromma", "Liljeholmen",
 ]
 const STREET_STEMS = [
-  "Stor",
-  "Lill",
-  "Norr",
-  "Söder",
-  "Öster",
-  "Väster",
-  "Kyrk",
-  "Skol",
-  "Park",
-  "Berg",
-  "Sjö",
-  "Strand",
-  "Ängs",
-  "Björk",
-  "Ek",
-  "Gran",
-  "Linde",
-  "Ros",
-  "Kungs",
-  "Drottning",
-  "Vasa",
-  "Sankt Erik",
-  "Karla",
-  "Odengatan-",
-  "Industri",
-  "Hamn",
-  "Torg",
-  "Brunns",
-  "Markna",
-  "Köpman",
+  "Stor", "Lill", "Norr", "Söder", "Öster", "Väster", "Kyrk", "Skol", "Park", "Berg", "Sjö", "Strand",
+  "Ängs", "Björk", "Ek", "Gran", "Linde", "Ros", "Kungs", "Drottning", "Vasa", "Karla", "Industri",
+  "Hamn", "Torg", "Brunns", "Köpman", "Fiskar", "Smedje", "Bro", "Kvarn", "Pil", "Lärk", "Apel", "Tall",
+  "Häll", "Klockare", "Bagar", "Repslagar", "Skomakar",
 ]
-const STREET_SUFFIX = ["gatan", "vägen", "gränd", "stigen", "torget", "backen", "allén"]
+const STREET_SUFFIX = ["gatan", "vägen", "gränd", "stigen", "torget", "backen", "allén", "plan", "gränden"]
 const ORGS = [
-  "Volvo",
-  "Ericsson",
-  "Spotify",
-  "IKEA",
-  "H&M",
-  "Scania",
-  "Skanska",
-  "Telia",
-  "Klarna",
-  "SEB",
-  "Swedbank",
-  "Handelsbanken",
-  "ICA",
-  "Coop",
-  "Systembolaget",
-  "Vattenfall",
-  "Sandvik",
-  "Atlas Copco",
-  "Electrolux",
-  "SKF",
-  "Securitas",
-  "Försäkringskassan",
-  "Skatteverket",
-  "Arbetsförmedlingen",
-  "Migrationsverket",
-  "Region Stockholm",
-  "Polismyndigheten",
-  "Kriminalvården",
-  "Trafikverket",
-  "Byggfirman AB",
-  "Nordbygg AB",
-  "Konsult & Partner AB",
-  "Café Lugnet",
-  "Restaurang Sjöboden",
-  "Lindex",
-  "Apoteket",
-  "Postnord",
-  "SAS",
-  "SJ",
+  "Volvo", "Ericsson", "Spotify", "IKEA", "Scania", "Skanska", "Telia", "Klarna", "SEB", "Swedbank",
+  "Handelsbanken", "ICA", "Coop", "Systembolaget", "Vattenfall", "Sandvik", "Atlas Copco", "Electrolux",
+  "Securitas", "Lindex", "Apoteket", "Postnord", "SAS", "SJ", "Northvolt", "Truecaller", "Einride",
+  "Storytel", "Voi", "Tink", "Kry", "Mathem", "Budbee", "Paradox Interactive", "Mojang", "Tobii",
+  "Hemnet", "Blocket", "Boozt", "Polestar", "Embracer", "Willys", "Hemköp", "Lidl", "Åhléns",
+  "Clas Ohlson", "Dustin", "Sinch", "Trustly", "Epidemic Sound", "King", "DICE", "Försäkringskassan",
+  "Skatteverket", "Arbetsförmedlingen", "Migrationsverket", "Polismyndigheten", "Kriminalvården",
+  "Trafikverket", "Lantmäteriet", "Bolagsverket", "Tullverket", "CSN", "Pensionsmyndigheten",
+  "Region Stockholm", "Region Skåne", "Region Halland", "Sahlgrenska", "Karolinska", "Akademiska sjukhuset",
+  "Lunds universitet", "Chalmers", "Folkuniversitetet", "Byggfirman AB", "Nordbygg AB", "Café Lugnet",
+  "Länsförsäkringar", "Folksam", "Trygg-Hansa", "Hedvig", "Capio", "Aleris", "DB Schenker", "DHL",
+  "Norrtälje kommun", "Lidingö stad",
 ]
 
 // --- entity builders ----------------------------------------------------
-const person = () => (chance(0.85) ? `${pick(FIRST)} ${pick(LAST)}` : pick(FIRST))
-const place = () => (chance(0.5) ? pick(CITIES) : pick(DISTRICTS))
+const hyphenFirst = () =>
+  `${pick(FIRST)}-${pick(["Erik", "Marie", "Britt", "Olof", "Lena", "Gustaf", "Louise"])}`
+const person = () => {
+  const r = rand()
+  if (r < 0.12) return pick(FIRST)
+  if (r < 0.22) return `${hyphenFirst()} ${pick(LAST)}`
+  if (r < 0.3) return `${pick(FIRST)} ${pick(LAST)}-${pick(LAST)}`
+  return `${pick(FIRST)} ${pick(LAST)}`
+}
+const place = () => (chance(0.55) ? pick(CITIES) : pick(DISTRICTS))
 const address = () =>
-  `${pick(STREET_STEMS)}${pick(STREET_SUFFIX)} ${1 + Math.floor(rand() * 89)}${chance(0.3) ? pick(["A", "B", "C"]) : ""}`
+  `${pick(STREET_STEMS)}${pick(STREET_SUFFIX)} ${1 + Math.floor(rand() * 119)}${chance(0.25) ? pick(["A", "B", "C", "D"]) : ""}`
 const org = () => pick(ORGS)
 
-// --- templates: parts are strings (filler) or slot markers --------------
 const SLOTS = { PER: person, LOC: place, ORG: org, ADR: address }
 const TEMPLATES = [
   "Patient {PER} inkom akut med bröstsmärta.",
-  "Hej, jag heter {PER} och bor på {ADR} i {LOC}.",
-  "Klienten {PER} företräds av advokat {PER}.",
-  "Ärendet gäller {PER}, boende i {LOC}.",
-  "Min granne {PER} på {ADR} behöver hjälp.",
-  "Kandidaten {PER} har tidigare arbetat på {ORG}.",
-  "{PER} ringde från {LOC} angående sitt ärende.",
-  "Vi skickade fakturan till {PER} på {ADR}.",
-  "Anställd {PER} slutar sin tjänst på {ORG} i {LOC}.",
-  "Vårdnadshavare {PER} kontaktades om eleven {PER}.",
-  "Försäkringstagare {PER} anmälde en skada i {LOC}.",
-  "Mötet hölls på {ORG} med {PER} och {PER}.",
-  "{PER} flyttade från {LOC} till {ADR}.",
-  "Handläggaren {PER} bedömde ansökan från {PER}.",
-  "Familjen {PER} bor på {ADR}, {LOC}.",
-  "Kunden {PER} klagade på leveransen från {ORG}.",
-  "Rapport: {PER} på {ADR} saknar dricksvatten.",
-  "Enligt {PER} hade {ORG} brutit mot avtalet.",
+  "Remiss för {PER} skickas till {ORG} i {LOC}.",
   "Sjuksköterskan {PER} noterade att {PER} mår bättre.",
-  "{ORG} har anställt {PER} som ny chef i {LOC}.",
-  "Brevet adresserades till {PER}, {ADR}, {LOC}.",
-  "Lärare {PER} rapporterade frånvaro för {PER}.",
-  "Polisen sökte {PER} senast sedd i {LOC}.",
+  "{PER} är inskriven på {ORG} sedan i måndags.",
+  "Vårdnadshavare {PER} kontaktades om barnet {PER}.",
+  "Läkaren {PER} på {ORG} ordinerade vila.",
+  "Klienten {PER} företräds av advokat {PER}.",
+  "Tvisten står mellan {PER} och {ORG}.",
+  "Domaren {PER} ajournerade förhandlingen till torsdag.",
+  "Ombudet {PER} begärde uppskov i målet mot {ORG}.",
+  "Enligt {PER} hade {ORG} brutit mot avtalet.",
+  "Min granne {PER} på {ADR} behöver hjälp.",
+  "{PER} bor i lägenheten på {ADR} i {LOC}.",
+  "Felanmälan från {PER}, {ADR}, gäller en vattenläcka.",
+  "Hyresgästen på {ADR} heter {PER}.",
+  "Fastigheten på {ADR} i {LOC} såldes i somras.",
+  "Kandidaten {PER} har tidigare arbetat på {ORG}.",
+  "{PER} söker tjänsten som projektledare på {ORG}.",
+  "Anställd {PER} slutar på {ORG} i {LOC} sista juni.",
+  "Referensen {PER} bekräftade uppgifterna.",
+  "Rekryteraren {PER} intervjuade {PER} i fredags.",
+  "Kunden {PER} klagade på leveransen från {ORG}.",
+  "{PER} hörde av sig om ett trasigt paket från {ORG}.",
+  "Ärendet öppnades av {PER} på {ORG}.",
+  "Återkoppla till {PER} angående beställningen.",
+  "Ansökan om bistånd avser {PER}, boende på {ADR}.",
+  "Handläggaren {PER} bedömde ärendet för {PER}.",
+  "{ORG} beviljade stöd till familjen {PER}.",
+  "Beslutet expedierades till {PER} på {ADR}, {LOC}.",
+  "Försäkringstagare {PER} anmälde en skada i {LOC}.",
+  "{ORG} avslog ersättningskravet från {PER}.",
+  "Skadeanmälan från {PER} gäller bilen.",
+  "Ny kund: {PER}, bosatt på {ADR}.",
+  "{PER} öppnade ett sparkonto hos {ORG}.",
+  "Överföringen från {PER} granskades av {ORG}.",
+  "Eleven {PER} i klass 8B har hög frånvaro.",
+  "Rektorn {PER} tillträder på {ORG} i {LOC}.",
+  "Läraren {PER} rapporterade frånvaro för {PER}.",
+  "Rapport: {PER} på {ADR} saknar dricksvatten.",
+  "{PER} i {LOC} behöver insulin inom sex timmar.",
+  "Polisen söker {PER}, senast sedd i {LOC}.",
+  "Den misstänkte {PER} greps nära {ADR}.",
+  "{PER} uppgav att hen jobbar på {ORG}.",
+  "Chauffören {PER} körde lasten till {LOC}.",
+  "Leveransen till {ADR} hanteras av {ORG}.",
   "Konsulten {PER} fakturerade {ORG} för uppdraget.",
-  "Boende {PER} på {ADR} anmälde en vattenläcka.",
-  // negative / no-entity fillers
+  "{PER} flyttade från {LOC} till {ADR}.",
+  "Brevet adresserades till {PER}, {ADR}, {LOC}.",
+  "Mötet hölls på {ORG} med {PER} och {PER}.",
+  "{ORG} har anställt {PER} som ny chef i {LOC}.",
+  "I {LOC} träffade {PER} sin handläggare {PER}.",
+  "Det var {PER} som skrev under, inte {PER}.",
+  "Tillsammans med {PER} besökte hon {ORG} i {LOC}.",
+  "Hör av dig till {PER} så ordnar {ORG} resten.",
+  "På {ADR} bor numera {PER}.",
+  "Enligt journalen flyttade {PER} till {LOC}.",
+  "Vd:n {PER} presenterade siffrorna för styrelsen.",
+  "Bouppteckningen efter {PER} förrättades av {ORG}.",
+  "Tolken {PER} hjälpte {PER} under mötet.",
+  "{PER} och {PER} delar lägenhet på {ADR}.",
+  "Verkstaden {ORG} reparerade bilen åt {PER}.",
+  "Mormor {PER} bodde länge på {ADR} i {LOC}.",
+  "Utredaren {PER} från {ORG} intervjuade personalen.",
+  "Frakten sköts av {ORG} från terminalen i {LOC}.",
+  "Kontoret ligger på {ADR}, men posten går till boxen.",
+  "{PER}, som arbetar på {ORG}, bekräftade beslutet.",
+  "Vet du om {PER} fortfarande bor i {LOC}?",
+  "kan någon ringa {PER} på {ORG}?",
+  "är det {PER} eller {PER} som ansvarar?",
+  "hörde att {PER} börjat på {ORG}.",
+  "Närvarande: {PER}, {PER} och {PER}.",
+  "Avsändare: {PER}, {ADR}, {LOC}.",
+  "Kontaktperson {PER} ({ORG}).",
   "Ärendet behandlas inom fem arbetsdagar.",
   "Vänligen återkom med kompletterande uppgifter.",
   "Beslutet kan överklagas inom tre veckor.",
@@ -324,9 +189,13 @@ const TEMPLATES = [
   "Mötet är inbokat till nästa torsdag klockan fjorton.",
   "Bifoga gärna relevanta dokument till ansökan.",
   "Vi behandlar din förfrågan så snart som möjligt.",
+  "Fakturan förfaller den sista i månaden.",
+  "Observera att kontoret är stängt över helgen.",
+  "Handläggningstiden är för närvarande cirka två veckor.",
+  "Det regnade hela dagen och tåget var försenat.",
+  "En björn sågs i skogen utanför byn i tisdags.",
 ]
 
-// --- tokenizer for filler text: split words, peel punctuation -----------
 function tokenizeFiller(str) {
   const out = []
   for (const raw of str.trim().split(/\s+/)) {
@@ -344,18 +213,16 @@ function buildExample() {
   const template = pick(TEMPLATES)
   const tokens = []
   const tags = []
-  // split template into filler and {SLOT} segments
-  const parts = template.split(/(\{[A-Z]+\})/)
-  for (const part of parts) {
+  for (const part of template.split(/(\{[A-Z]+\})/)) {
     const slot = part.match(/^\{([A-Z]+)\}$/)
     if (slot) {
       const type = slot[1]
-      const value = SLOTS[type]()
-      const words = value.split(/\s+/)
-      words.forEach((w, idx) => {
-        tokens.push(w)
-        tags.push(`${idx === 0 ? "B" : "I"}-${type}`)
-      })
+      SLOTS[type]()
+        .split(/\s+/)
+        .forEach((w, idx) => {
+          tokens.push(w)
+          tags.push(`${idx === 0 ? "B" : "I"}-${type}`)
+        })
     } else if (part) {
       for (const t of tokenizeFiller(part)) {
         tokens.push(t)
@@ -363,12 +230,19 @@ function buildExample() {
       }
     }
   }
+  // light augmentation for robustness
+  if (tokens.length) {
+    if (chance(0.2) && tags[0] === "O") tokens[0] = tokens[0].toLowerCase()
+    if (chance(0.25) && /^[.!?]$/.test(tokens[tokens.length - 1])) {
+      tokens.pop()
+      tags.pop()
+    }
+  }
   return { tokens, tags }
 }
 
-// --- main ---------------------------------------------------------------
-const trainCount = Number(process.argv[2] ?? 9000)
-const valCount = Number(process.argv[3] ?? 1000)
+const trainCount = Number(process.argv[2] ?? 24000)
+const valCount = Number(process.argv[3] ?? 2000)
 
 function writeSet(path, n) {
   const lines = []
@@ -380,10 +254,9 @@ const dir = new URL("./data/", import.meta.url)
 writeSet(new URL("train.jsonl", dir), trainCount)
 writeSet(new URL("val.jsonl", dir), valCount)
 
-// quick stats
 const sample = buildExample()
-console.log(`Wrote ${trainCount} train + ${valCount} val examples to training/data/`)
-console.log("Sample:")
-console.log("  tokens:", sample.tokens.join(" "))
-console.log("  tags:  ", sample.tags.join(" "))
-console.log("Labels: O, B/I-PER, B/I-LOC, B/I-ORG, B/I-ADR")
+console.log(`Wrote ${trainCount} train + ${valCount} val examples`)
+console.log(
+  `Gazetteers: ${FIRST.length} first, ${LAST.length} last, ${CITIES.length} cities, ${ORGS.length} orgs, ${TEMPLATES.length} templates`,
+)
+console.log("Sample:", sample.tokens.join(" "))

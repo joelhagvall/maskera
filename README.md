@@ -100,8 +100,8 @@ tagged. Span-level, type-aware F1 (see [`training/`](training/)).
 | ---------------------------------- | ------ | ---------- | -------- |
 | maskera teacher (KB-BERT)          | 440 MB | **0.899**  | 0.851    |
 | maskera student (distilled)        | 82 MB  | 0.874      | 0.798    |
-| maskera student (trimmed)          | 56 MB  | 0.838      | 0.749    |
-| **maskera student (shipped, trim + q4)** | 40 MB | 0.817 | —     |
+| maskera student (trimmed)          | 56 MB  | 0.852      | —        |
+| **maskera student (shipped, trim + q4)** | 40 MB | 0.843 | —     |
 | Rampart                            | 15 MB  | 0.621      | 0.494    |
 
 Per-type F1 (overlap): the student scores PER 0.91 / LOC 0.90 / ORG 0.81 /
