@@ -1,15 +1,15 @@
-<img src="logo.svg" alt="maska" width="56" align="left" />
+<img src="logo.svg" alt="maskera" width="56" align="left" />
 
-# maska
+# maskera
 
 > **Swedish PII redaction, on-device — before your text reaches an LLM, a log, or analytics.**
 
 ```bash
-pnpm add @maska/core
+pnpm add @maskera/core
 ```
 
 ```ts
-import { redact } from "@maska/core"
+import { redact } from "@maskera/core"
 
 redact("Mitt personnummer är 19900101-0017. Maila anna@example.se.").text
 // "Mitt personnummer är [PERSONNUMMER_1]. Maila [EMAIL_1]."
@@ -25,7 +25,7 @@ Redact on the way in, restore on the way out — the model never sees real data,
 your code still gets real answers:
 
 ```ts
-import { redact } from "@maska/core"
+import { redact } from "@maskera/core"
 
 const { text: safePrompt, restore } = redact(userInput)
 const answer = await llm(safePrompt) // OpenAI / Anthropic / Vercel AI SDK — any
@@ -39,10 +39,10 @@ The same one-liner works before logging or analytics: `logger.info(redact(msg).t
 Two layers, inspired by [Rampart](https://huggingface.co/nationaldesignstudio/rampart)
 but built **Swedish-first**:
 
-1. **A deterministic rule layer** (`@maska/core`) — personnummer, samordningsnummer,
+1. **A deterministic rule layer** (`@maskera/core`) — personnummer, samordningsnummer,
    organisationsnummer, Swedish phone numbers, postnummer, bankgiro/plusgiro and
    IBAN, all checksum-validated. Zero dependencies, runs everywhere.
-2. **An optional Swedish NER model** (`@maska/ner`) — for the free-text entities
+2. **An optional Swedish NER model** (`@maskera/ner`) — for the free-text entities
    rules can't catch (names, places, organisations, addresses). We trained our
    own, and **it beats Rampart on Swedish by a wide margin** (benchmark below).
 
@@ -50,7 +50,7 @@ but built **Swedish-first**:
 
 An honest snapshot of where the project is:
 
-- ✅ **Rule engine (`@maska/core`)** — built from scratch: regex + Luhn-checksum
+- ✅ **Rule engine (`@maskera/core`)** — built from scratch: regex + Luhn-checksum
   detectors for structured Swedish PII (personnummer, org-nr, phone, email,
   IBAN…), plus a redact/restore engine with stable placeholders. Zero
   dependencies, tested. **This is shippable today.**
@@ -58,7 +58,7 @@ An honest snapshot of where the project is:
   model) on synthetic Swedish data, then **distilled** it into a browser-sized
   student (~82 MB int8 ONNX). Benchmarked openly: **0.70 F1 vs Rampart's 0.39**
   on independent data — a wide win on Swedish.
-- ✅ **NER layer (`@maska/ner`)** — runs a model client-side via Transformers.js,
+- ✅ **NER layer (`@maskera/ner`)** — runs a model client-side via Transformers.js,
   with subword-span reconstruction and the shared placeholder engine.
 - ✅ **Interactive demo** — 10 domains, model always on, live redaction as you type.
 - ✅ **Honesty around it** — reproducible training pipeline, two benchmarks with
@@ -70,8 +70,8 @@ stood on KB-BERT), modify Rampart's weights (we only wrap it as an option), clai
 GDPR compliance, or publish invented benchmark numbers.
 
 **Not done yet:** vocab-trim + q4 toward ~15-30 MB, a larger independent eval
-set, and hosting the model on the Hub. Framework wrappers (`@maska/node`,
-`@maska/react`) are intentionally **demand-driven** — built when users ask, not
+set, and hosting the model on the Hub. Framework wrappers (`@maskera/node`,
+`@maskera/react`) are intentionally **demand-driven** — built when users ask, not
 speculatively. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Why it exists
@@ -80,7 +80,7 @@ speculatively. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 That single sentence is the whole pitch. It's the blocker for municipalities,
 healthcare, insurance, law firms, HR tools, customer support, and BRF platforms.
-maska turns it into one function call you run **on the client**, so the sensitive
+maskera turns it into one function call you run **on the client**, so the sensitive
 values never travel.
 
 - **Privacy before the LLM** — strip PII from prompts, keep the meaning.
@@ -98,8 +98,8 @@ tagged. Span-level, type-aware F1 (see [`training/`](training/)).
 
 | Model                       | Size   | Overlap F1 | Exact F1 |
 | --------------------------- | ------ | ---------- | -------- |
-| maska teacher (KB-BERT)     | 440 MB | **0.899**  | 0.851    |
-| **maska student (distilled)** | 82 MB | **0.874** | 0.798    |
+| maskera teacher (KB-BERT)     | 440 MB | **0.899**  | 0.851    |
+| **maskera student (distilled)** | 82 MB | **0.874** | 0.798    |
 | Rampart                     | 15 MB  | 0.621      | 0.494    |
 
 Per-type F1 (overlap): the student scores PER 0.91 / LOC 0.90 / ORG 0.81 /
@@ -142,30 +142,30 @@ This is a pnpm monorepo.
 
 | Package          | Status          | What it does                                          |
 | ---------------- | --------------- | ----------------------------------------------------- |
-| `@maska/core`    | ✅ ready        | Zero-dep Swedish PII detectors + redact/restore engine |
-| `@maska/ner`     | 🧪 experimental | Opt-in ONNX/Transformers.js NER for free-text names/places |
-| `@maska/node`    | ⏳ on demand    | Express middleware + AI-SDK wrappers — built when users ask |
-| `@maska/react`   | ⏳ on demand    | `usePrivacyGuard()` hook + `<RedactedInput />` — if there's pull |
+| `@maskera/core`    | ✅ ready        | Zero-dep Swedish PII detectors + redact/restore engine |
+| `@maskera/ner`     | 🧪 experimental | Opt-in ONNX/Transformers.js NER for free-text names/places |
+| `@maskera/node`    | ⏳ on demand    | Express middleware + AI-SDK wrappers — built when users ask |
+| `@maskera/react`   | ⏳ on demand    | `usePrivacyGuard()` hook + `<RedactedInput />` — if there's pull |
 
-> `@maska/core` already runs in React and Node today (it's just functions), so
+> `@maskera/core` already runs in React and Node today (it's just functions), so
 > the wrappers are DX conveniences, not capability — we build them when real
 > demand appears, not speculatively.
 
 ```
-maska/
+maskera/
 ├── packages/
-│   ├── core/        @maska/core — rules + redact/restore engine (shippable today)
-│   └── ner/         @maska/ner  — Transformers.js NER layer (Rampart or our model)
+│   ├── core/        @maskera/core — rules + redact/restore engine (shippable today)
+│   └── ner/         @maskera/ner  — Transformers.js NER layer (Rampart or our model)
 ├── apps/
 │   └── demo/        interactive live-redaction playground (Vite + React)
 ├── training/        Swedish NER: data gen, fine-tune, distill, ONNX, benchmark
 └── docs/ROADMAP.md  the plan
 ```
 
-## `@maska/core` — the rule layer
+## `@maskera/core` — the rule layer
 
 ```bash
-pnpm add @maska/core
+pnpm add @maskera/core
 ```
 
 Built-in detectors, all checksum-validated where a checksum exists:
@@ -186,7 +186,7 @@ Built-in detectors, all checksum-validated where a checksum exists:
 ### Custom detectors
 
 ```ts
-import { redact, regexDetector } from "@maska/core"
+import { redact, regexDetector } from "@maskera/core"
 
 const apartment = regexDetector("LAGENHETSNUMMER", /\blgh\s?\d{4}\b/gi)
 
@@ -203,18 +203,18 @@ redact("Bor i lgh 1203.", { detectors: [apartment] }).text
 - `defaultDetectors`, plus every detector individually
 - validators: `luhnValid`, `isPersonnummer`, `isSamordningsnummer`, `isOrganisationsnummer`
 
-## `@maska/ner` — the model layer (optional)
+## `@maskera/ner` — the model layer (optional)
 
 Adds free-text entities (names, places, orgs) via a Transformers.js model that
 runs client-side. The ML runtime is an optional peer dependency, so
-`@maska/core` stays zero-dependency.
+`@maskera/core` stays zero-dependency.
 
 ```bash
-pnpm add @maska/ner @huggingface/transformers
+pnpm add @maskera/ner @huggingface/transformers
 ```
 
 ```ts
-import { createNerRecognizer, redactWithNer } from "@maska/ner"
+import { createNerRecognizer, redactWithNer } from "@maskera/ner"
 
 const recognizer = createNerRecognizer() // pass { model } to use our Swedish model
 await recognizer.ready
@@ -250,7 +250,7 @@ pnpm lint       # biome
 
 ## Transparency & privacy
 
-Since maska is a privacy tool, it's explicit about its own workings:
+Since maskera is a privacy tool, it's explicit about its own workings:
 **redaction runs 100% on-device, nothing is sent anywhere, no telemetry**, and the
 model was trained on **fully synthetic data — no real PII, no scraping.** The only
 network calls are a one-time fetch of model weights/runtime (never your text), and
@@ -259,7 +259,7 @@ everything is reproducible and self-hostable. Full details + FAQ:
 
 ## A note on guarantees
 
-maska is **defense in depth, not a guarantee**. Regex + checksums catch
+maskera is **defense in depth, not a guarantee**. Regex + checksums catch
 structured data reliably; the NER layer catches most free-text names/places but
 no model is perfect. Treat it as a strong first line — keep server-side controls
 too. It is a data-minimisation aid, **not** a compliance guarantee.

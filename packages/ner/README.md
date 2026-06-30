@@ -1,25 +1,25 @@
-# @maska/ner
+# @maskera/ner
 
 > **Experimental / opt-in.** ONNX + Transformers.js NER layer for
-> [maska](https://github.com/joelhagvall/maska).
+> [maskera](https://github.com/joelhagvall/maskera).
 
-The rule layer in `@maska/core` nails *structured* PII (personnummer, org-nr,
+The rule layer in `@maskera/core` nails *structured* PII (personnummer, org-nr,
 phone, …). This package adds the part regex can't do: **free-text names, places
 and organisations** ("min granne Lars på våning 4"), using a small
 token-classification model that runs **client-side** via Transformers.js
 (WASM/WebGPU).
 
-It's a separate package on purpose — `@maska/core` stays zero-dependency. The ML
+It's a separate package on purpose — `@maskera/core` stays zero-dependency. The ML
 runtime is an **optional peer dependency** you install only if you use this.
 
 ```bash
-pnpm add @maska/ner @huggingface/transformers
+pnpm add @maskera/ner @huggingface/transformers
 ```
 
 ## Usage
 
 ```ts
-import { createNerRecognizer, redactWithNer } from "@maska/ner"
+import { createNerRecognizer, redactWithNer } from "@maskera/ner"
 
 const recognizer = createNerRecognizer() // downloads the model on first use
 await recognizer.ready

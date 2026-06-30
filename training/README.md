@@ -1,9 +1,9 @@
-# maska — Swedish NER training
+# maskera — Swedish NER training
 
 Fine-tunes a Swedish token-classification model for the free-text entities the
 rule layer can't catch: **PER** (person), **LOC** (place), **ORG**
 (organisation), **ADR** (street address). Structured PII (personnummer, org-nr,
-phone, IBAN…) stays with `@maska/core`'s deterministic detectors.
+phone, IBAN…) stays with `@maskera/core`'s deterministic detectors.
 
 ## Why a Swedish model
 
@@ -43,7 +43,7 @@ uv run python export_onnx.py     # -> onnx-model/onnx/model_quantized.onnx
 | int8 ONNX  | ~125 MB (4× smaller) |
 
 Quality is preserved through quantization (verified on held-out sentences). The
-int8 model runs through `@maska/ner` end-to-end — model entities (PER/LOC/ORG/
+int8 model runs through `@maskera/ner` end-to-end — model entities (PER/LOC/ORG/
 ADR) plus the rule layer's structured PII, merged by the stable-placeholder
 engine.
 
@@ -96,9 +96,9 @@ On an M4 Pro (MPS) step 3 takes ~8–9 minutes for 3 epochs over 9k examples.
   and ideally a small *real* Swedish eval set before trusting precision/recall.
 - **Size.** The base is KB-BERT (~110M params, ~440 MB fp32) — great for quality
   but far from the ~15 MB browser target. Next: export to ONNX, quantize (int8 /
-  q4), and/or **distil into a small 6-layer student** so it fits `@maska/ner`.
+  q4), and/or **distil into a small 6-layer student** so it fits `@maskera/ner`.
 - **Subword spans.** The HF pipeline can split an entity across subword tokens;
-  `@maska/ner`'s `reconstruct()` merges them back into one span.
+  `@maskera/ner`'s `reconstruct()` merges them back into one span.
 
 ## Benchmark (real eval set)
 
@@ -163,13 +163,13 @@ reproduce.
 
 ## Publish to Hugging Face (single hosted source)
 
-Hosting the model once means the demo and every future `@maska` package point at
-the same place — `createNerRecognizer({ model: MASKA_SV_NER_MODEL, dtype: "q8" })`.
+Hosting the model once means the demo and every future `@maskera` package point at
+the same place — `createNerRecognizer({ model: MASKERA_SV_NER_MODEL, dtype: "q8" })`.
 
 ```bash
 uv pip install huggingface_hub
 huggingface-cli login                 # or export HF_TOKEN=...
-uv run python push_to_hub.py joelhagvall/maska-sv-ner   # use your HF username
+uv run python push_to_hub.py joelhagvall/maskera-sv-ner   # use your HF username
 ```
 
 `push_to_hub.py` uploads `student-onnx/` (int8 ONNX + tokenizer + config) with

@@ -1,5 +1,5 @@
 import { GITHUB } from "../constants"
-import { ArrowUpRightIcon, MaskaMark } from "../icons"
+import { ArrowUpRightIcon, MaskeraMark } from "../icons"
 
 export function Transparency({ onBack }: { onBack: () => void }) {
   return (
@@ -9,22 +9,22 @@ export function Transparency({ onBack }: { onBack: () => void }) {
           ← Tillbaka till demon
         </button>
         <span className="wordmark">
-          <MaskaMark size={20} />
-          maska
+          <MaskeraMark size={20} />
+          maskera
         </span>
       </div>
 
       <article className="prose">
         <h1>Integritet & transparens</h1>
         <p className="prose-lede">
-          maska är ett integritetsverktyg, så det bör vara ärligt om sig självt. Här är vad det gör,
-          hur det funkar, hur modellen tränats, och var gränserna går.
+          maskera är ett integritetsverktyg, så det bör vara ärligt om sig självt. Här är vad det
+          gör, hur det funkar, hur modellen tränats, och var gränserna går.
         </p>
 
         <h2>Hur funkar det?</h2>
         <ul>
           <li>
-            maska läser texten och ersätter personuppgifter med platshållare, t.ex.{" "}
+            maskera läser texten och ersätter personuppgifter med platshållare, t.ex.{" "}
             <code>[NAMN_1]</code> eller <code>[PERSONNUMMER_1]</code>. AI-tjänsten får bara
             platshållarna — du kan sätta tillbaka originalen lokalt efteråt.
           </li>
@@ -50,7 +50,7 @@ export function Transparency({ onBack }: { onBack: () => void }) {
         <ul>
           <li>
             <strong>All maskning sker på din enhet</strong> — i webbläsaren (WASM/WebGPU) eller i
-            din Node-process. Din text skickas <strong>aldrig</strong> någonstans för att maskas.
+            din Node-process. Din text skickas <strong>aldrig</strong> någonstans för att maskeras.
           </li>
           <li>
             <strong>Ingen telemetri, ingen analytics, ingen phone-home.</strong> Du kan verifiera
@@ -64,8 +64,8 @@ export function Transparency({ onBack }: { onBack: () => void }) {
             noll externa anrop? Self-hosta modellen och runtimen.
           </li>
           <li>
-            Regel-lagret (<code>@maska/core</code>) har <strong>inga nätverksberoenden alls</strong>{" "}
-            och ingen modell — rena funktioner.
+            Regel-lagret (<code>@maskera/core</code>) har{" "}
+            <strong>inga nätverksberoenden alls</strong> och ingen modell — rena funktioner.
           </li>
         </ul>
 
@@ -100,8 +100,8 @@ export function Transparency({ onBack }: { onBack: () => void }) {
             server-side-kontroller.
           </li>
           <li>
-            maska är ett <strong>data-minimerings­verktyg</strong> som stödjer GDPR-mål, men det är{" "}
-            <strong>ingen efterlevnadsgaranti</strong> och gör inga juridiska påståenden — du är
+            maskera är ett <strong>data-minimerings­verktyg</strong> som stödjer GDPR-mål, men det
+            är <strong>ingen efterlevnadsgaranti</strong> och gör inga juridiska påståenden — du är
             fortsatt personuppgiftsansvarig.
           </li>
         </ul>

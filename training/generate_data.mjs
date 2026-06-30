@@ -6,7 +6,7 @@
  *
  * We only teach the model the FREE-TEXT entities a rule layer can't reliably
  * catch — names, places, organisations, free addresses. Structured PII
- * (personnummer, org-nr, phone, IBAN…) stays with @maska/core's detectors.
+ * (personnummer, org-nr, phone, IBAN…) stays with @maskera/core's detectors.
  *
  * Usage: node training/generate_data.mjs [trainCount] [valCount]
  */

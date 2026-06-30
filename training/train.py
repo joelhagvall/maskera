@@ -1,8 +1,8 @@
 """
-Fine-tune a Swedish token-classification model for maska's NER layer.
+Fine-tune a Swedish token-classification model for maskera's NER layer.
 
 Teaches free-text entities (PER/LOC/ORG/ADR) on synthetic Swedish data.
-Structured PII stays with @maska/core's rule detectors.
+Structured PII stays with @maskera/core's rule detectors.
 
 Runs on Apple Silicon (MPS), CUDA, or CPU automatically.
 

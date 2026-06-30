@@ -53,7 +53,7 @@ def parse_gold(path):
 
 
 def merge_spans(spans):
-    """Merge adjacent same-type spans, mirroring @maska/ner's reconstruct():
+    """Merge adjacent same-type spans, mirroring @maskera/ner's reconstruct():
     the HF pipeline can split one entity across subword fragments."""
     out = []
     for s in sorted(spans):

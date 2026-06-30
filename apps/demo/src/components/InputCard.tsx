@@ -1,4 +1,4 @@
-import type { Redaction } from "@maska/core"
+import type { Redaction } from "@maskera/core"
 import { useRef } from "react"
 import { PencilIcon } from "../icons"
 import { HighlightedText } from "../segments"

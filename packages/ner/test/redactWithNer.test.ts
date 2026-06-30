@@ -1,4 +1,4 @@
-import type { Detection } from "@maska/core"
+import type { Detection } from "@maskera/core"
 import { describe, expect, it } from "vitest"
 import { type NerRecognizer, redactWithNer } from "../src/index"
 

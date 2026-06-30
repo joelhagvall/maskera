@@ -1,6 +1,6 @@
 """
 Publish the distilled Swedish NER model to the Hugging Face Hub, so the demo and
-all future @maska packages can point at one hosted source.
+all future @maskera packages can point at one hosted source.
 
 Prereqs:
     uv pip install huggingface_hub
@@ -8,7 +8,7 @@ Prereqs:
 
 Usage:
     uv run python push_to_hub.py [repo_id]
-    # default repo_id: joelhagvall/maska-sv-ner  (change to your HF username)
+    # default repo_id: joelhagvall/maskera-sv-ner  (change to your HF username)
 
 Uploads the contents of ./student-onnx (ONNX weights + tokenizer + config) plus
 MODEL_CARD.md as the repo README. Run export_onnx.py first to produce student-onnx.
@@ -19,7 +19,7 @@ import sys
 
 from huggingface_hub import HfApi
 
-REPO_ID = sys.argv[1] if len(sys.argv) > 1 else "joelhagvall/maska-sv-ner"
+REPO_ID = sys.argv[1] if len(sys.argv) > 1 else "joelhagvall/maskera-sv-ner"
 SRC = "student-onnx"
 
 if not os.path.isdir(SRC):
@@ -41,7 +41,7 @@ api.upload_folder(
     repo_id=REPO_ID,
     repo_type="model",
     ignore_patterns=ignore,
-    commit_message="Upload maska-sv-ner (distilled Swedish PII NER, int8 ONNX)",
+    commit_message="Upload maskera-sv-ner (distilled Swedish PII NER, int8 ONNX)",
 )
 print(f"== done: https://huggingface.co/{REPO_ID} ==")
-print("Now point @maska/ner at it: createNerRecognizer({ model: '" + REPO_ID + "', dtype: 'q8' })")
+print("Now point @maskera/ner at it: createNerRecognizer({ model: '" + REPO_ID + "', dtype: 'q8' })")

@@ -1,4 +1,4 @@
-import type { Redaction } from "@maska/core"
+import type { Redaction } from "@maskera/core"
 import type { ReactNode } from "react"
 import { labelMeta } from "./labels"
 
