@@ -32,7 +32,7 @@ const MODEL_PATH = process.env.MASKERA_MODEL_PATH
 const DTYPE = process.env.MASKERA_DTYPE ?? "q4"
 
 function skip(reason) {
-  console.log(`\n⏭  eval skipped — ${reason}`)
+  console.log(`\n⏭  eval skipped: ${reason}`)
   console.log("   (eval is opt-in until the model is published; this is not a failure)\n")
   process.exit(0)
 }
@@ -49,7 +49,7 @@ let createNerRecognizer
 try {
   ;({ createNerRecognizer } = await import("@maskera/ner"))
 } catch {
-  skip('could not import "@maskera/ner" — run `pnpm -C packages/ner build` first')
+  skip('could not import "@maskera/ner": run `pnpm -C packages/ner build` first')
 }
 
 if (!MODEL_PATH) {

@@ -17,7 +17,7 @@ import { redact } from "../src/index"
  */
 
 interface LeakCase {
-  /** Where this came from — issue link, user report, demo session, etc. */
+  /** Where this came from, issue link, user report, demo session, etc. */
   note: string
   input: string
   /** Substrings that must NOT appear in the redacted output. */
@@ -38,7 +38,7 @@ const CASES: LeakCase[] = [
     mustRedact: ["199001010017"],
   },
   {
-    note: "IBAN with spaces — the whole account, not just chunks",
+    note: "IBAN with spaces, the whole account, not just chunks",
     input: "Lön till SE45 5000 0000 0583 9825 7466 den 25:e.",
     mustRedact: ["SE45 5000 0000 0583 9825 7466"],
   },

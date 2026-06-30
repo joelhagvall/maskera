@@ -3,13 +3,13 @@ import { corpus } from "../eval/corpus.mjs"
 import { aggregate, evaluate, resolveSpans, scoreDocument } from "../eval/score.mjs"
 
 /**
- * These tests do NOT load the model — they run in CI with no dependencies.
+ * These tests do NOT load the model, they run in CI with no dependencies.
  * They guarantee two things:
  *   1. the gold corpus is internally consistent (every annotated span resolves),
  *   2. the scoring logic is correct (so the F1 numbers it reports can be trusted).
  *
  * The actual model grading lives in ../eval/run-eval.mjs and is opt-in until the
- * Swedish model is published — see that file's header.
+ * Swedish model is published, see that file's header.
  */
 
 describe("eval corpus integrity", () => {
@@ -129,7 +129,7 @@ describe("aggregate", () => {
 
 describe("evaluate (end-to-end with a stub recognizer)", () => {
   it("a perfect recognizer scores F1 = 1 and zero leaks on the real corpus", () => {
-    // Stub that 'knows' the gold answers — proves the harness wiring is correct.
+    // Stub that 'knows' the gold answers, proves the harness wiring is correct.
     const perfect = (text: string) => {
       const doc = corpus.find((d) => d.text === text)
       return doc ? resolveSpans(doc.text, doc.entities) : []

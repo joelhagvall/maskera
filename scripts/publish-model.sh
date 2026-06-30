@@ -6,7 +6,7 @@
 # This assembles a clean staging directory in the Transformers.js layout
 # (root config/tokenizer + onnx/ with all three quantizations) plus the model
 # card and NOTICE, then uploads it. The HF CLI handles large files (LFS)
-# automatically — no git-lfs needed.
+# automatically, no git-lfs needed.
 #
 # Prereqs (one-time):
 #   pip install -U "huggingface_hub[cli]"
@@ -46,7 +46,7 @@ echo "==> Staging contents:"
 ( cd "$STAGE" && find . -type f -exec du -h {} + | sort -k2 )
 
 if [ "${DRY_RUN:-0}" = "1" ]; then
-  echo "==> DRY_RUN set — staging built, skipping upload."
+  echo "==> DRY_RUN set, staging built, skipping upload."
   echo "    Review $STAGE, then run without DRY_RUN to publish."
   exit 0
 fi
