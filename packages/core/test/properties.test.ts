@@ -9,7 +9,7 @@ import { redact } from "../src/index"
  * Inputs are built by interleaving random bracket-free "filler" prose with real
  * PII values drawn from a pool. Bracket-free filler matters: placeholder tokens
  * look like `[EMAIL_1]`, so by keeping `[`/`]` out of the surrounding text we
- * guarantee a token can never collide with untouched prose — which is the only
+ * guarantee a token can never collide with untouched prose, which is the only
  * way round-trip restoration could legitimately fail.
  */
 
@@ -25,7 +25,7 @@ const PII_POOL = [
   "https://example.se/path", // URL
 ]
 
-// Filler made only of letters and spaces — never produces brackets or digits,
+// Filler made only of letters and spaces, never produces brackets or digits,
 // so it can't accidentally form a placeholder token or a new PII match.
 const fillerArb = fc
   .array(fc.constantFrom(..."abcdefghijklmnopqrstuvwxyzåäöABCDEFGHIJKLMNOPQRST   "), {
