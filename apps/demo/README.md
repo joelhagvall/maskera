@@ -9,15 +9,19 @@ pnpm demo        # from repo root, opens http://localhost:5180
 
 ## How it works
 
-- **Always on:** the `@maska/core` rule layer redacts structured PII
+- **Rule layer (instant, always on):** `@maska/core` redacts structured PII
   (personnummer, org-nr, phone, email, IBAN…) — deterministic and instant.
-- **Off-state names:** a small offline gazetteer tags common Swedish names so the
-  demo redacts names with zero download.
-- **"Svensk NER-modell" toggle:** loads **our distilled Swedish model**
-  (~80 MB int8) in the browser via `@maska/ner` + Transformers.js, and replaces
-  the gazetteer — the model handles arbitrary names / places / orgs / addresses
-  while the rules keep handling structured IDs. This is the hybrid:
-  **rules for structured PII, model for free text.**
+- **Swedish NER model (always on, auto-loaded):** on page load the demo
+  immediately starts loading **our distilled Swedish model** (~80 MB int8) in the
+  browser via `@maska/ner` + Transformers.js. There is **no toggle** — the model
+  is part of the product, not an opt-in. While it loads (a few seconds, cached
+  afterwards), the rule layer plus a small offline name gazetteer keep redacting,
+  so the demo is usable immediately; once the model is ready it takes over name /
+  place / org / address detection seamlessly. If the model fails to load, the
+  gazetteer fallback keeps working.
+
+This is the hybrid maska is built on: **rules for structured PII, model for free
+text** — both run, neither is a single source of truth, and rules win on overlap.
 
 ## The model files (not committed)
 

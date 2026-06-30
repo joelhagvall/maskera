@@ -5,7 +5,7 @@ import { demoDetectors, ruleDetectors } from "./detectors"
 import { labelMeta } from "./labels"
 import { type Scenario, scenarios } from "./scenarios"
 
-type NerStatus = "off" | "loading" | "ready" | "error"
+type NerStatus = "loading" | "ready" | "error"
 
 const GITHUB = "https://github.com/joelhagvall/maska"
 
@@ -60,18 +60,19 @@ export function App() {
   const [text, setText] = useState<string>(scenarios[0].text)
   const [protect, setProtect] = useState(true)
   const [showMap, setShowMap] = useState(false)
-  const [nerOn, setNerOn] = useState(false)
-  const [nerStatus, setNerStatus] = useState<NerStatus>("off")
+  const [nerStatus, setNerStatus] = useState<NerStatus>("loading")
   const [nerProgress, setNerProgress] = useState(0)
   const [analyzing, setAnalyzing] = useState(false)
   const backdropRef = useRef<HTMLDivElement>(null)
   const recognizerRef = useRef<NerRecognizer | null>(null)
 
-  // Synchronous rule-only result — always available, instant.
+  // Synchronous rule-only result — always available, instant. While the model
+  // loads, this (rules + offline gazetteer) is what the user sees, so the demo
+  // is usable immediately and upgrades to the model seamlessly once ready.
   const ruleResult = useMemo(() => redact(text, { detectors: demoDetectors }), [text])
   const [result, setResult] = useState<RedactResult>(ruleResult)
 
-  const useNer = nerOn && nerStatus === "ready"
+  const useNer = nerStatus === "ready"
 
   // When NER is active, recompute the hybrid result (debounced). Otherwise the
   // instant rule-only result is the source of truth.
@@ -95,18 +96,10 @@ export function App() {
     }
   }, [text, useNer, ruleResult])
 
-  async function toggleNer(on: boolean) {
-    setNerOn(on)
-    if (!on) {
-      setNerStatus("off")
-      return
-    }
-    if (recognizerRef.current) {
-      setNerStatus("ready")
-      return
-    }
-    setNerStatus("loading")
-    setNerProgress(0)
+  // The Swedish model is always on — auto-loaded once on mount. The rule layer
+  // keeps working the whole time, so there's never a blank wait.
+  useEffect(() => {
+    let cancelled = false
     // Load OUR distilled Swedish model from the demo's /public/models folder.
     const rec = createNerRecognizer({
       model: "maska-sv-ner",
@@ -123,15 +116,19 @@ export function App() {
       },
     })
     recognizerRef.current = rec
-    try {
-      await rec.ready
-      setNerStatus("ready")
-    } catch (err) {
-      console.error(err)
-      recognizerRef.current = null
-      setNerStatus("error")
+    rec.ready
+      .then(() => !cancelled && setNerStatus("ready"))
+      .catch((err) => {
+        console.error(err)
+        if (!cancelled) {
+          recognizerRef.current = null
+          setNerStatus("error")
+        }
+      })
+    return () => {
+      cancelled = true
     }
-  }
+  }, [])
 
   const counts = useMemo(() => {
     const c = new Map<string, number>()
@@ -183,28 +180,24 @@ export function App() {
       </nav>
 
       <div className="nerbar">
-        <label className="toggle ner">
-          <input type="checkbox" checked={nerOn} onChange={(e) => toggleNer(e.target.checked)} />
+        <span className="toggle ner">
           <span>🧠 Svensk NER-modell (lokal)</span>
-        </label>
+        </span>
         {nerStatus === "loading" && (
           <span className="nerstat">
-            Laddar modell… {nerProgress}%
+            Laddar… {nerProgress}% · regler aktiva under tiden
             <span className="bar">
               <span className="fill" style={{ width: `${nerProgress}%` }} />
             </span>
           </span>
         )}
         {nerStatus === "ready" && (
-          <span className="nerstat ok">
-            ● Svensk modell aktiv{analyzing ? " · analyserar…" : ""}
-          </span>
+          <span className="nerstat ok">● Aktiv{analyzing ? " · analyserar…" : ""}</span>
         )}
         {nerStatus === "error" && (
-          <span className="nerstat err">Kunde inte ladda modellen (se konsolen)</span>
-        )}
-        {nerStatus === "off" && (
-          <span className="nerstat muted">Av — namn fångas av offline-gazetteer</span>
+          <span className="nerstat err">
+            Modellen kunde inte laddas — kör på offline-gazetteer (se konsolen)
+          </span>
         )}
         <span className="nerhint">
           Vår distillerade KB-BERT (~80 MB, körs i webbläsaren). Fångar godtyckliga svenska
