@@ -21,7 +21,8 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "vitest run"
+    "test": "vitest run",
+    "eval": "node eval/run-eval.mjs"
   },
   "dependencies": {
     "@maskera/core": "workspace:*"
