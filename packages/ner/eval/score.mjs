@@ -2,12 +2,12 @@
  * Eval scoring for the Swedish NER model. Pure functions, no dependencies.
  *
  * The NER model is probabilistic, so we don't assert exact equality the way a
- * unit test does — we *measure* it against the gold corpus and report:
+ * unit test does, we *measure* it against the gold corpus and report:
  *
  *   - precision: of what the model flagged, how much was correct
  *   - recall:    of the real entities, how many the model found
  *   - f1:        the harmonic mean (the single headline number)
- *   - leaks:     gold entities the model missed ENTIRELY (zero overlap) — the
+ *   - leaks:     gold entities the model missed ENTIRELY (zero overlap), the
  *                safety-critical metric, because a missed name is a PII leak
  *
  * Matching is by exact character span (start + end). `spanF1` ignores the
@@ -17,7 +17,7 @@
 
 /**
  * Resolve { value, label, nth } entities into character spans within `text`.
- * Throws if a value can't be found — that means the corpus entry is wrong, and
+ * Throws if a value can't be found, that means the corpus entry is wrong, and
  * we want it to fail loudly rather than silently score against a bad span.
  *
  * @param {string} text
@@ -110,7 +110,7 @@ export function aggregate(docResults) {
     labeledPrecision,
     labeledRecall,
     labeledF1: f1(labeledPrecision, labeledRecall),
-    leakCount, // gold entities missed entirely — keep this at/near zero
+    leakCount, // gold entities missed entirely, keep this at/near zero
     leakRate: ratio(leakCount, support),
   }
 }

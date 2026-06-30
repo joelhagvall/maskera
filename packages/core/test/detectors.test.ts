@@ -17,7 +17,7 @@ import type { Detector } from "../src/types"
 
 /**
  * Table-driven detector tests. Each detector gets a batch of inputs that MUST
- * match and a batch of adversarial inputs that MUST NOT — the negatives are
+ * match and a batch of adversarial inputs that MUST NOT, the negatives are
  * where redactors actually break (a year mistaken for a phone number, a
  * reference id mistaken for a personnummer). We bias hard toward negatives.
  *
