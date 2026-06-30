@@ -13,8 +13,10 @@ export function Header() {
       </div>
       <h1 className="title">Maska personuppgifter innan AI:n ser dem.</h1>
       <p className="lede">
-        Körs helt lokalt i webbläsaren — ingen text lämnar din enhet. Regler fångar det
-        strukturerade (personnummer, org-nr…), en svensk modell fångar namn och platser.
+        maska hittar och döljer personuppgifter — namn, personnummer, adresser — innan texten
+        skickas till en AI-tjänst som ChatGPT, en logg eller ett analysverktyg. Smarta regler och en
+        liten svensk AI-modell gör jobbet <strong>helt i din webbläsare</strong> — ingenting lämnar
+        din dator.
       </p>
     </header>
   )
