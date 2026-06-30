@@ -1,7 +1,20 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
-  "files": { "ignore": ["dist", "node_modules", "coverage"] },
+  "files": {
+    "ignore": [
+      "dist",
+      "node_modules",
+      "coverage",
+      "training/.venv",
+      "training/model",
+      "training/student-model",
+      "training/onnx-model",
+      "training/student-onnx",
+      "training/data",
+      "apps/demo/public/models"
+    ]
+  },
   "organizeImports": { "enabled": true },
   "formatter": {
     "enabled": true,
