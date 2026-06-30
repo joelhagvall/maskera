@@ -27,6 +27,18 @@ text
 restore(llmAnswer) // -> original values re-inserted locally
 ```
 
+## Live demo
+
+An interactive playground shows redaction happening **as you type**, across real
+scenarios from healthcare, law, BRF/property, crisis response, HR, support,
+municipality, insurance, banking and schools — toggle the shield on/off to see
+exactly what the AI would otherwise receive.
+
+```bash
+pnpm install
+pnpm demo      # opens apps/demo on http://localhost:5180
+```
+
 ## Why it exists
 
 > "I want to use AI, but I don't want to send personal data to the model."
