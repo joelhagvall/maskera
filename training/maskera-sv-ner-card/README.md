@@ -101,11 +101,20 @@ const out = await ner("Anna Lindqvist bor i Göteborg.")
 
 ## Evaluation
 
-Evaluated on hand-authored and independent Swedish text. The maskera repo holds
-the reproducible eval harness and gold corpus; see the
-[README](https://github.com/joelhagvall/maskera) for current numbers and
-methodology. Reported figures are the authors' own measurements — reproduce them
-before relying on them.
+Smoke-eval on the maskera gold corpus (hand-authored Swedish sentences with
+free-text PER/LOC/ORG spans + hard negatives), `dtype="q4"`:
+
+| metric    | score | meaning                                  |
+| --------- | ----- | ---------------------------------------- |
+| recall    | 92%   | of real entities, how many were found    |
+| precision | 77%   | of predictions, how many were correct    |
+| F1        | 84%   | harmonic mean                            |
+| leaks     | 0     | entities missed entirely (the safety number) |
+
+This is a small smoke set, not a large benchmark — it tracks regressions, not
+absolute quality. The reproducible harness and corpus live in the
+[maskera repo](https://github.com/joelhagvall/maskera) (`packages/ner/eval`);
+run it yourself before relying on the numbers.
 
 ## License & attribution
 

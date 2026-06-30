@@ -25,6 +25,12 @@ export const MASKERA_SV_NER_MODEL = "joelhagvall/maskera-sv-ner"
 export type LabelMap = (entityGroup: string) => PiiLabel | null
 
 const DEFAULT_LABEL_MAP: Record<string, PiiLabel> = {
+  // maskera-sv-ner's own scheme (Swedish model): PER / LOC / ORG / ADR.
+  PER: "PERSON",
+  LOC: "LOCATION",
+  ORG: "ORGANIZATION",
+  ADR: "ADDRESS",
+  // OpenPII / Rampart scheme.
   GIVENNAME: "PERSON",
   SURNAME: "PERSON",
   FIRSTNAME: "PERSON",
