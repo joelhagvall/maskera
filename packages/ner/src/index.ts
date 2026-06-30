@@ -21,14 +21,17 @@ const DEFAULT_LABEL_MAP: Record<string, PiiLabel> = {
   SURNAME: "PERSON",
   FIRSTNAME: "PERSON",
   LASTNAME: "PERSON",
+  MIDDLENAME: "PERSON",
   NAME: "PERSON",
   CITY: "LOCATION",
   STATE: "LOCATION",
   COUNTRY: "LOCATION",
   STREET: "ADDRESS",
+  STREETNAME: "ADDRESS",
   STREETADDRESS: "ADDRESS",
   BUILDINGNUMBER: "ADDRESS",
   SECONDARYADDRESS: "ADDRESS",
+  ZIPCODE: "POSTNUMMER",
   ORGANIZATION: "ORGANIZATION",
   COMPANYNAME: "ORGANIZATION",
 }
@@ -107,20 +110,93 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
     ready: load().then(() => undefined),
     async detect(text: string): Promise<Detection[]> {
       const pipe = await load()
-      const raw = await pipe(text, { aggregation_strategy: "first" })
-      const out: Detection[] = []
-      for (const r of raw) {
-        if (r.score < minScore) continue
-        if (r.start == null || r.end == null) continue
-        const group = r.entity_group ?? r.entity
-        if (!group) continue
-        const label = labelMap(group)
-        if (!label) continue
-        out.push({ start: r.start, end: r.end, value: text.slice(r.start, r.end), label })
-      }
-      return out
+      const raw = await pipe(text, { aggregation_strategy: "none" })
+      return reconstruct(text, raw, labelMap, minScore)
     },
   }
+}
+
+interface RawToken {
+  entity?: string
+  entity_group?: string
+  score: number
+  index?: number
+  word: string
+  start?: number | null
+  end?: number | null
+}
+
+const baseType = (entity: string) => entity.replace(/^[BI]-/, "")
+
+/**
+ * The Transformers.js token-classification pipeline for BERT-wordpiece models
+ * yields per-subword tokens (`john`, `kung`, `##sho`, …) with BIO tags but,
+ * for tokenizers without offset tracking, no character spans. We rebuild
+ * entities by merging subword/continuation tokens and locating the surface
+ * string back in the original text.
+ */
+function reconstruct(
+  text: string,
+  tokens: RawToken[],
+  labelMap: LabelMap,
+  minScore: number,
+): Detection[] {
+  const lower = text.toLowerCase()
+  const out: Detection[] = []
+  let cursor = 0
+  let i = 0
+
+  while (i < tokens.length) {
+    const tok = tokens[i]
+    if (!tok) {
+      i++
+      continue
+    }
+    const tag = tok.entity ?? tok.entity_group ?? ""
+    if (!tag || tag === "O") {
+      i++
+      continue
+    }
+    const base = baseType(tag)
+    const group: RawToken[] = [tok]
+    let j = i + 1
+    while (j < tokens.length) {
+      const next = tokens[j]
+      const prev = tokens[j - 1]
+      if (!next || !prev) break
+      const isSubword = next.word.startsWith("##")
+      const nextTag = next.entity ?? next.entity_group ?? ""
+      const contiguous = (next.index ?? j) === (prev.index ?? j - 1) + 1
+      const continuesEntity = nextTag.startsWith("I-") && baseType(nextTag) === base
+      if (contiguous && (isSubword || continuesEntity)) {
+        group.push(next)
+        j++
+      } else {
+        break
+      }
+    }
+
+    let surface = ""
+    for (const p of group) {
+      if (p.word.startsWith("##")) surface += p.word.slice(2)
+      else surface += (surface ? " " : "") + p.word
+    }
+
+    const avg = group.reduce((s, p) => s + p.score, 0) / group.length
+    if (surface && avg >= minScore) {
+      const idx = lower.indexOf(surface.toLowerCase(), cursor)
+      if (idx >= 0) {
+        const end = idx + surface.length
+        const label = labelMap(base)
+        if (label) {
+          out.push({ start: idx, end, value: text.slice(idx, end), label })
+          cursor = end
+        }
+      }
+    }
+    i = j
+  }
+  return out
 }
 
 export interface RedactWithNerOptions extends Pick<RedactOptions, "placeholder"> {
