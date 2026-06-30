@@ -111,11 +111,25 @@ Evaluated on the maskera gold corpus: 189 free-text PER/LOC/ORG entities across
 | F1        | 96.1% | harmonic mean                            |
 | leaks     | 1.6%  | entities missed entirely (the safety number) |
 
-The remaining misses are organisation names; person and place recall is higher.
-This is a curated corpus, not a large public benchmark, so treat it as a
-regression tracker rather than a universal score. The reproducible harness and
-corpus live in the [maskera repo](https://github.com/joelhagvall/maskera)
-(`packages/ner/eval`); run it yourself before relying on the numbers.
+This is a curated corpus (clean, well-formed sentences), so treat it as an upper
+bound and regression tracker, not a universal score.
+
+For an honest, independent number, the model is also graded against the public
+**Swedish NER Corpus** (klintan / Webbnyheter 2012), which the authors did not
+write: 2453 sentences, 1280 PER/LOC/ORG entities, `dtype="q4"`:
+
+| metric    | score | meaning                                  |
+| --------- | ----- | ---------------------------------------- |
+| recall    | 77.6% | of real entities, how many were found    |
+| precision | 79.5% | of predictions, how many were correct    |
+| F1        | 78.5% | harmonic mean                            |
+| leaks     | 17.7% | entities missed entirely (the safety number) |
+
+Recall by type: PERSON 85.6%, LOCATION 74.9%, ORGANIZATION 64.9%. On messy
+real-world text expect numbers in this range, not the curated 96%. Person recall
+is strongest; organisation recall is the weak spot. Both harnesses live in the
+[maskera repo](https://github.com/joelhagvall/maskera) (`packages/ner/eval`);
+run them yourself before relying on the numbers.
 
 ## License & attribution
 
