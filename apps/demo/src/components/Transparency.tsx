@@ -15,8 +15,33 @@ export function Transparency({ onBack }: { onBack: () => void }) {
         <h1>Integritet & transparens</h1>
         <p className="prose-lede">
           maska är ett integritetsverktyg, så det bör vara ärligt om sig självt. Här är vad det gör,
-          hur modellen tränats, och var gränserna går.
+          hur det funkar, hur modellen tränats, och var gränserna går.
         </p>
+
+        <h2>Hur funkar det?</h2>
+        <ul>
+          <li>
+            maska läser texten och ersätter personuppgifter med platshållare, t.ex.{" "}
+            <code>[NAMN_1]</code> eller <code>[PERSONNUMMER_1]</code>. AI-tjänsten får bara
+            platshållarna — du kan sätta tillbaka originalen lokalt efteråt.
+          </li>
+          <li>
+            <strong>Två lager jobbar tillsammans.</strong> <strong>Regler</strong> fångar sådant som
+            har ett exakt format — personnummer, organisationsnummer, telefonnummer, e-post — med
+            matematisk säkerhet (t.ex. kontrollsiffran i ett personnummer).
+          </li>
+          <li>
+            <strong>En liten AI-modell</strong> fångar resten — fria namn, platser och
+            organisationer. Tekniken kallas <strong>NER</strong> (“named entity recognition”):
+            modellen har lärt sig att känna igen <em>att</em> ett ord är ett namn eller en plats av
+            sammanhanget, även namn den aldrig sett förut. Det är därför regex inte räcker — man kan
+            inte lista alla namn som finns.
+          </li>
+          <li>
+            Modellen är liten nog att <strong>köra direkt i webbläsaren</strong> (samma teknik som
+            kör AI lokalt på din enhet), så texten aldrig behöver skickas iväg för att analyseras.
+          </li>
+        </ul>
 
         <h2>Var din data tar vägen: ingenstans</h2>
         <ul>
