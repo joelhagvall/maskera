@@ -55,8 +55,8 @@ An honest snapshot of where the project is:
   IBAN…), plus a redact/restore engine with stable placeholders. Zero
   dependencies, tested. **This is shippable today.**
 - ✅ **Our own Swedish NER model** — we **fine-tuned** KB-BERT (CC0 Swedish base
-  model) on synthetic Swedish data, **distilled** it, then **vocab-trimmed** it to
-  a browser-sized 56 MB int8 ONNX. Benchmarked openly: **0.70 F1 vs Rampart's
+  model) on synthetic Swedish data, **distilled** it, then **shrank** it
+  (vocab-trim + q4) to a browser-sized 40 MB ONNX. Benchmarked openly: **0.70 F1 vs Rampart's
   0.39** on independent data — a wide win on Swedish.
 - ✅ **NER layer (`@maskera/ner`)** — runs a model client-side via Transformers.js,
   with subword-span reconstruction and the shared placeholder engine.
@@ -69,7 +69,7 @@ An honest snapshot of where the project is:
 stood on KB-BERT), modify Rampart's weights (we only wrap it as an option), claim
 GDPR compliance, or publish invented benchmark numbers.
 
-**Not done yet:** vocab-trim + q4 toward ~15-30 MB, a larger independent eval
+**Not done yet:** smaller architecture toward ~15 MB, a larger independent eval
 set, and hosting the model on the Hub. Framework wrappers (`@maskera/node`,
 `@maskera/react`) are intentionally **demand-driven** — built when users ask, not
 speculatively. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
@@ -100,7 +100,8 @@ tagged. Span-level, type-aware F1 (see [`training/`](training/)).
 | ---------------------------------- | ------ | ---------- | -------- |
 | maskera teacher (KB-BERT)          | 440 MB | **0.899**  | 0.851    |
 | maskera student (distilled)        | 82 MB  | 0.874      | 0.798    |
-| **maskera student (shipped, trimmed)** | 56 MB | 0.838  | 0.749    |
+| maskera student (trimmed)          | 56 MB  | 0.838      | 0.749    |
+| **maskera student (shipped, trim + q4)** | 40 MB | 0.817 | —     |
 | Rampart                            | 15 MB  | 0.621      | 0.494    |
 
 Per-type F1 (overlap): the student scores PER 0.91 / LOC 0.90 / ORG 0.81 /

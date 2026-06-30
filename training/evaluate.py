@@ -153,10 +153,21 @@ def main():
         return pipeline("token-classification", model=model, tokenizer=tok,
                         aggregation_strategy="simple")
 
+    def load_q4():
+        from optimum.onnxruntime import ORTModelForTokenClassification
+        from transformers import AutoTokenizer
+        m = ORTModelForTokenClassification.from_pretrained(
+            "student-trimmed-onnx", file_name="onnx/model_q4.onnx"
+        )
+        return pipeline("token-classification", model=m,
+                        tokenizer=AutoTokenizer.from_pretrained("student-trimmed-onnx"),
+                        aggregation_strategy="simple")
+
     models = [
         ("teacher (KB-BERT)", load_local, "model", ours),
         ("student (distilled)", load_local, "student-model", ours),
-        ("student (trimmed 55MB)", load_local, "student-trimmed", ours),
+        ("student (trimmed 56MB)", load_local, "student-trimmed", ours),
+        ("student (q4 combo 40MB)", lambda _: load_q4(), None, ours),
         ("Rampart", lambda _: load_rampart(), None, rampart),
     ]
     summary = {}

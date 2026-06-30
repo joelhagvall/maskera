@@ -63,23 +63,33 @@ every-other layer (DistilBERT-style) recovers the quality.
 
 ### The size ladder (honest)
 
-| Artifact                            | Size    | Swedish quality |
-| ----------------------------------- | ------- | --------------- |
-| KB-BERT fp32 (teacher)              | ~440 MB | best            |
-| teacher int8 ONNX                   | 125 MB  | ✅              |
-| distilled student int8 ONNX         | 82 MB   | ✅ (≈ teacher)  |
-| **vocab-trimmed student int8 ONNX** | **56 MB** | ✅ (−0.04 F1) — **shipped** |
-| Rampart (for comparison)            | 15 MB   | ❌ on Swedish   |
+| Artifact                              | Size    | Swedish quality |
+| ------------------------------------- | ------- | --------------- |
+| KB-BERT fp32 (teacher)                | ~440 MB | best            |
+| teacher int8 ONNX                     | 125 MB  | ✅              |
+| distilled student int8 ONNX           | 82 MB   | ✅ (≈ teacher)  |
+| vocab-trimmed student int8 ONNX       | 56 MB   | ✅ (−0.04 F1)   |
+| **vocab-trim + q4-matmul/int8-embed** | **40 MB** | ✅ (−0.06 F1) — **shipped** |
+| Rampart (for comparison)              | 15 MB   | ❌ on Swedish   |
 
-**What didn't work:** q4 quantization (`quantize_q4.py`) made the model *bigger*
+**What didn't work:** plain q4 (`quantize_q4.py`) made the model *bigger*
 (183 MB) — ONNX 4-bit only quantizes MatMul weights and leaves the embedding
-table fp32, and that table is ~half the model.
+table fp32, which is ~half the model.
 
-**What did work:** **vocabulary trimming** (`trim_vocab.py`). KB-BERT's 50k vocab
-is ~half the params; Swedish PII text only uses a fraction. Trimming to the 16k
-most-used wordpieces (keeping all special + single-char pieces so any word still
-decomposes) cut 82 MB → 56 MB for −0.04 F1. This is the shipped model. Going
-further to ~15 MB needs a smaller architecture too, where quality starts to cost.
+**What did work — two levers, in order:**
+
+1. **Vocabulary trimming** (`trim_vocab.py`): KB-BERT's 50k vocab is ~half the
+   params; Swedish PII text uses a fraction. Trimming to the 16k most-used
+   wordpieces (keeping all special + single-char pieces so any word still
+   decomposes) cut **82 → 56 MB** for −0.04 F1.
+2. **Combined quant** (`quantize_combo.py`): once the vocab is small the ~42M
+   MatMul params dominate, so q4 on those *plus* int8 on the (now small)
+   embedding table cut **56 → 40 MB** for another ~0.015 F1. (This mixed model
+   runs in Transformers.js but not in optimum's Python path — fine, the browser
+   is the target.)
+
+Net: **82 → 40 MB at 0.817 overlap F1**, still far ahead of Rampart's 0.62.
+Going to ~15 MB needs a smaller architecture, where quality starts to cost.
 
 On an M4 Pro (MPS) step 3 takes ~8–9 minutes for 3 epochs over 9k examples.
 
@@ -119,8 +129,12 @@ type-aware P/R/F1.
 | --------------------------- | ------ | ---------- | -------- |
 | teacher (KB-BERT)           | 440 MB | **0.899**  | 0.851    |
 | student (distilled)         | 82 MB  | 0.874      | 0.798    |
-| **student (vocab-trimmed)** | 56 MB  | **0.838**  | 0.749    |
+| student (vocab-trimmed)     | 56 MB  | 0.838      | 0.749    |
+| **student (trim + q4)**     | 40 MB  | **0.817**  | —        |
 | Rampart                     | 15 MB  | 0.621      | 0.494    |
+
+(The 40 MB combined-quant row is measured via Transformers.js on the same gold
+set; the others via the Python harness — numbers are consistent within ~0.01.)
 
 **Per-type F1 (overlap):**
 
