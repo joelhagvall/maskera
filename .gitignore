@@ -1,6 +1,7 @@
 node_modules/
 dist/
 coverage/
+.venv/
 apps/demo/public/models/
 # model-publish staging dir (assembled by scripts/publish-model.sh, ~300 MB)
 training/.publish-*
