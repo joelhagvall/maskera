@@ -22,8 +22,10 @@ from transformers import (
     TrainingArguments,
 )
 
+import sys
+
 BASE_MODEL = "KBLab/bert-base-swedish-cased"
-OUT_DIR = "model"
+OUT_DIR = sys.argv[1] if len(sys.argv) > 1 else "model"  # usage: train.py [out_dir]
 MAX_LEN = 128
 
 LABELS = ["O", "B-PER", "I-PER", "B-LOC", "I-LOC", "B-ORG", "I-ORG", "B-ADR", "I-ADR"]
