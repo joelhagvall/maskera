@@ -14,7 +14,7 @@ function Svg({ size = 16, children, ...rest }: IconProps & { children: ReactNode
       strokeWidth={1.7}
       strokeLinecap="round"
       strokeLinejoin="round"
-      aria-hidden
+      aria-hidden="true"
       {...rest}
     >
       {children}
@@ -30,7 +30,7 @@ function Svg({ size = 16, children, ...rest }: IconProps & { children: ReactNode
  */
 export function MaskaMark({ size = 22, ...rest }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden {...rest}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" {...rest}>
       <path
         d="M9 4H6v16h3"
         stroke="currentColor"

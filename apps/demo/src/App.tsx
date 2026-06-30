@@ -15,6 +15,7 @@ export function App() {
   const ner = useSwedishNer(text)
 
   // Always land at the top when switching between demo and transparency.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: view is the trigger
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [view])
