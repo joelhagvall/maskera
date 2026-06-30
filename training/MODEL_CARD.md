@@ -25,7 +25,7 @@ stays with deterministic regex+checksum rules.
 
 - **Labels:** `PER` (person), `LOC` (place), `ORG` (organisation), `ADR` (street address)
 - **Base:** `KBLab/bert-base-swedish-cased`, distilled to ~22M params (6 layers)
-- **Size:** ~82 MB int8 ONNX (`onnx/model_quantized.onnx`) — runs client-side via Transformers.js
+- **Size:** ~56 MB int8 ONNX (vocab-trimmed) (`onnx/model_quantized.onnx`) — runs client-side via Transformers.js
 - **Scripts:** WASM / WebGPU
 
 ## Intended use

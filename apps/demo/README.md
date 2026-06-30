@@ -12,7 +12,7 @@ pnpm demo        # from repo root, opens http://localhost:5180
 - **Rule layer (instant, always on):** `@maskera/core` redacts structured PII
   (personnummer, org-nr, phone, email, IBAN…) — deterministic and instant.
 - **Swedish NER model (always on, auto-loaded):** on page load the demo
-  immediately starts loading **our distilled Swedish model** (~80 MB int8) in the
+  immediately starts loading **our distilled Swedish model** (~56 MB int8) in the
   browser via `@maskera/ner` + Transformers.js. There is **no toggle** — the model
   is part of the product, not an opt-in. While it loads (a few seconds, cached
   afterwards), the rule layer plus a small offline name gazetteer keep redacting,
@@ -25,7 +25,7 @@ text** — both run, neither is a single source of truth, and rules win on overl
 
 ## The model files (not committed)
 
-The model under `public/models/maskera-sv-ner/` is ~80 MB and is **gitignored**.
+The model under `public/models/maskera-sv-ner/` is ~56 MB and is **gitignored**.
 To populate it, train and export from [`../../training`](../../training):
 
 ```bash
