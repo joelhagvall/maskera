@@ -44,7 +44,7 @@ export function HighlightedText({ text, redactions }: { text: string; redactions
         <mark
           key={r.key}
           className="hl"
-          style={{ background: `${r.color}14`, boxShadow: `inset 0 -1.6px 0 ${r.color}` }}
+          style={{ background: `${r.color}1f`, boxShadow: `inset 0 -2px 0 ${r.color}` }}
         >
           {slice}
         </mark>
@@ -70,7 +70,11 @@ export function RedactedText({ text }: { text: string }) {
   return (
     <>
       {weave(text, ranges, (slice, r) => (
-        <span key={r.key} className="token" style={{ color: r.color, borderColor: `${r.color}55` }}>
+        <span
+          key={r.key}
+          className="token"
+          style={{ color: r.color, background: `${r.color}12`, borderColor: `${r.color}59` }}
+        >
           {slice}
         </span>
       ))}
