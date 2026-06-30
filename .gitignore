@@ -2,6 +2,8 @@ node_modules/
 dist/
 coverage/
 apps/demo/public/models/
+# model-publish staging dir (assembled by scripts/publish-model.sh, ~300 MB)
+training/.publish-*
 *.log
 .DS_Store
 .turbo/
