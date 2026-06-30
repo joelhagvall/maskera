@@ -10,6 +10,14 @@ import { defaultDetectors, redactFromDetections } from "@maska/core"
 export const DEFAULT_NER_MODEL = "nationaldesignstudio/rampart"
 
 /**
+ * Canonical Hugging Face id for maska's own Swedish PII model — the single
+ * source the demo and future packages should point at once it's published:
+ * `createNerRecognizer({ model: MASKA_SV_NER_MODEL, dtype: "q8" })`.
+ * Change the owner to your own HF username if you host your own copy.
+ */
+export const MASKA_SV_NER_MODEL = "joelhagvall/maska-sv-ner"
+
+/**
  * Map a model entity group (e.g. "GIVENNAME", "CITY") to a maska label.
  * Return `null` to drop the entity. The default normalises a handful of
  * common OpenPII groups to coarse labels and upper-cases the rest.

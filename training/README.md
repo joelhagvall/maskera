@@ -161,8 +161,27 @@ absolute numbers are depressed for *all* models equally — the comparison is
 valid, the exact values are not gospel. Run `python evaluate_public.py` to
 reproduce.
 
+## Publish to Hugging Face (single hosted source)
+
+Hosting the model once means the demo and every future `@maska` package point at
+the same place — `createNerRecognizer({ model: MASKA_SV_NER_MODEL, dtype: "q8" })`.
+
+```bash
+uv pip install huggingface_hub
+huggingface-cli login                 # or export HF_TOKEN=...
+uv run python push_to_hub.py joelhagvall/maska-sv-ner   # use your HF username
+```
+
+`push_to_hub.py` uploads `student-onnx/` (int8 ONNX + tokenizer + config) with
+`MODEL_CARD.md` as the repo README, skipping the large fp32 weights. After it's
+up, switch the demo from the local copy to the hosted id (drop `localModelPath`
+and `allowRemoteModels: false`).
+
 ## Base model & license
 
 Base: [`KBLab/bert-base-swedish-cased`](https://huggingface.co/KBLab/bert-base-swedish-cased)
-(National Library of Sweden). Verify its license terms before redistributing
-derived weights. Training data here is fully synthetic.
+(National Library of Sweden), released **CC0-1.0** (public domain) — commercial
+use, redistribution and relicensing of derived weights are all permitted with no
+obligation. We license the derived model **MIT** to match the SDK; a courtesy
+citation to KBLab's paper (arXiv:2007.01658) is in `MODEL_CARD.md`. Training data
+here is fully synthetic (no real personal data).
