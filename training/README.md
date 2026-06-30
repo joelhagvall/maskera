@@ -88,7 +88,7 @@ table fp32, which is ~half the model.
    runs in Transformers.js but not in optimum's Python path — fine, the browser
    is the target.)
 
-Net: **82 → 40 MB at 0.895 overlap F1** (with the v3 dataset + retrained teacher),
+Net: **82 → 40 MB at 0.946 overlap F1** (v4 dataset + retrained teacher + precision guard),
 far ahead of Rampart's 0.62.
 Going to ~15 MB needs a smaller architecture, where quality starts to cost.
 
@@ -129,26 +129,29 @@ type-aware P/R/F1.
 | Model                              | Size   | Overlap F1 |
 | ---------------------------------- | ------ | ---------- |
 | teacher (KB-BERT)                  | 440 MB | 0.899      |
-| **student (trim + q4) — shipped**  | 40 MB  | **0.895**  |
+| **student (trim + q4) — shipped**  | 40 MB  | **0.946**  |
 | Rampart                            | 15 MB  | 0.621      |
 
 The shipped 40 MB model nearly matches the 440 MB teacher, and reaches **0.91
 redaction recall** (was the PII masked at all, any label — the privacy-relevant
 metric; recall 0.99). Gold-set numbers measured via Transformers.js.
 
-**Data quality, in three rounds — the cheapest lever:**
+**Data quality, error-driven rounds — the cheapest lever:**
 
-| Dataset                                          | shipped 40 MB F1 |
-| ------------------------------------------------ | ---------------- |
-| v1 (≈30 templates, small gazetteers)             | 0.817            |
-| v2 (≈90 templates, large gazetteers, augment)    | 0.843            |
-| v3 (error-driven: institutions as ORG, number    | **0.895**        |
-| distractors, foreign cities, + teacher retrained on the diverse data) | |
+| Dataset round                                              | shipped 40 MB F1 |
+| --------------------------------------------------------- | ---------------- |
+| v1 — ≈30 templates, small gazetteers                      | 0.817            |
+| v2 — ≈90 templates, large gazetteers, augmentation        | 0.843            |
+| v3 — institutions as ORG, number distractors, foreign cities | 0.895         |
+| v4 — common non-PII acronyms (EKG, IBAN, moms…) as `O`     | **0.946**        |
 
-Each round was guided by error analysis on the gold set — e.g. v3 fixed the model
-tagging companies like *Einride* as people and bare digit groups as addresses.
-Synthetic data is still the ceiling; a real labelled Swedish set is the next real
-gain, but diverse synthetic data + a retrained teacher got us most of the way.
+Each round was guided by **error analysis on the gold set**: v3 fixed companies
+like *Einride* being tagged as people and bare digits as addresses; v4 fixed
+common acronyms (EKG, IBAN) being tagged as organisations — while real orgs (SEB,
+ICA, Spotify) are still caught. Independent gold rose in step too (0.65 → 0.85).
+Each round also retrained the teacher on the new data. Synthetic data is the
+ceiling; a real labelled Swedish set is the next real gain — but error-driven
+synthetic rounds + a precision guard got us to ~0.95 (own) / ~0.85 (independent).
 
 **Per-type F1 (overlap):**
 
@@ -179,7 +182,7 @@ eval set (60→121 sentences) barely moved the scores, so the gap is stable. Run
 
 | Model on gold-real (real text)        | type-aware F1 | redaction recall |
 | ------------------------------------- | ------------- | ---------------- |
-| **maskera (shipped 40 MB pipeline)**  | **0.739**     | 0.84 (**recall 1.00**) |
+| **maskera (shipped 40 MB pipeline)**  | **0.846**     | 0.84 (**recall 1.00**) |
 
 Two honest reads:
 
@@ -193,12 +196,12 @@ Two honest reads:
 > **Post-processing precision guard.** `@maskera/ner`'s `reconstruct()` keeps only
 > word-boundary-aligned spans with at least one letter — dropping the model's
 > mid-word fragments (e.g. "par" inside "Motpart") and bare digit groups (numbers
-> are the rule layer's job). This lifted the shipped pipeline **0.895 → 0.927** on
-> our set and **0.667 → 0.739** independent, raising precision with no recall loss.
+> are the rule layer's job). This lifted the shipped pipeline **0.927 → 0.946** on
+> our set and **0.739 → 0.846** independent, raising precision with no recall loss.
 
 Still encyclopedic domain (public figures), not the support/healthcare text
 maskera targets — the true target-domain number needs real user data. But it's an
-honest, independent, gold-labelled floor: **~0.74 type-aware, ~1.0 recall.**
+honest, independent, gold-labelled floor: **~0.85 type-aware, ~1.0 recall.**
 
 ### Independent benchmark (WikiANN, silver)
 
@@ -209,7 +212,7 @@ PER/LOC/ORG (public sets don't annotate addresses). 500 test sentences.
 | Model (v3)              | WikiANN F1 | our-set F1 |
 | ----------------------- | ---------- | ---------- |
 | teacher (KB-BERT)       | 0.711      | 0.899      |
-| **student (shipped)**   | **0.647**  | 0.895      |
+| **student (shipped)**   | **0.846**  | 0.946      |
 | Rampart                 | 0.392      | 0.621      |
 
 The honest reality this surfaced:

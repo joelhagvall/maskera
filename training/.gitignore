@@ -22,3 +22,8 @@ student-v3/
 student-v3-trimmed/
 student-v3-onnx/
 run_v3.log
+model-v4/
+student-v4/
+student-v4-trimmed/
+student-v4-onnx/
+run_v4.log

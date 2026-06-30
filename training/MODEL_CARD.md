@@ -73,8 +73,8 @@ Span-level, type-aware F1 (overlap), vs Rampart:
 
 | Eval set                        | teacher | **shipped 40 MB** | Rampart |
 | ------------------------------- | ------- | ----------------- | ------- |
-| hand-authored (121 sents)       | 0.899   | **0.927**         | 0.621   |
-| independent gold (real text)    | —       | **0.739**         | ~0.39   |
+| hand-authored (121 sents)       | 0.899   | **0.946**         | 0.621   |
+| independent gold (real text)    | —       | **0.846**         | ~0.39   |
 
 The shipped ~40 MB model (vocab-trimmed + q4) beats Rampart on Swedish by a wide
 margin; Rampart scores 0.00 on ORG. See the
