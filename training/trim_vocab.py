@@ -13,6 +13,7 @@ fill up to the target with the most frequent pieces from a Swedish corpus
 Then:  uv run python export_onnx.py student-trimmed student-trimmed-onnx
 """
 import re
+import sys
 from collections import Counter
 
 import torch
@@ -20,9 +21,10 @@ import torch.nn as nn
 from datasets import load_dataset
 from transformers import AutoModelForTokenClassification, AutoTokenizer, BertTokenizerFast
 
-SRC = "student-model"
-OUT = "student-trimmed"
-TARGET = 16000
+# usage: trim_vocab.py [src_model] [out_dir] [target_vocab]
+SRC = sys.argv[1] if len(sys.argv) > 1 else "student-model"
+OUT = sys.argv[2] if len(sys.argv) > 2 else "student-trimmed"
+TARGET = int(sys.argv[3]) if len(sys.argv) > 3 else 16000
 
 tok = AutoTokenizer.from_pretrained(SRC)
 model = AutoModelForTokenClassification.from_pretrained(SRC)

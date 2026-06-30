@@ -9,14 +9,17 @@ transformer MatMuls. After vocab-trimming the embeddings are small, so now the
     uv run python quantize_combo.py
 """
 import os
+import sys
 
 import onnx
 from onnxruntime.quantization import QuantType, quantize_dynamic
 from onnxruntime.quantization.matmul_nbits_quantizer import MatMulNBitsQuantizer
 
-SRC = "student-trimmed-onnx/model.onnx"  # fp32 trimmed
-TMP = "student-trimmed-onnx/_embed_int8.onnx"
-OUT = "student-trimmed-onnx/onnx/model_q4.onnx"
+# usage: quantize_combo.py [onnx_dir]
+DIR = sys.argv[1] if len(sys.argv) > 1 else "student-trimmed-onnx"
+SRC = f"{DIR}/model.onnx"  # fp32 trimmed
+TMP = f"{DIR}/_embed_int8.onnx"
+OUT = f"{DIR}/onnx/model_q4.onnx"
 
 
 def mb(p):
@@ -39,6 +42,8 @@ os.makedirs(os.path.dirname(OUT), exist_ok=True)
 q.model.save_model_to_file(OUT, use_external_data_format=False)
 
 print("\n== sizes ==")
-print(f"  int8 (current ship) : {mb('student-trimmed-onnx/onnx/model_quantized.onnx'):6.1f} MB")
+int8 = f"{DIR}/onnx/model_quantized.onnx"
+if os.path.exists(int8):
+    print(f"  int8                 : {mb(int8):6.1f} MB")
 print(f"  q4 matmul + int8 emb : {mb(OUT):6.1f} MB")
 os.remove(TMP)

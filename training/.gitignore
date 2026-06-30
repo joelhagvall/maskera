@@ -9,3 +9,8 @@ student-trimmed-onnx/
 data/
 *.log
 __pycache__/
+student-3l/
+student-3l-trimmed/
+student-3l-onnx/
+student-3l-trim10k/
+student-3l-onnx10k/
