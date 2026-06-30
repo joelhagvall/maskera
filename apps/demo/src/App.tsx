@@ -1,7 +1,7 @@
 import { type RedactResult, type Redaction, redact } from "@maska/core"
 import { type NerRecognizer, createNerRecognizer, redactWithNer } from "@maska/ner"
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react"
-import { demoDetectors } from "./detectors"
+import { demoDetectors, ruleDetectors } from "./detectors"
 import { labelMeta } from "./labels"
 import { type Scenario, scenarios } from "./scenarios"
 
@@ -84,7 +84,7 @@ export function App() {
     let cancelled = false
     setAnalyzing(true)
     const timer = setTimeout(() => {
-      redactWithNer(text, { recognizer: rec, detectors: demoDetectors })
+      redactWithNer(text, { recognizer: rec, detectors: ruleDetectors })
         .then((r) => !cancelled && setResult(r))
         .catch(() => !cancelled && setResult(ruleResult))
         .finally(() => !cancelled && setAnalyzing(false))
@@ -107,7 +107,13 @@ export function App() {
     }
     setNerStatus("loading")
     setNerProgress(0)
+    // Load OUR distilled Swedish model from the demo's /public/models folder.
     const rec = createNerRecognizer({
+      model: "maska-sv-ner",
+      localModelPath: "/models/",
+      allowLocalModels: true,
+      allowRemoteModels: false,
+      dtype: "q8",
       device: "wasm",
       onProgress: (p) => {
         const prog = p as { status?: string; progress?: number }
@@ -179,7 +185,7 @@ export function App() {
       <div className="nerbar">
         <label className="toggle ner">
           <input type="checkbox" checked={nerOn} onChange={(e) => toggleNer(e.target.checked)} />
-          <span>🧠 NER-modell (Rampart)</span>
+          <span>🧠 Svensk NER-modell (lokal)</span>
         </label>
         {nerStatus === "loading" && (
           <span className="nerstat">
@@ -190,7 +196,9 @@ export function App() {
           </span>
         )}
         {nerStatus === "ready" && (
-          <span className="nerstat ok">● Rampart aktiv{analyzing ? " · analyserar…" : ""}</span>
+          <span className="nerstat ok">
+            ● Svensk modell aktiv{analyzing ? " · analyserar…" : ""}
+          </span>
         )}
         {nerStatus === "error" && (
           <span className="nerstat err">Kunde inte ladda modellen (se konsolen)</span>
@@ -199,8 +207,8 @@ export function App() {
           <span className="nerstat muted">Av — namn fångas av offline-gazetteer</span>
         )}
         <span className="nerhint">
-          ~15 MB första gången, sen cachat. Fångar godtyckliga namn/platser — testa ett namn som
-          inte finns i listan.
+          Vår distillerade KB-BERT (~80 MB, körs i webbläsaren). Fångar godtyckliga svenska
+          namn/platser/organisationer — reglerna sköter personnummer m.m.
         </span>
       </div>
 
@@ -291,8 +299,10 @@ export function App() {
 
       <footer className="foot">
         Drivs av <code>@maska/core</code> — noll beroenden, körs helt i din webbläsare. Strukturerad
-        PII är checksummevaliderad. Namn/platser kommer från en offline-gazetteer, eller — när du
-        slår på NER ovan — från <code>@maska/ner</code> + Rampart-modellen, även den i webbläsaren.
+        PII (personnummer, org-nr…) fångas av checksummevaliderade regler.
+        Namn/platser/organisationer kommer från en offline-gazetteer, eller — när du slår på
+        modellen ovan — från vår egen distillerade svenska NER-modell via <code>@maska/ner</code>,
+        även den i webbläsaren.
       </footer>
     </div>
   )

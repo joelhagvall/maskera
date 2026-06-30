@@ -5,6 +5,10 @@ export interface LabelMeta {
 
 export const LABELS: Record<string, LabelMeta> = {
   NAMN: { sv: "Namn", color: "#f472b6" },
+  PER: { sv: "Namn (modell)", color: "#f472b6" },
+  LOC: { sv: "Plats (modell)", color: "#34d399" },
+  ORG: { sv: "Organisation (modell)", color: "#fbbf24" },
+  ADR: { sv: "Adress (modell)", color: "#2dd4bf" },
   PERSON: { sv: "Namn (NER)", color: "#f472b6" },
   LOCATION: { sv: "Plats (NER)", color: "#34d399" },
   ADDRESS: { sv: "Adress (NER)", color: "#34d399" },
