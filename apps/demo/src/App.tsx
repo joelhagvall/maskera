@@ -2,25 +2,21 @@ import { type RedactResult, type Redaction, redact } from "@maska/core"
 import { type NerRecognizer, createNerRecognizer, redactWithNer } from "@maska/ner"
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react"
 import { demoDetectors, ruleDetectors } from "./detectors"
-import { labelMeta } from "./labels"
+import { labelSv } from "./labels"
 import { type Scenario, scenarios } from "./scenarios"
 
 type NerStatus = "loading" | "ready" | "error"
 
 const GITHUB = "https://github.com/joelhagvall/maska"
+const TOKEN_RE = /\[[A-ZÅÄÖ_]+_\d+\]/g
 
 function originalSegments(text: string, redactions: Redaction[]): ReactNode[] {
   const nodes: ReactNode[] = []
   let last = 0
   for (const r of redactions) {
     if (r.start > last) nodes.push(text.slice(last, r.start))
-    const { color } = labelMeta(r.label)
     nodes.push(
-      <mark
-        key={`${r.start}-${r.label}`}
-        className="hl"
-        style={{ background: `${color}33`, boxShadow: `inset 0 -2px ${color}` }}
-      >
+      <mark key={`${r.start}-${r.label}`} className="hl">
         {text.slice(r.start, r.end)}
       </mark>,
     )
@@ -31,25 +27,18 @@ function originalSegments(text: string, redactions: Redaction[]): ReactNode[] {
 }
 
 function redactedSegments(text: string): ReactNode[] {
-  const re = /\[[A-ZÅÄÖ_]+_\d+\]/g
   const nodes: ReactNode[] = []
   let last = 0
-  let m = re.exec(text)
+  let m = TOKEN_RE.exec(text)
   while (m) {
     if (m.index > last) nodes.push(text.slice(last, m.index))
-    const label = m[0].replace(/^\[|_\d+\]$/g, "")
-    const { color } = labelMeta(label)
     nodes.push(
-      <span
-        key={`${m.index}-${m[0]}`}
-        className="token"
-        style={{ color, borderColor: `${color}66` }}
-      >
+      <span key={`${m.index}-${m[0]}`} className="token">
         {m[0]}
       </span>,
     )
     last = m.index + m[0].length
-    m = re.exec(text)
+    m = TOKEN_RE.exec(text)
   }
   if (last < text.length) nodes.push(text.slice(last))
   return nodes
@@ -66,16 +55,12 @@ export function App() {
   const backdropRef = useRef<HTMLDivElement>(null)
   const recognizerRef = useRef<NerRecognizer | null>(null)
 
-  // Synchronous rule-only result — always available, instant. While the model
-  // loads, this (rules + offline gazetteer) is what the user sees, so the demo
-  // is usable immediately and upgrades to the model seamlessly once ready.
+  // Instant rule-only result — always available while the model loads.
   const ruleResult = useMemo(() => redact(text, { detectors: demoDetectors }), [text])
   const [result, setResult] = useState<RedactResult>(ruleResult)
 
   const useNer = nerStatus === "ready"
 
-  // When NER is active, recompute the hybrid result (debounced). Otherwise the
-  // instant rule-only result is the source of truth.
   useEffect(() => {
     const rec = recognizerRef.current
     if (!useNer || !rec) {
@@ -96,11 +81,9 @@ export function App() {
     }
   }, [text, useNer, ruleResult])
 
-  // The Swedish model is always on — auto-loaded once on mount. The rule layer
-  // keeps working the whole time, so there's never a blank wait.
+  // The Swedish model is always on — auto-loaded once on mount.
   useEffect(() => {
     let cancelled = false
-    // Load OUR distilled Swedish model from the demo's /public/models folder.
     const rec = createNerRecognizer({
       model: "maska-sv-ner",
       localModelPath: "/models/",
@@ -150,66 +133,48 @@ export function App() {
 
   return (
     <div className="app">
-      <header className="hero">
-        <div className="brand">
-          <span className="logo">maska</span>
-          <span className="dot" />
-          <span className="sub">svensk integritet för AI</span>
+      <header className="header">
+        <div className="head-row">
+          <span className="wordmark">maska</span>
+          <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
+            GitHub ↗
+          </a>
         </div>
-        <p className="pitch">
-          Personuppgifter maskas <strong>lokalt i webbläsaren</strong> — innan texten någonsin når
-          en AI-modell, en logg eller analytics. Skriv fritt nedan och se det hända live.
+        <h1 className="title">Maska personuppgifter innan AI:n ser dem.</h1>
+        <p className="lede">
+          Körs helt lokalt i webbläsaren — ingen text lämnar din enhet. Regler fångar det
+          strukturerade (personnummer, org-nr…), en svensk modell fångar namn och platser.
         </p>
-        <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
-          ★ GitHub
-        </a>
       </header>
 
-      <nav className="domains">
-        {scenarios.map((s) => (
-          <button
-            type="button"
-            key={s.id}
-            className={`domain ${s.id === active.id ? "on" : ""}`}
-            onClick={() => pick(s)}
-          >
-            <span className="demoji">{s.icon}</span>
-            <span className="dname">{s.name}</span>
-          </button>
-        ))}
-      </nav>
-
-      <div className="nerbar">
-        <span className="toggle ner">
-          <span>🧠 Svensk NER-modell (lokal)</span>
-        </span>
-        {nerStatus === "loading" && (
-          <span className="nerstat">
-            Laddar… {nerProgress}% · regler aktiva under tiden
-            <span className="bar">
-              <span className="fill" style={{ width: `${nerProgress}%` }} />
-            </span>
-          </span>
-        )}
-        {nerStatus === "ready" && (
-          <span className="nerstat ok">● Aktiv{analyzing ? " · analyserar…" : ""}</span>
-        )}
-        {nerStatus === "error" && (
-          <span className="nerstat err">
-            Modellen kunde inte laddas — kör på offline-gazetteer (se konsolen)
-          </span>
-        )}
-        <span className="nerhint">
-          Vår distillerade KB-BERT (~80 MB, körs i webbläsaren). Fångar godtyckliga svenska
-          namn/platser/organisationer — reglerna sköter personnummer m.m.
-        </span>
+      <div className="controls">
+        <div className="tabs">
+          {scenarios.map((s) => (
+            <button
+              type="button"
+              key={s.id}
+              className={`tab ${s.id === active.id ? "on" : ""}`}
+              onClick={() => pick(s)}
+            >
+              {s.name}
+            </button>
+          ))}
+        </div>
+        <div className="status">
+          <span className={`dot ${nerStatus}`} />
+          {nerStatus === "loading" && <span>Laddar modell {nerProgress}% · regler aktiva</span>}
+          {nerStatus === "ready" && (
+            <span>Svensk modell aktiv{analyzing ? " · analyserar" : ""}</span>
+          )}
+          {nerStatus === "error" && <span>Modell ej laddad · regler aktiva</span>}
+        </div>
       </div>
 
-      <div className="stage">
-        <section className="panel">
-          <div className="phead">
-            <h2>✍️ Vad användaren skriver</h2>
-            <span className="hint">{active.tagline} — redigerbart</span>
+      <div className="grid">
+        <section className="card">
+          <div className="card-head">
+            <span className="card-title">Indata</span>
+            <span className="card-sub">{active.tagline}</span>
           </div>
           <div className="editor">
             <div className="backdrop" ref={backdropRef} aria-hidden>
@@ -225,64 +190,58 @@ export function App() {
           </div>
         </section>
 
-        <section className="panel">
-          <div className="phead">
-            <h2>{protect ? "🛡️ Vad AI:n / loggen ser" : "⚠️ Utan maska"}</h2>
-            <label className="toggle">
-              <input
-                type="checkbox"
-                checked={protect}
-                onChange={(e) => setProtect(e.target.checked)}
-              />
-              <span>Skydd {protect ? "PÅ" : "AV"}</span>
-            </label>
+        <section className="card">
+          <div className="card-head">
+            <span className="card-title">{protect ? "Vad AI:n ser" : "Utan maska"}</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={protect}
+              className={`switch ${protect ? "on" : ""}`}
+              onClick={() => setProtect((v) => !v)}
+            >
+              <span className="knob" />
+            </button>
           </div>
-          <div className={`output ${protect ? "" : "danger"}`}>
+          <div className={`output ${protect ? "" : "raw"}`}>
             {protect ? redactedSegments(result.text) : text}
           </div>
 
           <div className="stats">
-            <div className="bignum">
-              <span className="n">{result.redactions.length}</span>
-              <span className="l">känsliga uppgifter {protect ? "skyddade" : "EXPONERADE"}</span>
+            <div className="count">
+              <span className="num">{result.redactions.length}</span>
+              <span className="num-l">
+                {protect ? "uppgifter maskade" : "uppgifter exponerade"}
+              </span>
             </div>
-            <div className="chips">
-              {counts.map(([label, n]) => {
-                const m = labelMeta(label)
-                return (
-                  <span
-                    key={label}
-                    className="chip"
-                    style={{ borderColor: `${m.color}66`, color: m.color }}
-                  >
-                    {m.sv} <b>{n}</b>
-                  </span>
-                )
-              })}
+            <div className="tags">
+              {counts.map(([label, n]) => (
+                <span key={label} className="tag">
+                  {labelSv(label)}
+                  <span className="tag-n">{n}</span>
+                </span>
+              ))}
             </div>
           </div>
 
-          <button type="button" className="maplink" onClick={() => setShowMap((v) => !v)}>
-            {showMap ? "Dölj" : "Visa"} återställning ({unique} unika värden, lokalt)
+          <button type="button" className="link" onClick={() => setShowMap((v) => !v)}>
+            {showMap ? "Dölj" : "Visa"} återställning ({unique})
           </button>
           {showMap && (
             <div className="map">
-              <p className="mapnote">
-                Mappningen stannar i webbläsaren. När AI:n svarar med platshållarna kan du
-                återställa originalvärdena lokalt — modellen såg dem aldrig.
+              <p className="map-note">
+                Mappningen stannar lokalt. AI:n ser bara platshållarna; du återställer originalet på
+                din enhet.
               </p>
               <table>
                 <tbody>
-                  {Object.entries(result.map).map(([token, value]) => {
-                    const label = token.replace(/^\[|_\d+\]$/g, "")
-                    return (
-                      <tr key={token}>
-                        <td style={{ color: labelMeta(label).color }}>{token}</td>
-                        <td>→</td>
-                        <td>{value}</td>
-                      </tr>
-                    )
-                  })}
+                  {Object.entries(result.map).map(([token, value]) => (
+                    <tr key={token}>
+                      <td className="mono">{token}</td>
+                      <td className="arrow">→</td>
+                      <td>{value}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -290,12 +249,12 @@ export function App() {
         </section>
       </div>
 
-      <footer className="foot">
-        Drivs av <code>@maska/core</code> — noll beroenden, körs helt i din webbläsare. Strukturerad
-        PII (personnummer, org-nr…) fångas av checksummevaliderade regler.
-        Namn/platser/organisationer kommer från en offline-gazetteer, eller — när du slår på
-        modellen ovan — från vår egen distillerade svenska NER-modell via <code>@maska/ner</code>,
-        även den i webbläsaren.
+      <footer className="footer">
+        Drivs av <code>@maska/core</code> + en distillerad svensk NER-modell, båda i webbläsaren.
+        Ingen data skickas någonstans.{" "}
+        <a href={`${GITHUB}/blob/main/docs/TRANSPARENCY.md`} target="_blank" rel="noreferrer">
+          Transparens
+        </a>
       </footer>
     </div>
   )
