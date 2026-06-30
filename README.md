@@ -4,19 +4,13 @@
 
 **maska** ("to mask" in Swedish) detects and redacts personal data **before it
 ever leaves the user's device** — before it hits an LLM, a log line, or an
-analytics event. The core is zero-dependency and runs anywhere JavaScript runs:
-the browser, Node, edge runtimes, React Native.
-
-It was inspired by [Rampart](https://huggingface.co/nationaldesignstudio/rampart)
-(browser-side PII redaction via a small ONNX model), but built **Swedish-first**:
-personnummer, samordningsnummer, organisationsnummer, svenska telefonnummer,
-postnummer, bankgiro/plusgiro and IBAN are first-class, checksum-validated
-citizens — not an afterthought in a multilingual model.
+analytics event. The rule core is zero-dependency and runs anywhere JavaScript
+runs: the browser, Node, edge runtimes, React Native.
 
 ```ts
 import { redact } from "@maska/core"
 
-const { text, map, restore } = redact(
+const { text, restore } = redact(
   "Jag heter Anna och mitt personnummer är 19900101-0017. Maila anna@example.se.",
 )
 
@@ -27,17 +21,16 @@ text
 restore(llmAnswer) // -> original values re-inserted locally
 ```
 
-## Live demo
+It was inspired by [Rampart](https://huggingface.co/nationaldesignstudio/rampart)
+(browser-side PII redaction via a small ONNX model), but built **Swedish-first**
+on two layers:
 
-An interactive playground shows redaction happening **as you type**, across real
-scenarios from healthcare, law, BRF/property, crisis response, HR, support,
-municipality, insurance, banking and schools — toggle the shield on/off to see
-exactly what the AI would otherwise receive.
-
-```bash
-pnpm install
-pnpm demo      # opens apps/demo on http://localhost:5180
-```
+1. **A deterministic rule layer** — personnummer, samordningsnummer,
+   organisationsnummer, Swedish phone numbers, postnummer, bankgiro/plusgiro and
+   IBAN, all checksum-validated. Zero dependencies, runs everywhere.
+2. **An optional Swedish NER model** — for the free-text entities rules can't
+   catch (names, places, organisations, addresses). We trained our own, and
+   **it beats Rampart on Swedish by a wide margin** (see the benchmark below).
 
 ## Why it exists
 
@@ -54,9 +47,45 @@ values never travel.
 - **Stable placeholders** — the same value always maps to the same token, so the
   model can reason about `[PERSON_1]` consistently and you can map results back.
 
-## What's in the box
+## Benchmark: Swedish PII (free-text entities)
 
-This is a pnpm monorepo. Today the published, battle-tested piece is the core:
+Measured on a hand-authored Swedish eval set (121 sentences, 236 entities)
+deliberately outside the training distribution — novel names/places/orgs,
+lowercase, abbreviations, foreign names, and distractors that must not be
+tagged. Span-level, type-aware F1 (see [`training/`](training/)).
+
+| Model                       | Size   | Overlap F1 | Exact F1 |
+| --------------------------- | ------ | ---------- | -------- |
+| maska teacher (KB-BERT)     | 440 MB | **0.899**  | 0.851    |
+| **maska student (distilled)** | 82 MB | **0.874** | 0.798    |
+| Rampart                     | 15 MB  | 0.621      | 0.494    |
+
+Per-type F1 (overlap): the student scores PER 0.91 / LOC 0.90 / ORG 0.81 /
+ADR 0.85. Rampart's gaps are concentrated — **ORG F1 = 0.00** (it tags no
+Swedish organisations, 0/67) and **LOC recall = 0.39**.
+
+> **Honest caveats.** The eval set is modest (121 sentences, single annotator)
+> and shares an author with the synthetic data generator — treat it as a strong
+> *directional* signal, not a final number. Doubling the set (60→121) barely
+> moved the scores, which is reassuring. The structured-PII rules are not in this
+> table because they're deterministic, not learned.
+
+## Live demo
+
+An interactive playground shows redaction happening **as you type**, across real
+scenarios from healthcare, law, BRF/property, crisis response, HR, support,
+municipality, insurance, banking and schools — toggle the shield on/off to see
+exactly what the AI would otherwise receive, and toggle the NER model on to
+catch free-text names.
+
+```bash
+pnpm install
+pnpm demo      # opens apps/demo on http://localhost:5180
+```
+
+## Packages
+
+This is a pnpm monorepo.
 
 | Package          | Status          | What it does                                          |
 | ---------------- | --------------- | ----------------------------------------------------- |
@@ -65,22 +94,24 @@ This is a pnpm monorepo. Today the published, battle-tested piece is the core:
 | `@maska/react`   | 🚧 planned      | `usePrivacyGuard()` hook + `<RedactedInput />`         |
 | `@maska/node`    | 🚧 planned      | Express middleware + Vercel AI SDK / Anthropic wrapper |
 
-The `@maska/ner` default model is [Rampart](https://huggingface.co/nationaldesignstudio/rampart)
-(CC BY 4.0 — commercial use, redistribution and fine-tuning all permitted with
-attribution). It's Latin-script, not Swedish-specific — measure recall before
-relying on it; the rule layer is the dependable floor.
+```
+maska/
+├── packages/
+│   ├── core/        @maska/core — rules + redact/restore engine (shippable today)
+│   └── ner/         @maska/ner  — Transformers.js NER layer (Rampart or our model)
+├── apps/
+│   └── demo/        interactive live-redaction playground (Vite + React)
+├── training/        Swedish NER: data gen, fine-tune, distill, ONNX, benchmark
+└── docs/ROADMAP.md  the plan
+```
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full plan.
-
-## Install
+## `@maska/core` — the rule layer
 
 ```bash
 pnpm add @maska/core
 ```
 
-## Detectors
-
-Built-in, all checksum-validated where a checksum exists:
+Built-in detectors, all checksum-validated where a checksum exists:
 
 | Label                  | Validation                          |
 | ---------------------- | ----------------------------------- |
@@ -106,30 +137,68 @@ redact("Bor i lgh 1203.", { detectors: [apartment] }).text
 // "Bor i [LAGENHETSNUMMER_1]."
 ```
 
-## API
+### API
 
 - `redact(input, options?)` → `{ text, redactions, map, restore }`
+- `redactFromDetections(input, detections, options?)` → reuse the engine with external detections
 - `restore(text, map)` → original values re-inserted
 - `regexDetector(label, globalRegex, validate?)` → a `Detector`
 - `defaultDetectors`, plus every detector individually
 - validators: `luhnValid`, `isPersonnummer`, `isSamordningsnummer`, `isOrganisationsnummer`
+
+## `@maska/ner` — the model layer (optional)
+
+Adds free-text entities (names, places, orgs) via a Transformers.js model that
+runs client-side. The ML runtime is an optional peer dependency, so
+`@maska/core` stays zero-dependency.
+
+```bash
+pnpm add @maska/ner @huggingface/transformers
+```
+
+```ts
+import { createNerRecognizer, redactWithNer } from "@maska/ner"
+
+const recognizer = createNerRecognizer() // pass { model } to use our Swedish model
+await recognizer.ready
+
+const { text } = await redactWithNer("Min granne Lars bor på Kungsholmen.", {
+  recognizer,
+})
+// "Min granne [PER_1] bor på [LOC_1]."
+```
+
+The default model is Rampart (CC BY 4.0). Our Swedish model — which wins the
+benchmark above — is trained in [`training/`](training/); point
+`createNerRecognizer({ model })` at it once hosted. See
+[`packages/ner/NOTICE`](packages/ner/NOTICE) for model attribution.
+
+## Training & the Swedish model
+
+[`training/`](training/) is a full, reproducible pipeline: synthetic Swedish
+data generation → KB-BERT fine-tune → DistilBERT-style distillation → ONNX +
+int8 → benchmark vs Rampart. It runs on Apple Silicon (MPS). See
+[`training/README.md`](training/README.md) for the method, the size ladder, and
+the lesson that a from-scratch small student memorises synthetic templates
+(F1 1.00) but doesn't generalise — initialising from the teacher fixes it.
 
 ## Development
 
 ```bash
 pnpm install
 pnpm build      # build all packages
-pnpm test       # run all tests
+pnpm test       # run all tests (vitest)
 pnpm lint       # biome
 ```
 
 ## A note on guarantees
 
 maska is **defense in depth, not a guarantee**. Regex + checksums catch
-structured data reliably; free-text names and addresses need the planned NER
-layer, and even then no redactor is perfect. Treat it as a strong first line —
-keep server-side controls too.
+structured data reliably; the NER layer catches most free-text names/places but
+no model is perfect. Treat it as a strong first line — keep server-side controls
+too.
 
 ## License
 
-MIT © Joel Hägvall
+Code: MIT © Joel Hägvall. Model weights carry their own licenses (Rampart:
+CC BY 4.0; KB-BERT base: see National Library of Sweden).

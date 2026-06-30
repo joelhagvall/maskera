@@ -69,3 +69,68 @@ Kontakta [PER:Per-Olof Mellqvist] eller [PER:Saga Thunberg] för mer information
 Bilen med reg.nr ABC 123 stod parkerad på [ADR:Hamngatan 6] i [LOC:Karlshamn].
 [PER:Leandro Costa] arbetar som tolk åt [ORG:Migrationsverket].
 ingenting i journalen tyder på att [PER:Greta Hammar] varit inlagd tidigare.
+
+# --- batch 2: more domains, messier text, abbreviations, denser entities ---
+
+t.ex. [PER:Anne-Marie Lövgren] och [PER:Per-Erik Sundström] deltog på stämman.
+Bouppteckningen efter [PER:Hildur Brandt] förrättades av [ORG:Familjejuristen i Borås AB].
+kl. 14 ringer [PER:Mustafa Demirören] från [ORG:Bygglovsavdelningen] i [LOC:Botkyrka].
+Remiss: pat. [PER:Solveig Ahlqvist] överförs från [ORG:Mora lasarett] till [ORG:Karolinska].
+[ORG:Voi] och [ORG:Tier] tvistar om elsparkcyklarna i [LOC:Vasastan].
+Hyresavtalet för [ADR:Bryggargatan 11], [LOC:Nyköping], sägs upp per den sista juni.
+ndr, [PER:Oloffur Magnusson] bytte efternamn efter flytten till [LOC:Reykjavik].
+Den misstänkte [PER:Rashid Belkacem] greps nära [ADR:Folkungagatan 92] i [LOC:Södermalm].
+Enheten leds av [PER:Marianne Tornberg], tidigare chef på [ORG:Trafikkontoret].
+bl.a. [ORG:Klarna], [ORG:Tink] och [ORG:Northmill] nämndes i utredningen.
+Avgångseleven [PER:Filippa Wennerström] sökte till [ORG:Lunds universitet].
+Skrivelsen kom från [ORG:Inspektionen för vård och omsorg] efter ett klagomål.
+adressändring registrerad: [PER:Bo Hjalmarsson] flyttar till [ADR:Ekorrstigen 3], [LOC:Saltsjöbaden].
+[PER:Yara Haddad] tolkade åt [PER:Vladyslav Kovalenko] under förhöret.
+Restaurangen [ORG:Sjömagasinet] i [LOC:Göteborg] anlitade kocken [PER:Émile Dubois].
+Vi noterar att [PER:Inga-Lill Frögren] inte längre är firmatecknare.
+Företaget, [ORG:Embracer Group], har huvudkontor i [LOC:Karlstad].
+samtal inkom 23:14 från [PER:Dragan Petrović] gällande en olycka på [ADR:Riksvägen 68].
+Eleven [PER:Amani Yusuf] i åk 7 flyttade hit från [LOC:Hagfors] i höstas.
+Beslut: bistånd beviljas [PER:Gertrud Påvelsson], boende på [ADR:Smedjegatan 4C].
+[ORG:Region Jönköpings län] upphandlade tjänsten från [ORG:Capio].
+hon heter [PER:Liv Marsdotter] i efternamn, inte Larsdotter som det stod.
+Paketet från [ORG:Budbee] kunde inte levereras till [ADR:Tunnelgatan 5].
+Domaren [PER:Carl-Gustaf Reuterskiöld] ajournerade förhandlingen till torsdag.
+Klagomålet rör [ORG:Telia] och en faktura på 1 299 kr daterad i april.
+Sjukgymnasten [PER:Wanjiru Kamau] tar emot patienter på [ORG:Aleris] i [LOC:Sollentuna].
+[PER:Sten-Åke Bohlin] sålde sommarstugan utanför [LOC:Mörbylånga].
+Polisen i [LOC:Borlänge] efterlyser ett vittne som heter [PER:Feliks Nowak].
+Kursledare är [PER:Désirée Lindahl] och [PER:Abdullahi Farah] från [ORG:Folkuniversitetet].
+ärendenr 2024-1187 handläggs av [PER:Margit Öhrn] på [ORG:Överförmyndarnämnden].
+Lägenheten på [ADR:Vallgatan 17], [LOC:Uddevalla], visas på söndag.
+[ORG:Polestar] och [ORG:Volvo Cars] presenterade en gemensam plattform.
+mejl: skicka kopian till [PER:Hampus Wikner], han sitter i [LOC:Linköping] denna vecka.
+Patienten [PER:Eldbjørg Strand] är allergisk mot penicillin enligt anhörig.
+Försäkringsbolaget [ORG:Hedvig] avslog kravet från [PER:Tomas Räikkönen].
+en kvinna vid namn [PER:Zlatka Mihaylova] anmälde stölden på [ADR:Drottninggatan 81].
+Skolan [ORG:Engelska skolan] i [LOC:Täby] anställde läraren [PER:Niamh O'Brien].
+[ORG:Lantmäteriet] registrerade fastigheten [ADR:Bäckvägen 9] i [LOC:Gnesta].
+Vd:n [PER:Gabriel Mwangi] presenterade siffrorna för styrelsen i fredags.
+nästa anhörig är dottern [PER:Rebecka Sahlström-Nyqvist], nås kvällstid.
+Frakten hanteras av [ORG:DB Schenker] från terminalen i [LOC:Jönköping].
+[PER:Henning Aalto] och hans sambo [PER:Ritva Mäkinen] köpte huset i [LOC:Haparanda].
+Anmälan avser personnummer 19720304-5678 men namnet saknas i systemet.
+Konsultbolaget [ORG:Knowit] vann uppdraget åt [ORG:Försvarets materielverk].
+mottagningen på [ORG:Husläkarna] i [LOC:Kungsbacka] har lång väntetid.
+[PER:Ulla-Britt Cervin-Ek] överklagade [ORG:Skatteverkets] beslut.
+Brevbäraren lämnade paketet hos grannen på [ADR:Linnégatan 24].
+Den nya rektorn [PER:Samuel Okafor] tillträder på [ORG:Katedralskolan] i [LOC:Skara].
+i går besökte [PER:Märta Rosén] sin mor på [ORG:Vintergatans äldreboende].
+[ORG:Mojang] och [ORG:Paradox] söker utvecklare i [LOC:Malmö] respektive [LOC:Stockholm].
+Avtalet gäller fastigheten på [ADR:Köpmangatan 2], [LOC:Sigtuna], från och med 1 maj.
+chauffören [PER:Ibrahim Touré] körde lasten till [LOC:Trelleborg] över natten.
+Patientansvarig läkare är [PER:Astrid Wickenberg] vid [ORG:Sunderby sjukhus].
+[PER:LO Ekström] (konstnärsnamn) ställer ut på galleriet i [LOC:Ystad].
+Reklamationen skickades till [ORG:Boozt] men gällde egentligen [ORG:Zalando].
+Hennes mormor [PER:Signe Wallin] bodde länge på [ADR:Fiskaregatan 7] i [LOC:Strängnäs].
+Utredaren [PER:Pernilla Hägglöf] från [ORG:IVO] intervjuade personalen.
+beslutet expedierades till [PER:Krister Bäckström] samt ombudet [PER:Leyla Karahan].
+[ORG:Spotify] flyttade delar av teamet från [LOC:Stockholm] till [LOC:Göteborg].
+Den gripne uppgav namnet [PER:Nikola Đorđević] men kunde inte styrka det.
+Hyresgästföreningen i [LOC:Husby] företräds av [PER:Veronika Adamczyk].
+

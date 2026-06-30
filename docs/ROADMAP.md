@@ -41,14 +41,23 @@ package stays tiny and dependency-free.
 - [ ] Vercel AI SDK middleware + Anthropic/OpenAI client wrappers
       (`beforeLLM`, `beforeLogging`, `beforeAnalytics`)
 
-### v0.5 — `@maska/ner` (opt-in ML) — scaffolded 🧪
+### v0.5 — `@maska/ner` (opt-in ML) — done 🧪
 - [x] Transformers.js loader for an ONNX token-classification model
 - [x] `createNerRecognizer()` + `redactWithNer()` hybrid (rules win on overlap)
-- [x] Rampart confirmed CC BY 4.0 (commercial + redistribution + fine-tune OK,
-      attribution required — see `packages/ner/NOTICE`)
+- [x] Rampart confirmed CC BY 4.0 (commercial + redistribution + fine-tune OK)
 - [x] WASM + WebGPU backends, lazy model fetch
-- [ ] **Measure Rampart recall on a real Swedish corpus** ← gating step
-- [ ] Fine-tune a Swedish NER head if recall is insufficient
+- [x] Span reconstruction from subword tokens
+
+### v0.6 — Swedish NER model (`training/`) — done ✅
+- [x] Synthetic Swedish data generator (BIO, GDPR-safe)
+- [x] Fine-tune KB-BERT (PER/LOC/ORG/ADR); structured PII stays with rules
+- [x] Distill to a smaller student (DistilBERT-style, teacher-init)
+- [x] ONNX export + int8 quantization (497 MB → 82 MB)
+- [x] Hand-authored Swedish eval set + benchmark harness
+- [x] **Result: student 0.874 F1 vs Rampart 0.621** (overlap, out-of-template)
+- [ ] Grow the eval set + second annotator + real (non-authored) text
+- [ ] Vocab trim + q4 toward ~20-30 MB browser size
+- [ ] Host the model and wire it as the Swedish default in `@maska/ner`
 
 ## Possible business shape
 

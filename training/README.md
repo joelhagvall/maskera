@@ -102,20 +102,33 @@ On an M4 Pro (MPS) step 3 takes ~8–9 minutes for 3 epochs over 9k examples.
 
 ## Benchmark (real eval set)
 
-`evaluate.py` scores models on `eval/gold.txt` — 60 hand-authored Swedish
-sentences (109 entities) deliberately outside the training templates: novel
-names/places/orgs, lowercase, abbreviations, and distractors (personnummer,
-dates) that must not be tagged. Span-level, type-aware P/R/F1.
+`evaluate.py` scores models on `eval/gold.txt` — 121 hand-authored Swedish
+sentences (236 entities) deliberately outside the training templates: novel
+names/places/orgs, lowercase, abbreviations, hyphenated/foreign names, and
+distractors (personnummer, dates, money) that must not be tagged. Span-level,
+type-aware P/R/F1.
+
+**Overall F1:**
 
 | Model                     | Size   | Overlap F1 | Exact F1 |
 | ------------------------- | ------ | ---------- | -------- |
-| teacher (KB-BERT)         | 440 MB | **0.906**  | 0.855    |
-| **student (distilled)**   | 82 MB  | **0.884**  | 0.815    |
-| Rampart                   | 15 MB  | 0.652      | 0.578    |
+| teacher (KB-BERT)         | 440 MB | **0.899**  | 0.851    |
+| **student (distilled)**   | 82 MB  | **0.874**  | 0.798    |
+| Rampart                   | 15 MB  | 0.621      | 0.494    |
 
-The distilled student beats Rampart by **+23 F1** on Swedish. Rampart's failures
-are concentrated: **ORG F1 = 0.00** (it tags no Swedish organisations — 0/27)
-and **LOC recall = 0.43** (misses/mislabels Swedish places). Run
+**Per-type F1 (overlap):**
+
+| Type | teacher | student | Rampart |
+| ---- | ------- | ------- | ------- |
+| PER  | 0.93    | 0.91    | 0.84    |
+| LOC  | 0.89    | 0.90    | 0.52    |
+| ORG  | 0.88    | 0.81    | **0.00** |
+| ADR  | 0.88    | 0.85    | 0.79    |
+
+The distilled student beats Rampart by **+0.25 F1** on Swedish. Rampart's
+failures are concentrated: **ORG F1 = 0.00** (it tags no Swedish organisations —
+0/67) and **LOC recall = 0.39** (misses/mislabels Swedish places). Doubling the
+eval set (60→121 sentences) barely moved the scores, so the gap is stable. Run
 `python evaluate.py` to reproduce.
 
 > **Honest caveats.** The eval set is small (60 sentences, single annotator) and
