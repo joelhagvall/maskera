@@ -1,5 +1,5 @@
 import { GITHUB } from "../constants"
-import { ArrowUpRightIcon } from "../icons"
+import { ArrowUpRightIcon, MaskaMark } from "../icons"
 
 export function Transparency({ onBack }: { onBack: () => void }) {
   return (
@@ -8,7 +8,10 @@ export function Transparency({ onBack }: { onBack: () => void }) {
         <button type="button" className="back" onClick={onBack}>
           ← Tillbaka till demon
         </button>
-        <span className="wordmark">maska</span>
+        <span className="wordmark">
+          <MaskaMark size={20} />
+          maska
+        </span>
       </div>
 
       <article className="prose">
