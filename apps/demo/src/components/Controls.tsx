@@ -14,9 +14,15 @@ function ModelStatus({
   return (
     <div className="status">
       <span className={`dot ${status}`} />
-      {status === "loading" && <span>Laddar modell {progress}% · regler aktiva</span>}
-      {status === "ready" && <span>Svensk modell aktiv{analyzing ? " · analyserar" : ""}</span>}
-      {status === "error" && <span>Modell ej laddad · regler aktiva</span>}
+      {status === "loading" && (
+        <span>Laddar svensk AI-modell… {progress}% · regler skyddar redan</span>
+      )}
+      {status === "ready" && (
+        <span>
+          Svensk AI-modell aktiv{analyzing ? " · analyserar…" : " · fångar namn & platser"}
+        </span>
+      )}
+      {status === "error" && <span>AI-modell kunde inte laddas · regler skyddar</span>}
     </div>
   )
 }
