@@ -1,0 +1,12 @@
+maskera-sv-ner
+Copyright (c) Joel Hägvall
+Licensed under the Apache License, Version 2.0.
+
+This model was fine-tuned/distilled on top of:
+
+  KB-BERT — KB/bert-base-swedish-cased
+  The National Library of Sweden / KBLab
+  Released under CC0 1.0 (public domain dedication).
+  https://huggingface.co/KB/bert-base-swedish-cased
+
+CC0 imposes no conditions; this acknowledgement is provided as a courtesy.
