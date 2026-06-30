@@ -8,9 +8,10 @@ declare module "@huggingface/transformers" {
     entity_group?: string
     entity?: string
     score: number
+    index?: number
     word: string
-    start: number | null
-    end: number | null
+    start?: number | null
+    end?: number | null
   }
 
   export interface TokenClassificationOptions {

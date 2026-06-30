@@ -1,8 +1,11 @@
-import { type Redaction, redact } from "@maska/core"
-import { type ReactNode, useMemo, useRef, useState } from "react"
+import { type RedactResult, type Redaction, redact } from "@maska/core"
+import { type NerRecognizer, createNerRecognizer, redactWithNer } from "@maska/ner"
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react"
 import { demoDetectors } from "./detectors"
 import { labelMeta } from "./labels"
 import { type Scenario, scenarios } from "./scenarios"
+
+type NerStatus = "off" | "loading" | "ready" | "error"
 
 const GITHUB = "https://github.com/joelhagvall/maska"
 
@@ -57,9 +60,72 @@ export function App() {
   const [text, setText] = useState<string>(scenarios[0].text)
   const [protect, setProtect] = useState(true)
   const [showMap, setShowMap] = useState(false)
+  const [nerOn, setNerOn] = useState(false)
+  const [nerStatus, setNerStatus] = useState<NerStatus>("off")
+  const [nerProgress, setNerProgress] = useState(0)
+  const [analyzing, setAnalyzing] = useState(false)
   const backdropRef = useRef<HTMLDivElement>(null)
+  const recognizerRef = useRef<NerRecognizer | null>(null)
 
-  const result = useMemo(() => redact(text, { detectors: demoDetectors }), [text])
+  // Synchronous rule-only result — always available, instant.
+  const ruleResult = useMemo(() => redact(text, { detectors: demoDetectors }), [text])
+  const [result, setResult] = useState<RedactResult>(ruleResult)
+
+  const useNer = nerOn && nerStatus === "ready"
+
+  // When NER is active, recompute the hybrid result (debounced). Otherwise the
+  // instant rule-only result is the source of truth.
+  useEffect(() => {
+    const rec = recognizerRef.current
+    if (!useNer || !rec) {
+      setResult(ruleResult)
+      return
+    }
+    let cancelled = false
+    setAnalyzing(true)
+    const timer = setTimeout(() => {
+      redactWithNer(text, { recognizer: rec, detectors: demoDetectors })
+        .then((r) => !cancelled && setResult(r))
+        .catch(() => !cancelled && setResult(ruleResult))
+        .finally(() => !cancelled && setAnalyzing(false))
+    }, 250)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [text, useNer, ruleResult])
+
+  async function toggleNer(on: boolean) {
+    setNerOn(on)
+    if (!on) {
+      setNerStatus("off")
+      return
+    }
+    if (recognizerRef.current) {
+      setNerStatus("ready")
+      return
+    }
+    setNerStatus("loading")
+    setNerProgress(0)
+    const rec = createNerRecognizer({
+      device: "wasm",
+      onProgress: (p) => {
+        const prog = p as { status?: string; progress?: number }
+        if (prog?.status === "progress" && typeof prog.progress === "number") {
+          setNerProgress(Math.round(prog.progress))
+        }
+      },
+    })
+    recognizerRef.current = rec
+    try {
+      await rec.ready
+      setNerStatus("ready")
+    } catch (err) {
+      console.error(err)
+      recognizerRef.current = null
+      setNerStatus("error")
+    }
+  }
 
   const counts = useMemo(() => {
     const c = new Map<string, number>()
@@ -109,6 +175,34 @@ export function App() {
           </button>
         ))}
       </nav>
+
+      <div className="nerbar">
+        <label className="toggle ner">
+          <input type="checkbox" checked={nerOn} onChange={(e) => toggleNer(e.target.checked)} />
+          <span>🧠 NER-modell (Rampart)</span>
+        </label>
+        {nerStatus === "loading" && (
+          <span className="nerstat">
+            Laddar modell… {nerProgress}%
+            <span className="bar">
+              <span className="fill" style={{ width: `${nerProgress}%` }} />
+            </span>
+          </span>
+        )}
+        {nerStatus === "ready" && (
+          <span className="nerstat ok">● Rampart aktiv{analyzing ? " · analyserar…" : ""}</span>
+        )}
+        {nerStatus === "error" && (
+          <span className="nerstat err">Kunde inte ladda modellen (se konsolen)</span>
+        )}
+        {nerStatus === "off" && (
+          <span className="nerstat muted">Av — namn fångas av offline-gazetteer</span>
+        )}
+        <span className="nerhint">
+          ~15 MB första gången, sen cachat. Fångar godtyckliga namn/platser — testa ett namn som
+          inte finns i listan.
+        </span>
+      </div>
 
       <div className="stage">
         <section className="panel">
@@ -197,8 +291,8 @@ export function App() {
 
       <footer className="foot">
         Drivs av <code>@maska/core</code> — noll beroenden, körs helt i din webbläsare. Strukturerad
-        PII är checksummevaliderad; namn/platser i denna demo använder en liten offline-gazetteer (i
-        produktion: <code>@maska/ner</code>).
+        PII är checksummevaliderad. Namn/platser kommer från en offline-gazetteer, eller — när du
+        slår på NER ovan — från <code>@maska/ner</code> + Rampart-modellen, även den i webbläsaren.
       </footer>
     </div>
   )
