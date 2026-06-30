@@ -20,8 +20,8 @@ widget:
 
 # maskera-sv-ner
 
-A small Swedish token-classification model that finds **free-text PII** —
-people, places and organisations — so it can be redacted before text is sent to
+A small Swedish token-classification model that finds **free-text PII**
+(people, places and organisations) so it can be redacted before text is sent to
 an LLM. It is the optional model layer of [**maskera**](https://github.com/joelhagvall/maskera),
 a Swedish-first, client-side PII redaction toolkit. The deterministic stuff
 (personnummer, organisationsnummer, IBAN, phone, e-mail…) is handled by
@@ -29,7 +29,7 @@ maskera's rule layer; this model only fills the gaps rules can't: names and
 places in running text.
 
 It runs **fully in the browser** via [Transformers.js](https://huggingface.co/docs/transformers.js)
-/ ONNX Runtime Web — no server, no data leaves the device.
+/ ONNX Runtime Web: no server, no data leaves the device.
 
 - **Base model:** [KB/bert-base-swedish-cased](https://huggingface.co/KB/bert-base-swedish-cased) (KB-BERT, CC0), 6 transformer layers
 - **Task:** token classification (BIO), entity types `PER`, `LOC`, `ORG`, `ADR`
@@ -54,7 +54,7 @@ Three ONNX variants are published so you can trade size for quality:
 
 | `dtype`  | file                       | size    | notes                          |
 | -------- | -------------------------- | ------- | ------------------------------ |
-| `"q4"`   | `onnx/model_q4.onnx`       | ~38 MB  | default — fastest, smallest    |
+| `"q4"`   | `onnx/model_q4.onnx`       | ~38 MB  | default, fastest, smallest     |
 | `"q8"`   | `onnx/model_quantized.onnx`| ~55 MB  | int8, better quality           |
 | `"fp32"` | `onnx/model.onnx`          | ~220 MB | full precision, best quality   |
 
@@ -97,7 +97,7 @@ const out = await ner("Anna Lindqvist bor i Göteborg.")
   for anything legally sensitive.
 - Trained for Swedish; behaviour on other languages is undefined.
 - Structured identifiers (personnummer, IBAN, phone numbers, …) are deliberately
-  out of scope — use maskera's rule layer for those.
+  out of scope; use maskera's rule layer for those.
 
 ## Evaluation
 
@@ -111,7 +111,7 @@ free-text PER/LOC/ORG spans + hard negatives), `dtype="q4"`:
 | F1        | 84%   | harmonic mean                            |
 | leaks     | 0     | entities missed entirely (the safety number) |
 
-This is a small smoke set, not a large benchmark — it tracks regressions, not
+This is a small smoke set, not a large benchmark; it tracks regressions, not
 absolute quality. The reproducible harness and corpus live in the
 [maskera repo](https://github.com/joelhagvall/maskera) (`packages/ner/eval`);
 run it yourself before relying on the numbers.
@@ -121,7 +121,7 @@ run it yourself before relying on the numbers.
 - **This model:** Apache-2.0.
 - **Base model:** KB-BERT (`KB/bert-base-swedish-cased`) is released CC0 by the
   National Library of Sweden (Kungliga biblioteket). No obligations attach, but
-  we acknowledge it gratefully — see `NOTICE`.
+  we acknowledge it gratefully; see `NOTICE`.
 
 ## Citation
 
