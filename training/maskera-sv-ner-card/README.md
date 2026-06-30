@@ -101,20 +101,21 @@ const out = await ner("Anna Lindqvist bor i Göteborg.")
 
 ## Evaluation
 
-Smoke-eval on the maskera gold corpus (hand-authored Swedish sentences with
-free-text PER/LOC/ORG spans + hard negatives), `dtype="q4"`:
+Evaluated on the maskera gold corpus: 189 free-text PER/LOC/ORG entities across
+135 hand-authored Swedish sentences (incl. 25 hard negatives), `dtype="q4"`:
 
 | metric    | score | meaning                                  |
 | --------- | ----- | ---------------------------------------- |
-| recall    | 92%   | of real entities, how many were found    |
-| precision | 77%   | of predictions, how many were correct    |
-| F1        | 84%   | harmonic mean                            |
-| leaks     | 0     | entities missed entirely (the safety number) |
+| recall    | 96.8% | of real entities, how many were found    |
+| precision | 95.3% | of predictions, how many were correct    |
+| F1        | 96.1% | harmonic mean                            |
+| leaks     | 1.6%  | entities missed entirely (the safety number) |
 
-This is a small smoke set, not a large benchmark; it tracks regressions, not
-absolute quality. The reproducible harness and corpus live in the
-[maskera repo](https://github.com/joelhagvall/maskera) (`packages/ner/eval`);
-run it yourself before relying on the numbers.
+The remaining misses are organisation names; person and place recall is higher.
+This is a curated corpus, not a large public benchmark, so treat it as a
+regression tracker rather than a universal score. The reproducible harness and
+corpus live in the [maskera repo](https://github.com/joelhagvall/maskera)
+(`packages/ner/eval`); run it yourself before relying on the numbers.
 
 ## License & attribution
 
