@@ -106,10 +106,10 @@ Evaluated on the maskera gold corpus: 189 free-text PER/LOC/ORG entities across
 
 | metric    | score | meaning                                  |
 | --------- | ----- | ---------------------------------------- |
-| recall    | 96.8% | of real entities, how many were found    |
-| precision | 95.3% | of predictions, how many were correct    |
-| F1        | 96.1% | harmonic mean                            |
-| leaks     | 1.6%  | entities missed entirely (the safety number) |
+| recall    | 97.9% | of real entities, how many were found    |
+| precision | 93.0% | of predictions, how many were correct    |
+| F1        | 95.4% | harmonic mean                            |
+| leaks     | 0.5%  | entities missed entirely (the safety number) |
 
 This is a curated corpus (clean, well-formed sentences), so treat it as an upper
 bound and regression tracker, not a universal score.
@@ -120,14 +120,15 @@ write: 2453 sentences, 1280 PER/LOC/ORG entities, `dtype="q4"`:
 
 | metric    | score | meaning                                  |
 | --------- | ----- | ---------------------------------------- |
-| recall    | 77.6% | of real entities, how many were found    |
-| precision | 79.5% | of predictions, how many were correct    |
-| F1        | 78.5% | harmonic mean                            |
-| leaks     | 17.7% | entities missed entirely (the safety number) |
+| recall    | 85.2% | of real entities, how many were found    |
+| precision | 70.1% | of predictions, how many were correct    |
+| F1        | 76.9% | harmonic mean                            |
+| leaks     | 9.1%  | entities missed entirely (the safety number) |
 
-Recall by type: PERSON 85.6%, LOCATION 74.9%, ORGANIZATION 64.9%. On messy
-real-world text expect numbers in this range, not the curated 96%. Person recall
-is strongest; organisation recall is the weak spot. Both harnesses live in the
+Recall by type: PERSON 91.0%, LOCATION 86.5%, ORGANIZATION 72.5%. The model is
+tuned for redaction, so it favours recall (catch the PII) over precision (it
+will over-flag some non-PII, which is the safe direction). On messy real-world
+text expect numbers in this range, not the curated 95%. Both harnesses live in the
 [maskera repo](https://github.com/joelhagvall/maskera) (`packages/ner/eval`);
 run them yourself before relying on the numbers.
 
