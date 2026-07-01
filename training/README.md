@@ -153,6 +153,35 @@ Each round also retrained the teacher on the new data. Synthetic data is the
 ceiling; a real labelled Swedish set is the next real gain — but error-driven
 synthetic rounds + a precision guard got us to ~0.95 (own) / ~0.85 (independent).
 
+### v5.1: targeting ORG recall (Swedish NER Corpus)
+
+ORG stayed the weakest type, so v5 added ~100 organisations plus 10 ORG-heavy
+templates. Graded on a second independent benchmark now wired into the harness,
+the public **Swedish NER Corpus** (klintan / Webbnyheter 2012, 2453 sentences,
+run with `node packages/ner/eval/benchmark-swedish-ner.mjs`), that first attempt
+over-fired: recall and leaks improved but precision collapsed (0.80 to 0.64),
+because bare acronyms (EU, FN, LO, SVT) and common words (Investor, Stadium)
+taught the model to tag any short capitalised token. Raising `minScore` could not
+recover it (the tradeoff curve was flat), confirming a model-level over-fire, not
+a threshold problem.
+
+v5.1 kept only distinctive news-domain orgs (sports clubs, parties, distinct
+media titles, agency names) and cut the ORG templates from 10 to 3. That held the
+recall gain while recovering most of the precision:
+
+| Metric (independent) | v4 (was shipped) | v5.1 (shipped) |
+| -------------------- | ---------------- | -------------- |
+| ORG recall           | 0.649            | **0.725**      |
+| overall recall       | 0.776            | **0.852**      |
+| leaks (missed)       | 17.7%            | **9.1%**       |
+| precision            | 0.795            | 0.701          |
+| span F1              | 0.785            | 0.769          |
+
+Leaks nearly halved and ORG recall rose 0.076, for a modest precision cost (more
+over-flagging, the safe direction for redaction). The curated set stayed flat
+(0.961 to 0.954 F1). The lesson repeats: a surgical synthetic round buys recall,
+but precision on independent text is capped by the synthetic ceiling.
+
 **Per-type F1 (overlap):**
 
 | Type | teacher | student | Rampart |
@@ -230,6 +259,18 @@ The honest reality this surfaced:
 **Conclusion: stop optimising synthetic data — the real next gain is a real
 labelled Swedish eval set**, needed even just to measure honestly. Run
 `python evaluate_public.py` to reproduce.
+
+**Next step, now confirmed on the training side by v5.1: a real labelled Swedish
+*training* set, not just an eval set.** The v5 to v5.1 round showed the same
+pattern from the data end. A surgical synthetic round still lifts recall (leaks
+17.7% to 9.1%, ORG recall 0.65 to 0.73), but precision on independent text stays
+capped by the synthetic distribution (it fell rather than rose). The one lever
+left that raises precision and recall together is real annotated Swedish text
+from the target domains (support, healthcare, legal). Until that exists, the
+shipped model is deliberately tuned for recall (catch the PII) over precision
+(over-flagging is the safe failure mode for redaction), which is why v5.1 ships
+despite the lower precision. Reproduce with
+`node packages/ner/eval/benchmark-swedish-ner.mjs`.
 
 ## Publish to Hugging Face (single hosted source)
 
