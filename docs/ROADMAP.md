@@ -57,6 +57,10 @@ ask — adapters for frameworks nobody uses yet is wasted surface area. If/when:
 - [x] ONNX export + quantization (497 MB → 82 MB int8 → 56 MB vocab-trim → 40 MB +q4)
 - [x] Hand-authored Swedish eval set + benchmark harness
 - [x] **Result: student 0.874 F1 vs Rampart 0.621** (overlap, out-of-template)
+- [x] **Honest benchmark vs the strong baseline** (`benchmark_competitors.py`):
+      maskera matches `KB/bert-base-swedish-cased-ner` on independent text (0.92
+      vs 0.92 type-aware F1) at 1/10th the size; Språkbanken PII models target a
+      different task and barely fire on general PER/LOC/ORG
 - [x] Grow the training set with real (non-authored) text: Swedish NER Corpus
       news split via `convert_klintan.mjs` (v6, independent gold F1 0.85 to 0.89,
       precision and recall both up where synthetic data could only trade them)
@@ -81,4 +85,24 @@ Synthetic rounds have capped out on precision; the gains from here are data.
       scratch). `convert_klintan.mjs` is the reusable CoNLL-to-BIO ingestion path.
 - [ ] **Design-partner data** under a DPA (pseudonymised) for true target-domain
       text once a pilot exists.
+
+#### Credibility & DX (make it trustable, not just good)
+
+The model is competitive; these turn "impressive release" into "a team can adopt
+it". Do them after the eval work above, since a demo does not answer the
+credibility question that a benchmark does.
+
+- [ ] **Live demo Space** with a text box and before/after redaction, and 5 short
+      examples up top (personnummer + name + company + place) so the value lands
+      in 5 seconds.
+- [ ] **"Why not just regex?"** section: regex nails structured PII (personnummer,
+      IBAN, phone) but cannot catch free-text names/places/orgs, which is exactly
+      the model's job. Spell out the split.
+- [ ] **Production checklist**: thresholding (`minScore`), human review for
+      high-stakes flows, what to log (and not), false-negative posture (redaction
+      recall, not F1, is the number that matters), and that structured PII is
+      deterministic while free-text PII is best-effort.
+- [ ] **Larger, messier eval** (support tickets, BRF, agency text, email, chat,
+      OCR noise, lowercase, slang, misspellings) so the numbers reflect the real
+      target domain, not clean prose.
 
