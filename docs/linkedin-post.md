@@ -22,11 +22,11 @@ Everything happens inside your browser.
 
 Your data never leaves your device. Not even to me.
 
-The model is just 40 MB, small enough to run on your laptop, yet nearly on par with the National Library of Sweden's full-size model. It's fully open, so you can check that yourself.
+The model is just 40 MB, small enough to run on your laptop, yet nearly on par with the National Library of Sweden's full-size model. It's fully open source, so anyone can inspect it and reproduce the numbers.
 
-And on August 2, the EU AI Act's rules for high-risk AI come into effect, raising the bar for how organizations handle personal data.
+And on August 2, the EU AI Act's rules for high-risk AI come into effect, raising the bar for how AI systems handle personal data.
 
-Swedish-first and free to use. Useful anywhere personal data meets AI, especially healthcare, law, support and the public sector.
+Swedish-first and free. Useful anywhere personal data meets AI, especially healthcare, law, support and the public sector.
 
 You can try it right now, in your browser. Nothing to install: [DEMO LINK]
 
@@ -59,7 +59,10 @@ external links can suppress LinkedIn reach):
   like a compliance vendor. The AI Act sits near the end with a neutral connector
   back to the theme ("raising the bar for how organizations handle personal
   data"), NOT a salesy tail like "stops being enough" or buzzwords like
-  "privacy-first AI workflows".
+  "privacy-first AI workflows". Scope it to "how AI systems handle personal data",
+  not "how organizations handle personal data": the AI Act's high-risk rules
+  govern specific AI systems, not everyone processing personal data (that is
+  GDPR). Don't imply universal coverage.
 - **"It's fully open, so you can check that yourself"** sits right after the KB
   claim on purpose: it turns the benchmark into something auditable, which is the
   social proof, not a boast.
