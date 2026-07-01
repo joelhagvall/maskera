@@ -150,8 +150,28 @@ the privacy-relevant **redaction recall** = was the PII masked at all):
 | our hand-authored set (PII-style)     | **0.945**     | 0.95               |
 | independent gold (real Wikipedia text)| **0.891**     | 0.95               |
 
-For reference, Rampart scores ~0.39 on independent Swedish (it isn't trained on
-Swedish; ORG F1 = 0.00).
+### vs the real competitors (not just Rampart)
+
+On the independent gold set, mapped to PER/LOC/ORG (`python
+training/benchmark_competitors.py`):
+
+| Model                              | size    | redaction recall | type-aware F1 |
+| ---------------------------------- | ------- | ---------------- | ------------- |
+| **maskera** (distilled student)    | 82M fp32 / **40 MB q4** | 0.98 | **0.92** |
+| KB/bert-base-swedish-cased-ner     | ~440 MB | 1.00             | 0.92          |
+| Rampart                            | 15 MB   | ~0.4             | ~0.39         |
+| sbx PII general / detailed         | ~440 MB | 0.05 / 0.10      | 0.10 / 0.19   |
+
+The honest read:
+
+- **maskera matches KB**, the strong full-size Swedish baseline, at fp32 (0.92 vs
+  0.92). That is the point: you are not trading quality for the browser. The
+  *shipped* 40 MB q4 gives up ~0.03 F1 for 10x smaller size and client-side use.
+- **The Språkbanken PII models are a different task** (PII categories from learner
+  essays), so they barely fire on general name/place/org text; not a competitor
+  for free-text redaction. The real comparison is KB, and maskera holds it.
+- Rampart is a weak Swedish baseline (ORG F1 = 0.00); beating it was never the
+  bar.
 
 The shipped model is **v6**. A synthetic-only round (v5.1) hit a precision
 ceiling on independent text (it could buy recall only by over-flagging), so v6
