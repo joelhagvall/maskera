@@ -8,13 +8,18 @@ const MAP: Record<string, LabelMeta> = {
   // names
   NAMN: { sv: "Namn", color: "#2563eb" }, // blue
   PER: { sv: "Namn", color: "#2563eb" }, // blue
+  PERSON: { sv: "Namn", color: "#2563eb" }, // blue
   // places & addresses
   LOC: { sv: "Plats", color: "#16a34a" }, // green
+  LOCATION: { sv: "Plats", color: "#16a34a" }, // green
   ADR: { sv: "Adress", color: "#ea580c" }, // orange
+  ADRESS: { sv: "Adress", color: "#ea580c" }, // orange
+  ADDRESS: { sv: "Adress", color: "#ea580c" }, // orange
   POSTNUMMER: { sv: "Postnummer", color: "#65a30d" }, // lime
   LAGENHETSNUMMER: { sv: "Lägenhetsnr", color: "#059669" }, // emerald
   // organisations
   ORG: { sv: "Organisation", color: "#d97706" }, // amber
+  ORGANIZATION: { sv: "Organisation", color: "#d97706" }, // amber
   ORGANISATIONSNUMMER: { sv: "Org.nummer", color: "#ca8a04" }, // yellow
   // structured ids & contact
   PERSONNUMMER: { sv: "Personnummer", color: "#dc2626" }, // red
