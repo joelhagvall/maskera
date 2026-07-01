@@ -57,10 +57,30 @@ ask — adapters for frameworks nobody uses yet is wasted surface area. If/when:
 - [x] ONNX export + quantization (497 MB → 82 MB int8 → 56 MB vocab-trim → 40 MB +q4)
 - [x] Hand-authored Swedish eval set + benchmark harness
 - [x] **Result: student 0.874 F1 vs Rampart 0.621** (overlap, out-of-template)
-- [ ] Grow the eval set + second annotator + real (non-authored) text
+- [x] Grow the training set with real (non-authored) text: Swedish NER Corpus
+      news split via `convert_klintan.mjs` (v6, independent gold F1 0.85 to 0.89,
+      precision and recall both up where synthetic data could only trade them)
 - [x] Vocab trim 50k→16k (82→56 MB) + combined q4-matmul/int8-embed (56→40 MB)
+- [x] Host the model on the Hugging Face Hub (`joelhagvall/maskera-sv-ner`)
 - [ ] Smaller architecture (fewer layers / MiniLM) toward ~15 MB if needed
-- [ ] Host the model and wire it as the Swedish default in `@maskera/ner`
+- [ ] Wire the hosted model as the Swedish default in `@maskera/ner`
+
+#### Data next steps (the real lever now)
+
+Synthetic rounds have capped out on precision; the gains from here are data.
+
+- [ ] **Larger independent gold set.** gold-real is only ~22 sentences, and
+      training on the Swedish NER Corpus made its test split in-distribution, so
+      we need a fresh held-out gold set just to measure honestly.
+- [ ] **Real target-domain data** (support / healthcare / legal), the domains
+      maskera actually targets and that public news/wiki sets don't reach. Legal,
+      GDPR-safe starting points: public court rulings (domstol.se), municipal
+      records and agency decisions (already public documents with real entities).
+- [ ] **Model-assisted annotation** to make the above affordable: pre-label with
+      the current model or an LLM, then human-correct (5-10x faster than from
+      scratch). `convert_klintan.mjs` is the reusable CoNLL-to-BIO ingestion path.
+- [ ] **Design-partner data** under a DPA (pseudonymised) for true target-domain
+      text once a pilot exists.
 
 ## Possible business shape
 
