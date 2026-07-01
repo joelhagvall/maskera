@@ -77,4 +77,11 @@ export const scenarios: Scenario[] = [
     tagline: "Elevärende till AI-stöd",
     text: "Elev Elsa Lindqvist, 020314-0785, i klass 8B har hög frånvaro. Vårdnadshavare Anders Lindqvist nås på 070-777 88 99 och anders.lindqvist@example.se. Familjen bor på Skolvägen 4. Föreslå en åtgärdsplan.",
   },
+  {
+    id: "fritext",
+    icon: "✍️",
+    name: "Fri text",
+    tagline: "din egen text",
+    text: "",
+  },
 ]

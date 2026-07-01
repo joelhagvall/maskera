@@ -178,4 +178,5 @@ export const DOMAIN_ICONS: Record<string, (p: IconProps) => ReactElement> = {
   forsakring: ShieldIcon,
   bank: BankIcon,
   skola: SchoolIcon,
+  fritext: PencilIcon,
 }
