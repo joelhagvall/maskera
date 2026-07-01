@@ -508,6 +508,83 @@ const ORGS = [
   "DHL",
   "Norrtälje kommun",
   "Lidingö stad",
+  // v5.1: news-domain orgs to lift ORG recall. Curated to DISTINCTIVE names
+  // only: no bare 2-3 letter acronyms (EU, FN, LO, SVT, KTH) and no common
+  // words (Investor, Stadium, Kicks), which made v5 over-fire and tank precision.
+  // sports clubs
+  "AIK",
+  "Hammarby IF",
+  "Djurgården",
+  "IFK Göteborg",
+  "Malmö FF",
+  "IF Elfsborg",
+  "BK Häcken",
+  "Frölunda HC",
+  "Färjestad BK",
+  "Brynäs IF",
+  "Skellefteå AIK",
+  "Leksands IF",
+  "Luleå Hockey",
+  "Kalmar FF",
+  // political parties
+  "Socialdemokraterna",
+  "Moderaterna",
+  "Sverigedemokraterna",
+  "Centerpartiet",
+  "Vänsterpartiet",
+  "Liberalerna",
+  "Kristdemokraterna",
+  "Miljöpartiet",
+  // agencies (distinctive compound names only)
+  "Riksbanken",
+  "Konkurrensverket",
+  "Livsmedelsverket",
+  "Folkhälsomyndigheten",
+  "Socialstyrelsen",
+  "Energimyndigheten",
+  "Skolverket",
+  "Kronofogden",
+  "Säkerhetspolisen",
+  "Försvarsmakten",
+  "Naturvårdsverket",
+  // unions / employer orgs
+  "Kommunal",
+  "IF Metall",
+  "Unionen",
+  "Svenskt Näringsliv",
+  "Lärarförbundet",
+  "Vårdförbundet",
+  // media (distinctive titles, not the SVT/TV4/TT acronyms)
+  "Aftonbladet",
+  "Expressen",
+  "Dagens Nyheter",
+  "Svenska Dagbladet",
+  "Göteborgs-Posten",
+  "Sydsvenskan",
+  "Dagens Industri",
+  // more Swedish companies (distinctive names)
+  "AstraZeneca",
+  "Saab",
+  "SSAB",
+  "Boliden",
+  "Husqvarna",
+  "Alfa Laval",
+  "Assa Abloy",
+  "Nordea",
+  "Avanza",
+  "Stena Line",
+  "Telenor",
+  "Tele2",
+  // universities
+  "Stockholms universitet",
+  "Göteborgs universitet",
+  "Umeå universitet",
+  "Karolinska Institutet",
+  "Linnéuniversitetet",
+  // other
+  "Svenska kyrkan",
+  "Skandia",
+  "Folktandvården",
 ]
 
 // --- entity builders ----------------------------------------------------
@@ -666,6 +743,11 @@ const TEMPLATES = [
   "ROT- och RUT-avdrag dras automatiskt.",
   "Frågor och svar finns under FAQ på sidan.",
   "Hör av dig till HR eller IT vid problem.",
+  // v5.1: a few ORG-in-news contexts (sports/politics/general). Kept to 3, not
+  // 10, so ORG density doesn't spike and drag precision down.
+  "{ORG} vann mot {ORG} med 3-1 i går.",
+  "{ORG} presenterade sitt budgetförslag i riksdagen.",
+  "{PER} lämnar {ORG} efter flera år som ordförande.",
 ]
 
 function tokenizeFiller(str) {

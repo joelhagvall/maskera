@@ -130,6 +130,7 @@ const recognizer = createNerRecognizer({
   localModelPath: MODEL_PATH,
   allowLocalModels: true,
   allowRemoteModels: false,
+  minScore: process.env.MIN_SCORE ? Number(process.env.MIN_SCORE) : 0.5,
 })
 try {
   await recognizer.ready
