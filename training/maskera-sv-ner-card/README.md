@@ -101,36 +101,36 @@ const out = await ner("Anna Lindqvist bor i Göteborg.")
 
 ## Evaluation
 
-Evaluated on the maskera gold corpus: 189 free-text PER/LOC/ORG entities across
-135 hand-authored Swedish sentences (incl. 25 hard negatives), `dtype="q4"`:
+Curated maskera corpus (189 free-text PER/LOC/ORG entities across 135
+hand-authored sentences, incl. 25 hard negatives), `dtype="q4"`:
 
 | metric    | score | meaning                                  |
 | --------- | ----- | ---------------------------------------- |
 | recall    | 97.9% | of real entities, how many were found    |
-| precision | 93.0% | of predictions, how many were correct    |
-| F1        | 95.4% | harmonic mean                            |
-| leaks     | 0.5%  | entities missed entirely (the safety number) |
+| precision | 98.4% | of predictions, how many were correct    |
+| F1        | 98.1% | harmonic mean                            |
+| leaks     | 1.6%  | entities missed entirely (the safety number) |
 
-This is a curated corpus (clean, well-formed sentences), so treat it as an upper
-bound and regression tracker, not a universal score.
+Curated means clean, well-formed sentences, so treat it as an upper bound and
+regression tracker, not a universal score.
 
-For an honest, independent number, the model is also graded against the public
-**Swedish NER Corpus** (klintan / Webbnyheter 2012), which the authors did not
-write: 2453 sentences, 1280 PER/LOC/ORG entities, `dtype="q4"`:
+Independent gold set (real Swedish Wikipedia prose, hand-labelled, held out from
+training), `dtype="q4"`:
 
-| metric    | score | meaning                                  |
-| --------- | ----- | ---------------------------------------- |
-| recall    | 85.2% | of real entities, how many were found    |
-| precision | 70.1% | of predictions, how many were correct    |
-| F1        | 76.9% | harmonic mean                            |
-| leaks     | 9.1%  | entities missed entirely (the safety number) |
+| metric           | score | meaning                                   |
+| ---------------- | ----- | ----------------------------------------- |
+| recall           | 91%   | of real entities, how many were found     |
+| precision        | 87%   | of predictions, how many were correct     |
+| type-aware F1    | 89%   | harmonic mean                             |
+| redaction recall | 95%   | of real entities, how many were masked at all |
 
-Recall by type: PERSON 91.0%, LOCATION 86.5%, ORGANIZATION 72.5%. The model is
-tuned for redaction, so it favours recall (catch the PII) over precision (it
-will over-flag some non-PII, which is the safe direction). On messy real-world
-text expect numbers in this range, not the curated 95%. Both harnesses live in the
-[maskera repo](https://github.com/joelhagvall/maskera) (`packages/ner/eval`);
-run them yourself before relying on the numbers.
+The model is trained on synthetic Swedish plus the real **Swedish NER Corpus**
+(news) train split, which lifted this independent number from 0.85 to 0.89. That
+also means the Swedish NER Corpus test split is now in-distribution and is NOT
+used as the independent measure. This gold set is small (a couple dozen
+sentences); a larger independent gold set is the top data TODO. Harnesses live
+in the [maskera repo](https://github.com/joelhagvall/maskera) (`packages/ner/eval`
+and `training/`); run them yourself before relying on the numbers.
 
 ## License & attribution
 

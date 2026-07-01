@@ -182,6 +182,32 @@ over-flagging, the safe direction for redaction). The curated set stayed flat
 (0.961 to 0.954 F1). The lesson repeats: a surgical synthetic round buys recall,
 but precision on independent text is capped by the synthetic ceiling.
 
+### v6: real training data breaks the ceiling
+
+v5.1 proved synthetic data could not raise precision and recall together. v6
+tests the fix: add real labelled Swedish text. `convert_klintan.mjs` converts the
+**Swedish NER Corpus** train split (6885 sentences, 3803 real entities) from
+CoNLL to BIO JSONL and appends it to the synthetic set, so training is now ~24k
+synthetic + ~6.9k real.
+
+The genuinely independent number (gold-real, hand-labelled Wikipedia prose, which
+is held out from both the synthetic generator and the news corpus) confirms it:
+
+| Model (independent gold-real) | type-aware F1 | precision | recall |
+| ----------------------------- | ------------- | --------- | ------ |
+| v4 (balanced synthetic)       | 0.846         | -         | -      |
+| v5.1 (recall-tuned synthetic) | 0.782         | 0.69      | 0.90   |
+| **v6 (+ real data)**          | **0.891**     | **0.87**  | **0.91** |
+
+Real data lifted precision **and** recall at once (0.87 / 0.91), exactly the
+trade synthetic rounds could not make. The curated set also rose (0.954 to 0.981
+F1, precision 0.93 to 0.98).
+
+**Caveat that comes with it:** training on the Swedish NER Corpus makes its test
+split in-distribution, so it is no longer an independent benchmark. gold-real
+(Wikipedia) is the honest independent measure now, and it is small; a larger
+independent gold set is the next measurement need.
+
 **Per-type F1 (overlap):**
 
 | Type | teacher | student | Rampart |
@@ -260,17 +286,16 @@ The honest reality this surfaced:
 labelled Swedish eval set**, needed even just to measure honestly. Run
 `python evaluate_public.py` to reproduce.
 
-**Next step, now confirmed on the training side by v5.1: a real labelled Swedish
-*training* set, not just an eval set.** The v5 to v5.1 round showed the same
-pattern from the data end. A surgical synthetic round still lifts recall (leaks
-17.7% to 9.1%, ORG recall 0.65 to 0.73), but precision on independent text stays
-capped by the synthetic distribution (it fell rather than rose). The one lever
-left that raises precision and recall together is real annotated Swedish text
-from the target domains (support, healthcare, legal). Until that exists, the
-shipped model is deliberately tuned for recall (catch the PII) over precision
-(over-flagging is the safe failure mode for redaction), which is why v5.1 ships
-despite the lower precision. Reproduce with
-`node packages/ner/eval/benchmark-swedish-ner.mjs`.
+**Update: v6 acted on this and it worked.** Adding real labelled Swedish text (the
+Swedish NER Corpus train split) raised the independent number from 0.782 (v5.1) to
+0.891 and lifted precision and recall together, the exact trade synthetic rounds
+could not make (see the v6 section above). So the shipped model is v6, not v5.1.
+
+**The lever that remains: real *target-domain* data.** The news corpus is not the
+support/healthcare/legal text maskera targets, so the next real gain is annotated
+text from those domains (public court rulings and municipal records are a legal,
+GDPR-safe start; see the repo README's data section). A larger independent gold
+set is also still needed just to measure the target domain honestly.
 
 ## Publish to Hugging Face (single hosted source)
 
