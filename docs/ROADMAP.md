@@ -116,3 +116,22 @@ Open-source core, paid edges — the standard modern dev-tool model:
 
 Moat isn't the regex (easy to copy) — it's DX, framework integrations, docs,
 and being the obvious `import` people reach for.
+
+## Licensing (decided, remember this)
+
+- **Apache-2.0 stays on the redaction layer**: the model, the rule engine, and
+  the npm packages. It is irrevocable anyway (you cannot claw back what is
+  already downloaded), and it is the strategically right call: a cautious
+  municipality or agency buyer trusts a tool they can read the source of more
+  than one they have to take your word for.
+- **Everything built on top later is a separate project, license-wise**: the
+  dashboard, audit log, hosted API, SSO. Build those closed-source from the
+  start. No license needs choosing yet, because there is nothing to license
+  until that code exists.
+- **The one trap to avoid**: do not commit the future paid product into the same
+  repo or package that is already Apache-licensed, or it inherits Apache by
+  accident. Keep it in a separate repo.
+- **CLA**: set one up the day someone else wants to contribute code to the
+  maskera repo, so you keep the right to relicense/commercialise later.
+- **Nothing to change now.** Apache on what exists, closed-source as the default
+  plan for what comes later.
