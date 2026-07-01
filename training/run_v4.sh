@@ -6,7 +6,7 @@ PY=.venv/bin/python
 echo "[1/6] train teacher model-v4..."; $PY train.py model-v4 >/dev/null 2>&1
 echo "[2/6] distill student-v4..."; $PY distill.py 6 student-v4 model-v4 >/dev/null 2>&1
 echo "[3/6] trim vocab..."; $PY trim_vocab.py student-v4 student-v4-trimmed 16000 >/dev/null 2>&1
-echo "[4/6] export onnx..."; $PY export_onnx.py student-v4-trimmed student-v4-onnx >/dev/null 2>&1
+echo "[4/6] export onnx..."; rm -rf student-v4-onnx; $PY export_onnx.py student-v4-trimmed student-v4-onnx >/dev/null 2>&1
 echo "[5/6] q4 combo..."; $PY quantize_combo.py student-v4-onnx >/dev/null 2>&1
 echo "[6/6] eval..."
 cd /Users/joelhagvall/Documents/GitHub/maskera/apps/demo
