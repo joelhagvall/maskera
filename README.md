@@ -97,24 +97,26 @@ An honest snapshot of where the project is:
   dependencies, tested. **This is shippable today.**
 - ✅ **Our own Swedish NER model** — we **fine-tuned** KB-BERT (CC0 Swedish base
   model) on synthetic Swedish data, **distilled** it, then **shrank** it
-  (vocab-trim + q4) to a browser-sized 40 MB ONNX. Benchmarked openly: **0.85 F1
-  vs Rampart's 0.39** on independent real text (~1.0 redaction recall) — a wide
-  win on Swedish.
+  (vocab-trim + q4) to a browser-sized 40 MB ONNX. Benchmarked openly and tuned
+  for redaction: it beats Rampart wide on Swedish (**0.78 vs 0.39** type-aware F1
+  on independent real text) and masks **~0.97** of the PII.
 - ✅ **NER layer (`@maskera/ner`)** — runs a model client-side via Transformers.js,
   with subword-span reconstruction and the shared placeholder engine.
 - ✅ **Interactive demo** — 10 domains, model always on, live redaction as you type.
 - ✅ **Honesty around it** — reproducible training pipeline, two benchmarks with
   caveats, a [transparency doc + FAQ](docs/TRANSPARENCY.md), base-model license
-  verified (KB-BERT is CC0), and Hugging Face publishing prepared.
+  verified (KB-BERT is CC0), and the model published to the Hugging Face Hub
+  ([`joelhagvall/maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner)).
 
 **What we deliberately did _not_ do:** train a language model from scratch (we
 stood on KB-BERT), modify Rampart's weights (we only wrap it as an option), claim
 GDPR compliance, or publish invented benchmark numbers.
 
-**Not done yet:** smaller architecture toward ~15 MB, a larger independent eval
-set, and hosting the model on the Hub. Framework wrappers (`@maskera/node`,
-`@maskera/react`) are intentionally **demand-driven** — built when users ask, not
-speculatively. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
+**Not done yet:** smaller architecture toward ~15 MB, and a real labelled Swedish
+*training* set (the lever that raises precision and recall together, once
+synthetic data caps out). Framework wrappers (`@maskera/node`, `@maskera/react`)
+are intentionally **demand-driven**, built when users ask, not speculatively. See
+[`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Why it exists
 
@@ -143,24 +145,35 @@ wins on Swedish on **both** our eval and an independent one (type-aware F1, plus
 the privacy-relevant **redaction recall** = was the PII masked at all):
 
 | Eval set                              | type-aware F1 | redaction recall |
-| ------------------------------------- | ------------- | ---------------- |
-| our hand-authored set (PII-style)     | **0.946**     | 0.94 (recall 0.97) |
-| independent gold (real Wikipedia text)| **0.846**     | 0.84 (**recall 1.00**) |
+| ------------------------------------- | ------------- | ------------------ |
+| our hand-authored set (PII-style)     | **0.940**     | 0.97               |
+| independent gold (real Wikipedia text)| 0.782         | 0.97               |
 
 For reference, Rampart scores ~0.39 on independent Swedish (it isn't trained on
 Swedish; ORG F1 = 0.00).
 
-> **Read these honestly.** Our own set shares an author with the data generator,
-> so 0.946 *flatters* the model. The independent set is real prose written by
-> others (gold-labelled) but *encyclopedic* (Wikipedia) — a different domain from
-> the support/healthcare PII text this targets — so 0.846 is a pessimistic floor.
-> The truth for the target domain sits between. What's solid: **redaction recall
-> ~1.0** (it masks essentially everything) and a wide win over Rampart. The
-> structured-PII rules aren't in this table — they're deterministic, not learned.
+The shipped model is **v5.1**, retrained to lift the weakest type (ORG). On a
+third, larger independent benchmark now in the harness (public **Swedish NER
+Corpus**, 2453 sentences; `node packages/ner/eval/benchmark-swedish-ner.mjs`) the
+v5.1 round cut missed entities (leaks) from **17.7% to 9.1%** and raised ORG
+recall from **0.65 to 0.73**, trading some precision for recall. That tuning is
+deliberate: for redaction, over-flagging is the safe failure and a missed entity
+is a leak. It is also why type-aware F1 on the encyclopedic Wikipedia set dips
+(0.846 to 0.782) while redaction recall holds at ~0.97. See
+[`training/README.md`](training/README.md) for the full v5.1 write-up.
 
-The real next gain is a **real labelled Swedish eval set** — needed even just to
-measure the target domain honestly. More synthetic data now mostly lifts our own
-eval, not independent quality.
+> **Read these honestly.** Our own set shares an author with the data generator,
+> so 0.940 *flatters* the model. The independent sets are real prose written by
+> others (gold-labelled) but *encyclopedic* (Wikipedia / news), a different domain
+> from the support/healthcare PII text this targets, so they are a pessimistic
+> floor. The truth for the target domain sits between. What's solid: **redaction
+> recall ~0.97** and a wide win over Rampart. The structured-PII rules aren't in
+> this table, they're deterministic, not learned.
+
+The real next gain is a **real labelled Swedish training set**, not just an eval
+set, needed both to measure the target domain honestly and to raise precision and
+recall together. More synthetic data now mostly lifts our own eval, not
+independent quality; v5.1 confirmed the same cap on the training side.
 
 ## Live demo
 
