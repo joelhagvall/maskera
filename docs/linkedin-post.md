@@ -23,6 +23,8 @@ And on August 2, the EU AI Act's rules for high-risk AI take effect.
 
 Free and open. Swedish-first, for healthcare, law, support and the public sector.
 
+It's built to drop into your own product. If your team wants to integrate it, I'm glad to help.
+
 Would something like this be useful where you work? 👇
 
 Model: https://huggingface.co/joelhagvall/maskera-sv-ner
@@ -46,6 +48,10 @@ Code: https://github.com/joelhagvall/maskera
   engineering, not just training, and stays true.
 - **KB is a trust anchor on one line only.** "National Library of Sweden" lends
   authority; don't make KB the hero of the post.
+- **Soft availability signal, not a pitch.** "built to drop into your own product"
+  frames it as a dev tool, and "I'm glad to help" opens the door to companies who
+  want to integrate (the paid-services intent) without selling. Frame it as value
+  to them (help integrating), not value to you (looking for work).
 - **No npm link on purpose**: `@maskera/core` / `@maskera/ner` are not published
   to npm yet. Don't link what doesn't exist.
 - **Check the GitHub repo is public and pushed** before posting, or the code link 404s.
