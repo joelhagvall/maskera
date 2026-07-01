@@ -22,11 +22,11 @@ Everything happens inside your browser.
 
 Your data never leaves your device. Not even to me.
 
-The model is just 40 MB, small enough to run on your laptop, yet nearly on par with the National Library of Sweden's full-size model.
+The model is just 40 MB, small enough to run on your laptop, yet nearly on par with the National Library of Sweden's full-size model. It's fully open, so you can check that yourself.
 
-And on August 2, the EU AI Act's rules for high-risk AI come into effect.
+And on August 2, the EU AI Act's rules for high-risk AI come into effect, raising the bar for how organizations handle personal data.
 
-Swedish-first, free and open. Built for healthcare, law, support and the public sector.
+Swedish-first and free to use. Useful anywhere personal data meets AI, especially healthcare, law, support and the public sector.
 
 You can try it right now, in your browser. Nothing to install: [DEMO LINK]
 
@@ -56,7 +56,13 @@ external links can suppress LinkedIn reach):
 - **Never write "beats KB".** We match KB (0.92 vs 0.92 F1 at fp32); the shipped
   40 MB q4 is a few points below. Say "nearly on par" / "at a tenth the size".
 - **Open with the human problem, not the AI Act.** Leading with regulation reads
-  like a compliance vendor. Keep the AI Act as a plain factual line near the end.
+  like a compliance vendor. The AI Act sits near the end with a neutral connector
+  back to the theme ("raising the bar for how organizations handle personal
+  data"), NOT a salesy tail like "stops being enough" or buzzwords like
+  "privacy-first AI workflows".
+- **"It's fully open, so you can check that yourself"** sits right after the KB
+  claim on purpose: it turns the benchmark into something auditable, which is the
+  social proof, not a boast.
 - **The browser/local point is the differentiator**, so it stands alone, and
   "Not even to me." is the line people remember. Keep it bare, no markdown bold
   (LinkedIn plain text does not render it).
