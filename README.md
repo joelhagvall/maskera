@@ -97,9 +97,9 @@ An honest snapshot of where the project is:
   dependencies, tested. **This is shippable today.**
 - ✅ **Our own Swedish NER model** — we **fine-tuned** KB-BERT (CC0 Swedish base
   model) on synthetic Swedish data, **distilled** it, then **shrank** it
-  (vocab-trim + q4) to a browser-sized 40 MB ONNX. Benchmarked openly and tuned
-  for redaction: it beats Rampart wide on Swedish (**0.78 vs 0.39** type-aware F1
-  on independent real text) and masks **~0.97** of the PII.
+  (vocab-trim + q4) to a browser-sized 40 MB ONNX. Benchmarked openly: it beats
+  Rampart wide on Swedish (**0.89 vs 0.39** type-aware F1 on independent real
+  text) and masks **~0.95** of the PII.
 - ✅ **NER layer (`@maskera/ner`)** — runs a model client-side via Transformers.js,
   with subword-span reconstruction and the shared placeholder engine.
 - ✅ **Interactive demo** — 10 domains, model always on, live redaction as you type.
@@ -112,10 +112,11 @@ An honest snapshot of where the project is:
 stood on KB-BERT), modify Rampart's weights (we only wrap it as an option), claim
 GDPR compliance, or publish invented benchmark numbers.
 
-**Not done yet:** smaller architecture toward ~15 MB, and a real labelled Swedish
-*training* set (the lever that raises precision and recall together, once
-synthetic data caps out). Framework wrappers (`@maskera/node`, `@maskera/react`)
-are intentionally **demand-driven**, built when users ask, not speculatively. See
+**Not done yet:** smaller architecture toward ~15 MB, a *larger* independent gold
+set (training on the Swedish NER Corpus made its test split in-distribution), and
+real *target-domain* data (support/healthcare/legal, where the public news/wiki
+sets don't reach). Framework wrappers (`@maskera/node`, `@maskera/react`) are
+intentionally **demand-driven**, built when users ask, not speculatively. See
 [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Why it exists
@@ -146,34 +147,36 @@ the privacy-relevant **redaction recall** = was the PII masked at all):
 
 | Eval set                              | type-aware F1 | redaction recall |
 | ------------------------------------- | ------------- | ------------------ |
-| our hand-authored set (PII-style)     | **0.940**     | 0.97               |
-| independent gold (real Wikipedia text)| 0.782         | 0.97               |
+| our hand-authored set (PII-style)     | **0.945**     | 0.95               |
+| independent gold (real Wikipedia text)| **0.891**     | 0.95               |
 
 For reference, Rampart scores ~0.39 on independent Swedish (it isn't trained on
 Swedish; ORG F1 = 0.00).
 
-The shipped model is **v5.1**, retrained to lift the weakest type (ORG). On a
-third, larger independent benchmark now in the harness (public **Swedish NER
-Corpus**, 2453 sentences; `node packages/ner/eval/benchmark-swedish-ner.mjs`) the
-v5.1 round cut missed entities (leaks) from **17.7% to 9.1%** and raised ORG
-recall from **0.65 to 0.73**, trading some precision for recall. That tuning is
-deliberate: for redaction, over-flagging is the safe failure and a missed entity
-is a leak. It is also why type-aware F1 on the encyclopedic Wikipedia set dips
-(0.846 to 0.782) while redaction recall holds at ~0.97. See
-[`training/README.md`](training/README.md) for the full v5.1 write-up.
+The shipped model is **v6**. A synthetic-only round (v5.1) hit a precision
+ceiling on independent text (it could buy recall only by over-flagging), so v6
+added ~6.9k sentences of real labelled Swedish (the **Swedish NER Corpus** train
+split) to the training mix. That is the lever synthetic data could not pull: the
+independent Wikipedia number rose from 0.846 (v4) and 0.782 (v5.1) to **0.891**,
+with precision **and** recall both high (0.87 / 0.91) instead of one traded for
+the other. Because the model now trains on that corpus, its test split is
+in-distribution and no longer counts as independent; the honest independent
+measure is the held-out Wikipedia gold set above. See
+[`training/README.md`](training/README.md) for the full write-up.
 
 > **Read these honestly.** Our own set shares an author with the data generator,
-> so 0.940 *flatters* the model. The independent sets are real prose written by
-> others (gold-labelled) but *encyclopedic* (Wikipedia / news), a different domain
-> from the support/healthcare PII text this targets, so they are a pessimistic
-> floor. The truth for the target domain sits between. What's solid: **redaction
-> recall ~0.97** and a wide win over Rampart. The structured-PII rules aren't in
-> this table, they're deterministic, not learned.
+> so 0.945 *flatters* the model. The independent gold set is real prose written by
+> others (Wikipedia), but *encyclopedic*, a different domain from the
+> support/healthcare PII text this targets, so it is a pessimistic floor and also
+> small (a couple dozen sentences). The truth for the target domain sits between.
+> What's solid: **redaction recall ~0.95** and a wide win over Rampart. The
+> structured-PII rules aren't in this table, they're deterministic, not learned.
 
-The real next gain is a **real labelled Swedish training set**, not just an eval
-set, needed both to measure the target domain honestly and to raise precision and
-recall together. More synthetic data now mostly lifts our own eval, not
-independent quality; v5.1 confirmed the same cap on the training side.
+The real next gain is **more real labelled Swedish data, in the target domain**
+(support/healthcare/legal). Adding the Swedish NER Corpus (news) already raised
+the independent number 0.85 to 0.89 and lifted precision and recall together,
+which synthetic rounds could not; the public news/wiki sets just don't reach the
+target domain, and a larger independent gold set is still needed to measure it.
 
 ## Live demo
 
