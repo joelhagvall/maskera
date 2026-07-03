@@ -29,9 +29,7 @@ function ModelStatus({
     <div className="status">
       <span className={`dot ${status}`} />
       {status === "ready" && (
-        <span>
-          maskeras AI-modell aktiv{analyzing ? " · analyserar…" : " · känner igen namn och platser"}
-        </span>
+        <span>maskeras AI-modell aktiv{analyzing ? " · analyserar…" : ""}</span>
       )}
       {status === "error" && (
         <span>AI-modellen kunde inte laddas · reglerna skyddar fortfarande</span>
