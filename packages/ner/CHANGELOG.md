@@ -1,5 +1,13 @@
 # @maskera/ner
 
+## 0.2.1
+
+### Patch Changes
+
+- dd4da3c: Docs refresh: the README now states that `@maskera/core` comes along automatically and is fully re-exported (one install, one import), and quotes the canonical exact-span benchmark numbers with a link to docs/BENCHMARKS.md.
+- Updated dependencies [c5dfd98]
+  - @maskera/core@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes
