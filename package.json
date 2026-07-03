@@ -8,6 +8,8 @@
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",
+    "smoke": "node scripts/pack-smoke.mjs",
+    "eval": "pnpm -C packages/ner eval",
     "demo": "pnpm -C apps/demo dev",
     "lint": "biome check .",
     "format": "biome format --write .",

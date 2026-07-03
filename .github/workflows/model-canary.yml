@@ -1,0 +1,75 @@
+name: Model canary
+
+# Nightly end-to-end check of what users actually consume: the published Hub
+# model graded through the built SDK, plus the same eval against the latest
+# @huggingface/transformers (users bring their own peer version). Catches
+# silent drift with no commit involved: a bad Hub upload, an upstream
+# Transformers.js change that breaks tokenization/span reconstruction, or a
+# registry/network regression. Failures open (or update) a GitHub issue so
+# they land in front of a human instead of dying in a log.
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: locked transformers
+            latest-transformers: false
+          - name: latest transformers
+            latest-transformers: true
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Bump to latest @huggingface/transformers
+        if: matrix.latest-transformers
+        run: pnpm --filter @maskera/ner add -D @huggingface/transformers@latest
+      - run: pnpm --filter @maskera/core --filter @maskera/ner build
+      - run: pnpm --filter @maskera/core --filter @maskera/ner test
+      - name: Eval the published model (${{ matrix.name }})
+        working-directory: packages/ner
+        shell: bash
+        env:
+          MASKERA_REMOTE: "1"
+          MASKERA_DTYPE: q4
+          MASKERA_F1_FLOOR: "0.90"
+          MASKERA_LEAK_CEIL: "0.08"
+        run: |
+          node eval/run-eval.mjs | tee "$GITHUB_STEP_SUMMARY" || \
+            (echo "retrying once after 60s..." && sleep 60 && \
+             node eval/run-eval.mjs | tee "$GITHUB_STEP_SUMMARY")
+      - name: Open or update an issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Model canary failed (${{ matrix.name }})"
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          body="Nightly model canary failed on $(date -u +%F) for **${{ matrix.name }}**.
+
+          The published model or its runtime path no longer meets the eval gates
+          (span-F1 floor / leak ceiling), or failed to load entirely.
+
+          Run: $run_url"
+          existing=$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body"
+          fi
