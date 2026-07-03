@@ -54,6 +54,7 @@ export function Controls({
   return (
     <div className="controls">
       <div className="tabs">
+        <span className="tabs-label">Testa ett exempel:</span>
         {scenarios.map((s) => {
           const Icon = DOMAIN_ICONS[s.id]
           return (

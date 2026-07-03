@@ -22,6 +22,7 @@ export function InputCard({
         <span className="card-title">
           <PencilIcon size={14} />
           Din text
+          {tagline && text ? <span className="card-sub">{tagline}</span> : null}
         </span>
         {text ? (
           <button type="button" className="clear" onClick={() => onChange("")}>
@@ -39,7 +40,9 @@ export function InputCard({
           value={text}
           aria-label="Din text"
           spellCheck={false}
-          placeholder={`Skriv eller klistra in egen text här. Allt körs lokalt.\n\nExempel: ${tagline}`}
+          placeholder={`Skriv eller klistra in egen text här. Allt körs lokalt.${
+            tagline ? `\n\nExempel: ${tagline}` : ""
+          }`}
           onChange={(e) => onChange(e.target.value)}
           onScroll={(e) => {
             if (backdropRef.current) backdropRef.current.scrollTop = e.currentTarget.scrollTop
