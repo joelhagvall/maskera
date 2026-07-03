@@ -16,7 +16,7 @@ text // "Personnummer [PERSONNUMMER_1], tel [PHONE_1]."
 
 ## Highlights
 
-- **Swedish-first**: personnummer, samordningsnummer, organisationsnummer —
+- **Swedish-first**: personnummer, samordningsnummer, organisationsnummer,
   date- and Luhn-validated, so `123456-0000` is *not* mistaken for a person.
 - **Stable placeholders**: the same value reuses its token within a call.
 - **Restore map**: map LLM output back to real values, locally.
@@ -64,7 +64,7 @@ interface RedactResult {
 
 ### `restore(text, map) => string`
 
-Re-inserts originals into any string containing the placeholder tokens — safe on
+Re-inserts originals into any string containing the placeholder tokens, safe on
 LLM output that reorders or quotes them.
 
 ### `regexDetector(label, globalRegex, validate?) => Detector`

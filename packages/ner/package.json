@@ -1,7 +1,7 @@
 {
   "name": "@maskera/ner",
   "version": "0.2.0",
-  "description": "Opt-in ONNX/Transformers.js NER layer for maskera — detects free-text names, places and organisations the rule layer can't.",
+  "description": "Opt-in ONNX/Transformers.js NER layer for maskera: detects free-text names, places and organisations the rule layer can't.",
   "type": "module",
   "license": "MIT",
   "author": "Joel Hägvall",

@@ -38,7 +38,7 @@ how people actually type.
 > **Benchmarks:** span F1 **96.2%** on the curated corpus, **90.6%** on
 > independent real text, leak rate 1.0% / 3.4% (exact-span, q4, measured
 > 2026-07-03). One canonical, dated, reproducible table:
-> **[docs/BENCHMARKS.md](docs/BENCHMARKS.md)** — every other number in this
+> **[docs/BENCHMARKS.md](docs/BENCHMARKS.md)**; every other number in this
 > repo defers to it.
 
 It nearly matches the full-size Swedish baseline (KB-BERT NER, ~440 MB) at a
@@ -94,9 +94,9 @@ model, fallback patterns and an operational checklist, read
 
 ## Live demo
 
-Redaction as you type, across ten Swedish domains (vård, juridik, BRF, HR,
-bank...), with a toggle showing exactly what the AI would otherwise receive.
-The model loads in the background; rules work instantly meanwhile.
+Redaction as you type, with curated Swedish scenarios (HR, kundsupport, vård,
+juridik, kommun) showing exactly what the AI receives. The model loads in the
+background; rules work instantly meanwhile.
 
 ```bash
 pnpm install && pnpm demo   # http://localhost:5180
