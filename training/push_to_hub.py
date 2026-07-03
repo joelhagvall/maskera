@@ -11,7 +11,8 @@ Usage:
     # default repo_id: joelhagvall/maskera-sv-ner  (change to your HF username)
 
 Uploads the contents of ./student-onnx (ONNX weights + tokenizer + config) plus
-MODEL_CARD.md as the repo README. Run export_onnx.py first to produce student-onnx.
+maskera-sv-ner-card/README.md as the repo README. Run export_onnx.py first to
+produce student-onnx.
 """
 import os
 import shutil
@@ -25,8 +26,9 @@ SRC = "student-onnx"
 if not os.path.isdir(SRC):
     raise SystemExit(f"'{SRC}/' not found — run: uv run python export_onnx.py student-model student-onnx")
 
-# Use the model card as the repo README.
-shutil.copy("MODEL_CARD.md", os.path.join(SRC, "README.md"))
+# Use the model card as the repo README (single source: maskera-sv-ner-card/).
+shutil.copy("maskera-sv-ner-card/README.md", os.path.join(SRC, "README.md"))
+shutil.copy("maskera-sv-ner-card/NOTICE", os.path.join(SRC, "NOTICE"))
 
 # Don't upload the large fp32 ONNX — the int8 is what ships.
 ignore = ["model.onnx", "onnx/model.onnx", "ort_config.json"]

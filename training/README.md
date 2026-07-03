@@ -5,6 +5,15 @@ rule layer can't catch: **PER** (person), **LOC** (place), **ORG**
 (organisation), **ADR** (street address). Structured PII (personnummer, org-nr,
 phone, IBAN…) stays with `@maskera/core`'s deterministic detectors.
 
+> **Numbers note.** This file is the training *journal*: the tables below are
+> round-by-round history (v1 → v6), measured with the Python harness
+> (overlap matching), kept for the lessons they carry. The canonical, dated
+> numbers for the **published** artifact live in
+> [`docs/BENCHMARKS.md`](../docs/BENCHMARKS.md), measured with the stricter
+> exact-span JS harness CI gates on. When the two disagree, BENCHMARKS.md wins.
+> Naming: the published Hub artifact (byte-identical to the demo's
+> `maskera-sv-ner-v5` folder) is the **v6** training round.
+
 ## Why a Swedish model
 
 We measured off-the-shelf multilingual PII models on Swedish and they
@@ -299,15 +308,16 @@ uv run python push_to_hub.py joelhagvall/maskera-sv-ner   # use your HF username
 ```
 
 `push_to_hub.py` uploads `student-onnx/` (int8 ONNX + tokenizer + config) with
-`MODEL_CARD.md` as the repo README, skipping the large fp32 weights. After it's
-up, switch the demo from the local copy to the hosted id (drop `localModelPath`
-and `allowRemoteModels: false`).
+`maskera-sv-ner-card/README.md` as the repo README, skipping the large fp32
+weights. After it's up, switch the demo from the local copy to the hosted id
+(drop `localModelPath` and `allowRemoteModels: false`).
 
 ## Base model & license
 
 Base: [`KBLab/bert-base-swedish-cased`](https://huggingface.co/KBLab/bert-base-swedish-cased)
 (National Library of Sweden), released **CC0-1.0** (public domain) — commercial
 use, redistribution and relicensing of derived weights are all permitted with no
-obligation. We license the derived model **MIT** to match the SDK; a courtesy
-citation to KBLab's paper (arXiv:2007.01658) is in `MODEL_CARD.md`. Training data
-here is fully synthetic (no real personal data).
+obligation. A courtesy acknowledgement to KBLab is in
+`maskera-sv-ner-card/NOTICE`. The synthetic training data contains no real
+personal data; from v6 the set also includes the public Swedish NER Corpus
+(see [`docs/BENCHMARKS.md`](../docs/BENCHMARKS.md)).

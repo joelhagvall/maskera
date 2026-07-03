@@ -21,10 +21,12 @@ are.
 
 ## How the model was trained (honestly)
 
-- **100% synthetic training data.** The Swedish NER model was trained on
-  template-generated sentences (`training/generate_data.mjs`) — **no real personal
-  data, no scraped text, no user data.** We didn't harvest anyone's data to build a
-  privacy tool. The generator is in the repo; you can read exactly what it produces.
+- **No collected personal data in training.** The Swedish NER model was trained
+  on template-generated synthetic sentences (`training/generate_data.mjs`) plus
+  one public, openly licensed dataset (the Swedish NER Corpus, news text) —
+  **no user data, nothing scraped by us, nothing collected for this project.**
+  The news corpus contains real published sentences about public figures; the
+  synthetic generator is in the repo, so you can read exactly what it produces.
 - **Base model:** `KBLab/bert-base-swedish-cased` (National Library of Sweden),
   public domain (CC0). Fine-tuned, then distilled to a smaller student.
 - **The whole pipeline is reproducible** — data → train → distill → ONNX → eval are
@@ -32,8 +34,9 @@ are.
 
 ## How good is it, really
 
-- Benchmarked openly on a hand-authored set **and** an independent
-  public dataset (WikiANN). Numbers and caveats are in
+- Benchmarked openly on a hand-authored set **and** independent real text.
+  The canonical, dated numbers live in [`docs/BENCHMARKS.md`](BENCHMARKS.md);
+  the round-by-round training journey and its caveats are in
   [`training/README.md`](../training/README.md) — including that synthetic-eval F1
   is near-meaningless and that quality drops on out-of-domain text.
 - **It is defense in depth, not a guarantee.** Structured PII (personnummer,

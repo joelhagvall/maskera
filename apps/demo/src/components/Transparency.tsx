@@ -82,10 +82,11 @@ export function Transparency({ onBack }: { onBack: () => void }) {
           <h2>Hur modellen tränats</h2>
           <ul>
             <li>
-              <strong>100 % syntetisk träningsdata.</strong> Modellen tränades på maskingenererade
-              meningar: <strong>ingen riktig persondata, ingen skrapad text</strong>. Vi samlade
-              inte in någons uppgifter för att bygga ett integritetsverktyg. Generatorn ligger öppet
-              i repot.
+              <strong>Inga insamlade personuppgifter i träningen.</strong> Modellen tränades på
+              maskingenererade meningar plus ett publikt, öppet licensierat nyhetsdataset:{" "}
+              <strong>inga användardata, ingenting insamlat för det här projektet</strong>.
+              Nyhetstexterna innehåller redan publicerade meningar om offentliga personer.
+              Generatorn ligger öppet i repot.
             </li>
             <li>
               <strong>Basmodell:</strong> KB-BERT från Kungliga biblioteket, fri att använda (CC0).
