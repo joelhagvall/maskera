@@ -24,13 +24,11 @@ Your data never leaves your device. Not even to me.
 
 The model is just 40 MB, small enough to run on your laptop, yet nearly on par with the National Library of Sweden's full-size model. It's fully open source, so anyone can inspect it and reproduce the numbers.
 
-And on August 2, the EU AI Act's rules for high-risk AI come into effect, raising the bar for how AI systems handle personal data.
-
 Swedish-first and free. Useful anywhere personal data meets AI, especially healthcare, law, support and the public sector.
 
 You can try it right now, in your browser. Nothing to install: [DEMO LINK]
 
-For developers, it's one npm install to drop into your app. If your team wants help integrating, I'm glad to talk.
+I also built an SDK, so for developers it's one npm install to drop into your app. If your team wants help integrating, I'm glad to talk.
 
 Would something like this be useful where you work? 👇
 
