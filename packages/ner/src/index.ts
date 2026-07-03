@@ -2,20 +2,27 @@ import type { Detection, PiiLabel, RedactOptions, RedactResult } from "@maskera/
 import { defaultDetectors, redactFromDetections } from "@maskera/core"
 
 /**
- * Default model: Rampart (nationaldesignstudio/rampart), a 14.7 MB 4-bit
- * quantized MiniLM token-classification model, CC BY 4.0.
- * Latin-script (incl. Swedish); evaluate Swedish recall before relying on it.
- * Attribution required — see this package's README/NOTICE.
- */
-export const DEFAULT_NER_MODEL = "nationaldesignstudio/rampart"
-
-/**
- * Canonical Hugging Face id for maskera's own Swedish PII model — the single
- * source the demo and future packages should point at once it's published:
- * `createNerRecognizer({ model: MASKERA_SV_NER_MODEL, dtype: "q8" })`.
+ * Canonical Hugging Face id for maskera's own Swedish PII model: a 40 MB
+ * (q4) distilled KB-BERT for PER / LOC / ORG / ADR, trained on synthetic +
+ * real Swedish with casing augmentation. MIT weights, no attribution needed.
  * Change the owner to your own HF username if you host your own copy.
  */
 export const MASKERA_SV_NER_MODEL = "joelhagvall/maskera-sv-ner"
+
+/**
+ * The default model is maskera's own Swedish model, this is a Swedish-first
+ * SDK. For multilingual Latin-script text, pass {@link RAMPART_MODEL} instead.
+ */
+export const DEFAULT_NER_MODEL = MASKERA_SV_NER_MODEL
+
+/**
+ * Rampart (nationaldesignstudio/rampart): a 14.7 MB 4-bit quantized MiniLM
+ * token-classification model for en/es/fr/de/it/pt/nl, CC BY 4.0.
+ * Not trained on Swedish and strips diacritics; use it for multilingual text,
+ * not Swedish. Attribution required if redistributed, see this package's
+ * README/NOTICE.
+ */
+export const RAMPART_MODEL = "nationaldesignstudio/rampart"
 
 /**
  * Map a model entity group (e.g. "GIVENNAME", "CITY") to a maskera label.

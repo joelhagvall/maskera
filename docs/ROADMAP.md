@@ -67,7 +67,9 @@ ask — adapters for frameworks nobody uses yet is wasted surface area. If/when:
 - [x] Vocab trim 50k→16k (82→56 MB) + combined q4-matmul/int8-embed (56→40 MB)
 - [x] Host the model on the Hugging Face Hub (`joelhagvall/maskera-sv-ner`)
 - [ ] Smaller architecture (fewer layers / MiniLM) toward ~15 MB if needed
-- [ ] Wire the hosted model as the Swedish default in `@maskera/ner`
+- [x] Wire the hosted model as the Swedish default in `@maskera/ner`
+      (`DEFAULT_NER_MODEL` = `joelhagvall/maskera-sv-ner`; Rampart stays as
+      the opt-in `RAMPART_MODEL` for multilingual text)
 
 #### Data next steps (the real lever now)
 
