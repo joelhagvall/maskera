@@ -6,30 +6,30 @@ are.
 
 ## Where your data goes: nowhere
 
-- **Redaction runs entirely on your device** — in the browser (WASM/WebGPU) or in
+- **Redaction runs entirely on your device**: in the browser (WASM/WebGPU) or in
   your Node process. Your text is **never sent anywhere** for redaction.
 - **No telemetry, no analytics, no phone-home.** maskera makes no network calls
   with your content. You can verify this in the browser DevTools → Network tab:
-  type into the demo and watch — your text triggers zero requests.
+  type into the demo and watch: your text triggers zero requests.
 - **The network calls that *do* exist** (full honesty): the NER **model file** is
   downloaded once (from the Hugging Face Hub, or your own host), and the
   Transformers.js **WASM runtime** loads from a CDN. Both are code/weights, fetched
-  once and cached — **never your text.** Want zero external fetches? Self-host the
+  once and cached, **never your text.** Want zero external fetches? Self-host the
   model files and the WASM runtime; both are static assets.
 - The **rule layer** (`@maskera/core`) has **no network dependency at all** and no
-  model — pure functions.
+  model, pure functions.
 
 ## How the model was trained (honestly)
 
 - **No collected personal data in training.** The Swedish NER model was trained
   on template-generated synthetic sentences (`training/generate_data.mjs`) plus
-  one public, openly licensed dataset (the Swedish NER Corpus, news text) —
+  one public, openly licensed dataset (the Swedish NER Corpus, news text):
   **no user data, nothing scraped by us, nothing collected for this project.**
   The news corpus contains real published sentences about public figures; the
   synthetic generator is in the repo, so you can read exactly what it produces.
 - **Base model:** `KBLab/bert-base-swedish-cased` (National Library of Sweden),
   public domain (CC0). Fine-tuned, then distilled to a smaller student.
-- **The whole pipeline is reproducible** — data → train → distill → ONNX → eval are
+- **The whole pipeline is reproducible**: data → train → distill → ONNX → eval are
   all scripts in [`training/`](../training). Nothing is hidden.
 
 ## How good is it, really
@@ -37,7 +37,7 @@ are.
 - Benchmarked openly on a hand-authored set **and** independent real text.
   The canonical, dated numbers live in [`docs/BENCHMARKS.md`](BENCHMARKS.md);
   the round-by-round training journey and its caveats are in
-  [`training/README.md`](../training/README.md) — including that synthetic-eval F1
+  [`training/README.md`](../training/README.md), including that synthetic-eval F1
   is near-meaningless and that quality drops on out-of-domain text.
 - **It is defense in depth, not a guarantee.** Structured PII (personnummer,
   org-nr, …) is caught deterministically by regex+checksum and is very reliable.
@@ -51,11 +51,11 @@ No. Redaction is local. Only model weights/runtime are fetched (once), never you
 content.
 
 **What was the model trained on?**
-Synthetic Swedish text only — no real PII. See `training/generate_data.mjs`.
+Synthetic Swedish text only, no real PII. See `training/generate_data.mjs`.
 
 **Is this GDPR-compliant?**
 maskera is a **data-minimisation tool** that helps you avoid sending PII to third
-parties — that supports GDPR/EU AI Act goals. But compliance is about *your* whole
+parties, which supports GDPR/EU AI Act goals. But compliance is about *your* whole
 system and you remain the data controller. maskera is not a compliance guarantee and
 makes no legal claims.
 
@@ -64,7 +64,7 @@ Yes. Code is MIT and open. The model is CC0-derived and can be self-hosted. The
 training pipeline is reproducible.
 
 **Can I turn the model off and use only rules?**
-Yes — `@maskera/core` works standalone with zero dependencies and zero model.
+Yes: `@maskera/core` works standalone with zero dependencies and zero model.
 
 **What does it not catch?**
 Non-Swedish PII, unusual free-text formulations, and anything outside its four

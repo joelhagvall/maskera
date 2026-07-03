@@ -1,4 +1,4 @@
-# maskera — Swedish NER training
+# maskera: Swedish NER training
 
 Fine-tunes a Swedish token-classification model for the free-text entities the
 rule layer can't catch: **PER** (person), **LOC** (place), **ORG**
@@ -52,7 +52,7 @@ uv run python export_onnx.py     # -> onnx-model/onnx/model_quantized.onnx
 | int8 ONNX  | ~125 MB (4× smaller) |
 
 Quality is preserved through quantization (verified on held-out sentences). The
-int8 model runs through `@maskera/ner` end-to-end — model entities (PER/LOC/ORG/
+int8 model runs through `@maskera/ner` end-to-end: model entities (PER/LOC/ORG/
 ADR) plus the rule layer's structured PII, merged by the stable-placeholder
 engine.
 
@@ -62,11 +62,11 @@ engine.
 
 | Student                        | Params | Synthetic val F1 | Generalisation |
 | ------------------------------ | ------ | ---------------- | -------------- |
-| from-scratch (hidden 312, 4L)  | 20M    | **1.00**         | ❌ garbage — tagged `jobbar`/`innan` as entities |
+| from-scratch (hidden 312, 4L)  | 20M    | **1.00**         | ❌ garbage: tagged `jobbar`/`innan` as entities |
 | **teacher-init (hidden 768, 6L)** | 82M | 1.00             | ✅ matches teacher (`Thorbjörn Fägerquist`→PER, `Northvolt`→ORG) |
 
 **A from-scratch small student memorises the synthetic templates (F1 1.00) but
-learns nothing transferable** — it lacks the Swedish pretraining that makes the
+learns nothing transferable**: it lacks the Swedish pretraining that makes the
 teacher generalise. Initialising the student from the teacher's embeddings +
 every-other layer (DistilBERT-style) recovers the quality.
 
@@ -78,13 +78,13 @@ every-other layer (DistilBERT-style) recovers the quality.
 | teacher int8 ONNX                     | 125 MB  | ✅              |
 | distilled student int8 ONNX           | 82 MB   | ✅ (≈ teacher)  |
 | vocab-trimmed student int8 ONNX       | 56 MB   | ✅ (−0.04 F1)   |
-| **vocab-trim + q4-matmul/int8-embed** | **40 MB** | ✅ (−0.06 F1) — **shipped** |
+| **vocab-trim + q4-matmul/int8-embed** | **40 MB** | ✅ (−0.06 F1), **shipped** |
 
 **What didn't work:** plain q4 (`quantize_q4.py`) made the model *bigger*
-(183 MB) — ONNX 4-bit only quantizes MatMul weights and leaves the embedding
+(183 MB): ONNX 4-bit only quantizes MatMul weights and leaves the embedding
 table fp32, which is ~half the model.
 
-**What did work — two levers, in order:**
+**What did work, two levers in order:**
 
 1. **Vocabulary trimming** (`trim_vocab.py`): KB-BERT's 50k vocab is ~half the
    params; Swedish PII text uses a fraction. Trimming to the 16k most-used
@@ -93,7 +93,7 @@ table fp32, which is ~half the model.
 2. **Combined quant** (`quantize_combo.py`): once the vocab is small the ~42M
    MatMul params dominate, so q4 on those *plus* int8 on the (now small)
    embedding table cut **56 → 40 MB** for another ~0.015 F1. (This mixed model
-   runs in Transformers.js but not in optimum's Python path — fine, the browser
+   runs in Transformers.js but not in optimum's Python path; fine, the browser
    is the target.)
 
 Net: **82 → 40 MB at 0.946 overlap F1** (v4 dataset + retrained teacher + precision guard).
@@ -103,11 +103,11 @@ On an M4 Pro (MPS) step 3 takes ~8–9 minutes for 3 epochs over 9k examples.
 
 ## Results (first run)
 
-- **Synthetic val F1 = 1.00** — but this is *in-distribution* (val shares the
+- **Synthetic val F1 = 1.00**, but this is *in-distribution* (val shares the
   generator's templates + gazetteers), so it is **not** evidence of real-world
   quality. Treat it as a sanity check only.
 - **Generalisation is the real signal.** On entities deliberately absent from
-  the training data the model still tags correctly — e.g. `Thorbjörn
+  the training data the model still tags correctly, e.g. `Thorbjörn
   Fägerquist`→PER, `Northvolt`→ORG, `Skellefteå`→LOC, `Aigerim Bekova`→PER,
   `Hjärnarp`→LOC. It learned the *context pattern*, not just the vocabulary,
   including the Swedish cases the multilingual baselines failed on.
@@ -115,9 +115,9 @@ On an M4 Pro (MPS) step 3 takes ~8–9 minutes for 3 epochs over 9k examples.
 ### Honest caveats / next steps
 
 - **Data diversity is limited.** ~30 templates. Real text (typos, lowercase,
-  odd formatting, long documents) is not yet represented — add more templates
+  odd formatting, long documents) is not yet represented; add more templates
   and ideally a small *real* Swedish eval set before trusting precision/recall.
-- **Size.** The base is KB-BERT (~110M params, ~440 MB fp32) — great for quality
+- **Size.** The base is KB-BERT (~110M params, ~440 MB fp32), great for quality
   but far from the ~15 MB browser target. Next: export to ONNX, quantize (int8 /
   q4), and/or **distil into a small 6-layer student** so it fits `@maskera/ner`.
 - **Subword spans.** The HF pipeline can split an entity across subword tokens;
@@ -125,7 +125,7 @@ On an M4 Pro (MPS) step 3 takes ~8–9 minutes for 3 epochs over 9k examples.
 
 ## Benchmark (real eval set)
 
-`evaluate.py` scores models on `eval/gold.txt` — 121 hand-authored Swedish
+`evaluate.py` scores models on `eval/gold.txt`: 121 hand-authored Swedish
 sentences (236 entities) deliberately outside the training templates: novel
 names/places/orgs, lowercase, abbreviations, hyphenated/foreign names, and
 distractors (personnummer, dates, money) that must not be tagged. Span-level,
@@ -136,27 +136,27 @@ type-aware P/R/F1.
 | Model                              | Size   | Overlap F1 |
 | ---------------------------------- | ------ | ---------- |
 | teacher (KB-BERT)                  | 440 MB | 0.899      |
-| **student (trim + q4) — shipped**  | 40 MB  | **0.946**  |
+| **student (trim + q4), shipped**  | 40 MB  | **0.946**  |
 
 The shipped 40 MB model nearly matches the 440 MB teacher, and reaches **0.91
-redaction recall** (was the PII masked at all, any label — the privacy-relevant
+redaction recall** (was the PII masked at all, any label, the privacy-relevant
 metric; recall 0.99). Gold-set numbers measured via Transformers.js.
 
-**Data quality, error-driven rounds — the cheapest lever:**
+**Data quality, error-driven rounds, the cheapest lever:**
 
 | Dataset round                                              | shipped 40 MB F1 |
 | --------------------------------------------------------- | ---------------- |
-| v1 — ≈30 templates, small gazetteers                      | 0.817            |
-| v2 — ≈90 templates, large gazetteers, augmentation        | 0.843            |
-| v3 — institutions as ORG, number distractors, foreign cities | 0.895         |
-| v4 — common non-PII acronyms (EKG, IBAN, moms…) as `O`     | **0.946**        |
+| v1: ≈30 templates, small gazetteers                      | 0.817            |
+| v2: ≈90 templates, large gazetteers, augmentation        | 0.843            |
+| v3: institutions as ORG, number distractors, foreign cities | 0.895         |
+| v4: common non-PII acronyms (EKG, IBAN, moms…) as `O`     | **0.946**        |
 
 Each round was guided by **error analysis on the gold set**: v3 fixed companies
 like *Einride* being tagged as people and bare digits as addresses; v4 fixed
-common acronyms (EKG, IBAN) being tagged as organisations — while real orgs (SEB,
+common acronyms (EKG, IBAN) being tagged as organisations, while real orgs (SEB,
 ICA, Spotify) are still caught. Independent gold rose in step too (0.65 → 0.85).
 Each round also retrained the teacher on the new data. Synthetic data is the
-ceiling; a real labelled Swedish set is the next real gain — but error-driven
+ceiling; a real labelled Swedish set is the next real gain, but error-driven
 synthetic rounds + a precision guard got us to ~0.95 (own) / ~0.85 (independent).
 
 ### v5.1: targeting ORG recall (Swedish NER Corpus)
@@ -227,14 +227,14 @@ Doubling the eval set (60→121 sentences) barely moved the scores, so the
 numbers are stable. Run `python evaluate.py` to reproduce.
 
 > **Honest caveats.** The eval set is modest (121 sentences, single annotator)
-> and shares an author with the data generator — treat it as a strong
+> and shares an author with the data generator; treat it as a strong
 > directional signal, not a definitive number. Some labels are genuinely
 > ambiguous (a hospital as ORG vs LOC).
 
 ### Independent gold set (real text, hand-labelled)
 
 `eval/gold-real.txt` is 22 verbatim sentences from public Swedish Wikipedia
-(Stefan Löfven, Spotify) — **real prose written by others**, hand-labelled
+(Stefan Löfven, Spotify): **real prose written by others**, hand-labelled
 (gold). It removes WikiANN's silver/noisy-label caveat. PER/LOC/ORG only.
 
 | Model on gold-real (real text)        | type-aware F1 | redaction recall |
@@ -243,26 +243,26 @@ numbers are stable. Run `python evaluate.py` to reproduce.
 
 Two honest reads:
 
-- **type-aware 0.739 is the independent floor on gold labels** — real prose, not a
+- **type-aware 0.739 is the independent floor on gold labels**: real prose, not a
   silver-noise artefact. The 0.927 on our own set is home-turf inflation; the
   target-domain truth sits between.
-- **redaction recall caught every entity (1.00)** — on this set nothing leaked.
+- **redaction recall caught every entity (1.00)**: on this set nothing leaked.
   For the privacy use case (was the PII masked at all?), that's the number that
   matters, and it's strong.
 
 > **Post-processing precision guard.** `@maskera/ner`'s `reconstruct()` keeps only
-> word-boundary-aligned spans with at least one letter — dropping the model's
+> word-boundary-aligned spans with at least one letter, dropping the model's
 > mid-word fragments (e.g. "par" inside "Motpart") and bare digit groups (numbers
 > are the rule layer's job). This lifted the shipped pipeline **0.927 → 0.946** on
 > our set and **0.739 → 0.846** independent, raising precision with no recall loss.
 
 Still encyclopedic domain (public figures), not the support/healthcare text
-maskera targets — the true target-domain number needs real user data. But it's an
+maskera targets; the true target-domain number needs real user data. But it's an
 honest, independent, gold-labelled floor: **~0.85 type-aware, ~1.0 recall.**
 
 ### Independent benchmark (WikiANN, silver)
 
-`evaluate_public.py` runs the same comparison on **WikiANN (Swedish)** — a
+`evaluate_public.py` runs the same comparison on **WikiANN (Swedish)**, a
 public NER dataset labeled by others, with no shared author. Restricted to
 PER/LOC/ORG (public sets don't annotate addresses). 500 test sentences.
 
@@ -275,13 +275,13 @@ The honest reality this surfaced:
 
 1. **The v3 data rounds lifted our own eval far more than the independent one**
    (0.82 → 0.90 on ours; ~flat/slightly down on WikiANN). That's the synthetic
-   ceiling showing — more synthetic diversity increasingly *chases our own
+   ceiling showing: more synthetic diversity increasingly *chases our own
    distribution*, not general Swedish.
 2. **WikiANN under-rates us for this use case**: it's encyclopedic (rarer vocab,
    which our PII-tuned vocab-trim drops) and silver-standard (noisy). The truth
    for the target domain (support/healthcare/legal) sits between 0.65 and 0.90.
 
-**Conclusion: stop optimising synthetic data — the real next gain is a real
+**Conclusion: stop optimising synthetic data; the real next gain is a real
 labelled Swedish eval set**, needed even just to measure honestly. Run
 `python evaluate_public.py` to reproduce.
 
@@ -299,7 +299,7 @@ set is also still needed just to measure the target domain honestly.
 ## Publish to Hugging Face (single hosted source)
 
 Hosting the model once means the demo and every future `@maskera` package point at
-the same place — `createNerRecognizer({ model: MASKERA_SV_NER_MODEL, dtype: "q8" })`.
+the same place: `createNerRecognizer({ model: MASKERA_SV_NER_MODEL, dtype: "q8" })`.
 
 ```bash
 uv pip install huggingface_hub
@@ -315,7 +315,7 @@ weights. After it's up, switch the demo from the local copy to the hosted id
 ## Base model & license
 
 Base: [`KBLab/bert-base-swedish-cased`](https://huggingface.co/KBLab/bert-base-swedish-cased)
-(National Library of Sweden), released **CC0-1.0** (public domain) — commercial
+(National Library of Sweden), released **CC0-1.0** (public domain): commercial
 use, redistribution and relicensing of derived weights are all permitted with no
 obligation. A courtesy acknowledgement to KBLab is in
 `maskera-sv-ner-card/NOTICE`. The synthetic training data contains no real
