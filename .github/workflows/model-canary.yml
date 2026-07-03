@@ -1,16 +1,20 @@
 name: Model canary
 
-# Nightly end-to-end check of what users actually consume: the published Hub
+# Weekly end-to-end check of what users actually consume: the published Hub
 # model graded through the built SDK, plus the same eval against the latest
 # @huggingface/transformers (users bring their own peer version). Catches
 # silent drift with no commit involved: a bad Hub upload, an upstream
 # Transformers.js change that breaks tokenization/span reconstruction, or a
 # registry/network regression. Failures open (or update) a GitHub issue so
 # they land in front of a human instead of dying in a log.
+#
+# Weekly is enough: every push/PR already runs the eval gate, so this only
+# needs to catch no-commit drift, which moves on the scale of upstream
+# releases, not days. Trigger it manually after publishing a new model.
 
 on:
   schedule:
-    - cron: "17 3 * * *"
+    - cron: "17 5 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -61,7 +65,7 @@ jobs:
         run: |
           title="Model canary failed (${{ matrix.name }})"
           run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          body="Nightly model canary failed on $(date -u +%F) for **${{ matrix.name }}**.
+          body="Weekly model canary failed on $(date -u +%F) for **${{ matrix.name }}**.
 
           The published model or its runtime path no longer meets the eval gates
           (span-F1 floor / leak ceiling), or failed to load entirely.
