@@ -1,0 +1,21 @@
+# Weekly, grouped dependency PRs. CI (unit tests, pack smoke, model eval)
+# gates every PR, so a green Dependabot PR is safe to merge on sight, and the
+# nightly model canary catches anything that only breaks against the live Hub.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      dev-dependencies:
+        dependency-type: development
+      dependencies:
+        dependency-type: production
