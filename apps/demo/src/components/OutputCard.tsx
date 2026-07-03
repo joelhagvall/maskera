@@ -1,11 +1,10 @@
 import type { RedactResult } from "@maskera/core"
 import { useMemo, useState } from "react"
-import { EyeIcon, EyeOffIcon } from "../icons"
+import { EyeIcon } from "../icons"
 import { labelMeta } from "../labels"
 import { RedactedText } from "../segments"
-import { Switch } from "./ui"
 
-function Stats({ result, protect }: { result: RedactResult; protect: boolean }) {
+function Stats({ result }: { result: RedactResult }) {
   const counts = useMemo(() => {
     const c = new Map<string, number>()
     for (const r of result.redactions) c.set(r.label, (c.get(r.label) ?? 0) + 1)
@@ -16,7 +15,7 @@ function Stats({ result, protect }: { result: RedactResult; protect: boolean }) 
     <div className="stats">
       <div className="count">
         <span className="num">{result.redactions.length}</span>
-        <span className="num-l">{protect ? "uppgifter maskerade" : "uppgifter exponerade"}</span>
+        <span className="num-l">uppgifter maskerade</span>
       </div>
       <div className="tags">
         {counts.map(([label, n]) => {
@@ -56,38 +55,25 @@ function RestoreMap({ map }: { map: Record<string, string> }) {
   )
 }
 
-export function OutputCard({
-  result,
-  original,
-  analyzing,
-}: {
-  result: RedactResult
-  original: string
-  analyzing: boolean
-}) {
-  const [protect, setProtect] = useState(true)
+export function OutputCard({ result, analyzing }: { result: RedactResult; analyzing: boolean }) {
   const [showMap, setShowMap] = useState(false)
   const unique = Object.keys(result.map).length
-  // Only the protected view is affected by an in-flight analysis; the raw
-  // view shows the original text and never changes with the model.
-  const pending = analyzing && protect
 
   return (
     <section className="card">
       <div className="card-head">
         <span className="card-title">
-          {protect ? <EyeIcon size={14} /> : <EyeOffIcon size={14} />}
-          {protect ? "Vad AI:n ser" : "Utan maskera"}
-          {pending && <span className="card-sub">analyserar…</span>}
+          <EyeIcon size={14} />
+          Vad AI:n ser
+          {analyzing && <span className="card-sub">analyserar…</span>}
         </span>
-        <Switch checked={protect} onChange={setProtect} label="Maskera personuppgifter" />
       </div>
 
-      <div className={`output ${protect ? "" : "raw"} ${pending ? "analyzing" : ""}`}>
-        {protect ? <RedactedText text={result.text} /> : original}
+      <div className={`output ${analyzing ? "analyzing" : ""}`}>
+        <RedactedText text={result.text} />
       </div>
 
-      <Stats result={result} protect={protect} />
+      <Stats result={result} />
 
       <button type="button" className="link" onClick={() => setShowMap((v) => !v)}>
         {showMap ? "Dölj" : "Visa"} återställningsnyckel ({unique})

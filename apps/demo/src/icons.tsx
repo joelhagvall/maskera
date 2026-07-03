@@ -110,15 +110,6 @@ export const EyeIcon = (p: IconProps) => (
   </Svg>
 )
 
-export const EyeOffIcon = (p: IconProps) => (
-  <Svg {...p}>
-    <path d="M4 5s2.5 4 8 4 8-4 8-4" opacity="0" />
-    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
-    <circle cx="12" cy="12" r="3" />
-    <path d="M3 3l18 18" />
-  </Svg>
-)
-
 export const ArrowUpRightIcon = (p: IconProps) => (
   <Svg {...p}>
     <path d="M7 17 17 7" />

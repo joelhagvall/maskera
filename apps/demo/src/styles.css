@@ -325,10 +325,6 @@ body {
   word-break: break-word;
   transition: opacity 0.2s ease;
 }
-.output.raw {
-  background: var(--bg);
-  color: var(--muted);
-}
 /* the model is reanalyzing: what shows is the instant rule result */
 .output.analyzing {
   opacity: 0.6;
@@ -342,35 +338,6 @@ body {
   border-radius: 4px;
   padding: 0 5px;
   white-space: nowrap;
-}
-
-/* ---- switch ---- */
-.switch {
-  width: 34px;
-  height: 20px;
-  border-radius: 999px;
-  border: none;
-  background: var(--border-2);
-  position: relative;
-  cursor: pointer;
-  padding: 0;
-  transition: background 0.15s;
-}
-.switch.on {
-  background: var(--fg);
-}
-.knob {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #fff;
-  transition: transform 0.15s;
-}
-.switch.on .knob {
-  transform: translateX(14px);
 }
 
 /* ---- stats ---- */
