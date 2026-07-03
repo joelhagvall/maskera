@@ -49,12 +49,7 @@ export function App() {
                 onChange={setText}
               />
               {/* key resets the card's local protect/showMap state per scenario */}
-              <OutputCard
-                key={active.id}
-                result={ner.result}
-                original={text}
-                analyzing={ner.analyzing}
-              />
+              <OutputCard key={active.id} result={ner.result} analyzing={ner.analyzing} />
             </div>
           </main>
         </>
