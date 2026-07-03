@@ -14,25 +14,7 @@ released CC0-1.0 (public domain) by the National Library of Sweden
   Model:   https://huggingface.co/joelhagvall/maskera-sv-ner
   Base:    https://huggingface.co/KBLab/bert-base-swedish-cased
 
-OPTIONAL MODEL ATTRIBUTION (Rampart)
-------------------------------------
-This package can optionally load "Rampart" (pass RAMPART_MODEL), created by
-National Design Studio, licensed under the Creative Commons Attribution 4.0
-International License (CC BY 4.0).
-
-  Model:   https://huggingface.co/nationaldesignstudio/rampart
-  License: https://creativecommons.org/licenses/by/4.0/
-
-If you redistribute the Rampart weights, or build a derivative / fine-tuned
-model from them, CC BY 4.0 requires that you:
-  1. Give appropriate credit to National Design Studio,
-  2. Provide a link to the CC BY 4.0 license,
-  3. Indicate if you made changes to the weights, and
-  4. Do not imply National Design Studio endorses you or your use.
-
-Rampart is trained on the ai4privacy/pii-masking-openpii-1.5m dataset,
-also licensed CC BY 4.0.
-
 Note: this package does not bundle any weights; they are downloaded at
-runtime from the Hugging Face Hub. If you choose to vendor weights, ship
-this NOTICE and the relevant model LICENSE alongside them.
+runtime from the Hugging Face Hub (or served from your own origin via
+`localModelPath`). If you load a third-party model instead, its own license
+terms apply.

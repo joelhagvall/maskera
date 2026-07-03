@@ -46,7 +46,6 @@ ask — adapters for frameworks nobody uses yet is wasted surface area. If/when:
 ### v0.5 — `@maskera/ner` (opt-in ML) — done 🧪
 - [x] Transformers.js loader for an ONNX token-classification model
 - [x] `createNerRecognizer()` + `redactWithNer()` hybrid (rules win on overlap)
-- [x] Rampart confirmed CC BY 4.0 (commercial + redistribution + fine-tune OK)
 - [x] WASM + WebGPU backends, lazy model fetch
 - [x] Span reconstruction from subword tokens
 
@@ -56,7 +55,7 @@ ask — adapters for frameworks nobody uses yet is wasted surface area. If/when:
 - [x] Distill to a smaller student (DistilBERT-style, teacher-init)
 - [x] ONNX export + quantization (497 MB → 82 MB int8 → 56 MB vocab-trim → 40 MB +q4)
 - [x] Hand-authored Swedish eval set + benchmark harness
-- [x] **Result: student 0.874 F1 vs Rampart 0.621** (overlap, out-of-template)
+- [x] **Result: student 0.874 F1** (overlap, out-of-template)
 - [x] **Honest benchmark vs the strong baseline** (`benchmark_competitors.py`):
       maskera matches `KB/bert-base-swedish-cased-ner` on independent text (0.92
       vs 0.92 type-aware F1) at 1/10th the size; Språkbanken PII models target a
@@ -68,8 +67,7 @@ ask — adapters for frameworks nobody uses yet is wasted surface area. If/when:
 - [x] Host the model on the Hugging Face Hub (`joelhagvall/maskera-sv-ner`)
 - [ ] Smaller architecture (fewer layers / MiniLM) toward ~15 MB if needed
 - [x] Wire the hosted model as the Swedish default in `@maskera/ner`
-      (`DEFAULT_NER_MODEL` = `joelhagvall/maskera-sv-ner`; Rampart stays as
-      the opt-in `RAMPART_MODEL` for multilingual text)
+      (`DEFAULT_NER_MODEL` = `joelhagvall/maskera-sv-ner`)
 
 #### Data next steps (the real lever now)
 

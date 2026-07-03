@@ -89,9 +89,9 @@ export function Transparency({ onBack }: { onBack: () => void }) {
         <h2>Hur bra den är, ärligt</h2>
         <ul>
           <li>
-            Öppet benchmarkad mot Rampart på både en handgjord uppsättning och ett oberoende publikt
-            dataset. Siffror och brasklappar finns i repot — inklusive att kvaliteten sjunker på
-            text utanför domänen.
+            Öppet benchmarkad på både en handgjord uppsättning och ett oberoende publikt dataset.
+            Siffror och brasklappar finns i repot — inklusive att kvaliteten sjunker på text utanför
+            domänen.
           </li>
           <li>
             <strong>Det är defense in depth, inte en garanti.</strong> Strukturerad PII

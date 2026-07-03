@@ -48,7 +48,7 @@ that is a few milliseconds of inference.
 
 ```ts
 createNerRecognizer({
-  model: MASKERA_SV_NER_MODEL, // default; pass RAMPART_MODEL for multilingual
+  model: MASKERA_SV_NER_MODEL, // default; any HF token-classification model id works
   dtype: "q4",                 // "q4" (40 MB, default) | "q8" (53 MB) | "fp32" (211 MB)
   device: "auto",              // "wasm" | "webgpu" | "cpu" | "auto"
   minScore: 0.5,               // drop predictions below this confidence
@@ -102,14 +102,11 @@ const { text } = await redactWithNer(userInput, { recognizer })
 value, label }`) if you want the entities without redaction, e.g. for
 highlighting.
 
-## Models
+## The model
 
-| Model | Constant | Languages | Size | License |
-| ----- | -------- | --------- | ---- | ------- |
-| [maskera-sv-ner](https://huggingface.co/joelhagvall/maskera-sv-ner) (default) | `MASKERA_SV_NER_MODEL` | Swedish | 40 MB q4 | MIT |
-| [Rampart](https://huggingface.co/nationaldesignstudio/rampart) | `RAMPART_MODEL` | en/es/fr/de/it/pt/nl | 15 MB | CC BY 4.0 |
-
-The default is maskera's own Swedish model: PER/LOC/ORG/ADR, distilled from
+The default (and only bundled default) model is
+[maskera-sv-ner](https://huggingface.co/joelhagvall/maskera-sv-ner)
+(`MASKERA_SV_NER_MODEL`, MIT, 40 MB q4): PER/LOC/ORG/ADR, distilled from
 KB-BERT, trained on synthetic + real Swedish with lowercase/ALL CAPS/genitive
 augmentation (chat users type lowercase). On the packaged gold corpus it
 scores 96% span-F1 with a 1% leak rate; on independent real text, 0.94
@@ -120,20 +117,19 @@ pnpm -C packages/ner build
 MASKERA_REMOTE=1 node packages/ner/eval/run-eval.mjs
 ```
 
-Rampart is the right choice for **non-Swedish** Latin-script text; it is not
-trained on Swedish and strips diacritics (å/ä/ö). If you redistribute its
-weights, CC BY 4.0 attribution applies, see [`NOTICE`](./NOTICE).
+Any other Transformers.js token-classification model id also works via
+`options.model` + `options.labelMap` if you need different language coverage.
 
 ## Limitations
 
 - **Best-effort, not a guarantee.** The rule layer is the dependable floor;
   the model catches most free-text PII but no model is perfect. Keep
   server-side controls for anything high-stakes.
-- Swedish-first: behaviour on other languages is undefined (use Rampart).
+- Swedish-first: behaviour on other languages is undefined.
 - Structured identifiers are deliberately out of scope; the rule layer owns
   them, and `redactWithNer` drops any model detection that overlaps a rule hit.
 
 ## License
 
-Code: MIT. Default model weights: MIT (base model KB-BERT is CC0). Optional
-Rampart weights: CC BY 4.0 (see `NOTICE`).
+Code: MIT. Default model weights: MIT (base model KB-BERT is CC0). See
+[`NOTICE`](./NOTICE).

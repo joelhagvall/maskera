@@ -1,5 +1,5 @@
 """
-Independent benchmark: evaluate the maskera models vs Rampart on a PUBLIC,
+Independent benchmark: evaluate the maskera models on a PUBLIC,
 third-party-labeled Swedish NER dataset (no shared author with our data).
 
 Restricted to PER / LOC / ORG — the types public NER sets share with us
@@ -14,13 +14,6 @@ from datasets import load_dataset
 from transformers import pipeline
 
 TYPES = ["PER", "LOC", "ORG"]
-
-RAMPART_MAP = {
-    "GIVENNAME": "PER", "SURNAME": "PER", "MIDDLENAME": "PER",
-    "FIRSTNAME": "PER", "LASTNAME": "PER", "NAME": "PER", "FULLNAME": "PER",
-    "CITY": "LOC", "STATE": "LOC", "COUNTY": "LOC", "COUNTRY": "LOC",
-    "ORGANIZATION": "ORG", "COMPANYNAME": "ORG",
-}
 
 import re  # noqa: E402
 
@@ -170,25 +163,14 @@ def main():
 
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     ours = lambda g: norm(g) if norm(g) in TYPES else None
-    rampart = lambda g: RAMPART_MAP.get(norm(g))
 
     def load_local(path):
         return pipeline("token-classification", model=path, tokenizer=path,
                         aggregation_strategy="simple", device=device)
 
-    def load_rampart():
-        from optimum.onnxruntime import ORTModelForTokenClassification
-        from transformers import AutoTokenizer
-        repo = "nationaldesignstudio/rampart"
-        m = ORTModelForTokenClassification.from_pretrained(repo, subfolder="onnx", file_name="model_q4.onnx")
-        return pipeline("token-classification", model=m,
-                        tokenizer=AutoTokenizer.from_pretrained(repo),
-                        aggregation_strategy="simple")
-
     models = [
         ("teacher v3 (KB-BERT)", lambda: load_local("model-v3"), ours),
         ("student v3 (shipped)", lambda: load_local("student-v3-trimmed"), ours),
-        ("Rampart", load_rampart, rampart),
     ]
     summary = {}
     for name, loader, mapper in models:

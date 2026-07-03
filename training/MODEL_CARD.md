@@ -69,15 +69,15 @@ const { text } = await redactWithNer(input, { recognizer, detectors: defaultDete
 
 ## Benchmark
 
-Span-level, type-aware F1 (overlap), vs Rampart:
+Span-level, type-aware F1 (overlap):
 
-| Eval set                        | teacher | **shipped 40 MB** | Rampart |
-| ------------------------------- | ------- | ----------------- | ------- |
-| hand-authored (121 sents)       | 0.899   | **0.946**         | 0.621   |
-| independent gold (real text)    | —       | **0.940**         | ~0.39   |
+| Eval set                        | teacher | **shipped 40 MB** |
+| ------------------------------- | ------- | ----------------- |
+| hand-authored (121 sents)       | 0.899   | **0.946**         |
+| independent gold (real text)    | —       | **0.940**         |
 
-The shipped ~40 MB model (vocab-trimmed + q4) beats Rampart on Swedish by a wide
-margin; Rampart scores 0.00 on ORG. See the
+The shipped ~40 MB model (vocab-trimmed + q4) matches the full-size Swedish
+baseline (KB-BERT NER) on independent text at a tenth of the size. See the
 [maskera training README](https://github.com/joelhagvall/maskera/tree/main/training).
 
 ## Limitations
