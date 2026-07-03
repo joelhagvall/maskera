@@ -22,12 +22,17 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
-  "files": ["dist", "NOTICE"],
+  "files": ["dist", "NOTICE", "CHANGELOG.md"],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -35,7 +40,7 @@
     "eval": "node eval/run-eval.mjs"
   },
   "dependencies": {
-    "@maskera/core": "workspace:*"
+    "@maskera/core": "workspace:^"
   },
   "peerDependencies": {
     "@huggingface/transformers": ">=3"

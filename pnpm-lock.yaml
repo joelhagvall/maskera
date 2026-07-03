@@ -76,7 +76,7 @@ importers:
   packages/ner:
     dependencies:
       '@maskera/core':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../core
     devDependencies:
       '@huggingface/transformers':
