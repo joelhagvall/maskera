@@ -628,7 +628,23 @@ const INSTITUTION = () => {
 }
 const org = () => (chance(0.3) ? INSTITUTION() : pick(ORGS))
 
-const SLOTS = { PER: person, LOC: place, ORG: org, ADR: address }
+// Genitive forms ("Annas bil", "Volvos fabrik") are still entity tokens, but
+// v4 never saw them and dropped the whole entity. Swedish genitive appends
+// "s" with no apostrophe; names already ending in s/x/z stay bare.
+const genitive = (name) => (/[sxz]$/i.test(name) ? name : `${name}s`)
+const personGenitive = () => genitive(chance(0.5) ? pick(FIRST) : `${pick(FIRST)} ${pick(LAST)}`)
+const orgGenitive = () => genitive(pick(ORGS))
+
+const SLOTS = {
+  PER: person,
+  LOC: place,
+  ORG: org,
+  ADR: address,
+  PERG: personGenitive,
+  ORGG: orgGenitive,
+}
+// Slot name -> BIO tag type, for slots that are surface variants of a base type.
+const SLOT_TAG = { PERG: "PER", ORGG: "ORG" }
 const TEMPLATES = [
   "Patient {PER} inkom akut med bröstsmärta.",
   "Remiss för {PER} skickas till {ORG} i {LOC}.",
@@ -748,6 +764,14 @@ const TEMPLATES = [
   "{ORG} vann mot {ORG} med 3-1 i går.",
   "{ORG} presenterade sitt budgetförslag i riksdagen.",
   "{PER} lämnar {ORG} efter flera år som ordförande.",
+  // v7: genitive entities, which a stress test showed v4 dropped entirely.
+  "{PERG} bil står felparkerad utanför {ADR}.",
+  "Det är {PERG} ansvar att meddela {ORG}.",
+  "{PERG} journal uppdaterades av {PER}.",
+  "Har du sett {PERG} nya lägenhet i {LOC}?",
+  "{PERG} chef på {ORG} godkände semestern.",
+  "{ORGG} kontor i {LOC} stänger vid årsskiftet.",
+  "Paketet skickades med {ORGG} egen budfirma.",
 ]
 
 function tokenizeFiller(str) {
@@ -770,8 +794,9 @@ function buildExample() {
   for (const part of template.split(/(\{[A-Z]+\})/)) {
     const slot = part.match(/^\{([A-Z]+)\}$/)
     if (slot) {
-      const type = slot[1]
-      SLOTS[type]()
+      const name = slot[1]
+      const type = SLOT_TAG[name] ?? name
+      SLOTS[name]()
         .split(/\s+/)
         .forEach((w, idx) => {
           tokens.push(w)
@@ -786,7 +811,17 @@ function buildExample() {
   }
   // light augmentation for robustness
   if (tokens.length) {
-    if (chance(0.2) && tags[0] === "O") tokens[0] = tokens[0].toLowerCase()
+    // v7 casing augmentation: chat users type all-lowercase (and sometimes
+    // ALL CAPS), and v4 collapsed on both. Whole-sentence variants teach the
+    // model to rely on context, not capitalisation, for entity cues.
+    const r = rand()
+    if (r < 0.12) {
+      for (let k = 0; k < tokens.length; k++) tokens[k] = tokens[k].toLowerCase()
+    } else if (r < 0.15) {
+      for (let k = 0; k < tokens.length; k++) tokens[k] = tokens[k].toUpperCase()
+    } else if (chance(0.2) && tags[0] === "O") {
+      tokens[0] = tokens[0].toLowerCase()
+    }
     if (chance(0.25) && /^[.!?]$/.test(tokens[tokens.length - 1])) {
       tokens.pop()
       tags.pop()
