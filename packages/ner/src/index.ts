@@ -147,7 +147,7 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
   }
 }
 
-interface RawToken {
+export interface RawToken {
   entity?: string
   entity_group?: string
   score: number
@@ -166,7 +166,7 @@ const baseType = (entity: string) => entity.replace(/^[BI]-/, "")
  * entities by merging subword/continuation tokens and locating the surface
  * string back in the original text.
  */
-function reconstruct(
+export function reconstruct(
   text: string,
   tokens: RawToken[],
   labelMap: LabelMap,
@@ -199,7 +199,14 @@ function reconstruct(
       const nextTag = next.entity ?? next.entity_group ?? ""
       const contiguous = (next.index ?? j) === (prev.index ?? j - 1) + 1
       const continuesEntity = nextTag.startsWith("I-") && baseType(nextTag) === base
-      if (contiguous && (isSubword || continuesEntity)) {
+      // The model can emit a stray B- mid-entity right after a connector
+      // ("Karl" B-PER, "-" I-PER, "Gustav" B-PER): splitting there would leave
+      // a dangling "Karl-" that fails the whole-word check and leaks. Bridge
+      // same-type B- tags only across a non-letter piece, so two full words
+      // ("Sofia" + a false-positive "imorgon") are never glued together.
+      const bridgesConnector =
+        nextTag.startsWith("B-") && baseType(nextTag) === base && !LETTER.test(pieceOf(prev))
+      if (contiguous && (isSubword || continuesEntity || bridgesConnector)) {
         group.push(next)
         j++
       } else {
@@ -207,21 +214,34 @@ function reconstruct(
       }
     }
 
-    let surface = ""
-    for (const p of group) {
-      if (p.word.startsWith("##")) surface += p.word.slice(2)
-      else surface += (surface ? " " : "") + p.word
+    // Trim punctuation-only tokens at the edges (a group ending in "-" can
+    // never sit on a word boundary and would be rejected wholesale).
+    while (group.length > 0 && !LETTER.test(pieceOf(group[group.length - 1] as RawToken)))
+      group.pop()
+    while (group.length > 0 && !LETTER.test(pieceOf(group[0] as RawToken))) group.shift()
+    if (group.length === 0) {
+      i = j
+      continue
     }
 
     const avg = group.reduce((s, p) => s + p.score, 0) / group.length
-    if (surface && avg >= minScore && LETTER.test(surface)) {
-      const idx = lower.indexOf(surface.toLowerCase(), cursor)
-      if (idx >= 0 && isWholeWord(text, idx, idx + surface.length)) {
-        const end = idx + surface.length
-        const label = labelMap(base)
-        if (label) {
-          out.push({ start: idx, end, value: text.slice(idx, end), label })
-          cursor = end
+    const joined = group.map(pieceOf).join("")
+    if (joined && avg >= minScore && LETTER.test(joined)) {
+      const span = locateGroup(text, lower, group, cursor)
+      if (span) {
+        let start = span.start
+        // The model can tag a trailing subword of a word it half-recognises
+        // (e.g. "##r" in "dr Svensson"). Widen to the word boundary so the
+        // whole word is redacted instead of leaked; lone fragments inside a
+        // longer word are still rejected by isWholeWord below.
+        while (start > 0 && LETTER.test(text[start - 1] ?? "")) start--
+        const soloFragment = group.length === 1 && (group[0]?.word.startsWith("##") ?? false)
+        if (!soloFragment && isWholeWord(text, start, span.end)) {
+          const label = labelMap(base)
+          if (label) {
+            out.push({ start, end: span.end, value: text.slice(start, span.end), label })
+            cursor = span.end
+          }
         }
       }
     }
@@ -231,6 +251,55 @@ function reconstruct(
 }
 
 const LETTER = /\p{L}/u
+const WHITESPACE = /\s/
+
+/** The surface text a token contributes, without the subword marker. */
+const pieceOf = (t: RawToken) => (t.word.startsWith("##") ? t.word.slice(2) : t.word)
+
+/**
+ * Locate a token group's span in the original text, starting at `cursor`.
+ * The tokenizer discards whitespace, so "Karl-Gustav" comes back as the
+ * pieces `Karl`, `-`, `Gustav`, so we match piece by piece, allowing optional
+ * whitespace before each new word (but none before a `##` continuation),
+ * instead of guessing a single joined surface string.
+ */
+function locateGroup(
+  text: string,
+  lower: string,
+  group: RawToken[],
+  cursor: number,
+): { start: number; end: number } | null {
+  const head = group[0]
+  if (!head) return null
+  const first = pieceOf(head).toLowerCase()
+  if (!first) return null
+
+  let start = lower.indexOf(first, cursor)
+  while (start >= 0) {
+    let pos = start + first.length
+    let ok = true
+    for (let k = 1; k < group.length; k++) {
+      const tok = group[k]
+      if (!tok) {
+        ok = false
+        break
+      }
+      if (!tok.word.startsWith("##")) {
+        while (pos < text.length && WHITESPACE.test(text[pos] ?? "")) pos++
+      }
+      const piece = pieceOf(tok).toLowerCase()
+      if (piece && lower.startsWith(piece, pos)) {
+        pos += piece.length
+      } else {
+        ok = false
+        break
+      }
+    }
+    if (ok) return { start, end: pos }
+    start = lower.indexOf(first, start + 1)
+  }
+  return null
+}
 
 /**
  * The model emits subword pieces, so a fragment can land in the middle of an
