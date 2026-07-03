@@ -1,0 +1,131 @@
+import { describe, expect, it } from "vitest"
+import { type RawToken, reconstruct } from "../src/index"
+
+const labelMap = (group: string) =>
+  ({ PER: "PERSON", LOC: "LOCATION", ORG: "ORGANIZATION" })[group] ?? group
+
+const tok = (entity: string, word: string, index: number, score = 0.99): RawToken => ({
+  entity,
+  word,
+  index,
+  score,
+})
+
+describe("reconstruct", () => {
+  it("finds a plain two-word name", () => {
+    const text = "Jag heter Anna Karlsson idag."
+    const out = reconstruct(
+      text,
+      [tok("B-PER", "Anna", 3), tok("I-PER", "Karlsson", 4)],
+      labelMap,
+      0.5,
+    )
+    expect(out).toEqual([{ start: 10, end: 23, value: "Anna Karlsson", label: "PERSON" }])
+  })
+
+  it("reassembles a hyphenated name (tokenizer splits on '-')", () => {
+    const text = "Handläggaren Karl-Gustav Åberg återkommer."
+    const out = reconstruct(
+      text,
+      [
+        tok("B-PER", "Karl", 4),
+        tok("I-PER", "-", 5),
+        tok("I-PER", "Gustav", 6),
+        tok("I-PER", "Åberg", 7),
+      ],
+      labelMap,
+      0.5,
+    )
+    expect(out).toEqual([{ start: 13, end: 30, value: "Karl-Gustav Åberg", label: "PERSON" }])
+  })
+
+  it("reassembles an ampersand org like H&M", () => {
+    const text = "Hon jobbar på H&M i Stockholm."
+    const out = reconstruct(
+      text,
+      [tok("B-ORG", "H", 4), tok("I-ORG", "&", 5), tok("I-ORG", "M", 6)],
+      labelMap,
+      0.5,
+    )
+    expect(out[0]).toMatchObject({ value: "H&M", label: "ORGANIZATION" })
+  })
+
+  it("merges subword continuations without inserting spaces", () => {
+    const text = "Patienten Muhammed al-Rashid kom in."
+    const out = reconstruct(
+      text,
+      [
+        tok("B-PER", "Muhammed", 2),
+        tok("I-PER", "al", 3),
+        tok("I-PER", "-", 4),
+        tok("I-PER", "Rash", 5),
+        tok("I-PER", "##id", 6),
+      ],
+      labelMap,
+      0.5,
+    )
+    expect(out[0]).toMatchObject({ value: "Muhammed al-Rashid", label: "PERSON" })
+  })
+
+  it("widens a leading tagged subword to the word boundary", () => {
+    // The model tagged only "##r" of "dr" — the whole word must be redacted,
+    // not silently dropped (which would leak "Svensson").
+    const text = "träffade dr Svensson på sjukhuset"
+    const out = reconstruct(
+      text,
+      [tok("B-PER", "##r", 3), tok("I-PER", "Svensson", 4)],
+      labelMap,
+      0.5,
+    )
+    expect(out[0]).toMatchObject({ value: "dr Svensson", label: "PERSON" })
+  })
+
+  it("bridges a stray B- tag mid-entity (Karl- must not leak)", () => {
+    // q4 model on "Hej, jag heter Karl-Gustav Åberg, …" emits B-PER Karl,
+    // I-PER -, B-PER Gustav, I-PER Åberg. One span, no dangling "Karl-".
+    const text = "Hej, jag heter Karl-Gustav Åberg, tack."
+    const out = reconstruct(
+      text,
+      [
+        tok("B-PER", "Karl", 5),
+        tok("I-PER", "-", 6),
+        tok("B-PER", "Gustav", 7),
+        tok("I-PER", "Åberg", 8),
+      ],
+      labelMap,
+      0.5,
+    )
+    expect(out).toEqual([{ start: 15, end: 32, value: "Karl-Gustav Åberg", label: "PERSON" }])
+  })
+
+  it("does not glue two adjacent B- words together", () => {
+    // "imorgon" false-positively tagged B-PER right after "Sofia" must stay
+    // a separate group (and its own span), not widen Sofia's placeholder.
+    const text = "kan du ringa Sofia imorgon?"
+    const out = reconstruct(
+      text,
+      [tok("B-PER", "Sofia", 4), tok("B-PER", "imorgon", 5)],
+      labelMap,
+      0.5,
+    )
+    expect(out.map((d) => d.value)).toEqual(["Sofia", "imorgon"])
+  })
+
+  it("trims a trailing punctuation token instead of dropping the group", () => {
+    const text = "Vi mötte Anna - sedan gick vi hem."
+    const out = reconstruct(text, [tok("B-PER", "Anna", 3), tok("I-PER", "-", 4)], labelMap, 0.5)
+    expect(out[0]).toMatchObject({ value: "Anna", label: "PERSON" })
+  })
+
+  it("drops a lone subword fragment inside a longer word", () => {
+    const text = "Motparten svarade aldrig."
+    const out = reconstruct(text, [tok("B-PER", "##par", 2)], labelMap, 0.5)
+    expect(out).toEqual([])
+  })
+
+  it("drops groups below minScore", () => {
+    const text = "Kanske Anna kommer."
+    const out = reconstruct(text, [tok("B-PER", "Anna", 2, 0.3)], labelMap, 0.5)
+    expect(out).toEqual([])
+  })
+})
