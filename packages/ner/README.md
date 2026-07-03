@@ -12,7 +12,9 @@ Transformers.js (WASM/WebGPU in the browser, native ONNX in Node).
 
 It's a separate package on purpose, so `@maskera/core` stays zero-dependency.
 The ML runtime is an **optional peer dependency** you install only if you use
-this.
+this. `@maskera/core` comes along automatically (regular dependency) and its
+**entire API is re-exported**, so one install and one import cover rules and
+model alike: `import { redact, redactWithNer } from "@maskera/ner"`.
 
 ```bash
 npm install @maskera/ner @huggingface/transformers
@@ -110,8 +112,10 @@ The default (and only bundled default) model is
 (`MASKERA_SV_NER_MODEL`, MIT, 40 MB q4): PER/LOC/ORG/ADR, distilled from
 KB-BERT, trained on synthetic + real Swedish with lowercase/ALL CAPS/genitive
 augmentation (chat users type lowercase). On the packaged gold corpus it
-scores 96% span-F1 with a 1% leak rate; on independent real text, 0.94
-type-aware F1 and 0.97 redaction recall. Run the eval yourself:
+scores 96.2% span-F1 with a 1.0% leak rate; on independent real text, 90.6%
+and 3.4%. The canonical, dated tables live in
+[docs/BENCHMARKS.md](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md).
+Run the eval yourself:
 
 ```bash
 pnpm -C packages/ner build

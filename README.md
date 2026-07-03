@@ -54,7 +54,8 @@ and a leak-rate ceiling.
    postnummer, bankgiro, plusgiro, IBAN, cards, IP, URL. Checksum-validated
    where a checksum exists, so `2019-2024` is not a bankgiro and
    `123456-0000` is not a person. Zero dependencies, synchronous, runs
-   anywhere JavaScript runs.
+   anywhere JavaScript runs. Anything you can regex (case ids, customer
+   numbers) joins the same engine via `regexDetector`.
 2. **`@maskera/ner`**: the model layer above, opt-in so core stays
    dependency-free. In the hybrid, rules win on overlap: structured PII is
    always handled deterministically, the model only fills the free-text gap.
@@ -78,18 +79,6 @@ Placeholders are **stable**: the same value always maps to the same token, so
 the model can reason about `[PERSON_1]` consistently. The same one-liner works
 before logging: `logger.info(redact(msg).text)`. Runnable example:
 [`examples/llm-roundtrip.ts`](examples/llm-roundtrip.ts).
-
-## Custom detectors
-
-Anything you can regex (case ids, customer numbers) joins the same engine:
-
-```ts
-import { redact, regexDetector } from "@maskera/core"
-
-const caseId = regexDetector("ARENDENUMMER", /\bAR-\d{6}\b/g)
-redact("Ärende AR-123456 är stängt.", { detectors: [caseId] }).text
-// "Ärende [ARENDENUMMER_1] är stängt."
-```
 
 ## Packages
 
