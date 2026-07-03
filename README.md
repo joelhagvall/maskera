@@ -35,16 +35,17 @@ places, organisations and street addresses, including all-lowercase chat text
 ("hej jag heter anna karlsson"), ALL CAPS and genitive forms, because that is
 how people actually type.
 
-| Eval set | type-aware F1 | redaction recall |
-| -------- | ------------- | ---------------- |
-| our hand-authored set | **0.946** | 0.97 |
-| independent gold (real text by others) | **0.940** | 0.97 |
+> **Benchmarks:** span F1 **96.2%** on the curated corpus, **90.6%** on
+> independent real text, leak rate 1.0% / 3.4% (exact-span, q4, measured
+> 2026-07-03). One canonical, dated, reproducible table:
+> **[docs/BENCHMARKS.md](docs/BENCHMARKS.md)** — every other number in this
+> repo defers to it.
 
-It matches the full-size Swedish baseline (KB-BERT NER, ~440 MB) on
-independent text at a tenth of the size. Training pipeline, benchmarks and
-caveats are fully reproducible: see [`training/`](training/). Model weights
-are MIT. Every push to this repo re-grades the published model in CI against
-a gold corpus with an F1 floor and a leak-rate ceiling.
+It nearly matches the full-size Swedish baseline (KB-BERT NER, ~440 MB) at a
+tenth of the size. The training pipeline and the round-by-round journey are
+fully reproducible: see [`training/`](training/). Every push to this repo
+re-grades the published model in CI against a gold corpus with an F1 floor
+and a leak-rate ceiling.
 
 ## Two layers, rules first
 
@@ -115,18 +116,19 @@ pnpm install && pnpm demo   # http://localhost:5180
 ## Honesty & transparency
 
 maskera is **defense in depth, not a compliance guarantee**. The rule layer
-is deterministic; the model catches most free-text PII (0.97 redaction recall
-on independent text) but no model is perfect. Numbers above come with caveats
-spelled out in [`training/README.md`](training/README.md), and
+is deterministic; the model catches most free-text PII but no model is
+perfect. The canonical numbers and their caveats live in
+[`docs/BENCHMARKS.md`](docs/BENCHMARKS.md), and
 [`docs/TRANSPARENCY.md`](docs/TRANSPARENCY.md) documents exactly what runs
 where: 100% on-device, the only network call is the one-time model download
-(never your text), self-hostable, trained without any real PII.
+(never your text), self-hostable, trained without collecting anyone's data
+(synthetic sentences plus one public, openly licensed news dataset).
 
 ## Development
 
 ```bash
 pnpm install
-pnpm build && pnpm test    # 121 tests
+pnpm build && pnpm test
 pnpm lint                  # biome
 pnpm smoke                 # pack tarballs, install fresh, test ESM+CJS
 pnpm eval                  # grade the published model against the gold corpus
