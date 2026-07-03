@@ -1,6 +1,11 @@
 import type { Detection, PiiLabel, RedactOptions, RedactResult } from "@maskera/core"
 import { defaultDetectors, redactFromDetections } from "@maskera/core"
 
+// Re-export the whole rule layer so one install + one import is enough:
+// installing @maskera/ner pulls in @maskera/core automatically, and
+// everything (redact, restore, detectors, validators) is importable from here.
+export * from "@maskera/core"
+
 /**
  * Canonical Hugging Face id for maskera's own Swedish PII model: a 40 MB
  * (q4) distilled KB-BERT for PER / LOC / ORG / ADR, trained on synthetic +

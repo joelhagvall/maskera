@@ -1,12 +1,14 @@
 export function Switch({
   checked,
   onChange,
-}: { checked: boolean; onChange: (v: boolean) => void }) {
+  label,
+}: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
+      aria-label={label}
       className={`switch ${checked ? "on" : ""}`}
       onClick={() => onChange(!checked)}
     >

@@ -38,8 +38,8 @@ function RestoreMap({ map }: { map: Record<string, string> }) {
   return (
     <div className="map">
       <p className="map-note">
-        Mappningen stannar lokalt. AI:n ser bara platshållarna; du återställer originalet på din
-        enhet.
+        Nyckeln stannar på din enhet. AI-tjänsten ser bara platshållarna, och med nyckeln kan du
+        sätta tillbaka originalen i svaret efteråt.
       </p>
       <table>
         <tbody>
@@ -68,7 +68,7 @@ export function OutputCard({ result, original }: { result: RedactResult; origina
           {protect ? <EyeIcon size={14} /> : <EyeOffIcon size={14} />}
           {protect ? "Vad AI:n ser" : "Utan maskera"}
         </span>
-        <Switch checked={protect} onChange={setProtect} />
+        <Switch checked={protect} onChange={setProtect} label="Maskera personuppgifter" />
       </div>
 
       <div className={`output ${protect ? "" : "raw"}`}>

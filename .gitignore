@@ -12,3 +12,4 @@ training/.publish-*
 .vscode/
 training/.benchmark/
 packages/ner/eval/corpus-domain.mjs
+apps/demo/reports/

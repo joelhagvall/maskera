@@ -37,8 +37,9 @@ export function InputCard({
         </div>
         <textarea
           value={text}
+          aria-label="Din text"
           spellCheck={false}
-          placeholder={`Skriv eller klistra in egen text här — allt körs lokalt.\n\nExempel: ${tagline}`}
+          placeholder={`Skriv eller klistra in egen text här. Allt körs lokalt.\n\nExempel: ${tagline}`}
           onChange={(e) => onChange(e.target.value)}
           onScroll={(e) => {
             if (backdropRef.current) backdropRef.current.scrollTop = e.currentTarget.scrollTop
