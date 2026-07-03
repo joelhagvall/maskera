@@ -20,7 +20,7 @@ set -euo pipefail
 
 REPO_ID="${REPO_ID:-joelhagvall/maskera-sv-ner}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SRC="$ROOT/training/student-v4-onnx"       # complete export: config, tokenizer, all onnx
+SRC="$ROOT/training/${MODEL_SRC:-student-v5-onnx}"  # complete export: config, tokenizer, all onnx
 CARD="$ROOT/training/maskera-sv-ner-card"  # README.md + NOTICE
 STAGE="$ROOT/training/.publish-maskera-sv-ner"
 

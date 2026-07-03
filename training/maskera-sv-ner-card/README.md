@@ -101,15 +101,16 @@ const out = await ner("Anna Lindqvist bor i Göteborg.")
 
 ## Evaluation
 
-Curated maskera corpus (189 free-text PER/LOC/ORG entities across 135
-hand-authored sentences, incl. 25 hard negatives), `dtype="q4"`:
+Curated maskera corpus (197 free-text PER/LOC/ORG entities across 139
+hand-authored sentences, incl. 25 hard negatives and all-lowercase / ALL CAPS /
+genitive hard cases), `dtype="q4"`:
 
 | metric    | score | meaning                                  |
 | --------- | ----- | ---------------------------------------- |
-| recall    | 97.9% | of real entities, how many were found    |
-| precision | 98.4% | of predictions, how many were correct    |
-| F1        | 98.1% | harmonic mean                            |
-| leaks     | 1.6%  | entities missed entirely (the safety number) |
+| recall    | 97.5% | of real entities, how many were found    |
+| precision | 95.0% | of predictions, how many were correct    |
+| F1        | 96.2% | harmonic mean                            |
+| leaks     | 1.0%  | entities missed entirely (the safety number) |
 
 Curated means clean, well-formed sentences, so treat it as an upper bound and
 regression tracker, not a universal score.
@@ -119,13 +120,15 @@ training), `dtype="q4"`:
 
 | metric           | score | meaning                                   |
 | ---------------- | ----- | ----------------------------------------- |
-| recall           | 91%   | of real entities, how many were found     |
-| precision        | 87%   | of predictions, how many were correct     |
-| type-aware F1    | 89%   | harmonic mean                             |
-| redaction recall | 95%   | of real entities, how many were masked at all |
+| recall           | 95%   | of real entities, how many were found     |
+| precision        | 93%   | of predictions, how many were correct     |
+| type-aware F1    | 94%   | harmonic mean                             |
+| redaction recall | 97%   | of real entities, how many were masked at all |
 
-The model is trained on synthetic Swedish plus the real **Swedish NER Corpus**
-(news) train split, which lifted this independent number from 0.85 to 0.89. That
+The model is trained on synthetic Swedish (with whole-sentence lowercase,
+ALL CAPS and genitive augmentation, since chat users type lowercase) plus the
+real **Swedish NER Corpus** (news) train split, which together lifted this
+independent number from 0.85 to 0.94. That
 also means the Swedish NER Corpus test split is now in-distribution and is NOT
 used as the independent measure. This gold set is small (a couple dozen
 sentences); a larger independent gold set is the top data TODO. Harnesses live

@@ -27,3 +27,8 @@ student-v4/
 student-v4-trimmed/
 student-v4-onnx/
 run_v4.log
+model-v5/
+student-v5/
+student-v5-trimmed/
+student-v5-onnx/
+run_v5.log
