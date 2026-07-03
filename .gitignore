@@ -14,3 +14,4 @@ training/.benchmark/
 packages/ner/eval/corpus-domain.mjs
 apps/demo/reports/
 apps/demo/public/ort/
+docs/LINKEDIN_POST.md
