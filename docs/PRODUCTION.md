@@ -21,7 +21,10 @@ const result = restore(answer)      // placeholders -> real values, locally
 ```
 
 That's production-usable as-is: `@maskera/core` is zero-dependency,
-deterministic and synchronous. Everything below is about doing it *well*.
+deterministic and synchronous. If you take the model path, `@maskera/ner`
+pulls in `@maskera/core` automatically and **re-exports its entire API**, so
+one import covers both layers; the `@maskera/core` imports below assume you
+installed it directly. Everything else is about doing it *well*.
 
 ## Architecture: which package does what
 
@@ -43,7 +46,6 @@ dropped, so the deterministic layer is always authoritative.
 Redact before the LLM call and before anything is persisted:
 
 ```ts
-import { redact } from "@maskera/core"
 import { createNerRecognizer, redactWithNer } from "@maskera/ner"
 
 // Module scope: create ONCE per process, not per request.
