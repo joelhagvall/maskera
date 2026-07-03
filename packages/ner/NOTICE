@@ -3,25 +3,36 @@
 
 This package's CODE is licensed under the MIT License.
 
-DEFAULT MODEL ATTRIBUTION
--------------------------
-The default NER model loaded by this package is "Rampart", created by
-National Design Studio, and is licensed under the Creative Commons
-Attribution 4.0 International License (CC BY 4.0).
+DEFAULT MODEL
+-------------
+The default NER model loaded by this package is "maskera-sv-ner"
+(joelhagvall/maskera-sv-ner), maskera's own Swedish model. Its weights are
+MIT-licensed. It is a derivative of KB-BERT (KBLab/bert-base-swedish-cased),
+released CC0-1.0 (public domain) by the National Library of Sweden
+(Kungliga biblioteket), acknowledged gratefully.
+
+  Model:   https://huggingface.co/joelhagvall/maskera-sv-ner
+  Base:    https://huggingface.co/KBLab/bert-base-swedish-cased
+
+OPTIONAL MODEL ATTRIBUTION (Rampart)
+------------------------------------
+This package can optionally load "Rampart" (pass RAMPART_MODEL), created by
+National Design Studio, licensed under the Creative Commons Attribution 4.0
+International License (CC BY 4.0).
 
   Model:   https://huggingface.co/nationaldesignstudio/rampart
   License: https://creativecommons.org/licenses/by/4.0/
 
-If you redistribute the model weights, or build a derivative / fine-tuned
+If you redistribute the Rampart weights, or build a derivative / fine-tuned
 model from them, CC BY 4.0 requires that you:
   1. Give appropriate credit to National Design Studio,
   2. Provide a link to the CC BY 4.0 license,
   3. Indicate if you made changes to the weights, and
   4. Do not imply National Design Studio endorses you or your use.
 
-The model is trained on the ai4privacy/pii-masking-openpii-1.5m dataset,
+Rampart is trained on the ai4privacy/pii-masking-openpii-1.5m dataset,
 also licensed CC BY 4.0.
 
-Note: this package does not bundle the weights; they are downloaded at
-runtime from the Hugging Face Hub. If you choose to vendor the weights,
-ship this NOTICE and the model's CC BY 4.0 LICENSE alongside them.
+Note: this package does not bundle any weights; they are downloaded at
+runtime from the Hugging Face Hub. If you choose to vendor weights, ship
+this NOTICE and the relevant model LICENSE alongside them.

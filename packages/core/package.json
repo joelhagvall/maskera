@@ -16,6 +16,16 @@
     "llm",
     "ai"
   ],
+  "homepage": "https://github.com/joelhagvall/maskera#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joelhagvall/maskera.git",
+    "directory": "packages/core"
+  },
+  "bugs": "https://github.com/joelhagvall/maskera/issues",
+  "publishConfig": {
+    "access": "public"
+  },
   "sideEffects": false,
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
