@@ -106,11 +106,8 @@ credibility question that a benchmark does.
 - [ ] **"Why not just regex?"** section: regex nails structured PII (personnummer,
       IBAN, phone) but cannot catch free-text names/places/orgs, which is exactly
       the model's job. Spell out the split.
-- [ ] **Production checklist**: thresholding (`minScore`), human review for
-      high-stakes flows, what to log (and not), false-negative posture (redaction
-      recall, not F1, is the number that matters), and that structured PII is
-      deterministic while free-text PII is best-effort.
+- [x] **Production checklist**: shipped as `docs/PRODUCTION.md` (thresholds,
+      self-hosting, fallback patterns, what to log, domain eval, ops checklist).
 - [ ] **Larger, messier eval** (support tickets, BRF, agency text, email, chat,
       OCR noise, lowercase, slang, misspellings) so the numbers reflect the real
       target domain, not clean prose.
-
