@@ -78,7 +78,7 @@ export function OutputCard({ result, original }: { result: RedactResult; origina
       <Stats result={result} protect={protect} />
 
       <button type="button" className="link" onClick={() => setShowMap((v) => !v)}>
-        {showMap ? "Dölj" : "Visa"} återställning ({unique})
+        {showMap ? "Dölj" : "Visa"} återställningsnyckel ({unique})
       </button>
       {showMap && <RestoreMap map={result.map} />}
     </section>

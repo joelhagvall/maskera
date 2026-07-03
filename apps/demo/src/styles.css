@@ -6,7 +6,7 @@
   --border: #eaeaea;
   --border-2: #dcdcdc;
   --muted: #666666;
-  --muted-2: #8f8f8f;
+  --muted-2: #757575;
   --radius: 8px;
   --radius-sm: 6px;
   --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -46,6 +46,11 @@ body {
   font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.02em;
+}
+.head-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
 }
 .ghlink {
   display: inline-flex;
@@ -132,7 +137,7 @@ body {
   background: var(--fg);
 }
 .dot.error {
-  background: var(--border-2);
+  background: #b45309;
 }
 .dot.loading {
   background: var(--muted-2);
