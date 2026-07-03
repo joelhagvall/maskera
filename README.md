@@ -2,348 +2,141 @@
 
 # maskera
 
-> **Swedish PII redaction, on-device — before your text reaches an LLM, a log, or analytics.**
+> **Swedish PII redaction, on-device. Names, personnummer, addresses are masked before your text reaches an LLM, a log, or analytics.**
 
 ```bash
-pnpm add @maskera/core
-```
-
-```ts
-import { redact } from "@maskera/core"
-
-redact("Mitt personnummer är 19900101-0017. Maila anna@example.se.").text
-// "Mitt personnummer är [PERSONNUMMER_1]. Maila [EMAIL_1]."
-```
-
-Zero dependencies. Runs anywhere JavaScript runs. Personnummer, samordningsnummer,
-org-nummer and the rest are checksum-validated, not guessed — and an optional
-Swedish model adds names, places and orgs. **[Live demo →](apps/demo)**
-
-### Use it before an LLM call
-
-Redact on the way in, restore on the way out — the model never sees real data,
-your code still gets real answers:
-
-```ts
-import { redact } from "@maskera/core"
-
-const { text: safePrompt, restore } = redact(userInput)
-const answer = await llm(safePrompt) // OpenAI / Anthropic / Vercel AI SDK — any
-const result = restore(answer) // placeholders → real values, locally
-```
-
-The same one-liner works before logging or analytics: `logger.info(redact(msg).text)`.
-
-<details>
-<summary>Full runnable example (<a href="examples/llm-roundtrip.ts"><code>examples/llm-roundtrip.ts</code></a>)</summary>
-
-```ts
-import { redact } from "@maskera/core"
-
-const userMessage =
-  "Hej, jag heter Anna Karlsson, personnummer 19900101-0017, " +
-  "och jag når er på 070-123 45 67 eller anna@example.se."
-
-const { text, map, restore } = redact(userMessage)
-
-console.log("Sent to LLM:\n", text)
-// Hej, jag heter Anna Karlsson, personnummer [PERSONNUMMER_1],
-// och jag når er på [PHONE_1] eller [EMAIL_1].
-
-// --- pretend this came back from your model ---
-const llmAnswer = "Tack! Jag har noterat [PHONE_1] som kontaktnummer och mejlar [EMAIL_1]."
-
-console.log("\nRestored locally:\n", restore(llmAnswer))
-// Tack! Jag har noterat 070-123 45 67 som kontaktnummer och mejlar anna@example.se.
-```
-
-</details>
-
----
-
-Two layers, a deterministic rule layer plus a small browser NER model,
-**specialised for Swedish**:
-
-1. **A deterministic rule layer** (`@maskera/core`) — personnummer, samordningsnummer,
-   organisationsnummer, Swedish phone numbers, postnummer, bankgiro/plusgiro and
-   IBAN, all checksum-validated. Zero dependencies, runs everywhere.
-2. **An optional Swedish NER model** (`@maskera/ner`) — for the free-text entities
-   rules can't catch (names, places, organisations, addresses), trained on Swedish.
-
-## What's built
-
-An honest snapshot of where the project is:
-
-- ✅ **Rule engine (`@maskera/core`)** — built from scratch: regex + Luhn-checksum
-  detectors for structured Swedish PII (personnummer, org-nr, phone, email,
-  IBAN…), plus a redact/restore engine with stable placeholders. Zero
-  dependencies, tested. **This is shippable today.**
-- ✅ **Our own Swedish NER model** — we **fine-tuned** KB-BERT (CC0 Swedish base
-  model) on synthetic Swedish data, **distilled** it, then **shrank** it
-  (vocab-trim + q4) to a browser-sized 40 MB ONNX. Benchmarked openly: it
-  matches the full-size Swedish baseline (KB-BERT NER) at a tenth of the size,
-  scores **0.94** type-aware F1 on independent real text, and masks **~0.97**
-  of the PII.
-- ✅ **NER layer (`@maskera/ner`)** — runs a model client-side via Transformers.js,
-  with subword-span reconstruction and the shared placeholder engine.
-- ✅ **Interactive demo** — 10 domains, model always on, live redaction as you type.
-- ✅ **Honesty around it** — reproducible training pipeline, two benchmarks with
-  caveats, a [transparency doc + FAQ](docs/TRANSPARENCY.md), base-model license
-  verified (KB-BERT is CC0), and the model published to the Hugging Face Hub
-  ([`joelhagvall/maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner)).
-
-**What we deliberately did _not_ do:** train a language model from scratch (we
-stood on KB-BERT), claim GDPR compliance, or publish invented benchmark numbers.
-
-**Not done yet:** smaller architecture toward ~15 MB, a *larger* independent gold
-set (training on the Swedish NER Corpus made its test split in-distribution), and
-real *target-domain* data (support/healthcare/legal, where the public news/wiki
-sets don't reach). Framework wrappers (`@maskera/node`, `@maskera/react`) are
-intentionally **demand-driven**, built when users ask, not speculatively. See
-[`docs/ROADMAP.md`](docs/ROADMAP.md).
-
-## Why it exists
-
-> "I want to use AI, but I don't want to send personal data to the model."
-
-That single sentence is the whole pitch. It's the blocker for municipalities,
-healthcare, insurance, law firms, HR tools, customer support, and BRF platforms.
-maskera turns it into one function call you run **on the client**, so the sensitive
-values never travel.
-
-- **Privacy before the LLM** — strip PII from prompts, keep the meaning.
-- **PII-safe logging & analytics** — redact before you persist anything.
-- **GDPR / EU AI Act posture** — data minimisation by construction.
-- **Stable placeholders** — the same value always maps to the same token, so the
-  model can reason about `[PERSON_1]` consistently and you can map results back.
-
-## Benchmark: Swedish PII (free-text entities)
-
-Measured on a hand-authored Swedish eval set (121 sentences, 236 entities)
-deliberately outside the training distribution — novel names/places/orgs,
-lowercase, abbreviations, foreign names, and distractors that must not be
-tagged. Span-level, type-aware F1 (see [`training/`](training/)).
-
-The shipped model is **40 MB** (vocab-trimmed + q4), runs in the browser, and
-holds up on **both** our eval and an independent one (type-aware F1, plus the
-privacy-relevant **redaction recall** = was the PII masked at all):
-
-| Eval set                              | type-aware F1 | redaction recall |
-| ------------------------------------- | ------------- | ------------------ |
-| our hand-authored set (PII-style)     | **0.946**     | 0.97               |
-| independent gold (real Wikipedia text)| **0.940**     | 0.97               |
-
-### vs the strong baseline
-
-On the independent gold set, mapped to PER/LOC/ORG (`python
-training/benchmark_competitors.py`):
-
-| Model                              | size    | redaction recall | type-aware F1 |
-| ---------------------------------- | ------- | ---------------- | ------------- |
-| **maskera** (distilled student)    | 82M fp32 / **40 MB q4** | 0.98 | **0.92** |
-| KB/bert-base-swedish-cased-ner     | ~440 MB | 1.00             | 0.92          |
-| sbx PII general / detailed         | ~440 MB | 0.05 / 0.10      | 0.10 / 0.19   |
-
-The honest read:
-
-- **maskera matches KB**, the strong full-size Swedish baseline, at fp32 (0.92 vs
-  0.92). That is the point: you are not trading quality for the browser. The
-  *shipped* 40 MB q4 gives up ~0.03 F1 for 10x smaller size and client-side use.
-- **The Språkbanken PII models are a different task** (PII categories from learner
-  essays), so they barely fire on general name/place/org text; not a competitor
-  for free-text redaction. The real comparison is KB, and maskera holds it.
-
-The shipped model is **v5** (data generation v7). Two levers got it here.
-First, real data: a synthetic-only round hit a precision ceiling on independent
-text (it could buy recall only by over-flagging), so ~6.9k sentences of real
-labelled Swedish (the **Swedish NER Corpus** train split) went into the mix,
-raising the independent Wikipedia number from 0.846 to 0.891. Second, casing:
-a stress test showed the model collapsed on all-lowercase chat text ("hej jag
-heter anna karlsson"), ALL CAPS and genitive forms, exactly what chat users
-type, so the generator now emits whole-sentence lowercase (~12%), ALL CAPS
-(~3%) and genitive variants. That took the independent number to **0.940** and
-cut gold-corpus leaks from 7 to 2. Because the model trains on the Swedish NER
-Corpus, its test split is in-distribution and no longer counts as independent;
-the honest independent measure is the held-out Wikipedia gold set above. See
-[`training/README.md`](training/README.md) for the full write-up.
-
-> **Read these honestly.** Our own set shares an author with the data generator,
-> so 0.945 *flatters* the model. The independent gold set is real prose written by
-> others (Wikipedia), but *encyclopedic*, a different domain from the
-> support/healthcare PII text this targets, so it is a pessimistic floor and also
-> small (a couple dozen sentences). The truth for the target domain sits between.
-> What's solid: **redaction recall ~0.97** against real text written by others.
-> The structured-PII rules aren't in this table, they're deterministic, not
-> learned.
-
-The real next gain is **more real labelled Swedish data, in the target domain**
-(support/healthcare/legal). Adding the Swedish NER Corpus (news) already raised
-the independent number 0.85 to 0.89 and lifted precision and recall together,
-which synthetic rounds could not; the public news/wiki sets just don't reach the
-target domain, and a larger independent gold set is still needed to measure it.
-
-## Live demo
-
-An interactive playground shows redaction happening **as you type**, across real
-scenarios from healthcare, law, BRF/property, crisis response, HR, support,
-municipality, insurance, banking and schools — toggle the shield on/off to see
-exactly what the AI would otherwise receive.
-
-The Swedish NER model is **always on**: the demo auto-loads it in the browser on
-startup (no toggle). The rule layer works instantly meanwhile, so there's no
-blank wait — once the model finishes loading it takes over free-text name/place/
-org detection seamlessly. Rules and model both run; rules win on overlap.
-
-```bash
-pnpm install
-pnpm demo      # opens apps/demo on http://localhost:5180
-```
-
-## Packages
-
-This is a pnpm monorepo.
-
-| Package          | Status          | What it does                                          |
-| ---------------- | --------------- | ----------------------------------------------------- |
-| `@maskera/core`    | ✅ ready        | Zero-dep Swedish PII detectors + redact/restore engine |
-| `@maskera/ner`     | ✅ ready        | Opt-in ONNX/Transformers.js NER for free-text names/places, Swedish model default |
-| `@maskera/node`    | ⏳ on demand    | Express middleware + AI-SDK wrappers — built when users ask |
-| `@maskera/react`   | ⏳ on demand    | `usePrivacyGuard()` hook + `<RedactedInput />` — if there's pull |
-
-> `@maskera/core` already runs in React and Node today (it's just functions), so
-> the wrappers are DX conveniences, not capability — we build them when real
-> demand appears, not speculatively.
-
-```
-maskera/
-├── packages/
-│   ├── core/        @maskera/core — rules + redact/restore engine (shippable today)
-│   └── ner/         @maskera/ner  — Transformers.js NER layer (our Swedish model)
-├── apps/
-│   └── demo/        interactive live-redaction playground (Vite + React)
-├── training/        Swedish NER: data gen, fine-tune, distill, ONNX, benchmark
-└── docs/ROADMAP.md  the plan
-```
-
-## `@maskera/core` — the rule layer
-
-```bash
-pnpm add @maskera/core
-```
-
-Built-in detectors, all checksum-validated where a checksum exists:
-
-| Label                  | Validation                          |
-| ---------------------- | ----------------------------------- |
-| `PERSONNUMMER`         | date + Luhn                         |
-| `SAMORDNINGSNUMMER`    | date (+60 day) + Luhn               |
-| `ORGANISATIONSNUMMER`  | Luhn, third digit ≥ 2               |
-| `EMAIL`                | pattern                             |
-| `PHONE`                | Swedish mobile + landline           |
-| `POSTNUMMER`           | NNN NN                              |
-| `BANKGIRO` / `PLUSGIRO`| Luhn check digit                    |
-| `IBAN`                 | SE pattern                          |
-| `CREDIT_CARD`          | Luhn                                |
-| `IP_ADDRESS` / `URL`   | pattern                             |
-
-### Custom detectors
-
-```ts
-import { redact, regexDetector } from "@maskera/core"
-
-const apartment = regexDetector("LAGENHETSNUMMER", /\blgh\s?\d{4}\b/gi)
-
-redact("Bor i lgh 1203.", { detectors: [apartment] }).text
-// "Bor i [LAGENHETSNUMMER_1]."
-```
-
-### API
-
-- `redact(input, options?)` → `{ text, redactions, map, restore }`
-- `redactFromDetections(input, detections, options?)` → reuse the engine with external detections
-- `restore(text, map)` → original values re-inserted
-- `regexDetector(label, globalRegex, validate?)` → a `Detector`
-- `defaultDetectors`, plus every detector individually
-- validators: `luhnValid`, `isPersonnummer`, `isSamordningsnummer`, `isOrganisationsnummer`
-
-## `@maskera/ner` — the model layer (optional)
-
-Adds free-text entities (names, places, orgs) via a Transformers.js model that
-runs client-side. The ML runtime is an optional peer dependency, so
-`@maskera/core` stays zero-dependency.
-
-```bash
-pnpm add @maskera/ner @huggingface/transformers
+npm install @maskera/core                            # rules: personnummer, phone, IBAN...
+npm install @maskera/ner @huggingface/transformers   # + our Swedish AI model: names, places, orgs
 ```
 
 ```ts
 import { createNerRecognizer, redactWithNer } from "@maskera/ner"
 
-const recognizer = createNerRecognizer() // loads our Swedish model by default
-await recognizer.ready
-
-const { text } = await redactWithNer("Min granne Lars bor på Kungsholmen.", {
-  recognizer,
-})
-// "Min granne [PERSON_1] bor på [LOCATION_1]."
+const recognizer = createNerRecognizer() // our 40 MB Swedish model, runs in the browser
+const { text, restore } = await redactWithNer(
+  "hej jag heter anna karlsson, personnummer 19900101-0017, och bor i uppsala",
+  { recognizer },
+)
+text
+// "hej jag heter [PERSON_1], personnummer [PERSONNUMMER_1], och bor i [LOCATION_1]"
 ```
 
-The default model is our own
-[`maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner) (MIT,
-40 MB q4), the one benchmarked above. You can also self-host the model files
-and cut the Hub out entirely; see
-[`packages/ner/README.md`](packages/ner/README.md).
+Everything runs client-side. Nothing is sent anywhere, no telemetry, and the
+restore map stays with you. **[Live demo →](apps/demo)**
 
-## Training & the Swedish model
+## The model is the point
 
-[`training/`](training/) is a full, reproducible pipeline: synthetic Swedish
-data generation → KB-BERT fine-tune → DistilBERT-style distillation → ONNX +
-int8 → benchmarks. It runs on Apple Silicon (MPS). See
-[`training/README.md`](training/README.md) for the method, the size ladder, and
-the lesson that a from-scratch small student memorises synthetic templates
-(F1 1.00) but doesn't generalise — initialising from the teacher fixes it.
+[`maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner) is our
+own Swedish NER model: KB-BERT fine-tuned on synthetic + real Swedish,
+distilled and shrunk to a **40 MB** ONNX that runs in the browser
+(WebGPU/WASM) and in Node. It catches what regex never can: free-text names,
+places, organisations and street addresses, including all-lowercase chat text
+("hej jag heter anna karlsson"), ALL CAPS and genitive forms, because that is
+how people actually type.
 
-## Taking it to production
+| Eval set | type-aware F1 | redaction recall |
+| -------- | ------------- | ---------------- |
+| our hand-authored set | **0.946** | 0.97 |
+| independent gold (real text by others) | **0.940** | 0.97 |
 
-[`docs/PRODUCTION.md`](docs/PRODUCTION.md) is the checklist: install and wire
-it up (browser and Node), tune thresholds, self-host the model, what to log
-(and not), and how the CI eval gates keep the published model honest.
+It matches the full-size Swedish baseline (KB-BERT NER, ~440 MB) on
+independent text at a tenth of the size. Training pipeline, benchmarks and
+caveats are fully reproducible: see [`training/`](training/). Model weights
+are MIT. Every push to this repo re-grades the published model in CI against
+a gold corpus with an F1 floor and a leak-rate ceiling.
+
+## Two layers, rules first
+
+1. **`@maskera/core`**: deterministic detectors for structured Swedish PII.
+   Personnummer, samordningsnummer, organisationsnummer, phone, email,
+   postnummer, bankgiro, plusgiro, IBAN, cards, IP, URL. Checksum-validated
+   where a checksum exists, so `2019-2024` is not a bankgiro and
+   `123456-0000` is not a person. Zero dependencies, synchronous, runs
+   anywhere JavaScript runs.
+2. **`@maskera/ner`**: the model layer above, opt-in so core stays
+   dependency-free. In the hybrid, rules win on overlap: structured PII is
+   always handled deterministically, the model only fills the free-text gap.
+
+Rules alone when inputs are structured-ish; add the model when users type
+free text. That split is the design: regex for what regex is good at, ML only
+for what it is needed for.
+
+## Use it before an LLM call
+
+Redact on the way in, restore on the way out. The LLM never sees real data,
+your code still gets real answers:
+
+```ts
+const { text: safePrompt, restore } = await redactWithNer(userInput, { recognizer })
+const answer = await llm(safePrompt) // OpenAI / Anthropic / Vercel AI SDK, any
+const result = restore(answer)       // placeholders back to real values, locally
+```
+
+Placeholders are **stable**: the same value always maps to the same token, so
+the model can reason about `[PERSON_1]` consistently. The same one-liner works
+before logging: `logger.info(redact(msg).text)`. Runnable example:
+[`examples/llm-roundtrip.ts`](examples/llm-roundtrip.ts).
+
+## Custom detectors
+
+Anything you can regex (case ids, customer numbers) joins the same engine:
+
+```ts
+import { redact, regexDetector } from "@maskera/core"
+
+const caseId = regexDetector("ARENDENUMMER", /\bAR-\d{6}\b/g)
+redact("Ärende AR-123456 är stängt.", { detectors: [caseId] }).text
+// "Ärende [ARENDENUMMER_1] är stängt."
+```
+
+## Packages
+
+| Package | Status | What it does |
+| ------- | ------ | ------------ |
+| [`@maskera/core`](packages/core) | ✅ ready | Zero-dep detectors + redact/restore engine |
+| [`@maskera/ner`](packages/ner) | ✅ ready | Our Swedish model via Transformers.js |
+| `@maskera/node`, `@maskera/react` | ⏳ on demand | Wrappers, built when users ask |
+
+Full API docs live in the package READMEs. For thresholds, self-hosting the
+model, fallback patterns and an operational checklist, read
+**[docs/PRODUCTION.md](docs/PRODUCTION.md)**.
+
+## Live demo
+
+Redaction as you type, across ten Swedish domains (vård, juridik, BRF, HR,
+bank...), with a toggle showing exactly what the AI would otherwise receive.
+The model loads in the background; rules work instantly meanwhile.
+
+```bash
+pnpm install && pnpm demo   # http://localhost:5180
+```
+
+## Honesty & transparency
+
+maskera is **defense in depth, not a compliance guarantee**. The rule layer
+is deterministic; the model catches most free-text PII (0.97 redaction recall
+on independent text) but no model is perfect. Numbers above come with caveats
+spelled out in [`training/README.md`](training/README.md), and
+[`docs/TRANSPARENCY.md`](docs/TRANSPARENCY.md) documents exactly what runs
+where: 100% on-device, the only network call is the one-time model download
+(never your text), self-hostable, trained without any real PII.
 
 ## Development
 
 ```bash
 pnpm install
-pnpm build      # build all packages
-pnpm test       # run all tests (vitest)
-pnpm lint       # biome
-pnpm smoke      # pack tarballs + install into a fresh project (ESM/CJS)
-pnpm eval       # grade the published model against the gold corpus
+pnpm build && pnpm test    # 121 tests
+pnpm lint                  # biome
+pnpm smoke                 # pack tarballs, install fresh, test ESM+CJS
+pnpm eval                  # grade the published model against the gold corpus
 ```
 
-CI runs lint, tests (Node 18 + 22), the pack smoke and a model eval with a
-span-F1 floor and leak-rate ceiling on every push/PR, plus a weekly canary
-against the live Hub artifact and latest Transformers.js that opens an issue
-on failure.
-
-## Transparency & privacy
-
-Since maskera is a privacy tool, it's explicit about its own workings:
-**redaction runs 100% on-device, nothing is sent anywhere, no telemetry**, and the
-model was trained on **fully synthetic data — no real PII, no scraping.** The only
-network calls are a one-time fetch of model weights/runtime (never your text), and
-everything is reproducible and self-hostable. Full details + FAQ:
-[`docs/TRANSPARENCY.md`](docs/TRANSPARENCY.md).
-
-## A note on guarantees
-
-maskera is **defense in depth, not a guarantee**. Regex + checksums catch
-structured data reliably; the NER layer catches most free-text names/places but
-no model is perfect. Treat it as a strong first line — keep server-side controls
-too. It is a data-minimisation aid, **not** a compliance guarantee.
+CI runs all of the above on every push, plus a model eval gated on an F1
+floor and leak-rate ceiling, and a weekly canary against the live Hub
+artifact that opens an issue if anything drifts. Roadmap:
+[`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## License
 
-Code: MIT © Joel Hägvall. The default model
-([`maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner)) is MIT;
-its base KB-BERT is CC0 (National Library of Sweden). See
-[`packages/ner/NOTICE`](packages/ner/NOTICE).
+Code: MIT © Joel Hägvall. Model weights: MIT (base model KB-BERT is CC0,
+National Library of Sweden). See [`packages/ner/NOTICE`](packages/ner/NOTICE).
