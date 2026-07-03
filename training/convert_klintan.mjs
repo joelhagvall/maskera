@@ -41,6 +41,12 @@ function flush() {
     prev = t
   }
   out.push(JSON.stringify({ tokens, tags }))
+  // v7: emit a lowercased duplicate for ~10% of sentences, so the model also
+  // sees REAL text without capitalisation cues (chat style), not just the
+  // synthetic lowercase variants.
+  if (Math.random() < 0.1) {
+    out.push(JSON.stringify({ tokens: tokens.map((t) => t.toLowerCase()), tags }))
+  }
   toks = []
 }
 
