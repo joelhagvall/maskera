@@ -14,7 +14,7 @@ Any of those missing turns a CTA into a broken promise.
 
 Most companies want to use AI. Most companies also handle personal data. Those two things don't always mix.
 
-I couldn't find an open Swedish model built for this, so I built one.
+I couldn't find an open Swedish model built for this, so I built one, plus an SDK so developers can drop it straight into their apps.
 
 It's called maskera. It finds and hides sensitive info (names, ID numbers, addresses) in your text before it reaches the AI.
 
@@ -28,7 +28,7 @@ Swedish-first and free. Useful anywhere personal data meets AI, especially healt
 
 You can try it right now, in your browser. Nothing to install: [DEMO LINK]
 
-I also built an SDK, so for developers it's one npm install to drop into your app. If your team wants help integrating, I'm glad to talk.
+For developers, it's one npm install to drop into your app. If your team wants help integrating, I'm glad to talk.
 
 Would something like this be useful where you work? 👇
 
