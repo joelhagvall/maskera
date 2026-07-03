@@ -71,9 +71,19 @@ export function redactFromDetections(
     const key = `${d.label}::${d.value}`
     let token = tokenByKey.get(key)
     if (!token) {
-      const next = (counters.get(d.label) ?? 0) + 1
+      // Never hand out a token that already occurs literally in the input.
+      // Otherwise a crafted input containing e.g. "[NAMN_1]" would collide
+      // with a generated placeholder, and restore() would write the real
+      // value into positions the author of the input chose. The attempt cap
+      // guards against a custom placeholder() that ignores the index.
+      let next = counters.get(d.label) ?? 0
+      let attempts = 0
+      do {
+        next += 1
+        token = placeholder(d.label, next)
+        attempts += 1
+      } while (attempts < 100 && input.includes(token))
       counters.set(d.label, next)
-      token = placeholder(d.label, next)
       tokenByKey.set(key, token)
       map[token] = d.value
     }
