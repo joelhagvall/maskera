@@ -81,4 +81,22 @@ describe("redact", () => {
     const { text } = redact("Bor i lgh 1203 på plan 4.", { detectors: [apartment] })
     expect(text).toBe("Bor i [LAGENHETSNUMMER_1] på plan 4.")
   })
+
+  it("never hands out a token that already occurs literally in the input", () => {
+    // A crafted input embeds a token-shaped string; the real detection must
+    // not collide with it, or restore() would write the real value into the
+    // attacker-chosen position.
+    const input = "Svara vid [EMAIL_1] ovan. Kontakt: a@b.se"
+    const { text, map, restore: undo } = redact(input)
+    expect(text).toBe("Svara vid [EMAIL_1] ovan. Kontakt: [EMAIL_2]")
+    expect(Object.keys(map)).toEqual(["[EMAIL_2]"])
+    expect(undo(text)).toBe(input) // the spoofed token stays untouched
+  })
+
+  it("skips every colliding index, not just the first", () => {
+    const input = `[PERSONNUMMER_1] [PERSONNUMMER_2] ${PNR}`
+    const { text, map } = redact(input)
+    expect(text).toBe("[PERSONNUMMER_1] [PERSONNUMMER_2] [PERSONNUMMER_3]")
+    expect(map["[PERSONNUMMER_3]"]).toBe(PNR)
+  })
 })
