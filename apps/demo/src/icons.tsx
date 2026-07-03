@@ -69,22 +69,6 @@ export const LawIcon = (p: IconProps) => (
   </Svg>
 )
 
-export const BuildingIcon = (p: IconProps) => (
-  <Svg {...p}>
-    <rect x="6" y="3" width="12" height="18" rx="1.5" />
-    <path d="M9.5 7h0M14.5 7h0M9.5 11h0M14.5 11h0M9.5 15h0" />
-    <path d="M10.5 21v-3h3v3" />
-  </Svg>
-)
-
-export const AlertIcon = (p: IconProps) => (
-  <Svg {...p}>
-    <path d="M12 4 21 19H3z" />
-    <path d="M12 10v4" />
-    <path d="M12 16.5h0" />
-  </Svg>
-)
-
 export const HrIcon = (p: IconProps) => (
   <Svg {...p}>
     <rect x="3" y="7" width="18" height="12" rx="2" />
@@ -107,29 +91,6 @@ export const LandmarkIcon = (p: IconProps) => (
     <path d="M12 3 21 8H3z" />
     <path d="M4 21h16" />
     <path d="M5 11v7M9.5 11v7M14.5 11v7M19 11v7" />
-  </Svg>
-)
-
-export const ShieldIcon = (p: IconProps) => (
-  <Svg {...p}>
-    <path d="M12 3 20 6v5c0 5-4 8-8 10-4-2-8-5-8-10V6z" />
-    <path d="M9 12l2 2 4-4" />
-  </Svg>
-)
-
-export const BankIcon = (p: IconProps) => (
-  <Svg {...p}>
-    <rect x="3" y="6" width="18" height="12" rx="2" />
-    <path d="M3 10h18" />
-    <path d="M7 14h4" />
-  </Svg>
-)
-
-export const SchoolIcon = (p: IconProps) => (
-  <Svg {...p}>
-    <path d="M12 4 22 9l-10 5L2 9z" />
-    <path d="M6 11v4c0 1.2 2.7 3 6 3s6-1.8 6-3v-4" />
-    <path d="M22 9v4" />
   </Svg>
 )
 
@@ -170,13 +131,8 @@ export const ArrowUpRightIcon = (p: IconProps) => (
 export const DOMAIN_ICONS: Record<string, (p: IconProps) => ReactElement> = {
   vard: HealthIcon,
   juridik: LawIcon,
-  brf: BuildingIcon,
-  kris: AlertIcon,
   hr: HrIcon,
   support: SupportIcon,
   kommun: LandmarkIcon,
-  forsakring: ShieldIcon,
-  bank: BankIcon,
-  skola: SchoolIcon,
   fritext: PencilIcon,
 }
