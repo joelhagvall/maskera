@@ -54,8 +54,11 @@ export function useSwedishNer(text: string): SwedishNer {
   // Auto-load the model once on mount.
   useEffect(() => {
     let cancelled = false
+    // Version suffix in the path busts the browser's Cache Storage when a new
+    // model ships: Transformers.js caches by URL and never revalidates, so
+    // returning visitors would silently keep the old weights forever.
     const rec = createNerRecognizer({
-      model: "maskera-sv-ner",
+      model: "maskera-sv-ner-v5",
       localModelPath: "/models/",
       allowLocalModels: true,
       allowRemoteModels: false,
