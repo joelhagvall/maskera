@@ -86,8 +86,14 @@ export const bankgiro = regexDetector("BANKGIRO", /\b\d{3,4}-\d{4}\b/g, (v) =>
   luhnValid(v.replace(/\D/g, "")),
 )
 
-/** Plusgiro: N..N-N (1-7 digits, dash, single check digit). */
-export const plusgiro = regexDetector("PLUSGIRO", /\b\d{1,7}-\d\b/g)
+/**
+ * Plusgiro: 1-7 digits, dash, single check digit, commonly written with
+ * space groups ("90 19 50-6"). The whole number carries a mod-10 (Luhn)
+ * check digit, which filters out look-alikes like list numbering ("punkt 1-2").
+ */
+export const plusgiro = regexDetector("PLUSGIRO", /\b\d(?:\s?\d){0,6}-\d\b/g, (v) =>
+  luhnValid(v.replace(/\D/g, "")),
+)
 
 /** Swedish IBAN: SE + 22 digits (spaces tolerated). */
 export const iban = regexDetector("IBAN", /\bSE\d{2}(?:\s?\d){20}\b/gi)
