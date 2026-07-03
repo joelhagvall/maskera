@@ -32,7 +32,7 @@ are.
 
 ## How good is it, really
 
-- Benchmarked openly against Rampart on a hand-authored set **and** an independent
+- Benchmarked openly on a hand-authored set **and** an independent
   public dataset (WikiANN). Numbers and caveats are in
   [`training/README.md`](../training/README.md) — including that synthetic-eval F1
   is near-meaningless and that quality drops on out-of-domain text.

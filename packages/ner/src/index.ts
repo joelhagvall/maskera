@@ -10,51 +10,26 @@ import { defaultDetectors, redactFromDetections } from "@maskera/core"
 export const MASKERA_SV_NER_MODEL = "joelhagvall/maskera-sv-ner"
 
 /**
- * The default model is maskera's own Swedish model, this is a Swedish-first
- * SDK. For multilingual Latin-script text, pass {@link RAMPART_MODEL} instead.
+ * The default model is maskera's own Swedish model. Pass any other
+ * Transformers.js token-classification model id via `options.model` if you
+ * need different language coverage.
  */
 export const DEFAULT_NER_MODEL = MASKERA_SV_NER_MODEL
 
 /**
- * Rampart (nationaldesignstudio/rampart): a 14.7 MB 4-bit quantized MiniLM
- * token-classification model for en/es/fr/de/it/pt/nl, CC BY 4.0.
- * Not trained on Swedish and strips diacritics; use it for multilingual text,
- * not Swedish. Attribution required if redistributed, see this package's
- * README/NOTICE.
- */
-export const RAMPART_MODEL = "nationaldesignstudio/rampart"
-
-/**
- * Map a model entity group (e.g. "GIVENNAME", "CITY") to a maskera label.
- * Return `null` to drop the entity. The default normalises a handful of
- * common OpenPII groups to coarse labels and upper-cases the rest.
+ * Map a model entity group (e.g. "PER", "LOC") to a maskera label.
+ * Return `null` to drop the entity. The default maps maskera-sv-ner's scheme
+ * to readable labels and upper-cases anything else, so third-party models
+ * work out of the box too.
  */
 export type LabelMap = (entityGroup: string) => PiiLabel | null
 
 const DEFAULT_LABEL_MAP: Record<string, PiiLabel> = {
-  // maskera-sv-ner's own scheme (Swedish model): PER / LOC / ORG / ADR.
+  // maskera-sv-ner's scheme: PER / LOC / ORG / ADR.
   PER: "PERSON",
   LOC: "LOCATION",
   ORG: "ORGANIZATION",
   ADR: "ADDRESS",
-  // OpenPII / Rampart scheme.
-  GIVENNAME: "PERSON",
-  SURNAME: "PERSON",
-  FIRSTNAME: "PERSON",
-  LASTNAME: "PERSON",
-  MIDDLENAME: "PERSON",
-  NAME: "PERSON",
-  CITY: "LOCATION",
-  STATE: "LOCATION",
-  COUNTRY: "LOCATION",
-  STREET: "ADDRESS",
-  STREETNAME: "ADDRESS",
-  STREETADDRESS: "ADDRESS",
-  BUILDINGNUMBER: "ADDRESS",
-  SECONDARYADDRESS: "ADDRESS",
-  ZIPCODE: "POSTNUMMER",
-  ORGANIZATION: "ORGANIZATION",
-  COMPANYNAME: "ORGANIZATION",
 }
 
 const defaultLabelMap: LabelMap = (group) => {
