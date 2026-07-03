@@ -8,9 +8,11 @@ are.
 
 - **Redaction runs entirely on your device**: in the browser (WASM/WebGPU) or in
   your Node process. Your text is **never sent anywhere** for redaction.
-- **No telemetry, no analytics, no phone-home.** maskera makes no network calls
-  with your content. You can verify this in the browser DevTools → Network tab:
-  type into the demo and watch: your text triggers zero requests.
+- **No telemetry in the packages, no phone-home.** maskera makes no network
+  calls with your content. You can verify this in the browser DevTools →
+  Network tab: type into the demo and watch: your text triggers zero requests.
+  (The demo page itself counts anonymous, cookieless page views via Vercel
+  Analytics; that request never contains anything you typed.)
 - **The network calls that *do* exist** (full honesty): the NER **model file** is
   downloaded once (from the Hugging Face Hub, or your own host), and the
   Transformers.js **WASM runtime** loads from a CDN. Both are code/weights, fetched
@@ -71,4 +73,5 @@ Non-Swedish PII, unusual free-text formulations, and anything outside its four
 entity types (PER/LOC/ORG/ADR). Structured IDs are handled by rules, not the model.
 
 **Do you collect anything from the demo?**
-No. The demo is a static site with no backend and no analytics.
+Anonymous, cookieless page-view counts (Vercel Analytics), nothing else. The
+demo is a static site with no backend, and your text never leaves the browser.
