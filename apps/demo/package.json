@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "pnpm --filter @maskera/core --filter @maskera/ner build && node scripts/fetch-model.mjs && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
