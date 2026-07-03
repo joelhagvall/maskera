@@ -11,18 +11,37 @@ function ModelStatus({
   progress: number
   analyzing: boolean
 }) {
+  if (status === "loading") {
+    return (
+      <div className="status">
+        <span
+          className="bar"
+          role="progressbar"
+          aria-label="Laddar maskeras AI-modell"
+          aria-valuenow={progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <span className="bar-fill" style={{ width: `${Math.max(progress, 3)}%` }} />
+        </span>
+        <span>
+          Laddar maskeras AI-modell… <span className="pct">{progress}%</span> · reglerna skyddar
+          redan
+        </span>
+      </div>
+    )
+  }
   return (
     <div className="status">
       <span className={`dot ${status}`} />
-      {status === "loading" && (
-        <span>Laddar svensk AI-modell… {progress}% · regler skyddar redan</span>
-      )}
       {status === "ready" && (
         <span>
-          Svensk AI-modell aktiv{analyzing ? " · analyserar…" : " · fångar namn & platser"}
+          maskeras AI-modell aktiv{analyzing ? " · analyserar…" : " · känner igen namn och platser"}
         </span>
       )}
-      {status === "error" && <span>AI-modell kunde inte laddas · regler skyddar</span>}
+      {status === "error" && (
+        <span>AI-modellen kunde inte laddas · reglerna skyddar fortfarande</span>
+      )}
     </div>
   )
 }

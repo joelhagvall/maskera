@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { Controls } from "./components/Controls"
+import { Developers } from "./components/Developers"
 import { Footer } from "./components/Footer"
 import { Header } from "./components/Header"
 import { InputCard } from "./components/InputCard"
@@ -11,10 +12,10 @@ import { useSwedishNer } from "./useSwedishNer"
 export function App() {
   const [active, setActive] = useState<Scenario>(scenarios[0])
   const [text, setText] = useState<string>(scenarios[0].text)
-  const [view, setView] = useState<"demo" | "transparency">("demo")
+  const [view, setView] = useState<"demo" | "transparency" | "dev">("demo")
   const ner = useSwedishNer(text)
 
-  // Always land at the top when switching between demo and transparency.
+  // Always land at the top when switching between the demo and the subpages.
   // biome-ignore lint/correctness/useExhaustiveDependencies: view is the trigger
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -25,28 +26,36 @@ export function App() {
     setText(s.text)
   }
 
-  if (view === "transparency") return <Transparency onBack={() => setView("demo")} />
+  const goDemo = () => setView("demo")
 
   return (
     <div className="app">
-      <Header />
-      <Controls
-        activeId={active.id}
-        onPick={pick}
-        status={ner.status}
-        progress={ner.progress}
-        analyzing={ner.analyzing}
-      />
-      <div className="grid">
-        <InputCard
-          tagline={active.tagline}
-          text={text}
-          redactions={ner.result.redactions}
-          onChange={setText}
-        />
-        {/* key resets the card's local protect/showMap state per scenario */}
-        <OutputCard key={active.id} result={ner.result} original={text} />
-      </div>
+      {view === "demo" && (
+        <>
+          <Header onDev={() => setView("dev")} />
+          <main>
+            <Controls
+              activeId={active.id}
+              onPick={pick}
+              status={ner.status}
+              progress={ner.progress}
+              analyzing={ner.analyzing}
+            />
+            <div className="grid">
+              <InputCard
+                tagline={active.tagline}
+                text={text}
+                redactions={ner.result.redactions}
+                onChange={setText}
+              />
+              {/* key resets the card's local protect/showMap state per scenario */}
+              <OutputCard key={active.id} result={ner.result} original={text} />
+            </div>
+          </main>
+        </>
+      )}
+      {view === "dev" && <Developers onBack={goDemo} />}
+      {view === "transparency" && <Transparency onBack={goDemo} />}
       <Footer onTransparency={() => setView("transparency")} />
     </div>
   )

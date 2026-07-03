@@ -5,8 +5,7 @@
 > **Swedish PII redaction, on-device. Names, personnummer, addresses are masked before your text reaches an LLM, a log, or analytics.**
 
 ```bash
-npm install @maskera/core                            # rules: personnummer, phone, IBAN...
-npm install @maskera/ner @huggingface/transformers   # + our Swedish AI model: names, places, orgs
+npm install @maskera/ner @huggingface/transformers   # all-in-one: rules + our Swedish AI model
 ```
 
 ```ts
@@ -22,7 +21,9 @@ text
 ```
 
 Everything runs client-side. Nothing is sent anywhere, no telemetry, and the
-restore map stays with you. **[Live demo →](apps/demo)**
+restore map stays with you. `@maskera/ner` re-exports the whole rule layer,
+so one import covers rules and model alike. Rules only, zero dependencies:
+`npm install @maskera/core`. **[Live demo →](apps/demo)**
 
 ## The model is the point
 

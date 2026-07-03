@@ -1,7 +1,7 @@
 import { GITHUB } from "../constants"
 import { ArrowUpRightIcon, MaskeraMark } from "../icons"
 
-export function Header() {
+export function Header({ onDev }: { onDev: () => void }) {
   return (
     <header className="header">
       <div className="head-row">
@@ -10,10 +10,9 @@ export function Header() {
           maskera
         </span>
         <nav className="head-links">
-          <a className="ghlink" href={`${GITHUB}#readme`} target="_blank" rel="noreferrer">
-            Docs
-            <ArrowUpRightIcon size={13} />
-          </a>
+          <button type="button" className="ghlink" onClick={onDev}>
+            För utvecklare
+          </button>
           <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
             GitHub
             <ArrowUpRightIcon size={13} />
@@ -25,7 +24,7 @@ export function Header() {
         maskera hittar och döljer personuppgifter, som namn, personnummer och adresser, innan texten
         skickas till ChatGPT eller andra AI-tjänster. Allt sker{" "}
         <strong>direkt i din webbläsare</strong>, ingenting lämnar din dator. För utvecklare: allt
-        är öppen källkod och finns som npm-paket, redo att droppa in i din app.
+        är öppen källkod och finns som npm-paket att bygga in i din egen tjänst.
       </p>
     </header>
   )
