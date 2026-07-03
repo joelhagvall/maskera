@@ -22,6 +22,28 @@ text // "Personnummer [PERSONNUMMER_1], tel [PHONE_1]."
 - **Restore map**: map LLM output back to real values, locally.
 - **Zero dependencies**, tree-shakeable, ESM + CJS + types.
 
+## Built-in detectors
+
+All exported individually and as `defaultDetectors`. Checksum-validated where
+a checksum exists, so look-alikes (year ranges, reference numbers) don't fire.
+
+| Label                  | Matches                                | Validation            |
+| ---------------------- | -------------------------------------- | --------------------- |
+| `PERSONNUMMER`         | `19900101-0017`, `900101-0017`         | date + Luhn           |
+| `SAMORDNINGSNUMMER`    | day + 60 variant                       | date + Luhn           |
+| `ORGANISATIONSNUMMER`  | `556016-0680`                          | Luhn, third digit ≥ 2 |
+| `EMAIL`                | `anna@example.se`                      | pattern               |
+| `PHONE`                | `070-123 45 67`, `+46 8 123 456`       | Swedish mobile + landline |
+| `POSTNUMMER`           | `114 55`                               | pattern               |
+| `BANKGIRO`             | `5050-1055`                            | Luhn check digit      |
+| `PLUSGIRO`             | `90 19 50-6` (spaces tolerated)        | Luhn check digit      |
+| `IBAN`                 | `SE45 5000 0000 0583 9825 7466`        | SE pattern            |
+| `CREDIT_CARD`          | 13-19 digits, spaces/dashes tolerated  | Luhn                  |
+| `IP_ADDRESS` / `URL`   | IPv4 / http(s)                         | pattern               |
+
+Add your own with `regexDetector` (below); mix and match via
+`options.detectors`.
+
 ## API
 
 ### `redact(input, options?) => RedactResult`

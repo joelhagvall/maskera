@@ -98,8 +98,8 @@ An honest snapshot of where the project is:
 - ✅ **Our own Swedish NER model** — we **fine-tuned** KB-BERT (CC0 Swedish base
   model) on synthetic Swedish data, **distilled** it, then **shrank** it
   (vocab-trim + q4) to a browser-sized 40 MB ONNX. Benchmarked openly: it beats
-  Rampart wide on Swedish (**0.89 vs 0.39** type-aware F1 on independent real
-  text) and masks **~0.95** of the PII.
+  Rampart wide on Swedish (**0.94 vs 0.39** type-aware F1 on independent real
+  text) and masks **~0.97** of the PII.
 - ✅ **NER layer (`@maskera/ner`)** — runs a model client-side via Transformers.js,
   with subword-span reconstruction and the shared placeholder engine.
 - ✅ **Interactive demo** — 10 domains, model always on, live redaction as you type.
@@ -147,8 +147,8 @@ the privacy-relevant **redaction recall** = was the PII masked at all):
 
 | Eval set                              | type-aware F1 | redaction recall |
 | ------------------------------------- | ------------- | ------------------ |
-| our hand-authored set (PII-style)     | **0.945**     | 0.95               |
-| independent gold (real Wikipedia text)| **0.891**     | 0.95               |
+| our hand-authored set (PII-style)     | **0.946**     | 0.97               |
+| independent gold (real Wikipedia text)| **0.940**     | 0.97               |
 
 ### vs the real competitors (not just Rampart)
 
@@ -173,15 +173,18 @@ The honest read:
 - Rampart is a weak Swedish baseline (ORG F1 = 0.00); beating it was never the
   bar.
 
-The shipped model is **v6**. A synthetic-only round (v5.1) hit a precision
-ceiling on independent text (it could buy recall only by over-flagging), so v6
-added ~6.9k sentences of real labelled Swedish (the **Swedish NER Corpus** train
-split) to the training mix. That is the lever synthetic data could not pull: the
-independent Wikipedia number rose from 0.846 (v4) and 0.782 (v5.1) to **0.891**,
-with precision **and** recall both high (0.87 / 0.91) instead of one traded for
-the other. Because the model now trains on that corpus, its test split is
-in-distribution and no longer counts as independent; the honest independent
-measure is the held-out Wikipedia gold set above. See
+The shipped model is **v5** (data generation v7). Two levers got it here.
+First, real data: a synthetic-only round hit a precision ceiling on independent
+text (it could buy recall only by over-flagging), so ~6.9k sentences of real
+labelled Swedish (the **Swedish NER Corpus** train split) went into the mix,
+raising the independent Wikipedia number from 0.846 to 0.891. Second, casing:
+a stress test showed the model collapsed on all-lowercase chat text ("hej jag
+heter anna karlsson"), ALL CAPS and genitive forms, exactly what chat users
+type, so the generator now emits whole-sentence lowercase (~12%), ALL CAPS
+(~3%) and genitive variants. That took the independent number to **0.940** and
+cut gold-corpus leaks from 7 to 2. Because the model trains on the Swedish NER
+Corpus, its test split is in-distribution and no longer counts as independent;
+the honest independent measure is the held-out Wikipedia gold set above. See
 [`training/README.md`](training/README.md) for the full write-up.
 
 > **Read these honestly.** Our own set shares an author with the data generator,
@@ -222,7 +225,7 @@ This is a pnpm monorepo.
 | Package          | Status          | What it does                                          |
 | ---------------- | --------------- | ----------------------------------------------------- |
 | `@maskera/core`    | ✅ ready        | Zero-dep Swedish PII detectors + redact/restore engine |
-| `@maskera/ner`     | 🧪 experimental | Opt-in ONNX/Transformers.js NER for free-text names/places |
+| `@maskera/ner`     | ✅ ready        | Opt-in ONNX/Transformers.js NER for free-text names/places, Swedish model default |
 | `@maskera/node`    | ⏳ on demand    | Express middleware + AI-SDK wrappers — built when users ask |
 | `@maskera/react`   | ⏳ on demand    | `usePrivacyGuard()` hook + `<RedactedInput />` — if there's pull |
 
@@ -234,7 +237,7 @@ This is a pnpm monorepo.
 maskera/
 ├── packages/
 │   ├── core/        @maskera/core — rules + redact/restore engine (shippable today)
-│   └── ner/         @maskera/ner  — Transformers.js NER layer (Rampart or our model)
+│   └── ner/         @maskera/ner  — Transformers.js NER layer (our Swedish model, Rampart optional)
 ├── apps/
 │   └── demo/        interactive live-redaction playground (Vite + React)
 ├── training/        Swedish NER: data gen, fine-tune, distill, ONNX, benchmark
@@ -257,7 +260,7 @@ Built-in detectors, all checksum-validated where a checksum exists:
 | `EMAIL`                | pattern                             |
 | `PHONE`                | Swedish mobile + landline           |
 | `POSTNUMMER`           | NNN NN                              |
-| `BANKGIRO` / `PLUSGIRO`| pattern                             |
+| `BANKGIRO` / `PLUSGIRO`| Luhn check digit                    |
 | `IBAN`                 | SE pattern                          |
 | `CREDIT_CARD`          | Luhn                                |
 | `IP_ADDRESS` / `URL`   | pattern                             |
@@ -295,19 +298,21 @@ pnpm add @maskera/ner @huggingface/transformers
 ```ts
 import { createNerRecognizer, redactWithNer } from "@maskera/ner"
 
-const recognizer = createNerRecognizer() // pass { model } to use our Swedish model
+const recognizer = createNerRecognizer() // loads our Swedish model by default
 await recognizer.ready
 
 const { text } = await redactWithNer("Min granne Lars bor på Kungsholmen.", {
   recognizer,
 })
-// "Min granne [PER_1] bor på [LOC_1]."
+// "Min granne [PERSON_1] bor på [LOCATION_1]."
 ```
 
-The default model is Rampart (CC BY 4.0). Our Swedish model — which wins the
-benchmark above — is trained in [`training/`](training/); point
-`createNerRecognizer({ model })` at it once hosted. See
-[`packages/ner/NOTICE`](packages/ner/NOTICE) for model attribution.
+The default model is our own
+[`maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner) (MIT,
+40 MB q4), the one that wins the benchmark above. For multilingual Latin-script
+text, pass `RAMPART_MODEL` (CC BY 4.0) instead. You can also self-host the
+model files and cut the Hub out entirely; see
+[`packages/ner/README.md`](packages/ner/README.md).
 
 ## Training & the Swedish model
 
@@ -318,6 +323,12 @@ int8 → benchmark vs Rampart. It runs on Apple Silicon (MPS). See
 the lesson that a from-scratch small student memorises synthetic templates
 (F1 1.00) but doesn't generalise — initialising from the teacher fixes it.
 
+## Taking it to production
+
+[`docs/PRODUCTION.md`](docs/PRODUCTION.md) is the checklist: install and wire
+it up (browser and Node), tune thresholds, self-host the model, what to log
+(and not), and how the CI eval gates keep the published model honest.
+
 ## Development
 
 ```bash
@@ -325,7 +336,14 @@ pnpm install
 pnpm build      # build all packages
 pnpm test       # run all tests (vitest)
 pnpm lint       # biome
+pnpm smoke      # pack tarballs + install into a fresh project (ESM/CJS)
+pnpm eval       # grade the published model against the gold corpus
 ```
+
+CI runs lint, tests (Node 18 + 22), the pack smoke and a model eval with a
+span-F1 floor and leak-rate ceiling on every push/PR, plus a weekly canary
+against the live Hub artifact and latest Transformers.js that opens an issue
+on failure.
 
 ## Transparency & privacy
 
@@ -345,5 +363,7 @@ too. It is a data-minimisation aid, **not** a compliance guarantee.
 
 ## License
 
-Code: MIT © Joel Hägvall. Model weights carry their own licenses (Rampart:
-CC BY 4.0; KB-BERT base: see National Library of Sweden).
+Code: MIT © Joel Hägvall. The default model
+([`maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner)) is MIT;
+its base KB-BERT is CC0 (National Library of Sweden). The optional Rampart
+model is CC BY 4.0 (see [`packages/ner/NOTICE`](packages/ner/NOTICE)).
