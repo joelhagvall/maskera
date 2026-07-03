@@ -5,18 +5,63 @@ on:
     branches: [main]
   pull_request:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # Lint + build + unit tests across the supported Node range, then a pack
+  # smoke: install the actual tarballs into a fresh project and exercise the
+  # ESM and CJS entry points (catches exports-map/bundling breakage that
+  # src-importing unit tests can't see).
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 22]
     steps:
       - uses: actions/checkout@v5
       # pnpm version comes from the "packageManager" field in package.json
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
-          node-version: 22
+          node-version: ${{ matrix.node }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
+        if: matrix.node == 22
       - run: pnpm build
       - run: pnpm test
+      - run: pnpm smoke
+
+  # Grade the published Swedish NER model against the gold corpus and gate on
+  # a span-F1 floor plus a leak-rate ceiling (missed entities are the safety
+  # metric for a redaction tool). Downloads ~40 MB from the HF Hub.
+  model-eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @maskera/core --filter @maskera/ner build
+      - name: Run gold-corpus eval against the Hub model
+        working-directory: packages/ner
+        shell: bash
+        env:
+          MASKERA_REMOTE: "1"
+          MASKERA_DTYPE: q4
+          MASKERA_F1_FLOOR: "0.90"
+          MASKERA_LEAK_CEIL: "0.08"
+        run: |
+          # One retry for transient Hub/network failures; a second identical
+          # failure is treated as real.
+          node eval/run-eval.mjs | tee "$GITHUB_STEP_SUMMARY" || \
+            (echo "retrying once after 30s..." && sleep 30 && \
+             node eval/run-eval.mjs | tee "$GITHUB_STEP_SUMMARY")

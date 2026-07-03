@@ -1,0 +1,76 @@
+#!/usr/bin/env node
+/**
+ * Pack smoke test: `pnpm pack` @maskera/core and @maskera/ner, install the
+ * tarballs into a fresh throwaway project, and exercise both the ESM and CJS
+ * entry points. This tests what npm users actually receive (the exports map,
+ * the dist bundles, the workspace:* -> version rewrite), none of which the
+ * unit tests (which import src/) can catch.
+ *
+ * Usage: node scripts/pack-smoke.mjs   (run `pnpm build` first)
+ */
+import { execSync } from "node:child_process"
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join, resolve } from "node:path"
+import { fileURLToPath } from "node:url"
+
+const root = resolve(fileURLToPath(new URL("..", import.meta.url)))
+const dir = mkdtempSync(join(tmpdir(), "maskera-pack-"))
+const run = (cmd, cwd = dir) =>
+  execSync(cmd, { cwd, stdio: ["ignore", "pipe", "inherit"] })
+    .toString()
+    .trim()
+
+try {
+  const tarballs = ["core", "ner"].map((name) => {
+    const out = run(`pnpm --filter @maskera/${name} pack --pack-destination "${dir}"`, root)
+    const tarball = out.split("\n").filter(Boolean).pop()
+    console.log(`packed ${name}: ${tarball}`)
+    return tarball
+  })
+
+  writeFileSync(join(dir, "package.json"), JSON.stringify({ name: "smoke", private: true }))
+  run(`npm install ${tarballs.map((t) => `"${t}"`).join(" ")} --no-audit --no-fund --silent`)
+
+  writeFileSync(
+    join(dir, "smoke.mjs"),
+    `
+import { redact, restore, defaultDetectors } from "@maskera/core"
+import { createNerRecognizer, redactWithNer, MASKERA_SV_NER_MODEL } from "@maskera/ner"
+
+const input = "Ring 070-123 45 67, personnummer 19900101-0017, mejla a@b.se"
+const r = redact(input)
+for (const token of ["[PHONE_1]", "[PERSONNUMMER_1]", "[EMAIL_1]"]) {
+  if (!r.text.includes(token)) throw new Error("ESM redact missing " + token + ": " + r.text)
+}
+if (restore(r.text, r.map) !== input) throw new Error("ESM roundtrip broken")
+if (!Array.isArray(defaultDetectors) || defaultDetectors.length === 0)
+  throw new Error("ESM defaultDetectors broken")
+if (typeof createNerRecognizer !== "function" || typeof redactWithNer !== "function")
+  throw new Error("ESM ner exports broken")
+if (typeof MASKERA_SV_NER_MODEL !== "string") throw new Error("ESM ner constants broken")
+console.log("ESM entry ok")
+`,
+  )
+  run("node smoke.mjs")
+
+  writeFileSync(
+    join(dir, "smoke.cjs"),
+    `
+const { redact } = require("@maskera/core")
+const ner = require("@maskera/ner")
+
+const r = redact("Org.nr 556016-0680, IBAN SE45 5000 0000 0583 9825 7466")
+for (const token of ["[ORGANISATIONSNUMMER_1]", "[IBAN_1]"]) {
+  if (!r.text.includes(token)) throw new Error("CJS redact missing " + token + ": " + r.text)
+}
+if (typeof ner.createNerRecognizer !== "function") throw new Error("CJS ner exports broken")
+console.log("CJS entry ok")
+`,
+  )
+  run("node smoke.cjs")
+
+  console.log("✅ pack smoke ok")
+} finally {
+  rmSync(dir, { recursive: true, force: true })
+}
