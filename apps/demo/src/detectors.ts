@@ -105,8 +105,11 @@ export const demoDetectors: Detector[] = [
 
 /**
  * Model-state: drop the name gazetteer — the Swedish NER model handles names,
- * places, orgs and addresses. We keep the structured rule detectors, because
- * the model is *worse* at personnummer/org-nr/phone/IBAN than a regex+checksum.
- * This is the hybrid: rules for structured IDs, model for free text.
+ * places and orgs. We keep the structured rule detectors, because the model
+ * is *worse* at anything with a fixed shape: personnummer/org-nr/phone/IBAN
+ * (regex+checksum) and street addresses with house numbers, where the model
+ * can split the span and leave the number exposed. Rules win on overlap, so
+ * the regex address always covers the full "Storgatan 12".
+ * This is the hybrid: rules for structured shapes, model for free text.
  */
-export const ruleDetectors: Detector[] = [lagenhetsnummer, regnummer, ...defaultDetectors]
+export const ruleDetectors: Detector[] = [adress, lagenhetsnummer, regnummer, ...defaultDetectors]
