@@ -712,4 +712,35 @@ export const corpus = [
       { value: "Erik", label: "PERSON", nth: 2 },
     ],
   },
+
+  // === HARD: casing & morphology the model misses today ===================
+  // Found in an out-of-template stress test (2026-07-03). Chat users often
+  // type all-lowercase, and genitive forms drop entities entirely. Kept here
+  // so future training rounds are graded against the gap.
+  {
+    text: "hej jag heter anna karlsson och bor i uppsala",
+    entities: [
+      { value: "anna karlsson", label: "PERSON" },
+      { value: "uppsala", label: "LOCATION" },
+    ],
+  },
+  {
+    text: "kan du skicka det till erik på volvo i göteborg",
+    entities: [
+      { value: "erik", label: "PERSON" },
+      { value: "volvo", label: "ORGANIZATION" },
+      { value: "göteborg", label: "LOCATION" },
+    ],
+  },
+  {
+    text: "JAG HETER ANNA KARLSSON OCH BOR I UPPSALA",
+    entities: [
+      { value: "ANNA KARLSSON", label: "PERSON" },
+      { value: "UPPSALA", label: "LOCATION" },
+    ],
+  },
+  {
+    text: "Det är Annas bil som står utanför.",
+    entities: [{ value: "Annas", label: "PERSON" }],
+  },
 ]

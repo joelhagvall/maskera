@@ -73,6 +73,13 @@ ask — adapters for frameworks nobody uses yet is wasted surface area. If/when:
 
 Synthetic rounds have capped out on precision; the gains from here are data.
 
+- [ ] **Casing & morphology augmentation.** A 2026-07-03 stress test (hard
+      cases now in `packages/ner/eval/corpus.mjs`) showed the model largely
+      fails on all-lowercase chat text ("hej jag heter anna karlsson"), ALL
+      CAPS, and genitive ("Annas"). The generator only lowercases the first
+      O-token; add whole-sentence lowercase (~10-15%), occasional ALL CAPS,
+      and genitive name templates. Chat-to-LLM is the core use case, and chat
+      users type lowercase.
 - [ ] **Larger independent gold set.** gold-real is only ~22 sentences, and
       training on the Swedish NER Corpus made its test split in-distribution, so
       we need a fresh held-out gold set just to measure honestly.
