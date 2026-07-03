@@ -145,9 +145,19 @@ describe("bankgiro detector", () => {
 })
 
 describe("plusgiro detector", () => {
-  it.each(["12345-6", "4-1", "1234567-8"])("matches: %s", (s) =>
+  // All Luhn-valid (real plusgiro carries a mod-10 check digit).
+  it.each(["12345-5", "4-2", "1234567-4"])("matches: %s", (s) =>
     expectHit(plusgiro, `Plusgiro ${s} tack.`, s),
   )
+
+  it("matches a space-grouped plusgiro (Radiohjälpen)", () => {
+    expectHit(plusgiro, "Swisha eller plusgiro 90 19 50-6 tack.", "90 19 50-6")
+  })
+
+  it.each([
+    ["list numbering", "punkt 1-2"],
+    ["ref with bad checksum", "12345-6"],
+  ])("rejects %s (fails Luhn): %s", (_label, s) => expectMiss(plusgiro, s))
 })
 
 describe("iban detector", () => {
