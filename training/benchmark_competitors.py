@@ -1,5 +1,5 @@
 """
-Honest hard benchmark: maskera vs the real Swedish competitors, not just Rampart.
+Honest hard benchmark: maskera vs the real Swedish competitors.
 
 Models compared on the SAME gold sets, mapped to PER/LOC/ORG:
   - maskera      : our distilled student (student-v4, fp32 safetensors)

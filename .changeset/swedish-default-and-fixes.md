@@ -4,8 +4,7 @@
 ---
 
 `@maskera/ner`: maskera's own Swedish model (`joelhagvall/maskera-sv-ner`,
-MIT, 40 MB q4) is now the default; Rampart remains available as the opt-in
-`RAMPART_MODEL` for multilingual text. Span reconstruction is rebuilt piece by
+MIT, 40 MB q4) is now the default. Span reconstruction is rebuilt piece by
 piece, fixing silent drops of hyphenated names ("Karl-Gustav"), ampersand orgs
 ("H&M") and title-attached subwords ("dr Svensson").
 

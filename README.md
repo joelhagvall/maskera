@@ -61,31 +61,14 @@ console.log("\nRestored locally:\n", restore(llmAnswer))
 
 ---
 
-Two layers, the same architecture as
-[Rampart](https://huggingface.co/nationaldesignstudio/rampart) — a deterministic
-rule layer plus a small browser NER model — **specialised for Swedish**:
+Two layers, a deterministic rule layer plus a small browser NER model,
+**specialised for Swedish**:
 
 1. **A deterministic rule layer** (`@maskera/core`) — personnummer, samordningsnummer,
    organisationsnummer, Swedish phone numbers, postnummer, bankgiro/plusgiro and
    IBAN, all checksum-validated. Zero dependencies, runs everywhere.
 2. **An optional Swedish NER model** (`@maskera/ner`) — for the free-text entities
    rules can't catch (names, places, organisations, addresses), trained on Swedish.
-
-### How this relates to Rampart
-
-[Rampart](https://huggingface.co/nationaldesignstudio/rampart) (National Design
-Studio, CC BY 4.0) pioneered this design and does it well — 7 Latin-script
-languages, ~15 MB, rigorously evaluated. maskera is **not** trying to beat it
-across the board; it's the **Swedish specialisation** of the same idea. We win in
-exactly one place, and only there:
-
-- Rampart **isn't trained on Swedish** (its languages are en/es/fr/de/it/pt/nl), and
-- it **strips diacritics** (José→jose) — which destroys Swedish, where **å/ä/ö are
-  distinct letters**. maskera uses a *cased* Swedish base (KB-BERT) that keeps them.
-
-So **on Swedish text maskera wins measurably** (see the benchmark); on its own
-turf Rampart is excellent, smaller, and more thoroughly evaluated. Use Rampart for
-multilingual; use maskera for Swedish.
 
 ## What's built
 
@@ -97,9 +80,10 @@ An honest snapshot of where the project is:
   dependencies, tested. **This is shippable today.**
 - ✅ **Our own Swedish NER model** — we **fine-tuned** KB-BERT (CC0 Swedish base
   model) on synthetic Swedish data, **distilled** it, then **shrank** it
-  (vocab-trim + q4) to a browser-sized 40 MB ONNX. Benchmarked openly: it beats
-  Rampart wide on Swedish (**0.94 vs 0.39** type-aware F1 on independent real
-  text) and masks **~0.97** of the PII.
+  (vocab-trim + q4) to a browser-sized 40 MB ONNX. Benchmarked openly: it
+  matches the full-size Swedish baseline (KB-BERT NER) at a tenth of the size,
+  scores **0.94** type-aware F1 on independent real text, and masks **~0.97**
+  of the PII.
 - ✅ **NER layer (`@maskera/ner`)** — runs a model client-side via Transformers.js,
   with subword-span reconstruction and the shared placeholder engine.
 - ✅ **Interactive demo** — 10 domains, model always on, live redaction as you type.
@@ -109,8 +93,7 @@ An honest snapshot of where the project is:
   ([`joelhagvall/maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner)).
 
 **What we deliberately did _not_ do:** train a language model from scratch (we
-stood on KB-BERT), modify Rampart's weights (we only wrap it as an option), claim
-GDPR compliance, or publish invented benchmark numbers.
+stood on KB-BERT), claim GDPR compliance, or publish invented benchmark numbers.
 
 **Not done yet:** smaller architecture toward ~15 MB, a *larger* independent gold
 set (training on the Swedish NER Corpus made its test split in-distribution), and
@@ -142,15 +125,15 @@ lowercase, abbreviations, foreign names, and distractors that must not be
 tagged. Span-level, type-aware F1 (see [`training/`](training/)).
 
 The shipped model is **40 MB** (vocab-trimmed + q4), runs in the browser, and
-wins on Swedish on **both** our eval and an independent one (type-aware F1, plus
-the privacy-relevant **redaction recall** = was the PII masked at all):
+holds up on **both** our eval and an independent one (type-aware F1, plus the
+privacy-relevant **redaction recall** = was the PII masked at all):
 
 | Eval set                              | type-aware F1 | redaction recall |
 | ------------------------------------- | ------------- | ------------------ |
 | our hand-authored set (PII-style)     | **0.946**     | 0.97               |
 | independent gold (real Wikipedia text)| **0.940**     | 0.97               |
 
-### vs the real competitors (not just Rampart)
+### vs the strong baseline
 
 On the independent gold set, mapped to PER/LOC/ORG (`python
 training/benchmark_competitors.py`):
@@ -159,7 +142,6 @@ training/benchmark_competitors.py`):
 | ---------------------------------- | ------- | ---------------- | ------------- |
 | **maskera** (distilled student)    | 82M fp32 / **40 MB q4** | 0.98 | **0.92** |
 | KB/bert-base-swedish-cased-ner     | ~440 MB | 1.00             | 0.92          |
-| Rampart                            | 15 MB   | ~0.4             | ~0.39         |
 | sbx PII general / detailed         | ~440 MB | 0.05 / 0.10      | 0.10 / 0.19   |
 
 The honest read:
@@ -170,8 +152,6 @@ The honest read:
 - **The Språkbanken PII models are a different task** (PII categories from learner
   essays), so they barely fire on general name/place/org text; not a competitor
   for free-text redaction. The real comparison is KB, and maskera holds it.
-- Rampart is a weak Swedish baseline (ORG F1 = 0.00); beating it was never the
-  bar.
 
 The shipped model is **v5** (data generation v7). Two levers got it here.
 First, real data: a synthetic-only round hit a precision ceiling on independent
@@ -192,8 +172,9 @@ the honest independent measure is the held-out Wikipedia gold set above. See
 > others (Wikipedia), but *encyclopedic*, a different domain from the
 > support/healthcare PII text this targets, so it is a pessimistic floor and also
 > small (a couple dozen sentences). The truth for the target domain sits between.
-> What's solid: **redaction recall ~0.95** and a wide win over Rampart. The
-> structured-PII rules aren't in this table, they're deterministic, not learned.
+> What's solid: **redaction recall ~0.97** against real text written by others.
+> The structured-PII rules aren't in this table, they're deterministic, not
+> learned.
 
 The real next gain is **more real labelled Swedish data, in the target domain**
 (support/healthcare/legal). Adding the Swedish NER Corpus (news) already raised
@@ -237,7 +218,7 @@ This is a pnpm monorepo.
 maskera/
 ├── packages/
 │   ├── core/        @maskera/core — rules + redact/restore engine (shippable today)
-│   └── ner/         @maskera/ner  — Transformers.js NER layer (our Swedish model, Rampart optional)
+│   └── ner/         @maskera/ner  — Transformers.js NER layer (our Swedish model)
 ├── apps/
 │   └── demo/        interactive live-redaction playground (Vite + React)
 ├── training/        Swedish NER: data gen, fine-tune, distill, ONNX, benchmark
@@ -309,16 +290,15 @@ const { text } = await redactWithNer("Min granne Lars bor på Kungsholmen.", {
 
 The default model is our own
 [`maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner) (MIT,
-40 MB q4), the one that wins the benchmark above. For multilingual Latin-script
-text, pass `RAMPART_MODEL` (CC BY 4.0) instead. You can also self-host the
-model files and cut the Hub out entirely; see
+40 MB q4), the one benchmarked above. You can also self-host the model files
+and cut the Hub out entirely; see
 [`packages/ner/README.md`](packages/ner/README.md).
 
 ## Training & the Swedish model
 
 [`training/`](training/) is a full, reproducible pipeline: synthetic Swedish
 data generation → KB-BERT fine-tune → DistilBERT-style distillation → ONNX +
-int8 → benchmark vs Rampart. It runs on Apple Silicon (MPS). See
+int8 → benchmarks. It runs on Apple Silicon (MPS). See
 [`training/README.md`](training/README.md) for the method, the size ladder, and
 the lesson that a from-scratch small student memorises synthetic templates
 (F1 1.00) but doesn't generalise — initialising from the teacher fixes it.
@@ -365,5 +345,5 @@ too. It is a data-minimisation aid, **not** a compliance guarantee.
 
 Code: MIT © Joel Hägvall. The default model
 ([`maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner)) is MIT;
-its base KB-BERT is CC0 (National Library of Sweden). The optional Rampart
-model is CC BY 4.0 (see [`packages/ner/NOTICE`](packages/ner/NOTICE)).
+its base KB-BERT is CC0 (National Library of Sweden). See
+[`packages/ner/NOTICE`](packages/ner/NOTICE).

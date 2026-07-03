@@ -1,7 +1,7 @@
 """
 Evaluate Swedish NER models on the hand-authored gold set (eval/gold.txt).
 
-Compares the teacher (KB-BERT), the distilled student, and Rampart on
+Compares the teacher (KB-BERT) and the distilled student on
 span-level precision / recall / F1 (type-aware), overall and per entity type.
 
     uv run python evaluate.py
@@ -14,16 +14,6 @@ from transformers import pipeline
 
 TYPES = ["PER", "LOC", "ORG", "ADR"]
 MARKUP = re.compile(r"\[(PER|LOC|ORG|ADR):([^\]]+)\]")
-
-# Map Rampart's OpenPII labels onto our 4 types.
-RAMPART_MAP = {
-    "GIVENNAME": "PER", "SURNAME": "PER", "MIDDLENAME": "PER",
-    "FIRSTNAME": "PER", "LASTNAME": "PER", "NAME": "PER", "FULLNAME": "PER",
-    "CITY": "LOC", "STATE": "LOC", "COUNTY": "LOC", "COUNTRY": "LOC",
-    "STREET": "ADR", "STREETNAME": "ADR", "STREETADDRESS": "ADR",
-    "BUILDINGNUMBER": "ADR", "SECONDARYADDRESS": "ADR", "ZIPCODE": "ADR",
-    "ORGANIZATION": "ORG", "COMPANYNAME": "ORG",
-}
 
 
 def normalize(group):
@@ -136,22 +126,10 @@ def main():
 
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     ours = lambda g: normalize(g) if normalize(g) in TYPES else None
-    rampart = lambda g: RAMPART_MAP.get(normalize(g))
 
     def load_local(path):
         return pipeline("token-classification", model=path, tokenizer=path,
                         aggregation_strategy="simple", device=device)
-
-    def load_rampart():
-        from optimum.onnxruntime import ORTModelForTokenClassification
-        from transformers import AutoTokenizer
-        repo = "nationaldesignstudio/rampart"
-        model = ORTModelForTokenClassification.from_pretrained(
-            repo, subfolder="onnx", file_name="model_q4.onnx"
-        )
-        tok = AutoTokenizer.from_pretrained(repo)
-        return pipeline("token-classification", model=model, tokenizer=tok,
-                        aggregation_strategy="simple")
 
     def load_q4():
         from optimum.onnxruntime import ORTModelForTokenClassification
@@ -168,7 +146,6 @@ def main():
         ("student (distilled)", load_local, "student-model", ours),
         ("student (trimmed 56MB)", load_local, "student-trimmed", ours),
         ("student (q4 combo 40MB)", lambda _: load_q4(), None, ours),
-        ("Rampart", lambda _: load_rampart(), None, rampart),
     ]
     summary = {}
     for name, loader, path, mapper in models:

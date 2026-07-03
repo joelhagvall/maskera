@@ -7,10 +7,10 @@ phone, IBAN…) stays with `@maskera/core`'s deterministic detectors.
 
 ## Why a Swedish model
 
-We measured the default Rampart model on Swedish and it underperforms: it missed
-`Lars Nordström` and mislabeled `Kungsholmen` as a street. Rampart is excellent
-on English (Latin-script, English-trained) but Swedish recall is weak. This
-pipeline trains a Swedish-first replacement.
+We measured off-the-shelf multilingual PII models on Swedish and they
+underperform: one missed `Lars Nordström` and mislabeled `Kungsholmen` as a
+street. They are trained on English-adjacent Latin-script text, and Swedish
+recall is weak. This pipeline trains a Swedish-first model instead.
 
 ## Pipeline
 
@@ -70,7 +70,6 @@ every-other layer (DistilBERT-style) recovers the quality.
 | distilled student int8 ONNX           | 82 MB   | ✅ (≈ teacher)  |
 | vocab-trimmed student int8 ONNX       | 56 MB   | ✅ (−0.04 F1)   |
 | **vocab-trim + q4-matmul/int8-embed** | **40 MB** | ✅ (−0.06 F1) — **shipped** |
-| Rampart (for comparison)              | 15 MB   | ❌ on Swedish   |
 
 **What didn't work:** plain q4 (`quantize_q4.py`) made the model *bigger*
 (183 MB) — ONNX 4-bit only quantizes MatMul weights and leaves the embedding
@@ -88,8 +87,7 @@ table fp32, which is ~half the model.
    runs in Transformers.js but not in optimum's Python path — fine, the browser
    is the target.)
 
-Net: **82 → 40 MB at 0.946 overlap F1** (v4 dataset + retrained teacher + precision guard),
-far ahead of Rampart's 0.62.
+Net: **82 → 40 MB at 0.946 overlap F1** (v4 dataset + retrained teacher + precision guard).
 Going to ~15 MB needs a smaller architecture, where quality starts to cost.
 
 On an M4 Pro (MPS) step 3 takes ~8–9 minutes for 3 epochs over 9k examples.
@@ -102,8 +100,8 @@ On an M4 Pro (MPS) step 3 takes ~8–9 minutes for 3 epochs over 9k examples.
 - **Generalisation is the real signal.** On entities deliberately absent from
   the training data the model still tags correctly — e.g. `Thorbjörn
   Fägerquist`→PER, `Northvolt`→ORG, `Skellefteå`→LOC, `Aigerim Bekova`→PER,
-  `Hjärnarp`→LOC. It learned the *context pattern*, not just the vocabulary, and
-  it beats Rampart on exactly the Swedish cases Rampart failed.
+  `Hjärnarp`→LOC. It learned the *context pattern*, not just the vocabulary,
+  including the Swedish cases the multilingual baselines failed on.
 
 ### Honest caveats / next steps
 
@@ -130,7 +128,6 @@ type-aware P/R/F1.
 | ---------------------------------- | ------ | ---------- |
 | teacher (KB-BERT)                  | 440 MB | 0.899      |
 | **student (trim + q4) — shipped**  | 40 MB  | **0.946**  |
-| Rampart                            | 15 MB  | 0.621      |
 
 The shipped 40 MB model nearly matches the 440 MB teacher, and reaches **0.91
 redaction recall** (was the PII masked at all, any label — the privacy-relevant
@@ -210,24 +207,20 @@ independent gold set is the next measurement need.
 
 **Per-type F1 (overlap):**
 
-| Type | teacher | student | Rampart |
-| ---- | ------- | ------- | ------- |
-| PER  | 0.93    | 0.91    | 0.84    |
-| LOC  | 0.89    | 0.90    | 0.52    |
-| ORG  | 0.88    | 0.81    | **0.00** |
-| ADR  | 0.88    | 0.85    | 0.79    |
+| Type | teacher | student |
+| ---- | ------- | ------- |
+| PER  | 0.93    | 0.91    |
+| LOC  | 0.89    | 0.90    |
+| ORG  | 0.88    | 0.81    |
+| ADR  | 0.88    | 0.85    |
 
-The distilled student beats Rampart by **+0.25 F1** on Swedish. Rampart's
-failures are concentrated: **ORG F1 = 0.00** (it tags no Swedish organisations —
-0/67) and **LOC recall = 0.39** (misses/mislabels Swedish places). Doubling the
-eval set (60→121 sentences) barely moved the scores, so the gap is stable. Run
-`python evaluate.py` to reproduce.
+Doubling the eval set (60→121 sentences) barely moved the scores, so the
+numbers are stable. Run `python evaluate.py` to reproduce.
 
 > **Honest caveats.** The eval set is modest (121 sentences, single annotator)
 > and shares an author with the data generator — treat it as a strong
 > directional signal, not a definitive number. Some labels are genuinely
-> ambiguous (a hospital as ORG vs LOC). The Rampart gap is large and consistent
-> enough to trust the direction.
+> ambiguous (a hospital as ORG vs LOC).
 
 ### Independent gold set (real text, hand-labelled)
 
@@ -268,17 +261,14 @@ PER/LOC/ORG (public sets don't annotate addresses). 500 test sentences.
 | ----------------------- | ---------- | ---------- |
 | teacher (KB-BERT)       | 0.711      | 0.899      |
 | **student (shipped)**   | **0.846**  | 0.946      |
-| Rampart                 | 0.392      | 0.621      |
 
 The honest reality this surfaced:
 
-1. **Beats Rampart on both** — 0.65 vs 0.39 independent (Rampart: ORG F1 = 0.00,
-   LOC recall = 0.09). The core claim holds everywhere.
-2. **The v3 data rounds lifted our own eval far more than the independent one**
+1. **The v3 data rounds lifted our own eval far more than the independent one**
    (0.82 → 0.90 on ours; ~flat/slightly down on WikiANN). That's the synthetic
    ceiling showing — more synthetic diversity increasingly *chases our own
    distribution*, not general Swedish.
-3. **WikiANN under-rates us for this use case**: it's encyclopedic (rarer vocab,
+2. **WikiANN under-rates us for this use case**: it's encyclopedic (rarer vocab,
    which our PII-tuned vocab-trim drops) and silver-standard (noisy). The truth
    for the target domain (support/healthcare/legal) sits between 0.65 and 0.90.
 
