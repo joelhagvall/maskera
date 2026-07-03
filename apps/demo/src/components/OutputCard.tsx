@@ -56,10 +56,21 @@ function RestoreMap({ map }: { map: Record<string, string> }) {
   )
 }
 
-export function OutputCard({ result, original }: { result: RedactResult; original: string }) {
+export function OutputCard({
+  result,
+  original,
+  analyzing,
+}: {
+  result: RedactResult
+  original: string
+  analyzing: boolean
+}) {
   const [protect, setProtect] = useState(true)
   const [showMap, setShowMap] = useState(false)
   const unique = Object.keys(result.map).length
+  // Only the protected view is affected by an in-flight analysis; the raw
+  // view shows the original text and never changes with the model.
+  const pending = analyzing && protect
 
   return (
     <section className="card">
@@ -67,11 +78,12 @@ export function OutputCard({ result, original }: { result: RedactResult; origina
         <span className="card-title">
           {protect ? <EyeIcon size={14} /> : <EyeOffIcon size={14} />}
           {protect ? "Vad AI:n ser" : "Utan maskera"}
+          {pending && <span className="card-sub">analyserar…</span>}
         </span>
         <Switch checked={protect} onChange={setProtect} label="Maskera personuppgifter" />
       </div>
 
-      <div className={`output ${protect ? "" : "raw"}`}>
+      <div className={`output ${protect ? "" : "raw"} ${pending ? "analyzing" : ""}`}>
         {protect ? <RedactedText text={result.text} /> : original}
       </div>
 

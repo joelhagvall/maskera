@@ -14,14 +14,8 @@ function ModelStatus({
   if (status === "loading") {
     return (
       <div className="status">
-        <span
-          className="bar"
-          role="progressbar"
-          aria-label="Laddar maskeras AI-modell"
-          aria-valuenow={progress}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        >
+        {/* Decorative: the sibling text carries the same progress information. */}
+        <span className="bar" aria-hidden="true">
           <span className="bar-fill" style={{ width: `${Math.max(progress, 3)}%` }} />
         </span>
         <span>
