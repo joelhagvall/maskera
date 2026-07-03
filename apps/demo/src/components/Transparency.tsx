@@ -66,11 +66,12 @@ export function Transparency({ onBack }: { onBack: () => void }) {
               text inte utlöser ett enda anrop.
             </li>
             <li>
-              <strong>De anrop som faktiskt görs</strong>, för fullständighetens skull: modellfilen
-              hämtas en gång (från Hugging Face eller en egen server) och WASM-körmiljön laddas från
-              ett CDN. Båda är kod och modellvikter som hämtas en gång och cachas,{" "}
-              <strong>aldrig din text</strong>. Den som vill ha noll externa anrop kan lägga
-              modellen och körmiljön på egen server.
+              <strong>De anrop som kan göras</strong>, för fullständighetens skull: med npm-paketets
+              standardinställningar hämtas modellfilen en gång från Hugging Face och WASM-körmiljön
+              från ett CDN. Båda är kod och modellvikter som hämtas en gång och cachas,{" "}
+              <strong>aldrig din text</strong>. Allt går att lägga på egen server, och{" "}
+              <strong>demon på den här sidan gör precis det</strong>: modell, körmiljö och typsnitt
+              ligger lokalt, så sidan gör noll externa anrop.
             </li>
             <li>
               Regellagret (<code>@maskera/core</code>) har{" "}
