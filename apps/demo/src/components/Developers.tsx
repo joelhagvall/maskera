@@ -93,19 +93,18 @@ export function Developers({ onBack }: { onBack: () => void }) {
         <article className="prose">
           <h1>För utvecklare</h1>
           <p className="prose-lede">
-            Samma motor som driver demon, ett kommando bort. <code>@maskera/ner</code> drar in
-            regellagret <code>@maskera/core</code> automatiskt och hela API:t importeras från ett
-            ställe.{" "}
+            Samma motor som driver demon, ett kommando bort. Allt importeras från ett ställe,{" "}
             <a href={HF_MODEL} target="_blank" rel="noreferrer">
               AI-modellen
             </a>{" "}
-            laddas ner en gång och körs sedan helt lokalt, i webbläsaren (WASM/WebGPU) eller i Node.
+            laddas ner en gång och sedan körs allt helt lokalt, i webbläsaren (WASM/WebGPU) eller i
+            Node.
           </p>
 
           <h2>Installera</h2>
           <Code>
             {`npm install @maskera/ner @huggingface/transformers
-# allt i ett: regler + AI-modell, @maskera/core följer med automatiskt`}
+# regler + AI-modell, hela API:t importeras från @maskera/ner`}
           </Code>
 
           <h2>Maskera en text</h2>
@@ -133,9 +132,9 @@ restore(svar)
 
           <h2>Bara reglerna, utan modell</h2>
           <p className="prose-note">
-            Vill du slippa modellen helt? <code>@maskera/core</code> klarar allt som har ett bestämt
-            format på egen hand, utan beroenden och utan nätverk. Bra när det ska vara litet och
-            snabbt.
+            Behöver du ingen AI-modell? <code>@maskera/core</code> är regellagret ensamt: allt med
+            bestämt format (personnummer, IBAN, kortnummer, telefon med mera), noll beroenden, några
+            kB. Fristående namn och platser i löptext kräver modellen ovan.
           </p>
           <Code>
             {`npm install @maskera/core
