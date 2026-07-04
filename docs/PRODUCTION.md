@@ -132,6 +132,22 @@ over-masks a word, a false negative leaks PII. Lean toward recall (lower
 threshold) unless over-masking demonstrably hurts your UX. Measure before
 changing: the eval harness (below) tells you what a threshold does to leaks.
 
+### Word denylist (`denylist`)
+
+The model can confidently tag a common word that sits where a name usually
+sits ("Kund Maria ...", "Mail: ...", "betalning till bankgiro ..."), and a
+score threshold does nothing against a 0.99 false positive. The recognizer
+therefore drops any detection whose whole surface form (case-insensitive) is
+on a denylist of Swedish role/contact/payment words. Multi-word entities are
+never affected. Extend it with the vocabulary of your own domain:
+
+```ts
+createNerRecognizer({ denylist: [...DEFAULT_DENYLIST, "boende", "vårdnadshavare"] })
+```
+
+Pass `null` to disable the filter. Keep your additions to words that can
+never be a name on their own; "Björk" is a real surname, "bankgiro" is not.
+
 ### Label filtering
 
 Only care about people, not places? Drop labels in the recognizer:

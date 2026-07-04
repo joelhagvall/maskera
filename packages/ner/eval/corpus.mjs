@@ -487,6 +487,27 @@ export const corpus = [
   { text: "Den nya policyn träder i kraft vid årsskiftet.", entities: [] },
   { text: "Avdelningen söker en erfaren projektledare till hösten.", entities: [] },
 
+  // Observed in the demo scenarios: the model tagged the role/contact/payment
+  // word before or after the real entity ("Kund" and "Mail" as PERSON,
+  // "maila" as PERSON, "bankgiro" as ORGANIZATION). The recognizer's denylist
+  // drops those; these docs keep that behavior gated.
+  {
+    text: "Kund Maria Johansson hör av sig: kortet slutar fungera.",
+    entities: [{ value: "Maria Johansson", label: "PERSON" }],
+  },
+  {
+    text: "Mail: se kontaktuppgifter i bilagan, tel enligt signaturen.",
+    entities: [],
+  },
+  {
+    text: "Sätt in EKG-svar i journalen och maila sammanfattning till patienten.",
+    entities: [],
+  },
+  {
+    text: "Betalning sker till bankgiro 5051-6905 senast den 12 mars.",
+    entities: [],
+  },
+
   // === BATCH 2: more coverage ===========================================
   {
     text: "Greta Albinsson bjöd in hela teamet på middag.",
