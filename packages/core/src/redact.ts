@@ -71,18 +71,25 @@ export function redactFromDetections(
     const key = `${d.label}::${d.value}`
     let token = tokenByKey.get(key)
     if (!token) {
-      // Never hand out a token that already occurs literally in the input.
-      // Otherwise a crafted input containing e.g. "[NAMN_1]" would collide
-      // with a generated placeholder, and restore() would write the real
-      // value into positions the author of the input chose. The attempt cap
-      // guards against a custom placeholder() that ignores the index.
+      // Never hand out a token that already occurs literally in the input
+      // (a crafted "[NAMN_1]" in the input would collide with a generated
+      // placeholder, and restore() would write the real value into positions
+      // the author of the input chose), and never a token another value
+      // already owns (a custom placeholder() that ignores the index would
+      // otherwise silently map two values to one token and corrupt restore).
       let next = counters.get(d.label) ?? 0
       let attempts = 0
       do {
         next += 1
         token = placeholder(d.label, next)
         attempts += 1
-      } while (attempts < 100 && input.includes(token))
+      } while (attempts < 100 && (input.includes(token) || token in map))
+      if (input.includes(token) || token in map) {
+        throw new Error(
+          "maskera: placeholder() must return a token that is unique per (label, index) " +
+            "and does not occur in the input",
+        )
+      }
       counters.set(d.label, next)
       tokenByKey.set(key, token)
       map[token] = d.value
