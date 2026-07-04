@@ -166,7 +166,7 @@ describe("bankgiro detector", () => {
 
 describe("plusgiro detector", () => {
   // All Luhn-valid (real plusgiro carries a mod-10 check digit).
-  it.each(["12345-5", "4-2", "1234567-4"])("matches: %s", (s) =>
+  it.each(["12345-5", "42-2", "1234567-4"])("matches: %s", (s) =>
     expectHit(plusgiro, `Plusgiro ${s} tack.`, s),
   )
 
@@ -178,6 +178,15 @@ describe("plusgiro detector", () => {
     ["list numbering", "punkt 1-2"],
     ["ref with bad checksum", "12345-6"],
   ])("rejects %s (fails Luhn): %s", (_label, s) => expectMiss(plusgiro, s))
+
+  // Luhn-valid by chance but a single-digit body: scores, page ranges and
+  // list numbering ("3-4", "6-7") vastly outnumber one-digit plusgiro
+  // accounts, so these must stay unmasked.
+  it.each([
+    ["list numbering", "punkt 3-4"],
+    ["match score", "vann med 6-7"],
+    ["single-digit body", "4-2"],
+  ])("rejects %s despite valid Luhn: %s", (_label, s) => expectMiss(plusgiro, s))
 })
 
 describe("iban detector", () => {

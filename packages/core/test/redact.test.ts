@@ -45,6 +45,18 @@ describe("redact", () => {
     expect(labels).toContain("PERSONNUMMER")
   })
 
+  it("never maps two values to one token (index-ignoring placeholder throws)", () => {
+    // A custom placeholder() that ignores the index would silently map two
+    // values to the same token and corrupt restore(); it must throw instead.
+    expect(() => redact("a@b.se och c@d.se", { placeholder: () => "[X]" })).toThrow(/unique/)
+    // ...but one that honours the index is fine.
+    const { text, map } = redact("a@b.se och c@d.se", {
+      placeholder: (label, n) => `<${label}:${n}>`,
+    })
+    expect(text).toBe("<EMAIL:1> och <EMAIL:2>")
+    expect(map["<EMAIL:1>"]).toBe("a@b.se")
+  })
+
   it("uses stable placeholders for repeated values", () => {
     const input = `Maila ${"a@b.se"} eller igen ${"a@b.se"}`
     const { text, map } = redact(input)

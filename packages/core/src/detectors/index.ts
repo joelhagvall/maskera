@@ -95,11 +95,15 @@ export const bankgiro = regexDetector("BANKGIRO", /\b\d{3,4}-\d{4}\b/g, (v) =>
 )
 
 /**
- * Plusgiro: 1-7 digits, dash, single check digit, commonly written with
+ * Plusgiro: 2-7 digits, dash, single check digit, commonly written with
  * space groups ("90 19 50-6"). The whole number carries a mod-10 (Luhn)
  * check digit, which filters out look-alikes like list numbering ("punkt 1-2").
+ * A single-digit body is deliberately NOT matched: ~1 in 9 digit-dash-digit
+ * pairs in running text is Luhn-valid by chance ("3-4", "6-7", match scores,
+ * page ranges), which over-masks far more than the vanishingly rare
+ * one-digit plusgiro accounts protect.
  */
-export const plusgiro = regexDetector("PLUSGIRO", /\b\d(?:\s?\d){0,6}-\d\b/g, (v) =>
+export const plusgiro = regexDetector("PLUSGIRO", /\b\d(?:\s?\d){1,6}-\d\b/g, (v) =>
   luhnValid(v.replace(/\D/g, "")),
 )
 

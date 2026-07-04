@@ -225,16 +225,66 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
     return pipePromise
   }
 
+  // BERT's positional embeddings stop at 512 tokens; longer inputs make the
+  // ONNX runtime throw, which would fail the whole redaction (and a fallback
+  // to rules-only would silently leak every free-text name). Inputs that do
+  // not fit are split at whitespace with an overlap wide enough that an
+  // entity cut by one seam appears whole in the neighbouring chunk.
+  const MAX_TOKENS = 480
+
+  const runChunk = async (
+    pipe: import("@huggingface/transformers").TokenClassificationPipeline,
+    chunk: string,
+    offset: number,
+    out: Detection[],
+  ): Promise<void> => {
+    const tokenizer = (pipe as unknown as { tokenizer?: { encode?: (s: string) => number[] } })
+      .tokenizer
+    const fits =
+      !tokenizer?.encode || chunk.length === 0 || tokenizer.encode(chunk).length <= MAX_TOKENS
+    if (fits) {
+      const raw = await pipe(chunk, { aggregation_strategy: "none" })
+      for (const d of reconstruct(chunk, raw, labelMap, minScore)) {
+        out.push({ ...d, start: d.start + offset, end: d.end + offset })
+      }
+      return
+    }
+    // Split near the middle, preferring whitespace; overlap is proportional
+    // so both halves are strictly smaller and the recursion terminates.
+    let mid = Math.floor(chunk.length / 2)
+    for (let i = mid; i > mid - 200 && i > 1; i--) {
+      if (WHITESPACE.test(chunk[i] ?? "")) {
+        mid = i
+        break
+      }
+    }
+    const overlap = Math.min(100, Math.floor(chunk.length / 8))
+    await runChunk(pipe, chunk.slice(0, mid + overlap), offset, out)
+    const rightStart = Math.max(0, mid - overlap)
+    await runChunk(pipe, chunk.slice(rightStart), offset + rightStart, out)
+  }
+
   return {
     ready: load().then(() => undefined),
     async detect(text: string): Promise<Detection[]> {
       const pipe = await load()
-      const raw = await pipe(text, { aggregation_strategy: "none" })
+      const collected: Detection[] = []
+      await runChunk(pipe, text, 0, collected)
+      // Seam dedupe: the same entity can be found by both neighbouring
+      // chunks (or partially by one of them); keep the longest span.
+      collected.sort((a, b) => a.start - b.start || b.end - a.end)
+      const merged: Detection[] = []
+      for (const d of collected) {
+        const prev = merged[merged.length - 1]
+        if (prev && d.start < prev.end) {
+          if (d.end - d.start > prev.end - prev.start) merged[merged.length - 1] = d
+          continue
+        }
+        merged.push(d)
+      }
       // A single-character span is never meaningful PII on its own (the model
       // tags "Q" in "Q3" as ORG); masking it just mangles the word around it.
-      const detections = reconstruct(text, raw, labelMap, minScore).filter(
-        (d) => d.value.length > 1,
-      )
+      const detections = merged.filter((d) => d.value.length > 1)
       if (!denySet) return detections
       return detections.filter((d) => !denySet.has(d.value.toLowerCase()))
     },
