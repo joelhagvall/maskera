@@ -764,4 +764,22 @@ export const corpus = [
     text: "Det är Annas bil som står utanför.",
     entities: [{ value: "Annas", label: "PERSON" }],
   },
+  // Capitalized full-name genitive drops the whole entity (found in an npm
+  // user-input stress test, 2026-07-04); lowercase genitive works. Graded
+  // here so the next training round closes the gap.
+  {
+    text: "Det är Anna Karlssons bil som står där.",
+    entities: [{ value: "Anna Karlssons", label: "PERSON" }],
+  },
+  {
+    text: "Anna Karlssons personnummer finns i akten.",
+    entities: [{ value: "Anna Karlssons", label: "PERSON" }],
+  },
+  {
+    text: "Har du läst Johan Anderssons rapport om Norrköping?",
+    entities: [
+      { value: "Johan Anderssons", label: "PERSON" },
+      { value: "Norrköping", label: "LOCATION" },
+    ],
+  },
 ]
