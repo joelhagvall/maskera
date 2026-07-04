@@ -24,8 +24,11 @@ recall is weak. This pipeline trains a Swedish-first model instead.
 ## Pipeline
 
 ```bash
-# 1. Generate synthetic, BIO-tagged Swedish data (no real PII, GDPR-safe)
+# 1. Generate synthetic, BIO-tagged Swedish data (no real PII, GDPR-safe),
+#    then append the real Swedish NER Corpus train split (see the v6 journal
+#    entry below). Skipping the append step collapses precision on real text.
 node generate_data.mjs            # -> data/train.jsonl, data/val.jsonl
+node convert_klintan.mjs          # appends real news sentences to train.jsonl
 
 # 2. Set up env (uv + Python 3.11; torch supports MPS on Apple Silicon)
 uv venv --python 3.11
@@ -231,7 +234,60 @@ numbers are stable. Run `python evaluate.py` to reproduce.
 > directional signal, not a definitive number. Some labels are genuinely
 > ambiguous (a hospital as ORG vs LOC).
 
-### Independent gold set (real text, hand-labelled)
+### Base-model check (2026-07-04): would a different backbone beat KB-BERT?
+
+Candidates people suggest: RecordedFuture/Swedish-NER (KB-BERT finetuned on
+internet/forum data, adds Religion/Title classes), KB/bert-base-swedish-cased-ner
+(the SUC classic), KBLab's reallysimple-ner and lowermix variants (SUCX 3.0),
+nbailab scandi-ner, the sbx PI-detection pair, and AI Sweden's
+roberta-large-1160k (strong on ScandEval, but a base LM, not a NER model).
+
+Measured all of them with `benchmark_competitors.py` on the same gold sets,
+including a lowercased chat-style pass. Full tables live in
+[docs/BENCHMARKS.md](../docs/BENCHMARKS.md) (single source of truth).
+Conclusion: the shipped student beats every full-size alternative on
+independent cased text (typed F1 0.96 vs 0.88-0.94) at under a tenth of their
+size, because it is trained for exactly maskera's four types (including ADR,
+which none of them have), with casing augmentation and domain hard negatives.
+Only KBLab's lowermix wins on lowercase text (0.90 vs 0.86): its mixed-case
+SUCX recipe is the pointer for a future data round. Swapping backbone buys
+nothing today. The only theoretically stronger base is AI Sweden's RoBERTa as
+a teacher, but it is 335M params, uses a BPE tokenizer (breaks the wordpiece
+`##` assumptions in @maskera/ner's reconstruct and in `trim_vocab.py`), and
+would need its own distillation recipe: real engineering cost for a
+speculative ceiling gain.
+
+### Fast-path check (2026-07-04): continue-training the student loses recall
+
+Tried `finetune_student.py` (continue-train student-v5 on a data round that
+added role/contact/payment hard negatives, skipping teacher + distillation).
+Both attempts (2 epochs lr 1e-5, and 1 epoch lr 5e-6) fixed the targeted
+false positives but traded recall for precision on independent text: gold-real
+recall fell 0.95 to 0.86, and the JS gold corpus went from 2 to 4-5 leaks
+("Astrid Lund", "Hallsberg" went unmasked). Plain CE on mostly-O data nudges
+the student toward O; it is the distillation soft labels that hold recall up.
+Lesson: the fast path is fine for experiments, but shipping requires the full
+teacher + distill pipeline. For a redaction tool, recall is the safety metric;
+do not trade it for precision that a runtime denylist can buy instead.
+
+### Full-pipeline retry (2026-07-04): best curated score, but ORG collapsed after quantization
+
+Ran the full pipeline on the corrected data (synthetic incl. the new hard
+negatives + klintan). Best curated-corpus result so far (exact-span F1 0.970,
+3 leaks) and the targeted false positives fixed at the weight level, but
+gold-real recall fell to 0.74: 13 of 15 misses were ORG (Socialdemokraterna,
+Tencent, STIM, IFPI, Universal Music Group...). Bisecting the pipeline showed
+the teacher AND the full-vocab student catch all of them; the losses appear
+after vocab-trim + q4, while v5's q4 artifact catches the same sentences with
+a near-identical trimmed vocab (497/16000 tokens differ). So the run produced
+a student whose ORG decisions sit close to the boundary and fall over under
+quantization noise. Training is unseeded, so runs vary; v5 was a better draw.
+Decision: not shipped, v5 remains the published artifact.
+
+Fixes worth making before the next attempt: seed train.py/distill.py, stop
+silencing the trim/quant steps in run scripts, and gate a run on the QUANTIZED
+artifact's gold-real recall (the fp32 student's score is not the thing that
+ships).
 
 `eval/gold-real.txt` is 22 verbatim sentences from public Swedish Wikipedia
 (Stefan Löfven, Spotify): **real prose written by others**, hand-labelled
