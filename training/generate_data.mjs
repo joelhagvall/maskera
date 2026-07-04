@@ -764,6 +764,25 @@ const TEMPLATES = [
   "{ORG} vann mot {ORG} med 3-1 i går.",
   "{ORG} presenterade sitt budgetförslag i riksdagen.",
   "{PER} lämnar {ORG} efter flera år som ordförande.",
+  // v8: hard negatives from demo false positives: the v5 model tagged the bare
+  // role/contact/payment word in name position as PER/ORG ("Kund" and "Mail"
+  // as PER at ~1.0, "maila" as PER, "bankgiro" as ORG). The word before the
+  // name, the label-colon prefix and the payment rail must all stay O.
+  "Kund {PER} hör av sig om en försenad leverans.",
+  "Kund {PER} ringde och ville makulera ordern.",
+  "Patient {PER} inkom med bröstsmärta i natt.",
+  "Klient {PER} yrkar skadestånd mot {ORG}.",
+  "Sambo {PER} är arbetssökande sedan i våras.",
+  "Anhörig (maken {PER}) nås på telefon dagtid.",
+  "Referens: {PER}, nås via växeln.",
+  "Mail: svar skickas inom två arbetsdagar.",
+  "Mail: se kontaktuppgifter i bilagan.",
+  "Sätt in provsvaren i journalen och maila sammanfattningen.",
+  "Kan du maila {PER} på {ORG} om mötet?",
+  "Glöm inte att mejla protokollet till styrelsen.",
+  "Betalning sker till bankgiro 5051-6905 senast förfallodagen.",
+  "Ange bankgiro eller plusgiro på fakturan.",
+  "Beloppet dras från ditt konto den 25:e varje månad.",
   // v7: genitive entities, which a stress test showed v4 dropped entirely.
   "{PERG} bil står felparkerad utanför {ADR}.",
   "Det är {PERG} ansvar att meddela {ORG}.",

@@ -32,3 +32,7 @@ student-v5/
 student-v5-trimmed/
 student-v5-onnx/
 run_v5.log
+model-v6/
+student-v6/
+student-v6-trimmed/
+student-v6-onnx/

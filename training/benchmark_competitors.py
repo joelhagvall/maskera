@@ -2,7 +2,7 @@
 Honest hard benchmark: maskera vs the real Swedish competitors.
 
 Models compared on the SAME gold sets, mapped to PER/LOC/ORG:
-  - maskera      : our distilled student (student-v4, fp32 safetensors)
+  - maskera      : our distilled student (student-v5, fp32 safetensors)
   - KB-NER       : KB/bert-base-swedish-cased-ner (full BERT, SUC-trained)
   - sbx general  : sbx/KB-bert-swedish_PI-detection-general-iob
   - sbx detailed : sbx/KB-bert-swedish_PI-detection-detailed-iob
@@ -94,15 +94,26 @@ def score(docs, nlp):
 
 
 MODELS = [
-    ("maskera (student-v4, fp32)", "student-v4"),
+    ("maskera (student-v5, fp32)", "student-v5"),
+    ("RecordedFuture Swedish-NER", "RecordedFuture/Swedish-NER"),
     ("KB-NER (full BERT)", "KB/bert-base-swedish-cased-ner"),
+    ("KBLab reallysimple-ner", "KBLab/bert-base-swedish-cased-reallysimple-ner"),
+    ("KBLab lowermix (case-robust)", "KBLab/bert-base-swedish-lowermix-reallysimple-ner"),
+    ("nbailab scandi-ner", "saattrupdan/nbailab-base-ner-scandi"),
     ("sbx PII general", "sbx/KB-bert-swedish_PI-detection-general-iob"),
     ("sbx PII detailed", "sbx/KB-bert-swedish_PI-detection-detailed-iob"),
 ]
 SETS = [("gold-real (independent)", "eval/gold-real.txt"), ("our set (maskera-favouring)", "eval/gold.txt")]
 
-for set_name, path in SETS:
-    docs = load_gold(path)
+
+# Chat users type without capitalisation; casing robustness is a differentiator
+# (cased-only models collapse here). Same gold spans, lowercased surface text.
+def lower_docs(docs):
+    return [(t.lower(), s) for t, s in docs]
+
+RUNS = [(n, load_gold(p)) for n, p in SETS]
+RUNS.append(("gold-real LOWERCASED (chat style)", lower_docs(load_gold("eval/gold-real.txt"))))
+for set_name, docs in RUNS:
     print(f"\n=== {set_name}: {len(docs)} sentences, {sum(len(s) for _, s in docs)} PER/LOC/ORG entities ===")
     print(f"{'model':<30} {'redaction recall':>16} {'typed P':>9} {'typed R':>9} {'typed F1':>9}")
     for label, model_id in MODELS:

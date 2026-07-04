@@ -1,15 +1,21 @@
 """
-Fine-tune a Swedish token-classification model for maskera's NER layer.
+Continue-train an already-distilled student on updated training data.
 
-Teaches free-text entities (PER/LOC/ORG/ADR) on synthetic Swedish data.
-Structured PII stays with @maskera/core's rule detectors.
+The fast path when a data round only ADDS surgical examples (e.g. hard
+negatives): instead of retraining the teacher (~45 min) and re-distilling
+(~40 min), fine-tune the existing full-vocab student for a couple of epochs at
+a low learning rate (~15 min). The student keeps everything it knows, and the
+new examples correct the specific mistakes. Measure against the gold sets
+afterwards; if the result is not at parity with the full pipeline, run the
+full pipeline instead.
 
-Runs on Apple Silicon (MPS), CUDA, or CPU automatically.
-
-    uv run python train.py
+Usage: finetune_student.py <src_student_dir> <out_dir> [epochs] [lr]
+Example: finetune_student.py student-v5 student-v6 2 1e-5
 """
 
 import json
+import sys
+
 import numpy as np
 import torch
 from datasets import load_dataset
@@ -20,19 +26,16 @@ from transformers import (
     DataCollatorForTokenClassification,
     Trainer,
     TrainingArguments,
+    set_seed,
 )
 
-import sys
-
-from transformers import set_seed
-
-BASE_MODEL = "KBLab/bert-base-swedish-cased"
-OUT_DIR = sys.argv[1] if len(sys.argv) > 1 else "model"  # usage: train.py [out_dir]
+SRC = sys.argv[1] if len(sys.argv) > 1 else "student-v5"
+OUT_DIR = sys.argv[2] if len(sys.argv) > 2 else "student-finetuned"
+EPOCHS = float(sys.argv[3]) if len(sys.argv) > 3 else 2
+LR = float(sys.argv[4]) if len(sys.argv) > 4 else 1e-5
 MAX_LEN = 128
-# Seeded so runs are comparable: an unseeded 2026-07-04 round produced students
-# whose ORG margins collapsed under quantization while a sibling run was fine.
+# Seeded so runs are comparable (see train.py).
 SEED = 1337
-set_seed(SEED)
 
 LABELS = ["O", "B-PER", "I-PER", "B-LOC", "I-LOC", "B-ORG", "I-ORG", "B-ADR", "I-ADR"]
 label2id = {l: i for i, l in enumerate(LABELS)}
@@ -43,9 +46,10 @@ device = (
     else "cuda" if torch.cuda.is_available()
     else "cpu"
 )
-print(f"== device: {device} ==")
+print(f"== device: {device}, src: {SRC}, epochs: {EPOCHS}, lr: {LR} ==")
+set_seed(SEED)
 
-tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
+tokenizer = AutoTokenizer.from_pretrained(SRC)
 
 raw = load_dataset(
     "json",
@@ -81,12 +85,8 @@ def align(batch):
 
 tokenized = raw.map(align, batched=True, remove_columns=raw["train"].column_names)
 
-model = AutoModelForTokenClassification.from_pretrained(
-    BASE_MODEL,
-    num_labels=len(LABELS),
-    id2label=id2label,
-    label2id=label2id,
-)
+model = AutoModelForTokenClassification.from_pretrained(SRC)
+assert model.config.num_labels == len(LABELS), "label scheme changed; full retrain required"
 
 collator = DataCollatorForTokenClassification(tokenizer)
 
@@ -114,10 +114,10 @@ args = TrainingArguments(
     output_dir=OUT_DIR,
     eval_strategy="epoch",
     save_strategy="epoch",
-    learning_rate=3e-5,
+    learning_rate=LR,
     per_device_train_batch_size=16,
     per_device_eval_batch_size=32,
-    num_train_epochs=3,
+    num_train_epochs=EPOCHS,
     weight_decay=0.01,
     logging_steps=50,
     save_total_limit=1,
@@ -136,14 +136,13 @@ trainer = Trainer(
     compute_metrics=compute_metrics,
 )
 
-print("== training ==")
+print("== fine-tuning ==")
 trainer.train()
 
 metrics = trainer.evaluate()
 print("== final validation metrics ==")
 print(json.dumps({k: round(v, 4) for k, v in metrics.items() if isinstance(v, float)}, indent=2))
 
-# Detailed per-entity report
 preds = trainer.predict(tokenized["validation"])
 p = np.argmax(preds.predictions, axis=2)
 tl, tp = [], []
@@ -160,22 +159,3 @@ print(classification_report(tl, tp))
 trainer.save_model(OUT_DIR)
 tokenizer.save_pretrained(OUT_DIR)
 print(f"== saved model to {OUT_DIR}/ ==")
-
-# Smoke test on real Swedish sentences the model never saw
-from transformers import pipeline  # noqa: E402
-
-nlp = pipeline(
-    "token-classification",
-    model=OUT_DIR,
-    tokenizer=OUT_DIR,
-    aggregation_strategy="simple",
-    device=device,
-)
-for s in [
-    "Min granne Lars Nordström bor på Kungsholmen och jobbar på Spotify i Stockholm.",
-    "Patient Aisha Khan inkom till akuten i Malmö.",
-    "Handläggaren Per Holmberg bedömde ansökan från familjen Yilmaz på Storgatan 14.",
-]:
-    print("\n>", s)
-    for e in nlp(s):
-        print(f"   {e['entity_group']:5} {e['word']!r}  ({e['score']:.2f})")

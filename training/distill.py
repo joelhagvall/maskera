@@ -34,6 +34,8 @@ from transformers import (
 
 import sys
 
+from transformers import set_seed
+
 # usage: distill.py [num_layers] [out_dir] [teacher_dir]
 N_LAYERS = int(sys.argv[1]) if len(sys.argv) > 1 else 6
 OUT = sys.argv[2] if len(sys.argv) > 2 else "student-model"
@@ -41,6 +43,9 @@ TEACHER = sys.argv[3] if len(sys.argv) > 3 else "model"
 MAX_LEN = 128
 ALPHA = 0.5        # weight on hard-label CE vs soft distillation
 TEMPERATURE = 2.0
+# Seeded so runs are comparable (see train.py).
+SEED = 1337
+set_seed(SEED)
 
 LABELS = ["O", "B-PER", "I-PER", "B-LOC", "I-LOC", "B-ORG", "I-ORG", "B-ADR", "I-ADR"]
 label2id = {l: i for i, l in enumerate(LABELS)}
@@ -163,6 +168,7 @@ args = TrainingArguments(
     load_best_model_at_end=True,
     metric_for_best_model="f1",
     report_to="none",
+    seed=SEED,
 )
 
 trainer = DistillTrainer(
