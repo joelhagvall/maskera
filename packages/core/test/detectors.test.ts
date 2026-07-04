@@ -120,6 +120,10 @@ describe("phone detector", () => {
     "+46701234567",
     "08-123 456 78",
     "031-12 34 56",
+    // e-mail-signature style: trunk zero in parentheses after country code
+    "+46(0)70-1234567",
+    "+46 (0)70-123 45 67",
+    "+46(0)8-123 456 78",
   ])("matches: %s", (s) => expectHit(phone, `Ring ${s} imorgon.`, s))
 
   it("matches at the very start of the text", () => {

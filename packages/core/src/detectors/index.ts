@@ -69,13 +69,15 @@ export const organisationsnummer = regexDetector(
 export const email = regexDetector("EMAIL", /[A-ZÅÄÖ0-9._%+-]+@[A-ZÅÄÖ0-9.-]+\.[A-Z]{2,}\b/gi)
 
 /**
- * Swedish phone numbers: +46 / 0 prefix, mobile and landline. The consumed
- * left guard (capture group carries the value) stops the match from starting
- * inside a longer digit run like "kundnummer 100200-3000".
+ * Swedish phone numbers: +46 / 0 prefix, mobile and landline, including the
+ * e-mail-signature style "+46(0)70-123 45 67" where the trunk zero rides
+ * along in parentheses. The consumed left guard (capture group carries the
+ * value) stops the match from starting inside a longer digit run like
+ * "kundnummer 100200-3000".
  */
 export const phone = regexDetector(
   "PHONE",
-  /(?:^|[^\d])((?:\+46[\s-]?|0)(?:7[02369]|[1-9]\d?)(?:[\s-]?\d){6,8})\b/g,
+  /(?:^|[^\d])((?:\+46[\s-]?(?:\(0\)[\s-]?)?|0)(?:7[02369]|[1-9]\d?)(?:[\s-]?\d){6,8})\b/g,
 )
 
 /** Postnummer: NNN NN (space optional). */
