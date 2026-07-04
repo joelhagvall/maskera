@@ -509,9 +509,43 @@ export async function redactWithNer(
   }
 
   const modelDetections = await options.recognizer.detect(input)
-  const overlapsRule = (d: Detection) =>
-    ruleDetections.some((r) => d.start < r.end && r.start < d.end)
-  const keptModel = modelDetections.filter((d) => !overlapsRule(d))
+
+  // Rules are authoritative on THEIR spans, but a model span that merely
+  // touches a rule span must not be dropped wholesale: the model sometimes
+  // glues a name to the e-mail local-part that follows it, and dropping the
+  // whole span would leak the name. Clip away the rule intervals and keep
+  // whatever meaningful segments remain.
+  const WORD_CHAR = /[\p{L}\p{N}]/u
+  const keptModel: Detection[] = []
+  for (const d of modelDetections) {
+    let segments: Array<[number, number]> = [[d.start, d.end]]
+    for (const r of ruleDetections) {
+      const next: Array<[number, number]> = []
+      for (const [s, e] of segments) {
+        if (r.end <= s || r.start >= e) {
+          next.push([s, e])
+          continue
+        }
+        if (r.start > s) next.push([s, r.start])
+        if (r.end < e) next.push([r.end, e])
+      }
+      segments = next
+    }
+    for (let [s, e] of segments) {
+      while (s < e && !WORD_CHAR.test(input[s] ?? "")) s++
+      while (e > s && !WORD_CHAR.test(input[e - 1] ?? "")) e--
+      if (e - s <= 1) continue
+      const value = input.slice(s, e)
+      // A CLIPPED remnant is often the keyword stuck to the structured value
+      // the rule just took ("IBAN" in "IBAN SE45..."): junk, not PII. The
+      // denylist models exactly those words, so clipped remnants (and only
+      // those; untouched spans already passed the recognizer's own filter)
+      // are checked against it.
+      const wasClipped = s !== d.start || e !== d.end
+      if (wasClipped && DEFAULT_DENYLIST.has(value.toLowerCase())) continue
+      keptModel.push({ start: s, end: e, value, label: d.label })
+    }
+  }
 
   return redactFromDetections(input, [...ruleDetections, ...keptModel], {
     placeholder: options.placeholder,
