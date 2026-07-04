@@ -1,5 +1,5 @@
 import { type ReactNode, useRef, useState } from "react"
-import { GITHUB, HF_MODEL, NPM_CORE, NPM_NER } from "../constants"
+import { GITHUB, HF_MODEL, NPM_NER } from "../constants"
 import { ArrowUpRightIcon, CheckIcon, CopyIcon, MaskeraMark } from "../icons"
 
 // Order matters: comments win over strings win over keywords/function names.
@@ -131,25 +131,19 @@ restore(svar)
           </Code>
 
           <p className="prose-foot">
-            Paketet finns på npm:{" "}
             <a href={NPM_NER} target="_blank" rel="noreferrer">
-              <code>maskera</code>
+              <code>maskera</code> på npm
             </a>
-            . Behöver du bara regellagret, utan AI-modell, finns{" "}
-            <a href={NPM_CORE} target="_blank" rel="noreferrer">
-              <code>@maskera/core</code>
-            </a>{" "}
-            (noll beroenden). Fullständig dokumentation, benchmarks och all källkod finns på{" "}
+            {" · "}
             <a href={GITHUB} target="_blank" rel="noreferrer">
-              GitHub
+              dokumentation och källkod på GitHub
               <ArrowUpRightIcon size={13} />
             </a>
-            . Modellen ligger öppet på{" "}
+            {" · "}
             <a href={HF_MODEL} target="_blank" rel="noreferrer">
-              Hugging Face
+              modellen på Hugging Face
               <ArrowUpRightIcon size={13} />
             </a>
-            .
           </p>
         </article>
       </main>
