@@ -54,16 +54,19 @@ export function Controls({
         <span className="tabs-label">Testa ett exempel:</span>
         {scenarios.map((s) => {
           const Icon = DOMAIN_ICONS[s.id]
+          const own = s.id === "fritext"
           return (
-            <button
-              type="button"
-              key={s.id}
-              className={`tab ${s.id === activeId ? "on" : ""}`}
-              onClick={() => onPick(s)}
-            >
-              {Icon && <Icon size={14} />}
-              {s.name}
-            </button>
+            <span key={s.id} className="tab-item">
+              {own && <span className="tab-divider" aria-hidden="true" />}
+              <button
+                type="button"
+                className={`tab ${own ? "tab-own" : ""} ${s.id === activeId ? "on" : ""}`}
+                onClick={() => onPick(s)}
+              >
+                {Icon && <Icon size={14} />}
+                {s.name}
+              </button>
+            </span>
           )
         })}
       </div>

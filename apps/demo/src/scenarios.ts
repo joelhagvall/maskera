@@ -38,7 +38,7 @@ export const scenarios: Scenario[] = [
   },
   {
     id: "fritext",
-    name: "Fri text",
+    name: "Egen text",
     tagline: "",
     text: "",
   },

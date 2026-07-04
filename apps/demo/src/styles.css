@@ -173,6 +173,27 @@ body {
   background: var(--fg);
   color: var(--bg);
 }
+.tab-item {
+  display: inline-flex;
+  align-items: center;
+}
+.tab-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border-2);
+  margin: 0 8px 0 6px;
+}
+/* the own-text tab is an input, not an example: dashed outline sets it apart */
+.tab.tab-own {
+  border: 1px dashed var(--border-2);
+  padding: 5px 10px; /* compensate the border so height matches the siblings */
+}
+.tab.tab-own:hover {
+  border-color: var(--muted-2);
+}
+.tab.tab-own.on {
+  border-color: var(--fg);
+}
 .status {
   display: flex;
   align-items: center;
