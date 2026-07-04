@@ -52,6 +52,31 @@ describe("redactWithNer", () => {
     expect(text).toBe("[PERSON_1] är här.")
   })
 
+  it("clips a model span that glues a name to the e-mail local-part (name must not leak)", async () => {
+    const input = "Kontakt: Anna Karlsson anna.karlsson@example.se snarast"
+    const nameStart = input.indexOf("Anna")
+    const spanEnd = input.indexOf("@") // model span swallows the local-part
+    const recognizer = fakeRecognizer(() => [
+      { start: nameStart, end: spanEnd, value: input.slice(nameStart, spanEnd), label: "PERSON" },
+    ])
+    const { text, restore } = await redactWithNer(input, { recognizer })
+    expect(text).not.toContain("Anna Karlsson")
+    expect(text).toContain("[EMAIL_1]")
+    expect(restore(text)).toBe(input)
+  })
+
+  it("keeps both sides when a rule span sits inside a model span", async () => {
+    const input = "ring Lars 070-174 06 58 Eriksson imorgon"
+    const recognizer = fakeRecognizer(() => [
+      { start: 5, end: 32, value: input.slice(5, 32), label: "PERSON" },
+    ])
+    const { text, restore } = await redactWithNer(input, { recognizer })
+    expect(text).not.toContain("Lars")
+    expect(text).not.toContain("Eriksson")
+    expect(text).toContain("[PHONE_1]")
+    expect(restore(text)).toBe(input)
+  })
+
   it("drops model fragments that overlap a structured rule (IBAN not shredded)", async () => {
     const input = "Konto IBAN SE4550000000058398257466 men ring Lars."
     // The model wrongly tags digit chunks of the IBAN as addresses, and a name.
