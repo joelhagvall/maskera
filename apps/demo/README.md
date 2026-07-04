@@ -13,7 +13,7 @@ pnpm demo        # from repo root, opens http://localhost:5180
   (personnummer, org-nr, phone, email, IBAN…), deterministic and instant.
 - **Swedish NER model (always on, auto-loaded):** on page load the demo
   immediately starts loading **our distilled Swedish model** (~40 MB) in the
-  browser via `@maskera/ner` + Transformers.js. There is **no toggle**; the model
+  browser via `maskera` + Transformers.js. There is **no toggle**; the model
   is part of the product, not an opt-in. While it loads (a few seconds, cached
   afterwards), the rule layer plus a small offline name gazetteer keep redacting,
   so the demo is usable immediately; once the model is ready it takes over name /
@@ -53,7 +53,7 @@ Once the model is published to the Hugging Face Hub (see
 the hosted id instead of the local copy, and then no large file lives in the repo:
 
 ```ts
-import { MASKERA_SV_NER_MODEL } from "@maskera/ner"
+import { MASKERA_SV_NER_MODEL } from "maskera"
 
 createNerRecognizer({ model: MASKERA_SV_NER_MODEL, dtype: "q4" })
 // drop localModelPath / allowRemoteModels:false, it fetches from the Hub (browser-cached)

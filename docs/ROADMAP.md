@@ -13,7 +13,7 @@ per-package history in the changelogs.
 - **Rules layer** (`@maskera/core`): checksum-validated structured detectors,
   stable placeholders + restore map, deterministic overlap resolution, zero
   dependencies.
-- **Hybrid model layer** (`@maskera/ner`): Transformers.js/ONNX, WASM + WebGPU,
+- **Hybrid model layer** (`maskera`): Transformers.js/ONNX, WASM + WebGPU,
   rules win on overlap, full `@maskera/core` re-export (one install, one import).
 - **Own Swedish model** (`maskera-sv-ner`): KB-BERT fine-tuned, distilled and
   quantized to 40 MB, hosted on the Hugging Face Hub as the default.

@@ -9,7 +9,7 @@ actually are. For API details see the package READMEs
 
 ```bash
 npm install @maskera/core                              # rules only
-npm install @maskera/ner @huggingface/transformers     # + free-text names/places
+npm install maskera @huggingface/transformers     # + free-text names/places
 ```
 
 ```ts
@@ -21,7 +21,7 @@ const result = restore(answer)      // placeholders -> real values, locally
 ```
 
 That's production-usable as-is: `@maskera/core` is zero-dependency,
-deterministic and synchronous. If you take the model path, `@maskera/ner`
+deterministic and synchronous. If you take the model path, `maskera`
 pulls in `@maskera/core` automatically and **re-exports its entire API**, so
 one import covers both layers; the `@maskera/core` imports below assume you
 installed it directly. Everything else is about doing it *well*.
@@ -31,7 +31,7 @@ installed it directly. Everything else is about doing it *well*.
 | Layer | Package | Catches | Character |
 | ----- | ------- | ------- | --------- |
 | Rules | `@maskera/core` | personnummer, samordningsnummer, org-nr, phone, email, postnummer, bankgiro, plusgiro, IBAN, card, IP, URL | deterministic, checksum-validated, instant |
-| Model | `@maskera/ner` | names, places, organisations, street addresses in free text | best-effort ML, ~ms per sentence once warm |
+| Model | `maskera` | names, places, organisations, street addresses in free text | best-effort ML, ~ms per sentence once warm |
 
 Use rules alone when your inputs are forms or structured-ish text. Add the
 model when users type free text (chat, support tickets, journal notes),
@@ -46,7 +46,7 @@ dropped, so the deterministic layer is always authoritative.
 Redact before the LLM call and before anything is persisted:
 
 ```ts
-import { createNerRecognizer, redactWithNer } from "@maskera/ner"
+import { createNerRecognizer, redactWithNer } from "maskera"
 
 // Module scope: create ONCE per process, not per request.
 const recognizer = createNerRecognizer({ device: "cpu", dtype: "q8" })

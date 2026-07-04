@@ -1,4 +1,18 @@
-# @maskera/ner
+# maskera
+
+## 0.3.0
+
+### Minor Changes
+
+- Package renamed from `@maskera/ner` to `maskera`. Same code, same API, same
+  model: only the install and import name change. `@maskera/ner` is deprecated
+  on npm with a pointer here; `@maskera/core` (the zero-dependency rule layer)
+  keeps its name and remains fully re-exported from this package.
+- New `denylist` option on `createNerRecognizer` (default: `DEFAULT_DENYLIST`):
+  drops detections whose whole surface form is a common Swedish
+  role/contact/payment word ("kund", "mail", "maila", "bankgiro", ...), which
+  the model can otherwise tag as PER/ORG with high confidence in name-like
+  positions. Pass your own list to extend it or `null` to disable.
 
 ## 0.2.1
 

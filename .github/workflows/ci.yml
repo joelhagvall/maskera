@@ -50,7 +50,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @maskera/core --filter @maskera/ner build
+      - run: pnpm --filter @maskera/core --filter maskera build
       - name: Run gold-corpus eval against the Hub model
         working-directory: packages/ner
         shell: bash

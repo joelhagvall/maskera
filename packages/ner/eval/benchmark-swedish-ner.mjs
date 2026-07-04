@@ -110,9 +110,9 @@ try {
 }
 let createNerRecognizer
 try {
-  ;({ createNerRecognizer } = await import("@maskera/ner"))
+  ;({ createNerRecognizer } = await import("maskera"))
 } catch {
-  skip('could not import "@maskera/ner"; run `pnpm -C packages/ner build` first')
+  skip('could not import "maskera"; run `pnpm -C packages/ner build` first')
 }
 if (!MODEL_PATH) skip("set MASKERA_MODEL_PATH to the directory containing the model folder")
 

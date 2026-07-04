@@ -1,19 +1,11 @@
 {
-  "name": "@maskera/ner",
-  "version": "0.2.1",
-  "description": "Opt-in ONNX/Transformers.js NER layer for maskera: detects free-text names, places and organisations the rule layer can't.",
+  "name": "maskera",
+  "version": "0.3.0",
+  "description": "Swedish-first, client-side PII redaction: deterministic rule detectors plus an optional ONNX/Transformers.js NER model for free-text names, places and organisations.",
   "type": "module",
   "license": "MIT",
   "author": "Joel Hägvall",
-  "keywords": [
-    "pii",
-    "ner",
-    "transformers.js",
-    "onnx",
-    "swedish",
-    "privacy",
-    "redaction"
-  ],
+  "keywords": ["pii", "ner", "transformers.js", "onnx", "swedish", "privacy", "redaction"],
   "homepage": "https://github.com/joelhagvall/maskera#readme",
   "repository": {
     "type": "git",
@@ -40,11 +32,7 @@
       }
     }
   },
-  "files": [
-    "dist",
-    "NOTICE",
-    "CHANGELOG.md"
-  ],
+  "files": ["dist", "NOTICE", "CHANGELOG.md"],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",

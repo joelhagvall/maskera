@@ -5,11 +5,11 @@
 > **Swedish PII redaction, on-device. Names, personnummer, addresses are masked before your text reaches an LLM, a log, or analytics.**
 
 ```bash
-npm install @maskera/ner @huggingface/transformers   # all-in-one: rules + our Swedish AI model
+npm install maskera @huggingface/transformers   # all-in-one: rules + our Swedish AI model
 ```
 
 ```ts
-import { createNerRecognizer, redactWithNer } from "@maskera/ner"
+import { createNerRecognizer, redactWithNer } from "maskera"
 
 const recognizer = createNerRecognizer() // our 40 MB Swedish model, runs in the browser
 const { text, restore } = await redactWithNer(
@@ -21,7 +21,7 @@ text
 ```
 
 Everything runs client-side. Nothing is sent anywhere, no telemetry, and the
-restore map stays with you. `@maskera/ner` re-exports the whole rule layer,
+restore map stays with you. `maskera` re-exports the whole rule layer,
 so one import covers rules and model alike. Rules only, zero dependencies:
 `npm install @maskera/core`. **[Live demo →](apps/demo)**
 
@@ -56,9 +56,10 @@ and a leak-rate ceiling.
    `123456-0000` is not a person. Zero dependencies, synchronous, runs
    anywhere JavaScript runs. Anything you can regex (case ids, customer
    numbers) joins the same engine via `regexDetector`.
-2. **`@maskera/ner`**: the model layer above, opt-in so core stays
-   dependency-free. In the hybrid, rules win on overlap: structured PII is
-   always handled deterministically, the model only fills the free-text gap.
+2. **`maskera`** (the package): everything above plus the Swedish model,
+   with core fully re-exported. In the hybrid, rules win on overlap:
+   structured PII is always handled deterministically, the model only fills
+   the free-text gap.
 
 Rules alone when inputs are structured-ish; add the model when users type
 free text. That split is the design: regex for what regex is good at, ML only
@@ -85,7 +86,7 @@ before logging: `logger.info(redact(msg).text)`. Runnable example:
 | Package | Status | What it does |
 | ------- | ------ | ------------ |
 | [`@maskera/core`](packages/core) | ✅ ready | Zero-dep detectors + redact/restore engine |
-| [`@maskera/ner`](packages/ner) | ✅ ready | Our Swedish model via Transformers.js |
+| [`maskera`](packages/ner) | ✅ ready | Our Swedish model via Transformers.js |
 | `@maskera/node`, `@maskera/react` | ⏳ on demand | Wrappers, built when users ask |
 
 Full API docs live in the package READMEs. For thresholds, self-hosting the

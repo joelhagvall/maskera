@@ -30,9 +30,7 @@ function ModelStatus({
       {status === "ready" && (
         <span>maskeras AI-modell aktiv{analyzing ? " · analyserar…" : ""}</span>
       )}
-      {status === "error" && (
-        <span>AI-modellen kunde inte laddas</span>
-      )}
+      {status === "error" && <span>AI-modellen kunde inte laddas</span>}
     </div>
   )
 }

@@ -1,29 +1,32 @@
-# @maskera/ner
+# maskera
 
-> ONNX + Transformers.js NER layer for
-> [maskera](https://github.com/joelhagvall/maskera). Ships with maskera's own
-> Swedish model as the default.
+> Swedish-first, client-side PII redaction: mask personal data before text
+> reaches an LLM, restore it in the answer. Nothing leaves the device.
+> [Repo & demo](https://github.com/joelhagvall/maskera).
 
-The rule layer in `@maskera/core` nails *structured* PII (personnummer, org-nr,
-phone, ...). This package adds the part regex can't do: **free-text names,
-places, organisations and street addresses** ("min granne Lars på våning 4"),
-using a small token-classification model that runs **client-side** via
-Transformers.js (WASM/WebGPU in the browser, native ONNX in Node).
-
-It's a separate package on purpose, so `@maskera/core` stays zero-dependency.
-The ML runtime is an **optional peer dependency** you install only if you use
-this. `@maskera/core` comes along automatically (regular dependency) and its
-**entire API is re-exported**, so one install and one import cover rules and
-model alike: `import { redact, redactWithNer } from "@maskera/ner"`.
+Two layers, one import. Deterministic rule detectors handle *structured* PII
+(personnummer, org-nr, IBAN, card, phone, ...), and a small Swedish
+token-classification model handles the part regex can't do: **free-text names,
+places, organisations and street addresses** ("min granne Lars på våning 4").
+Everything runs **client-side** via Transformers.js (WASM/WebGPU in the
+browser, native ONNX in Node).
 
 ```bash
-npm install @maskera/ner @huggingface/transformers
+npm install maskera @huggingface/transformers
 ```
+
+The ML runtime is an **optional peer dependency**: skip it (and install
+[`@maskera/core`](https://www.npmjs.com/package/@maskera/core) instead) if you
+only want the zero-dependency rule layer. Core's entire API is re-exported
+here, so one import covers rules and model alike:
+`import { redact, redactWithNer } from "maskera"`.
+
+> Renamed from `@maskera/ner` in 0.3.0: same code, same API, same model.
 
 ## Usage
 
 ```ts
-import { createNerRecognizer, redactWithNer } from "@maskera/ner"
+import { createNerRecognizer, redactWithNer } from "maskera"
 
 // Downloads maskera-sv-ner (~40 MB, q4) from the Hugging Face Hub on first
 // use, then serves it from cache.

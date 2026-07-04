@@ -103,13 +103,13 @@ export function Developers({ onBack }: { onBack: () => void }) {
 
           <h2>Installera</h2>
           <Code>
-            {`npm install @maskera/ner @huggingface/transformers
-# regler + AI-modell, hela API:t importeras från @maskera/ner`}
+            {`npm install maskera @huggingface/transformers
+# regler + AI-modell, hela API:t importeras från maskera`}
           </Code>
 
           <h2>Maskera en text</h2>
           <Code>
-            {`import { createNerRecognizer, redactWithNer } from "@maskera/ner"
+            {`import { createNerRecognizer, redactWithNer } from "maskera"
 
 const recognizer = createNerRecognizer() // maskeras svenska modell, ca 40 MB, körs lokalt
 
@@ -154,7 +154,7 @@ const { text } = redact("Ring mig på 070-123 45 67, pnr 19900101-0017")
             </a>{" "}
             och{" "}
             <a href={NPM_NER} target="_blank" rel="noreferrer">
-              <code>@maskera/ner</code>
+              <code>maskera</code>
             </a>
             . Fullständig dokumentation, benchmarks och all källkod finns på{" "}
             <a href={GITHUB} target="_blank" rel="noreferrer">

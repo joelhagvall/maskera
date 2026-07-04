@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Pack smoke test: `pnpm pack` @maskera/core and @maskera/ner, install the
+ * Pack smoke test: `pnpm pack` @maskera/core and maskera, install the
  * tarballs into a fresh throwaway project, and exercise both the ESM and CJS
  * entry points. This tests what npm users actually receive (the exports map,
  * the dist bundles, the workspace:* -> version rewrite), none of which the
@@ -22,8 +22,8 @@ const run = (cmd, cwd = dir) =>
     .trim()
 
 try {
-  const tarballs = ["core", "ner"].map((name) => {
-    const out = run(`pnpm --filter @maskera/${name} pack --pack-destination "${dir}"`, root)
+  const tarballs = ["@maskera/core", "maskera"].map((name) => {
+    const out = run(`pnpm --filter ${name} pack --pack-destination "${dir}"`, root)
     const tarball = out.split("\n").filter(Boolean).pop()
     console.log(`packed ${name}: ${tarball}`)
     return tarball
@@ -36,7 +36,7 @@ try {
     join(dir, "smoke.mjs"),
     `
 import { redact, restore, defaultDetectors } from "@maskera/core"
-import { createNerRecognizer, redactWithNer, MASKERA_SV_NER_MODEL } from "@maskera/ner"
+import { createNerRecognizer, redactWithNer, MASKERA_SV_NER_MODEL } from "maskera"
 
 const input = "Ring 070-123 45 67, personnummer 19900101-0017, mejla a@b.se"
 const r = redact(input)
@@ -58,7 +58,7 @@ console.log("ESM entry ok")
     join(dir, "smoke.cjs"),
     `
 const { redact } = require("@maskera/core")
-const ner = require("@maskera/ner")
+const ner = require("maskera")
 
 const r = redact("Org.nr 556016-0680, IBAN SE45 5000 0000 0583 9825 7466")
 for (const token of ["[ORGANISATIONSNUMMER_1]", "[IBAN_1]"]) {

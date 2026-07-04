@@ -55,7 +55,7 @@ tested, at under a tenth of their size**; see [How it compares](#how-it-compares
 | `ADR`   | street address                |
 
 Tags are emitted in BIO form (`B-PER`, `I-PER`, …). When you run the model
-through `@maskera/ner`, the raw tags map to the placeholder names you see in
+through `maskera`, the raw tags map to the placeholder names you see in
 redacted output: `PER` → `PERSON`, `LOC` → `LOCATION`, `ORG` → `ORGANIZATION`,
 `ADR` → `ADDRESS` (e.g. `[PERSON_1]`).
 
@@ -79,7 +79,7 @@ Three ONNX variants are published so you can trade size for quality:
 ### With maskera (recommended)
 
 ```ts
-import { createNerRecognizer, redactWithNer } from "@maskera/ner"
+import { createNerRecognizer, redactWithNer } from "maskera"
 
 const recognizer = createNerRecognizer({
   model: "joelhagvall/maskera-sv-ner",
@@ -120,7 +120,7 @@ const out = await ner("Anna Lindqvist bor i Göteborg.")
 The canonical, dated benchmark tables live in the maskera repo:
 [`docs/BENCHMARKS.md`](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md).
 Numbers below are copied from there (measured 2026-07-03, `dtype="q4"`,
-**exact-span matching**, via the shipped `@maskera/ner` pipeline); when they
+**exact-span matching**, via the shipped `maskera` pipeline); when they
 disagree, BENCHMARKS.md wins.
 
 Curated maskera corpus (139 hand-authored sentences, 197 free-text PER/LOC/ORG

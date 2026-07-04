@@ -1,5 +1,5 @@
 import type { Redaction } from "@maskera/core"
-import { createNerRecognizer, redactWithNer } from "@maskera/ner"
+import { createNerRecognizer, redactWithNer } from "maskera"
 import { ruleDetectors } from "./detectors"
 
 /** Messages from the worker to the main thread. */
@@ -22,7 +22,7 @@ export type NerWorkerMsg =
 const recognizerPromise = (async () => {
   // Self-host the ONNX WASM runtime (copied to /ort/ by scripts/fetch-model.mjs)
   // instead of Transformers.js's default jsDelivr CDN, so the demo makes zero
-  // external requests. Same module instance as @maskera/ner uses, so the
+  // external requests. Same module instance as maskera uses, so the
   // setting applies before the recognizer initializes.
   const transformers = await import("@huggingface/transformers")
   const onnxWasm = transformers.env.backends.onnx?.wasm
