@@ -86,7 +86,7 @@ export function Developers({ onBack }: { onBack: () => void }) {
         </a>
       </div>
       <button type="button" className="back" onClick={onBack}>
-        ← Tillbaka till demon
+        ← Tillbaka till startsidan
       </button>
 
       <main>
