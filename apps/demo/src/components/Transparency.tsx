@@ -64,15 +64,16 @@ export function Transparency({ onBack }: { onBack: () => void }) {
               <strong>Ingen spårning av dig eller din text, inga cookies.</strong> Det enda sidan
               mäter är anonyma sidvisningar (Vercel Analytics, cookiefritt), och det anropet
               innehåller aldrig något du skrivit. Kontrollera själv i webbläsarens utvecklarverktyg
-              under Network: skriv i demon och se att din text inte utlöser ett enda anrop.
+              under Network: skriv något på startsidan och se att din text inte utlöser ett enda
+              anrop.
             </li>
             <li>
               <strong>De anrop som kan göras</strong>, för fullständighetens skull: med npm-paketets
               standardinställningar hämtas modellfilen en gång från Hugging Face och körmiljön från
               ett CDN. Båda är kod och modellvikter som hämtas en gång och cachas,{" "}
               <strong>aldrig din text</strong>. Allt går att lägga på egen server, och{" "}
-              <strong>demon på den här sidan gör precis det</strong>: modell, körmiljö och typsnitt
-              ligger lokalt, så sidan gör inga anrop till tredje part.
+              <strong>den här sidan gör precis det</strong>: modell, körmiljö och typsnitt ligger
+              lokalt, så sidan gör inga anrop till tredje part.
             </li>
             <li>
               Själva regeldelen är vanlig kod utan AI-modell: den har{" "}

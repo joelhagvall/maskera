@@ -93,7 +93,7 @@ export function Developers({ onBack }: { onBack: () => void }) {
         <article className="prose">
           <h1>För utvecklare</h1>
           <p className="prose-lede">
-            Samma motor som driver demon, ett kommando bort. Allt importeras från ett ställe,{" "}
+            Samma motor som du just testade, ett kommando bort. Allt importeras från ett ställe,{" "}
             <a href={HF_MODEL} target="_blank" rel="noreferrer">
               AI-modellen
             </a>{" "}
