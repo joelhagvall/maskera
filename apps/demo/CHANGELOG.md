@@ -1,5 +1,14 @@
 # @maskera/demo
 
+## 0.0.4
+
+### Patch Changes
+
+- Updated dependencies [42577d2]
+- Updated dependencies [42577d2]
+  - @maskera/core@0.3.0
+  - maskera@0.4.0
+
 ## 0.0.3
 
 ### Patch Changes
