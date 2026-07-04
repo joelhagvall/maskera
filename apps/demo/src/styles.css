@@ -563,6 +563,34 @@ body {
   line-height: 1.65;
   color: #2a2a2a;
 }
+.code-block {
+  position: relative;
+  margin: 14px 0 28px;
+}
+.code-block .code-copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  font: 500 11.5px var(--sans);
+  color: var(--muted);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.code-block .code-copy:hover {
+  color: #2a2a2a;
+  border-color: #c9c9c9;
+}
+.code-block .code-copy.copied {
+  color: #166534;
+  border-color: #bbe3c8;
+  background: #f0faf3;
+}
 .prose pre {
   margin: 14px 0 28px;
   padding: 14px 16px;
@@ -570,6 +598,9 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   overflow-x: auto;
+}
+.code-block pre {
+  margin: 0;
 }
 .prose pre code {
   display: block;

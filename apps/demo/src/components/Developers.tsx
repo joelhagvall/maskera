@@ -1,6 +1,6 @@
-import type { ReactNode } from "react"
+import { type ReactNode, useRef, useState } from "react"
 import { GITHUB, HF_MODEL, NPM_CORE, NPM_NER } from "../constants"
-import { ArrowUpRightIcon, MaskeraMark } from "../icons"
+import { ArrowUpRightIcon, CheckIcon, CopyIcon, MaskeraMark } from "../icons"
 
 // Order matters: comments win over strings win over keywords/function names.
 const TOKEN =
@@ -25,9 +25,39 @@ function Code({ children }: { children: string }) {
   }
   if (last < src.length) nodes.push(src.slice(last))
   return (
-    <pre>
-      <code>{nodes}</code>
-    </pre>
+    <div className="code-block">
+      <pre>
+        <code>{nodes}</code>
+      </pre>
+      <CopyButton text={src} />
+    </div>
+  )
+}
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+  const timer = useRef<ReturnType<typeof setTimeout>>()
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch {
+      return // clipboard unavailable (permissions/insecure context): keep quiet
+    }
+    setCopied(true)
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => setCopied(false), 1600)
+  }
+  return (
+    <button
+      type="button"
+      className={`code-copy${copied ? " copied" : ""}`}
+      onClick={copy}
+      aria-label={copied ? "Kopierad" : "Kopiera koden"}
+      title="Kopiera"
+    >
+      {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
+      {copied ? "Kopierad" : "Kopiera"}
+    </button>
   )
 }
 
