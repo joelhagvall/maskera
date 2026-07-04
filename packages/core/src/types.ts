@@ -15,6 +15,9 @@ export type PiiLabel =
   | "IP_ADDRESS"
   | "URL"
   | "CREDIT_CARD"
+  | "ADRESS"
+  | "LAGENHETSNUMMER"
+  | "REGNUMMER"
   | (string & {})
 
 /** A raw match found by a detector, before placeholder assignment. */

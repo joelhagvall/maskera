@@ -46,6 +46,21 @@ a checksum exists, so look-alikes (year ranges, reference numbers) don't fire.
 Add your own with `regexDetector` (below); mix and match via
 `options.detectors`.
 
+### Opt-in heuristics
+
+Three more Swedish detectors ship as `heuristicDetectors` (also exported
+individually): `ADRESS` (`Sankt Eriksgatan 12B`), `LAGENHETSNUMMER`
+(`lgh 1203`) and `REGNUMMER` (`ABC 123`, currency amounts like `SEK 100`
+excluded). They are format-based with no checksum to validate against, so
+they stay out of `defaultDetectors`; enable them when free-text addresses and
+plates matter more than the occasional over-redaction:
+
+```ts
+import { defaultDetectors, heuristicDetectors, redact } from "@maskera/core"
+
+redact(text, { detectors: [...defaultDetectors, ...heuristicDetectors] })
+```
+
 ## API
 
 ### `redact(input, options?) => RedactResult`
