@@ -19,8 +19,7 @@ function ModelStatus({
           <span className="bar-fill" style={{ width: `${Math.max(progress, 3)}%` }} />
         </span>
         <span>
-          Laddar maskeras AI-modell… <span className="pct">{progress}%</span> · reglerna skyddar
-          redan
+          Laddar maskeras AI-modell… <span className="pct">{progress}%</span>
         </span>
       </div>
     )
@@ -32,7 +31,7 @@ function ModelStatus({
         <span>maskeras AI-modell aktiv{analyzing ? " · analyserar…" : ""}</span>
       )}
       {status === "error" && (
-        <span>AI-modellen kunde inte laddas · reglerna skyddar fortfarande</span>
+        <span>AI-modellen kunde inte laddas</span>
       )}
     </div>
   )
