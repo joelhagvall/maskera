@@ -53,7 +53,9 @@ No. Redaction is local. Only model weights/runtime are fetched (once), never you
 content.
 
 **What was the model trained on?**
-Synthetic Swedish text only, no real PII. See `training/generate_data.mjs`.
+Template-generated synthetic sentences (`training/generate_data.mjs`) plus one
+public, openly licensed news dataset containing already-published text about
+public figures. No user data, nothing collected for this project.
 
 **Is this GDPR-compliant?**
 maskera is a **data-minimisation tool** that helps you avoid sending PII to third

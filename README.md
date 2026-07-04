@@ -23,7 +23,7 @@ text
 Everything runs client-side. Nothing is sent anywhere, no telemetry, and the
 restore map stays with you. `maskera` re-exports the whole rule layer,
 so one import covers rules and model alike. Rules only, zero dependencies:
-`npm install @maskera/core`. **[Live demo →](apps/demo)**
+`npm install @maskera/core`. **[Live demo → maskera.dev](https://maskera.dev)**
 
 ## The model is the point
 
@@ -95,9 +95,10 @@ model, fallback patterns and an operational checklist, read
 
 ## Live demo
 
-Redaction as you type, with curated Swedish scenarios (HR, kundsupport, vård,
-juridik, kommun) showing exactly what the AI receives. The model loads in the
-background; rules work instantly meanwhile.
+Live at **[maskera.dev](https://maskera.dev)**: redaction as you type, with
+curated Swedish scenarios (HR, kundsupport, vård, juridik, kommun) showing
+exactly what the AI receives. The model loads in the background; rules work
+instantly meanwhile. Run it locally:
 
 ```bash
 pnpm install && pnpm demo   # http://localhost:5180
@@ -110,8 +111,9 @@ is deterministic; the model catches most free-text PII but no model is
 perfect. The canonical numbers and their caveats live in
 [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md), and
 [`docs/TRANSPARENCY.md`](docs/TRANSPARENCY.md) documents exactly what runs
-where: 100% on-device, the only network call is the one-time model download
-(never your text), self-hostable, trained without collecting anyone's data
+where: 100% on-device, the only network calls are one-time fetches of the
+model and the WASM runtime (never your text), self-hostable, trained without
+collecting anyone's data
 (synthetic sentences plus one public, openly licensed news dataset).
 
 ## Development
