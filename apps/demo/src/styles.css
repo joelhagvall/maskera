@@ -265,6 +265,17 @@ body {
   .app {
     padding: 40px 18px 64px;
   }
+  /* The tabs wrap on mobile: the label gets its own line so the tab rows
+     share a clean left edge, and the divider before the own-text tab is
+     hidden (it strands at a line start when the row breaks; the dashed
+     border already sets that tab apart). */
+  .tabs-label {
+    width: 100%;
+    margin-bottom: 4px;
+  }
+  .tab-divider {
+    display: none;
+  }
 }
 .card {
   border: 1px solid var(--border);
