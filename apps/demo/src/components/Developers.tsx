@@ -24,12 +24,23 @@ function Code({ children }: { children: string }) {
     m = TOKEN.exec(src)
   }
   if (last < src.length) nodes.push(src.slice(last))
+  // Copy the runnable part only: comment-only lines are display guidance
+  // ("# allt i ett: ..."), not something to paste into a terminal.
+  const copyText = src
+    .split("\n")
+    .filter((line) => {
+      const t = line.trim()
+      return !t.startsWith("#") && !t.startsWith("//")
+    })
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
   return (
     <div className="code-block">
       <pre>
         <code>{nodes}</code>
       </pre>
-      <CopyButton text={src} />
+      <CopyButton text={copyText} />
     </div>
   )
 }
