@@ -683,6 +683,20 @@ body {
   font-size: 14px;
   color: var(--muted);
 }
+/* Each link is an unbreakable unit; the row wraps whole links, never a
+   dangling separator. On mobile they naturally become one per line. */
+.foot-links {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 22px;
+  row-gap: 10px;
+}
+.foot-links a {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
 .prose a {
   display: inline-flex;
   align-items: center;
