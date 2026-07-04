@@ -1,5 +1,14 @@
 # @maskera/core
 
+## 0.3.1
+
+### Patch Changes
+
+- The phone detector matches the e-mail-signature style `+46(0)70-123 45 67`
+  (parenthesized trunk zero after the country code), found leaking in an
+  npm-user-input stress test. Negative guards unchanged: years, reference
+  numbers and longer digit runs are still rejected.
+
 ## 0.3.0
 
 ### Minor Changes
