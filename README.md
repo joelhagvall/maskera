@@ -43,11 +43,14 @@ how people actually type.
 > **[docs/BENCHMARKS.md](docs/BENCHMARKS.md)**; every other number in this
 > repo defers to it.
 
-It nearly matches the full-size Swedish baseline (KB-BERT NER, ~440 MB) at a
-tenth of the size. The training pipeline and the round-by-round journey are
-fully reproducible: see [`training/`](training/). Every push to this repo
-re-grades the published model in CI against a gold corpus with an F1 floor
-and a leak-rate ceiling.
+Measured against every public Swedish NER alternative on the same gold sets,
+it has the best typed F1 on independent text (0.96 vs 0.88-0.94 for the
+~500 MB models, including KB-BERT NER); the one known exception is
+all-lowercase text, where KBLab's lowermix model leads. Tables, method and
+caveats: [docs/BENCHMARKS.md](docs/BENCHMARKS.md). The training pipeline and
+the round-by-round journey are fully reproducible: see
+[`training/`](training/). Every push to this repo re-grades the published
+model in CI against a gold corpus with an F1 floor and a leak-rate ceiling.
 
 ## Two layers, rules first
 
