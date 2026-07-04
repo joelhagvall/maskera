@@ -310,13 +310,28 @@ const baseType = (entity: string) => entity.replace(/^[BI]-/, "")
  * entities by merging subword/continuation tokens and locating the surface
  * string back in the original text.
  */
+/**
+ * Lowercase for position-stable matching. A character whose lowercase form
+ * has a different LENGTH (e.g. Turkish "İ" becomes "i" + combining dot) is
+ * kept as-is: otherwise every index computed on the lowered string drifts
+ * against the original and entities after it are silently dropped (leaked).
+ */
+const safeLower = (s: string): string => {
+  let out = ""
+  for (const ch of s) {
+    const lc = ch.toLowerCase()
+    out += lc.length === ch.length ? lc : ch
+  }
+  return out
+}
+
 export function reconstruct(
   text: string,
   tokens: RawToken[],
   labelMap: LabelMap,
   minScore: number,
 ): Detection[] {
-  const lower = text.toLowerCase()
+  const lower = safeLower(text)
   const out: Detection[] = []
   let cursor = 0
   let i = 0
@@ -422,7 +437,7 @@ function locateGroup(
 ): { start: number; end: number } | null {
   const head = group[0]
   if (!head) return null
-  const first = pieceOf(head).toLowerCase()
+  const first = safeLower(pieceOf(head))
   if (!first) return null
 
   let start = lower.indexOf(first, cursor)
@@ -438,7 +453,7 @@ function locateGroup(
       if (!tok.word.startsWith("##")) {
         while (pos < text.length && WHITESPACE.test(text[pos] ?? "")) pos++
       }
-      const piece = pieceOf(tok).toLowerCase()
+      const piece = safeLower(pieceOf(tok))
       if (piece && lower.startsWith(piece, pos)) {
         pos += piece.length
       } else {
