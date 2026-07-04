@@ -131,16 +131,14 @@ restore(svar)
 // platshållarna byts tillbaka mot originalen, lokalt`}
           </Code>
 
-          <p className="prose-foot">
+          <p className="prose-foot foot-links">
             <a href={NPM_NER} target="_blank" rel="noreferrer">
               <code>maskera</code> på npm
             </a>
-            {" · "}
             <a href={GITHUB} target="_blank" rel="noreferrer">
               dokumentation och källkod på GitHub
               <ArrowUpRightIcon size={13} />
             </a>
-            {" · "}
             <a href={HF_MODEL} target="_blank" rel="noreferrer">
               modellen på Hugging Face
               <ArrowUpRightIcon size={13} />
