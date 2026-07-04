@@ -18,6 +18,11 @@ export {
   creditCard,
   ipAddress,
   url,
+  // opt-in Swedish heuristics
+  heuristicDetectors,
+  adress,
+  lagenhetsnummer,
+  regnummer,
 } from "./detectors"
 export {
   luhnValid,

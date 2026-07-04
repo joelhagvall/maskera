@@ -50,6 +50,20 @@ Create the recognizer **once** and reuse it: the model loads lazily on first
 use (or when you await `ready`), and each `detect`/`redactWithNer` call after
 that is a few milliseconds of inference.
 
+**Tip:** add core's opt-in heuristics to the hybrid. The model can split a
+street address and leave the house number exposed; the `ADRESS` regex always
+covers the full span, and rules win on overlap (this is what the live demo
+runs):
+
+```ts
+import { defaultDetectors, heuristicDetectors, redactWithNer } from "maskera"
+
+await redactWithNer(text, {
+  recognizer,
+  detectors: [...defaultDetectors, ...heuristicDetectors],
+})
+```
+
 ### Options
 
 ```ts

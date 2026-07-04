@@ -1,16 +1,21 @@
 import { describe, expect, it } from "vitest"
 import {
   url,
+  adress,
   bankgiro,
   creditCard,
+  defaultDetectors,
   email,
+  heuristicDetectors,
   iban,
   ipAddress,
+  lagenhetsnummer,
   organisationsnummer,
   personnummer,
   phone,
   plusgiro,
   postnummer,
+  regnummer,
   samordningsnummer,
 } from "../src/detectors"
 import type { Detector } from "../src/types"
@@ -90,7 +95,13 @@ describe("email detector", () => {
     "a+tag@sub.domain.io",
     "ANNA@EXAMPLE.SE",
     "user_name99@x-y.com",
+    "åsa.öberg@example.se",
+    "håkan@sjöberg.se",
   ])("matches: %s", (s) => expectHit(email, `Maila ${s} idag.`, s))
+
+  it("matches an åäö address at the start of the text", () => {
+    expectHit(email, "åsa.öberg@example.se är rätt adress", "åsa.öberg@example.se")
+  })
 
   it.each([
     ["no TLD", "anna@localhost"],
@@ -111,10 +122,15 @@ describe("phone detector", () => {
     "031-12 34 56",
   ])("matches: %s", (s) => expectHit(phone, `Ring ${s} imorgon.`, s))
 
+  it("matches at the very start of the text", () => {
+    expectHit(phone, "0701234567 är mitt nummer", "0701234567")
+  })
+
   it.each([
     ["a year", "år 1995"],
     ["a year range", "perioden 2019 2024"],
     ["short number", "rum 123"],
+    ["inside a longer digit run", "kundnummer 100200-3000"],
   ])("rejects %s: %s", (_label, s) => expectMiss(phone, s))
 })
 
@@ -200,4 +216,61 @@ describe("url detector", () => {
   )
 
   it("rejects a bare domain without scheme", () => expectMiss(url, "besök example.se idag"))
+})
+
+// --- Opt-in heuristics ------------------------------------------------------
+
+describe("adress detector (heuristic)", () => {
+  it.each([
+    "Sankt Eriksgatan 12B",
+    "Storvägen 3",
+    "Björkvägen 21",
+    "Rådhustorget 2",
+    "Norra Stationsgatan 101",
+    "STORGATAN 12",
+    "björkvägen 21",
+    "Östgötagatan 15",
+  ])("matches: %s", (s) => expectHit(adress, `Bor på ${s} i stan.`, s))
+
+  it.each([
+    ["street with no house number", "vi sågs på Storgatan igår"],
+    ["lowercase non-name use", "en lång väg 12 hem"],
+  ])("rejects %s: %s", (_label, s) => expectMiss(adress, s))
+})
+
+describe("lagenhetsnummer detector (heuristic)", () => {
+  it.each(["lgh 1203", "lägenhet 42", "Lgh 1203"])("matches: %s", (s) =>
+    expectHit(lagenhetsnummer, `Nycklar till ${s} kvitterade.`, s),
+  )
+
+  it("rejects the word without a number", () =>
+    expectMiss(lagenhetsnummer, "en fin lägenhet i stan"))
+})
+
+describe("regnummer detector (heuristic)", () => {
+  it.each(["ABC 123", "ABC123", "XYZ 12A"])("matches: %s", (s) =>
+    expectHit(regnummer, `Bilen ${s} stod parkerad.`, s),
+  )
+
+  it.each([
+    ["currency amount", "priset är SEK 100 per styck"],
+    ["currency amount", "kostar USD 500"],
+    ["plate letters Sweden never issues", "IQV 123"],
+    ["too many digits", "ABC 1234"],
+  ])("rejects %s: %s", (_label, s) => expectMiss(regnummer, s))
+})
+
+describe("heuristicDetectors bundle", () => {
+  it("contains exactly the three opt-in heuristics", () => {
+    expect(heuristicDetectors.map((d) => d.label)).toEqual([
+      "ADRESS",
+      "LAGENHETSNUMMER",
+      "REGNUMMER",
+    ])
+  })
+
+  it("stays out of defaultDetectors", () => {
+    const defaults = new Set(defaultDetectors.map((d) => d.label))
+    for (const d of heuristicDetectors) expect(defaults.has(d.label)).toBe(false)
+  })
 })

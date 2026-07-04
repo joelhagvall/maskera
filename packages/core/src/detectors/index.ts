@@ -64,12 +64,18 @@ export const organisationsnummer = regexDetector(
 
 // --- Contact details ------------------------------------------------------
 
-export const email = regexDetector("EMAIL", /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi)
+// åäö in both parts: addresses like "åsa.öberg@example.se" exist in the wild,
+// and a leading \b would never match before "å" (JS \b is ASCII-only).
+export const email = regexDetector("EMAIL", /[A-ZÅÄÖ0-9._%+-]+@[A-ZÅÄÖ0-9.-]+\.[A-Z]{2,}\b/gi)
 
-/** Swedish phone numbers: +46 / 0 prefix, mobile and landline. */
+/**
+ * Swedish phone numbers: +46 / 0 prefix, mobile and landline. The consumed
+ * left guard (capture group carries the value) stops the match from starting
+ * inside a longer digit run like "kundnummer 100200-3000".
+ */
 export const phone = regexDetector(
   "PHONE",
-  /(?:\+46[\s-]?|0)(?:7[02369]|[1-9]\d?)(?:[\s-]?\d){6,8}\b/g,
+  /(?:^|[^\d])((?:\+46[\s-]?|0)(?:7[02369]|[1-9]\d?)(?:[\s-]?\d){6,8})\b/g,
 )
 
 /** Postnummer: NNN NN (space optional). */
@@ -113,6 +119,55 @@ export const ipAddress = regexDetector(
 )
 
 export const url = regexDetector("URL", /\bhttps?:\/\/[^\s<>")]+/gi)
+
+// --- Heuristic Swedish detectors (opt-in) ----------------------------------
+//
+// Format-based like `phone` and `postnummer`, but with no checksum to validate
+// against, so they carry a higher false-positive risk than the defaults. They
+// are deliberately NOT part of `defaultDetectors`: add them explicitly via
+// `heuristicDetectors` when free-text addresses and plates matter more than
+// the occasional over-redaction.
+
+/**
+ * Swedish street address: "Sankt Eriksgatan 12B", "Storvägen 3". Three case
+ * shapes on purpose: chat text writes "björkvägen 21" and forms write
+ * "STORGATAN 12", and an NER model that only catches the street name would
+ * leave the house number exposed. The two-word prefix ("Sankt", "Norra")
+ * requires a capital so it never swallows a preceding "på"/"till". The
+ * consumed left guard replaces \b, which never matches before Å/Ä/Ö (JS \b
+ * is ASCII-only), so "Östgötagatan 15" works too.
+ */
+export const adress = regexDetector(
+  "ADRESS",
+  /(?:^|[^A-Za-zÅÄÖåäö0-9])((?:(?:[A-ZÅÄÖ][a-zåäö]+\s)?[A-ZÅÄÖa-zåäö][a-zåäö]*(?:gatan|vägen|gränd|gränden|torget|stigen|backen|allén|plan|gata|väg)|[A-ZÅÄÖ]+(?:GATAN|VÄGEN|GRÄND|GRÄNDEN|TORGET|STIGEN|BACKEN|ALLÉN|PLAN|GATA|VÄG))\s?\d{1,3}[A-Za-z]?)\b/g,
+)
+
+/** Apartment number: "lgh 1203", "lägenhet 42". */
+export const lagenhetsnummer = regexDetector(
+  "LAGENHETSNUMMER",
+  /\b(?:lgh|lägenhet)\.?\s?\d{2,4}\b/gi,
+)
+
+// Amounts like "SEK 100" share the plate shape; rejecting currency codes is
+// cheaper than false-positive redactions in every invoice.
+const CURRENCY_CODES = new Set(["SEK", "USD", "EUR", "NOK", "DKK", "GBP", "CHF", "JPY", "ISK"])
+
+/**
+ * Swedish car registration plate: "ABC 123", "ABC12D". The letter set matches
+ * what Transportstyrelsen actually issues (no I, Q, V, Å, Ä, Ö), which also
+ * filters out most acronym look-alikes.
+ */
+export const regnummer = regexDetector(
+  "REGNUMMER",
+  /\b[A-HJ-PR-UW-Z]{3}\s?\d{2}[A-HJ-PR-UW-Z0-9]\b/g,
+  (v) => !CURRENCY_CODES.has(v.slice(0, 3)),
+)
+
+/**
+ * The opt-in heuristics as one bundle:
+ * `redact(text, { detectors: [...defaultDetectors, ...heuristicDetectors] })`.
+ */
+export const heuristicDetectors: Detector[] = [adress, lagenhetsnummer, regnummer]
 
 /**
  * Default detector set, ordered so that the most specific / highest-confidence
