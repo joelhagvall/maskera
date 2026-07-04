@@ -15,14 +15,14 @@ export function Transparency({ onBack }: { onBack: () => void }) {
         </a>
       </div>
       <button type="button" className="back" onClick={onBack}>
-        ← Tillbaka till demon
+        ← Tillbaka till startsidan
       </button>
 
       <main>
         <article className="prose">
           <h1>Integritet & transparens</h1>
           <p className="prose-lede">
-            maskera är ett integritetsverktyg, så det bör vara ärligt om sig självt. Här är vad det
+            maskera är ett integritetsverktyg, och då ska korten ligga på bordet. Här är vad det
             gör, hur det fungerar, hur modellen har tränats och var gränserna går.
           </p>
 
@@ -42,23 +42,23 @@ export function Transparency({ onBack }: { onBack: () => void }) {
             <li>
               <strong>En liten AI-modell</strong> tar hand om resten: namn, platser och
               organisationer i löpande text. Tekniken kallas <strong>NER</strong> (“named entity
-              recognition”). Modellen har lärt sig att avgöra av sammanhanget <em>att</em> ett ord
-              är ett namn eller en plats, även namn den aldrig har sett förut. Det är därför fasta
-              sökmönster inte räcker: det går inte att lista alla namn som finns.
+              recognition”). Modellen har lärt sig att utifrån sammanhanget avgöra <em>att</em> ett
+              ord är ett namn eller en plats, även namn den aldrig har sett förut. Det är därför
+              fasta sökmönster inte räcker: det går inte att lista alla namn som finns.
             </li>
             <li>
-              Modellen är liten nog att <strong>köras direkt i webbläsaren</strong>, med samma
-              teknik som driver lokal AI på din enhet, så texten behöver aldrig skickas iväg för att
-              analyseras.
+              Modellen är så liten att den kan <strong>köras direkt i webbläsaren</strong>, med
+              samma teknik som driver lokal AI på din enhet, så texten behöver aldrig skickas iväg
+              för att analyseras.
             </li>
           </ul>
 
           <h2>Var din data tar vägen: ingenstans</h2>
           <ul>
             <li>
-              <strong>All maskering sker på din enhet</strong>, i webbläsaren (WASM/WebGPU) eller i
-              din Node-process. Din text skickas <strong>aldrig</strong> någonstans för att
-              maskeras.
+              <strong>All maskering sker på din enhet</strong>, i webbläsaren eller på din egen
+              server (för utvecklare: WASM/WebGPU eller Node). Din text skickas{" "}
+              <strong>aldrig</strong> någonstans för att maskeras.
             </li>
             <li>
               <strong>Ingen spårning av dig eller din text, inga cookies.</strong> Det enda sidan
@@ -68,15 +68,15 @@ export function Transparency({ onBack }: { onBack: () => void }) {
             </li>
             <li>
               <strong>De anrop som kan göras</strong>, för fullständighetens skull: med npm-paketets
-              standardinställningar hämtas modellfilen en gång från Hugging Face och WASM-körmiljön
-              från ett CDN. Båda är kod och modellvikter som hämtas en gång och cachas,{" "}
+              standardinställningar hämtas modellfilen en gång från Hugging Face och körmiljön från
+              ett CDN. Båda är kod och modellvikter som hämtas en gång och cachas,{" "}
               <strong>aldrig din text</strong>. Allt går att lägga på egen server, och{" "}
               <strong>demon på den här sidan gör precis det</strong>: modell, körmiljö och typsnitt
               ligger lokalt, så sidan gör inga anrop till tredje part.
             </li>
             <li>
-              Regellagret (<code>@maskera/core</code>) har{" "}
-              <strong>inga nätverksberoenden alls</strong> och ingen modell, bara rena funktioner.
+              Själva regeldelen är vanlig kod utan AI-modell: den har{" "}
+              <strong>inga nätverksberoenden alls</strong> och fungerar helt fristående.
             </li>
           </ul>
 
@@ -87,7 +87,7 @@ export function Transparency({ onBack }: { onBack: () => void }) {
               maskingenererade meningar plus ett publikt, öppet licensierat nyhetsdataset:{" "}
               <strong>inga användardata, ingenting insamlat för det här projektet</strong>.
               Nyhetstexterna innehåller redan publicerade meningar om offentliga personer.
-              Generatorn ligger öppet i repot.
+              Generatorn ligger öppen på GitHub.
             </li>
             <li>
               <strong>Basmodell:</strong> KB-BERT från Kungliga biblioteket, fri att använda (CC0).
@@ -100,7 +100,8 @@ export function Transparency({ onBack }: { onBack: () => void }) {
             </li>
             <li>
               <strong>Hela kedjan går att göra om från grunden.</strong> Data, träning,
-              komprimering, export och utvärdering är skript i repot. Inget är gömt.
+              komprimering, export och utvärdering är skript som ligger öppet på GitHub. Inget är
+              gömt.
             </li>
           </ul>
 
@@ -108,14 +109,14 @@ export function Transparency({ onBack }: { onBack: () => void }) {
           <ul>
             <li>
               Öppet utvärderad mot både en handbyggd testuppsättning och ett oberoende publikt
-              dataset. Siffror och förbehåll finns i repot, bland annat att träffsäkerheten sjunker
-              på text som ligger långt från det modellen tränats på.
+              dataset. Siffror och förbehåll finns på GitHub, bland annat att träffsäkerheten
+              sjunker på text som ligger långt från det modellen tränats på.
             </li>
             <li>
               <strong>Det är ett extra skyddslager, inte en garanti.</strong> Uppgifter med bestämt
               format, som personnummer och organisationsnummer, hittas av reglerna och är mycket
               pålitligt. Namn och platser i löpande text bygger på modellen och{" "}
-              <strong>den kommer att missa saker</strong>. Behåll era övriga kontroller.
+              <strong>den kommer att missa saker</strong>. Behåll dina övriga kontroller.
             </li>
             <li>
               maskera är ett <strong>verktyg för dataminimering</strong> som stödjer arbetet med
