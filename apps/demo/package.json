@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "pnpm --filter @maskera/core --filter @maskera/ner build && node scripts/fetch-model.mjs && vite build",
+    "build": "pnpm --filter @maskera/core --filter maskera build && node scripts/fetch-model.mjs && vite build",
     "preview": "vite preview",
     "audit": "pnpm run audit:lighthouse && pnpm run audit:a11y",
     "audit:lighthouse": "start-server-and-test preview http://127.0.0.1:4173 lighthouse:run",
