@@ -623,6 +623,25 @@ body {
   font: 12.5px / 1.7 var(--mono);
   white-space: pre;
 }
+@media (max-width: 820px) {
+  /* On mobile the copy button moves above the block (it would cover the
+     first code line), and the code wraps instead of scrolling sideways so
+     all of it stays readable. */
+  .code-block {
+    display: flex;
+    flex-direction: column;
+  }
+  .code-block .code-copy {
+    position: static;
+    order: -1;
+    align-self: flex-end;
+    margin-bottom: 8px;
+  }
+  .prose pre code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}
 .tok-k {
   color: #7e22ce;
 }
