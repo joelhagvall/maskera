@@ -43,6 +43,9 @@ const FIRST_NAMES = [
   "Olof",
   "Yusuf",
   "Leila",
+  "Amir",
+  "Jonas",
+  "Elin",
 ]
 const LAST_NAMES = [
   "Karlsson",
@@ -63,6 +66,10 @@ const LAST_NAMES = [
   "Ek",
   "Sandberg",
   "Öberg",
+  "Haddad",
+  "Ahmadi",
+  "Wikström",
+  "Bergman",
 ]
 
 function escapeRe(s: string) {

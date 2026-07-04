@@ -44,13 +44,13 @@ function expectMiss(detector: Detector, input: string) {
 // --- Personnummer ---------------------------------------------------------
 
 describe("personnummer detector", () => {
-  // 900101-0017 is a Luhn-valid synthetic identifier.
+  // 900101-2385 is a Luhn-valid synthetic identifier.
   it.each([
-    "19900101-0017",
-    "900101-0017",
-    "199001010017",
-    "9001010017",
-    "900101+0017", // 100+ years old uses '+'
+    "19900101-2385",
+    "900101-2385",
+    "199001012385",
+    "9001012385",
+    "900101+2385", // 100+ years old uses '+'
   ])("matches valid form: %s", (s) => expectHit(personnummer, `Patient ${s} skrevs in.`, s))
 
   it.each([
@@ -71,7 +71,7 @@ describe("samordningsnummer detector", () => {
   )
 
   it("does not match an ordinary personnummer (day < 60)", () => {
-    expectMiss(samordningsnummer, "900101-0017")
+    expectMiss(samordningsnummer, "900101-2385")
   })
 })
 

@@ -12,7 +12,7 @@ pnpm add @maskera/core
 ```ts
 import { redact } from "@maskera/core"
 
-const { text, restore } = redact("Personnummer 19900101-0017, tel 070-123 45 67.")
+const { text, restore } = redact("Personnummer 19900101-2385, tel 070-123 45 67.")
 text // "Personnummer [PERSONNUMMER_1], tel [PHONE_1]."
 ```
 
@@ -31,7 +31,7 @@ a checksum exists, so look-alikes (year ranges, reference numbers) don't fire.
 
 | Label                  | Matches                                | Validation            |
 | ---------------------- | -------------------------------------- | --------------------- |
-| `PERSONNUMMER`         | `19900101-0017`, `900101-0017`         | date + Luhn           |
+| `PERSONNUMMER`         | `19900101-2385`, `900101-2385`         | date + Luhn           |
 | `SAMORDNINGSNUMMER`    | day + 60 variant                       | date + Luhn           |
 | `ORGANISATIONSNUMMER`  | `556016-0680`                          | Luhn, third digit ≥ 2 |
 | `EMAIL`                | `anna@example.se`                      | pattern               |

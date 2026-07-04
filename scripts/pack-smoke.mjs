@@ -38,7 +38,7 @@ try {
 import { redact, restore, defaultDetectors } from "@maskera/core"
 import { createNerRecognizer, redactWithNer, MASKERA_SV_NER_MODEL } from "maskera"
 
-const input = "Ring 070-123 45 67, personnummer 19900101-0017, mejla a@b.se"
+const input = "Ring 070-123 45 67, personnummer 19900101-2385, mejla a@b.se"
 const r = redact(input)
 for (const token of ["[PHONE_1]", "[PERSONNUMMER_1]", "[EMAIL_1]"]) {
   if (!r.text.includes(token)) throw new Error("ESM redact missing " + token + ": " + r.text)
