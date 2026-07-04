@@ -115,7 +115,7 @@ export function Developers({ onBack }: { onBack: () => void }) {
 const recognizer = createNerRecognizer()
 
 const { text, restore } = await redactWithNer(
-  "hej jag heter anna karlsson, personnummer 19900101-0017, och bor i uppsala",
+  "hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala",
   { recognizer },
 )
 

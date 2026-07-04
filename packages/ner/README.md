@@ -37,7 +37,7 @@ await recognizer.ready
 // Hybrid: rule detectors + NER, merged through core's placeholder engine.
 // Rules win on overlap: structured PII is deterministic and authoritative.
 const result = await redactWithNer(
-  "Min granne Lars bor på Kungsholmen, personnummer 19900101-0017.",
+  "Min granne Lars bor på Kungsholmen, personnummer 19900101-2385.",
   { recognizer },
 )
 result.text

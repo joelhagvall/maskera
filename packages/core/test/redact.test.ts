@@ -9,19 +9,19 @@ import {
   restore,
 } from "../src/index"
 
-// 900101-0017 and 556036-0793 are Luhn-valid synthetic test identifiers.
-const PNR = "19900101-0017"
+// 900101-2385 and 556036-0793 are Luhn-valid synthetic test identifiers.
+const PNR = "19900101-2385"
 const ORGNR = "556036-0793"
 
 describe("validators", () => {
   it("validates Luhn checksums", () => {
-    expect(luhnValid("9001010017")).toBe(true)
+    expect(luhnValid("9001012385")).toBe(true)
     expect(luhnValid("9001010018")).toBe(false)
   })
 
   it("validates personnummer", () => {
     expect(isPersonnummer(PNR)).toBe(true)
-    expect(isPersonnummer("900101-0017")).toBe(true)
+    expect(isPersonnummer("900101-2385")).toBe(true)
     expect(isPersonnummer("900101-0018")).toBe(false)
     expect(isPersonnummer("991399-0017")).toBe(false) // bad month
   })

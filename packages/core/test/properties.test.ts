@@ -15,7 +15,7 @@ import { redact } from "../src/index"
 
 // A pool of valid, synthetic PII values (Luhn-checked where relevant).
 const PII_POOL = [
-  "900101-0017", // personnummer
+  "900101-2385", // personnummer
   "556036-0793", // organisationsnummer
   "anna@example.se", // email
   "070-123 45 67", // phone

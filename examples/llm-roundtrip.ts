@@ -10,7 +10,7 @@
 import { redact } from "@maskera/core"
 
 const userMessage =
-  "Hej, jag heter Anna Karlsson, personnummer 19900101-0017, " +
+  "Hej, jag heter Anna Karlsson, personnummer 19900101-2385, " +
   "och jag når er på 070-123 45 67 eller anna@example.se."
 
 const { text, map, restore } = redact(userMessage)
