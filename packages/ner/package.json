@@ -5,15 +5,7 @@
   "type": "module",
   "license": "MIT",
   "author": "Joel Hägvall",
-  "keywords": [
-    "pii",
-    "ner",
-    "transformers.js",
-    "onnx",
-    "swedish",
-    "privacy",
-    "redaction"
-  ],
+  "keywords": ["pii", "ner", "transformers.js", "onnx", "swedish", "privacy", "redaction"],
   "homepage": "https://github.com/joelhagvall/maskera#readme",
   "repository": {
     "type": "git",
@@ -40,11 +32,7 @@
       }
     }
   },
-  "files": [
-    "dist",
-    "NOTICE",
-    "CHANGELOG.md"
-  ],
+  "files": ["dist", "NOTICE", "CHANGELOG.md"],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
