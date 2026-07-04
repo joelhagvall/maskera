@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "audit": "pnpm run audit:lighthouse && pnpm run audit:a11y",
     "audit:lighthouse": "start-server-and-test preview http://127.0.0.1:4173 lighthouse:run",
-    "lighthouse:run": "mkdir -p reports && lighthouse http://127.0.0.1:4173 --only-categories=performance,accessibility --chrome-flags=\"--headless=new\" --output=html --output=json --output-path=./reports/lighthouse --quiet",
+    "lighthouse:run": "mkdir -p reports && lighthouse http://127.0.0.1:4173 --only-categories=performance,accessibility,best-practices,seo --chrome-flags=\"--headless=new\" --output=html --output=json --output-path=./reports/lighthouse --quiet",
     "audit:a11y": "start-server-and-test preview http://127.0.0.1:4173 a11y:run",
     "a11y:run": "pa11y --config .pa11yrc.json --include-warnings http://127.0.0.1:4173"
   },
