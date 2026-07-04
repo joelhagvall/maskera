@@ -45,6 +45,75 @@ const defaultLabelMap: LabelMap = (group) => {
   return DEFAULT_LABEL_MAP[key] ?? key
 }
 
+/**
+ * Common Swedish words the model can tag as PII when they sit in a name-like
+ * position ("Kund Maria ...", "Mail: ...", "betalning till bankgiro ...").
+ * These are role words, contact-channel words and payment-rail words that are
+ * never a name, place or organisation on their own, so a detection whose
+ * WHOLE surface form (case-insensitively) is one of them is dropped.
+ * Multi-word detections ("Anna Ring", "Byggfirman AB") are never affected.
+ */
+export const DEFAULT_DENYLIST: ReadonlySet<string> = new Set([
+  // role words that precede a name
+  "kund",
+  "kunden",
+  "patient",
+  "patienten",
+  "klient",
+  "klienten",
+  "kandidat",
+  "kandidaten",
+  "sökande",
+  "sökanden",
+  "anhörig",
+  "anhöriga",
+  "sambo",
+  "sambon",
+  "make",
+  "maken",
+  "maka",
+  "makan",
+  "referens",
+  "referensen",
+  "motpart",
+  "motparten",
+  "handläggare",
+  "handläggaren",
+  // contact channels
+  "mail",
+  "mailen",
+  "maila",
+  "mailar",
+  "mailade",
+  "mejl",
+  "mejlen",
+  "mejla",
+  "mejlar",
+  "mejlade",
+  "epost",
+  "e-post",
+  "tel",
+  "telefon",
+  "telefonnummer",
+  "mobil",
+  "mobilnummer",
+  // payment rails (the numbers themselves are the rule layer's job)
+  "bankgiro",
+  "bankgirot",
+  "plusgiro",
+  "plusgirot",
+  "postgiro",
+  "iban",
+  "swish",
+  "konto",
+  "kontot",
+  "kontonummer",
+  "betalkonto",
+  "kortnummer",
+  "personnummer",
+  "organisationsnummer",
+])
+
 export interface NerOptions {
   /** Hugging Face model id. Default: {@link DEFAULT_NER_MODEL}. */
   model?: string
@@ -54,6 +123,12 @@ export interface NerOptions {
   device?: "wasm" | "webgpu" | "cpu" | "auto"
   /** Drop predictions below this confidence. Default: `0.5`. */
   minScore?: number
+  /**
+   * Words that are dropped when a detection consists of exactly that word
+   * (case-insensitive). Default: {@link DEFAULT_DENYLIST}. Pass your own list
+   * to extend/replace it, or `null` to disable the filter entirely.
+   */
+  denylist?: Iterable<string> | null
   /** Map model entity groups to maskera labels. Default: {@link defaultLabelMap}. */
   labelMap?: LabelMap
   /** Progress callback while the model downloads. */
@@ -89,11 +164,14 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
     device = "auto",
     minScore = 0.5,
     labelMap = defaultLabelMap,
+    denylist = DEFAULT_DENYLIST,
     onProgress,
     localModelPath,
     allowRemoteModels,
     allowLocalModels,
   } = options
+
+  const denySet = denylist === null ? null : new Set(Array.from(denylist, (w) => w.toLowerCase()))
 
   let pipePromise: Promise<import("@huggingface/transformers").TokenClassificationPipeline> | null =
     null
@@ -129,7 +207,9 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
     async detect(text: string): Promise<Detection[]> {
       const pipe = await load()
       const raw = await pipe(text, { aggregation_strategy: "none" })
-      return reconstruct(text, raw, labelMap, minScore)
+      const detections = reconstruct(text, raw, labelMap, minScore)
+      if (!denySet) return detections
+      return detections.filter((d) => !denySet.has(d.value.toLowerCase()))
     },
   }
 }
