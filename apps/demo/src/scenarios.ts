@@ -10,13 +10,13 @@ export const scenarios: Scenario[] = [
     id: "hr",
     name: "HR",
     tagline: "Kandidat-screening med AI",
-    text: "Kandidat: Amir Haddad, 991201-2391. Mail: amir.haddad@example.se, tel 0701740605. Nuvarande lön 48 000 kr/mån. Referens: Per Holmberg, 08-465 004 12. Bedöm CV mot rollbeskrivningen och föreslå intervjufrågor.",
+    text: "Kandidat: Sara Lindgren, 991201-2391. Mail: sara.lindgren@example.se, tel 0701740605. Nuvarande lön 48 000 kr/mån. Referens: Per Holmberg, 08-465 004 12. Bedöm CV mot rollbeskrivningen och föreslå intervjufrågor.",
   },
   {
     id: "support",
     name: "Kundsupport",
     tagline: "Supportärende som loggas",
-    text: "Kund Maria Johansson hör av sig: kortet slutar fungera. Kortnummer 4111 1111 1111 1111, betalkonto IBAN SE45 5000 0000 0583 9825 7466. Ringer från 070-174 06 58. Skapa ett ärende och svara med nästa steg.",
+    text: "Kund Amir Haddad hör av sig: kortet slutar fungera. Kortnummer 4111 1111 1111 1111, betalkonto IBAN SE45 5000 0000 0583 9825 7466. Ringer från 070-174 06 58. Skapa ett ärende och svara med nästa steg.",
   },
   {
     id: "vard",
