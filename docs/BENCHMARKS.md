@@ -61,6 +61,66 @@ CORPUS_FILE=<printed path> MASKERA_REMOTE=1 MASKERA_F1_FLOOR=0 MASKERA_LEAK_CEIL
   node packages/ner/eval/run-eval.mjs
 ```
 
+## How maskera compares to other Swedish NER models
+
+Measured 2026-07-04 with [`training/benchmark_competitors.py`](../training/benchmark_competitors.py):
+every model on the same gold sets, overlap matching, labels mapped to
+PER / LOC / ORG (the cross-model comparable types; ADR is excluded because no
+other model has an address class). **Redaction recall** is the safety number:
+was the entity flagged at all, under any label. Cross-model *precision* is
+indicative rather than definitive, since label schemes differ. The maskera row
+is the fp32 student; the shipped q4 artifact costs about 0.01 overlap F1 on
+top (see [training/README.md](../training/README.md)).
+
+**gold-real (22 independent Wikipedia sentences, 58 entities):**
+
+| Model | Size | Redaction recall | Typed P | Typed R | Typed F1 |
+| ----- | ---- | ---------------- | ------- | ------- | -------- |
+| **maskera student** | **40 MB (q4, in-browser)** | 0.98 | **0.95** | 0.97 | **0.96** |
+| KBLab lowermix reallysimple-ner | ~475 MB | 1.00 | 0.92 | 0.97 | 0.94 |
+| nbailab scandi-ner | ~500 MB | 1.00 | 0.95 | 0.93 | 0.94 |
+| KB-NER (the SUC classic) | ~475 MB | 1.00 | 0.87 | 0.97 | 0.92 |
+| KBLab reallysimple-ner | ~475 MB | 0.98 | 0.89 | 0.93 | 0.91 |
+| RecordedFuture Swedish-NER | ~500 MB | 1.00 | 0.79 | 0.98 | 0.88 |
+| sbx PII general / detailed | ~475 MB | 0.05 / 0.10 | 1.00 | 0.05 / 0.10 | 0.10 / 0.19 |
+
+**gold-real LOWERCASED (chat-style text, no casing cues):**
+
+| Model | Redaction recall | Typed F1 |
+| ----- | ---------------- | -------- |
+| KBLab lowermix reallysimple-ner | **0.97** | **0.90** |
+| **maskera student** | 0.91 | 0.86 |
+| RecordedFuture Swedish-NER | 0.83 | 0.82 |
+| nbailab scandi-ner | 0.69 | 0.77 |
+| KB-NER | 0.28 | 0.35 |
+| KBLab reallysimple-ner | 0.29 | 0.39 |
+| sbx PII general / detailed | 0.09 | 0.16 |
+
+On the curated set all general NER models land within noise of each other
+(typed F1 0.82 to 0.90, maskera redaction recall 1.00).
+
+Takeaways:
+
+- On independent cased Swedish text, the 40 MB maskera student has the best
+  typed F1 and precision of every model tested, at under a tenth of their size.
+  The alternatives run locally too, but at ~500 MB none of them can ship
+  inside a web app; maskera is small enough to run where the text already is,
+  including in a browser tab.
+- Without casing cues, only KBLab's lowermix model (trained on mixed-case SUCX
+  specifically for this) is ahead. It is ~475 MB, has no address class, and
+  trails on cased text. Its recipe is a good pointer for a future maskera data
+  round: more lowercase augmentation.
+- The sbx models are branded for PI detection but target a different label
+  scheme (they barely flag plain names / places / orgs), so their low numbers
+  here reflect scheme mismatch, not general quality. They are not a drop-in
+  alternative for this task.
+- None of the alternatives detects street addresses (ADR), handles the
+  four-type scheme maskera's placeholder layer expects, or fits a browser
+  bundle, so each would still need maskera's distillation pipeline to be
+  usable here. Measured against that pipeline's own teacher-and-distill
+  output, they do not motivate a backbone switch (see the base-model check in
+  [training/README.md](../training/README.md)).
+
 ## Metric definitions
 
 - **precision / recall / F1** use exact span matching (start and end must both
