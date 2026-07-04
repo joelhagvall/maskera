@@ -6,16 +6,19 @@ import { RedactedText } from "../segments"
 
 function Stats({ result }: { result: RedactResult }) {
   const counts = useMemo(() => {
+    // Redactions arrive position-sorted, so Map insertion order = text order.
     const c = new Map<string, number>()
     for (const r of result.redactions) c.set(r.label, (c.get(r.label) ?? 0) + 1)
-    return [...c.entries()].sort((a, b) => b[1] - a[1])
+    return [...c.entries()]
   }, [result])
 
   return (
     <div className="stats">
       <div className="count">
         <span className="num">{result.redactions.length}</span>
-        <span className="num-l">uppgifter maskerade</span>
+        <span className="num-l">
+          {result.redactions.length === 1 ? "uppgift maskerad" : "uppgifter maskerade"}
+        </span>
       </div>
       <div className="tags">
         {counts.map(([label, n]) => {
@@ -75,10 +78,14 @@ export function OutputCard({ result, analyzing }: { result: RedactResult; analyz
 
       <Stats result={result} />
 
-      <button type="button" className="link" onClick={() => setShowMap((v) => !v)}>
-        {showMap ? "Dölj" : "Visa"} återställningsnyckel ({unique})
-      </button>
-      {showMap && <RestoreMap map={result.map} />}
+      {unique > 0 && (
+        <>
+          <button type="button" className="link" onClick={() => setShowMap((v) => !v)}>
+            {showMap ? "Dölj" : "Visa"} återställningsnyckel ({unique})
+          </button>
+          {showMap && <RestoreMap map={result.map} />}
+        </>
+      )}
     </section>
   )
 }
