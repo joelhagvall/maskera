@@ -112,6 +112,17 @@ export const DEFAULT_DENYLIST: ReadonlySet<string> = new Set([
   "kortnummer",
   "personnummer",
   "organisationsnummer",
+  // greetings and sign-offs: chat text starts with these in name position
+  // ("tjena, det är ..."), and the model can tag them as PER
+  "hej",
+  "hejhej",
+  "hejsan",
+  "tjena",
+  "tjenare",
+  "halloj",
+  "goddag",
+  "mvh",
+  "hälsningar",
 ])
 
 export interface NerOptions {
