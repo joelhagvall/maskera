@@ -27,5 +27,11 @@
   },
   "javascript": {
     "formatter": { "quoteStyle": "double", "semicolons": "asNeeded" }
-  }
+  },
+  "overrides": [
+    {
+      "include": ["**/package.json"],
+      "formatter": { "enabled": false }
+    }
+  ]
 }
