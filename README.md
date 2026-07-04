@@ -4,6 +4,8 @@
 
 > **Swedish PII redaction, on-device. Names, personnummer, addresses are masked before your text reaches an LLM, a log, or analytics.**
 
+<a href="https://maskera.dev"><img src="docs/demo.png" alt="maskera-demon: svensk text med markerade personuppgifter till vänster, samma text med platshållare som [PERSON_1] till höger" width="100%"></a>
+
 ```bash
 npm install maskera @huggingface/transformers   # all-in-one: rules + our Swedish AI model
 ```
