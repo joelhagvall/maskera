@@ -1,6 +1,6 @@
 {
   "name": "@maskera/core",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Swedish-first, zero-dependency PII detection & redaction. Runs in the browser, Node, and edge.",
   "type": "module",
   "license": "MIT",
@@ -42,7 +42,10 @@
       }
     }
   },
-  "files": ["dist", "CHANGELOG.md"],
+  "files": [
+    "dist",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",

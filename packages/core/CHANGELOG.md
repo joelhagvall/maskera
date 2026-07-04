@@ -1,5 +1,16 @@
 # @maskera/core
 
+## 0.3.2
+
+### Patch Changes
+
+- A custom `placeholder()` that ignores the index could map two values to one
+  token and silently corrupt `restore()`; the engine now throws a clear error
+  instead.
+- The plusgiro detector no longer matches single-digit bodies: one in nine
+  digit-dash-digit pairs ("punkt 3-4", match scores) is Luhn-valid by chance
+  and was over-masked. Minimum is now two digits before the dash.
+
 ## 0.3.1
 
 ### Patch Changes
