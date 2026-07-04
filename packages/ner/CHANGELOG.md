@@ -1,5 +1,26 @@
 # maskera
 
+## 0.4.2
+
+### Patch Changes
+
+- Leak/crash fix: inputs past BERT's 512-token positional limit crashed the
+  ONNX runtime and failed the whole redaction. `detect()` now splits long
+  input at whitespace with an overlap, re-offsets the detections and dedupes
+  the seam; verified against the real model up to 20k characters.
+- Leak fix: `toLowerCase()` can change string length (Turkish İ), which made
+  every position drift and silently dropped entities ("İlker Aydın" leaked).
+  Matching now uses position-stable lowercasing.
+- Leak fix: a model span that merely touched a rule span was dropped
+  wholesale, so a name glued to an e-mail local-part leaked. `redactWithNer`
+  now clips the rule intervals out of the span and keeps the remnants
+  (keyword remnants like "IBAN" are denylist-filtered).
+- Single-character model detections are dropped (the model tags "Q" in "Q3"
+  as ORG, mangling the word).
+- `DEFAULT_DENYLIST` gains time words and transport/tech nouns (imorgon,
+  idag, buss, ip, ...) observed as false positives in stress tests.
+- Updated dependencies: @maskera/core@0.3.2.
+
 ## 0.4.1
 
 ### Patch Changes
