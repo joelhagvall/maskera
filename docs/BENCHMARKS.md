@@ -9,7 +9,7 @@ disagrees with this file, this file wins and the other document has drifted.
 - **Artifact:** [`joelhagvall/maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner),
   `onnx/model_q4.onnx` (`dtype: "q4"`, the default and what the demo ships),
   sha256 `f34aa2d9e2272aa8cadded3ff819827d858cb5ab07c9b40f2bc4d1d147dd5625`
-- **Pipeline:** the shipped `@maskera/ner` path (model + `reconstruct()`
+- **Pipeline:** the shipped `maskera` path (model + `reconstruct()`
   post-processing), graded by [`packages/ner/eval/run-eval.mjs`](../packages/ner/eval/run-eval.mjs)
 - **Matching:** exact character span. This is the strict harness CI gates on;
   see [method notes](#method-notes) for why older overlap-based numbers read higher.

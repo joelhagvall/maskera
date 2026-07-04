@@ -2,7 +2,7 @@ import type { Detection, PiiLabel, RedactOptions, RedactResult } from "@maskera/
 import { defaultDetectors, redactFromDetections } from "@maskera/core"
 
 // Re-export the whole rule layer so one install + one import is enough:
-// installing @maskera/ner pulls in @maskera/core automatically, and
+// installing maskera pulls in @maskera/core automatically, and
 // everything (redact, restore, detectors, validators) is importable from here.
 export * from "@maskera/core"
 
@@ -194,7 +194,7 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
         .catch((err) => {
           pipePromise = null
           throw new Error(
-            `@maskera/ner: failed to load "${model}". Is the optional peer ` +
+            `maskera: failed to load "${model}". Is the optional peer ` +
               `dependency "@huggingface/transformers" installed?\n${String(err)}`,
           )
         })

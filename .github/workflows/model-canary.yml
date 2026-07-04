@@ -43,9 +43,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Bump to latest @huggingface/transformers
         if: matrix.latest-transformers
-        run: pnpm --filter @maskera/ner add -D @huggingface/transformers@latest
-      - run: pnpm --filter @maskera/core --filter @maskera/ner build
-      - run: pnpm --filter @maskera/core --filter @maskera/ner test
+        run: pnpm --filter maskera add -D @huggingface/transformers@latest
+      - run: pnpm --filter @maskera/core --filter maskera build
+      - run: pnpm --filter @maskera/core --filter maskera test
       - name: Eval the published model (${{ matrix.name }})
         working-directory: packages/ner
         shell: bash

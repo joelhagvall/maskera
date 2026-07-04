@@ -12,7 +12,7 @@ echo "[6/6] eval..."
 cd /Users/joelhagvall/Documents/GitHub/maskera/apps/demo
 cat > _v5.mjs <<'JS'
 import { readFileSync } from "node:fs"; import { resolve } from "node:path"
-import { createNerRecognizer } from "@maskera/ner"
+import { createNerRecognizer } from "maskera"
 const TYPES=["PER","LOC","ORG","ADR"], RE=/\[(PER|LOC|ORG|ADR):([^\]]+)\]/g
 function gold(p){const o=[];for(let l of readFileSync(p,"utf-8").split("\n")){if(!l.trim()||l.trimStart().startsWith("#"))continue;let t="",pos=0,m;const s=[];RE.lastIndex=0;while((m=RE.exec(l))){t+=l.slice(pos,m.index);const st=t.length;t+=m[2];s.push([st,st+m[2].length,m[1]]);pos=m.index+m[0].length}t+=l.slice(pos);o.push({text:t,spans:s})}return o}
 const ov=(a,b)=>Math.max(a[0],b[0])<Math.min(a[1],b[1])

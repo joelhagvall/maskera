@@ -55,7 +55,7 @@ uv run python export_onnx.py     # -> onnx-model/onnx/model_quantized.onnx
 | int8 ONNX  | ~125 MB (4× smaller) |
 
 Quality is preserved through quantization (verified on held-out sentences). The
-int8 model runs through `@maskera/ner` end-to-end: model entities (PER/LOC/ORG/
+int8 model runs through `maskera` end-to-end: model entities (PER/LOC/ORG/
 ADR) plus the rule layer's structured PII, merged by the stable-placeholder
 engine.
 
@@ -122,9 +122,9 @@ On an M4 Pro (MPS) step 3 takes ~8–9 minutes for 3 epochs over 9k examples.
   and ideally a small *real* Swedish eval set before trusting precision/recall.
 - **Size.** The base is KB-BERT (~110M params, ~440 MB fp32), great for quality
   but far from the ~15 MB browser target. Next: export to ONNX, quantize (int8 /
-  q4), and/or **distil into a small 6-layer student** so it fits `@maskera/ner`.
+  q4), and/or **distil into a small 6-layer student** so it fits `maskera`.
 - **Subword spans.** The HF pipeline can split an entity across subword tokens;
-  `@maskera/ner`'s `reconstruct()` merges them back into one span.
+  `maskera`'s `reconstruct()` merges them back into one span.
 
 ## Benchmark (real eval set)
 
@@ -253,7 +253,7 @@ Only KBLab's lowermix wins on lowercase text (0.90 vs 0.86): its mixed-case
 SUCX recipe is the pointer for a future data round. Swapping backbone buys
 nothing today. The only theoretically stronger base is AI Sweden's RoBERTa as
 a teacher, but it is 335M params, uses a BPE tokenizer (breaks the wordpiece
-`##` assumptions in @maskera/ner's reconstruct and in `trim_vocab.py`), and
+`##` assumptions in maskera's reconstruct and in `trim_vocab.py`), and
 would need its own distillation recipe: real engineering cost for a
 speculative ceiling gain.
 
@@ -306,7 +306,7 @@ Two honest reads:
   For the privacy use case (was the PII masked at all?), that's the number that
   matters, and it's strong.
 
-> **Post-processing precision guard.** `@maskera/ner`'s `reconstruct()` keeps only
+> **Post-processing precision guard.** `maskera`'s `reconstruct()` keeps only
 > word-boundary-aligned spans with at least one letter, dropping the model's
 > mid-word fragments (e.g. "par" inside "Motpart") and bare digit groups (numbers
 > are the rule layer's job). This lifted the shipped pipeline **0.927 → 0.946** on

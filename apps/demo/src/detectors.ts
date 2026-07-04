@@ -3,7 +3,7 @@ import { type Detector, defaultDetectors, regexDetector } from "@maskera/core"
 /**
  * Demo-only detectors layered on top of @maskera/core's built-ins. They show how
  * trivially maskera extends per domain. In production, free-text names/places
- * would come from @maskera/ner — here we use a small offline gazetteer so the
+ * would come from maskera — here we use a small offline gazetteer so the
  * demo redacts names instantly with zero model download.
  */
 

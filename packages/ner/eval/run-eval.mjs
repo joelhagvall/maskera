@@ -59,9 +59,9 @@ try {
 // 2. Load our recognizer from the built package.
 let createNerRecognizer
 try {
-  ;({ createNerRecognizer } = await import("@maskera/ner"))
+  ;({ createNerRecognizer } = await import("maskera"))
 } catch {
-  skip('could not import "@maskera/ner": run `pnpm -C packages/ner build` first')
+  skip('could not import "maskera": run `pnpm -C packages/ner build` first')
 }
 
 if (!MODEL_PATH && !REMOTE) {
