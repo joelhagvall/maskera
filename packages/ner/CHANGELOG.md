@@ -1,5 +1,19 @@
 # maskera
 
+## 0.4.1
+
+### Patch Changes
+
+- Leak fix: `reconstruct()` widens a span over a trailing possessive s, so a
+  capitalized full-name genitive ("Anna Karlssons journal") is masked instead
+  of dropped. The vocab-trimmed model stops one character short of the s and
+  the whole-word guard used to reject the whole span. Prefixes of genuinely
+  different words ("Lars" inside "Larssons") are still rejected.
+- `DEFAULT_DENYLIST` gains greetings and sign-offs (hej, hejhej, hejsan,
+  tjena, tjenare, halloj, goddag, mvh, hälsningar): chat text puts them in
+  name position and the model can tag them as PERSON.
+- Updated dependencies: @maskera/core@0.3.1 (the +46(0) phone format).
+
 ## 0.4.0
 
 ### Minor Changes
