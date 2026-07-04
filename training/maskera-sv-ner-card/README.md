@@ -28,8 +28,16 @@ a Swedish-first, client-side PII redaction toolkit. The deterministic stuff
 maskera's rule layer; this model only fills the gaps rules can't: names and
 places in running text.
 
-It runs **fully in the browser** via [Transformers.js](https://huggingface.co/docs/transformers.js)
-/ ONNX Runtime Web: no server, no data leaves the device.
+All inference happens **on the device where the text is**, via
+[Transformers.js](https://huggingface.co/docs/transformers.js) / ONNX Runtime
+(browser, Node, Electron): nothing is sent to any server. At ~40 MB it is
+small enough to run **directly in a browser tab**, which is exactly how the
+maskera demo ships.
+
+Benchmarked against the public Swedish NER alternatives (KB-NER,
+RecordedFuture, KBLab reallysimple/lowermix, scandi-ner, the sbx PI-detection
+pair), it has the **best typed F1 on independent Swedish text of all models
+tested, at under a tenth of their size**; see [How it compares](#how-it-compares).
 
 - **Base model:** [KB/bert-base-swedish-cased](https://huggingface.co/KB/bert-base-swedish-cased) (KB-BERT, CC0), 6 transformer layers
 - **Task:** token classification (BIO), entity types `PER`, `LOC`, `ORG`, `ADR`
@@ -62,7 +70,7 @@ Three ONNX variants are published so you can trade size for quality:
 
 | `dtype`  | file                       | size    | notes                          |
 | -------- | -------------------------- | ------- | ------------------------------ |
-| `"q4"`   | `onnx/model_q4.onnx`       | ~38 MB  | default, fastest, smallest     |
+| `"q4"`   | `onnx/model_q4.onnx`       | ~40 MB  | default, fastest, smallest     |
 | `"q8"`   | `onnx/model_quantized.onnx`| ~55 MB  | int8, better quality           |
 | `"fp32"` | `onnx/model.onnx`          | ~220 MB | full precision, best quality   |
 
@@ -146,6 +154,40 @@ in-distribution and is NOT used as the independent measure. A larger
 independent gold set is the top data TODO. Harnesses live in the
 [maskera repo](https://github.com/joelhagvall/maskera) (`packages/ner/eval`
 and `training/`); run them yourself before relying on the numbers.
+
+## How it compares
+
+Every public Swedish NER alternative, measured on the same gold sets
+(2026-07-04, overlap matching, PER / LOC / ORG; full method, all three test
+sets and honest caveats in
+[docs/BENCHMARKS.md](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md),
+which wins on any disagreement):
+
+| Model (gold-real, independent text)                | Size    | Typed F1 |
+| -------------------------------------------------- | ------- | -------- |
+| **maskera-sv-ner**                                  | **~40 MB** | **0.96** |
+| KBLab bert-base-swedish-lowermix-reallysimple-ner   | ~475 MB | 0.94     |
+| nbailab-base-ner-scandi                             | ~500 MB | 0.94     |
+| KB/bert-base-swedish-cased-ner                      | ~475 MB | 0.92     |
+| KBLab bert-base-swedish-cased-reallysimple-ner      | ~475 MB | 0.91     |
+| RecordedFuture/Swedish-NER                          | ~500 MB | 0.88     |
+| sbx KB-bert PI-detection (general / detailed)       | ~475 MB | 0.10 / 0.19 |
+
+The alternatives run fine on a local machine too; the practical difference is
+that at 10x the size none of them can ship inside a web app or to thin
+clients, which is where maskera puts the redaction: on the device where the
+text already is.
+
+On **lowercased chat-style text** (no capitalisation cues) the cased-only
+models collapse (KB-NER falls to 0.35); maskera-sv-ner holds 0.86 thanks to
+its casing augmentation, second only to KBLab's lowermix (0.90), which is
+trained on mixed-case text specifically. None of the alternatives detects
+street addresses (`ADR`) or fits in a browser tab.
+
+The maskera row is the fp32 student graded by the same Python harness as the
+others; the shipped q4 artifact costs roughly 0.01 overlap F1 on top. The sbx
+models target a different PI label scheme, so their number reflects scheme
+mismatch on PER/LOC/ORG rather than general quality.
 
 ## License & attribution
 
