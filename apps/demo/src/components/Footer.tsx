@@ -20,6 +20,13 @@ export function Footer({ onTransparency }: { onTransparency: () => void }) {
         </a>
         .
       </p>
+      <p className="footer-row">
+        Byggd av{" "}
+        <a href="https://joelhagvall.com" target="_blank" rel="noreferrer">
+          Joel Hägvall
+        </a>
+        .
+      </p>
     </footer>
   )
 }
