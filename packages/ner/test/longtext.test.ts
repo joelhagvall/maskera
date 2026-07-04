@@ -70,7 +70,6 @@ describe("long-text chunking", () => {
     expect(calls.length).toBe(1)
     expect(out.map((d) => d.value)).toEqual(["Anna"])
   })
-
 })
 // The no-tokenizer fallback (single pass, previous behaviour) is covered by
 // denylist.test.ts, whose mocked pipeline has no .tokenizer.
