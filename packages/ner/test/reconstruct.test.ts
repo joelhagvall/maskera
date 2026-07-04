@@ -148,6 +148,28 @@ describe("reconstruct", () => {
     expect(out).toEqual([])
   })
 
+  it("keeps positions exact when lowercasing would change string length", () => {
+    // "İ".toLowerCase() is TWO code units (i + combining dot). If positions
+    // are computed on a naively lowered string they drift against the
+    // original and the entity is silently dropped, i.e. leaked.
+    const text = "İİİİ heter Anna sa han."
+    const out = reconstruct(text, [tok("B-PER", "Anna", 3)], labelMap, 0.5)
+    expect(out).toHaveLength(1)
+    expect(text.slice(out[0]?.start, out[0]?.end)).toBe("Anna")
+  })
+
+  it("locates an entity that itself contains İ", () => {
+    const text = "kontakta İlker Aydın imorgon"
+    const out = reconstruct(
+      text,
+      [tok("B-PER", "İlker", 2), tok("I-PER", "Aydın", 3)],
+      labelMap,
+      0.5,
+    )
+    expect(out).toHaveLength(1)
+    expect(text.slice(out[0]?.start, out[0]?.end)).toBe(out[0]?.value)
+  })
+
   it("drops groups below minScore", () => {
     const text = "Kanske Anna kommer."
     const out = reconstruct(text, [tok("B-PER", "Anna", 2, 0.3)], labelMap, 0.5)
