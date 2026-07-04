@@ -632,7 +632,8 @@ const org = () => (chance(0.3) ? INSTITUTION() : pick(ORGS))
 // v4 never saw them and dropped the whole entity. Swedish genitive appends
 // "s" with no apostrophe; names already ending in s/x/z stay bare.
 const genitive = (name) => (/[sxz]$/i.test(name) ? name : `${name}s`)
-const personGenitive = () => genitive(chance(0.5) ? pick(FIRST) : `${pick(FIRST)} ${pick(LAST)}`)
+// v9: full-name share up from 0.5; v5 still dropped capitalized "Anna Karlssons".
+const personGenitive = () => genitive(chance(0.35) ? pick(FIRST) : `${pick(FIRST)} ${pick(LAST)}`)
 const orgGenitive = () => genitive(pick(ORGS))
 
 const SLOTS = {
@@ -783,6 +784,23 @@ const TEMPLATES = [
   "Betalning sker till bankgiro 5051-6905 senast förfallodagen.",
   "Ange bankgiro eller plusgiro på fakturan.",
   "Beloppet dras från ditt konto den 25:e varje månad.",
+  // v9: casing/chat round. Stress testing v5 found: capitalized full-name
+  // genitive dropped ("Anna Karlssons journal"), bare lowercase first name
+  // mid-chat leaked ("det är fatima igen"), ALL CAPS names leaked, and chat
+  // greetings ("tjena", "hejhej") were tagged as PER.
+  "{PERG} journal ska uppdateras efter besöket.",
+  "{PERG} ansökan beviljades i onsdags.",
+  "{PERG} leverans är försenad igen.",
+  "{PERG} ärende avslutas vid månadsskiftet.",
+  "tjena, det är {PER} igen, har ni hittat mitt paket?",
+  "hejhej {PER} här, jag ringde igår om fakturan.",
+  "hej det är {PER} från {ORG}, återkommer om offerten.",
+  "det är {PER} igen, tredje gången jag hör av mig nu.",
+  "tjena, kan ni hjälpa mig med en faktura?",
+  "hejhej, ville bara kolla status på mitt ärende.",
+  "yo, funkar swish-betalningen igen eller?",
+  "Ring {PER} omgående om leveransen.",
+  "KONTAKTA {PER} INNAN FREDAG.",
   // v7: genitive entities, which a stress test showed v4 dropped entirely.
   "{PERG} bil står felparkerad utanför {ADR}.",
   "Det är {PERG} ansvar att meddela {ORG}.",
@@ -834,9 +852,10 @@ function buildExample() {
     // ALL CAPS), and v4 collapsed on both. Whole-sentence variants teach the
     // model to rely on context, not capitalisation, for entity cues.
     const r = rand()
-    if (r < 0.12) {
+    // v9: lowercase 0.12 -> 0.16, caps 0.03 -> 0.05 (chat/caps leaks in v5).
+    if (r < 0.16) {
       for (let k = 0; k < tokens.length; k++) tokens[k] = tokens[k].toLowerCase()
-    } else if (r < 0.15) {
+    } else if (r < 0.21) {
       for (let k = 0; k < tokens.length; k++) tokens[k] = tokens[k].toUpperCase()
     } else if (chance(0.2) && tags[0] === "O") {
       tokens[0] = tokens[0].toLowerCase()
