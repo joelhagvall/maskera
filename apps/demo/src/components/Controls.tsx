@@ -26,7 +26,7 @@ function ModelStatus({
   }
   return (
     <div className="status">
-      <span className={`dot ${status}`} />
+      <span className={`dot ${status}${analyzing ? " analyzing" : ""}`} aria-hidden="true" />
       {status === "ready" && (
         <span>maskeras AI-modell aktiv{analyzing ? " · analyserar…" : ""}</span>
       )}
