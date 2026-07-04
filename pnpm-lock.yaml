@@ -73,6 +73,12 @@ importers:
         specifier: ^6.0.3
         version: 6.4.3(@types/node@26.0.1)
 
+  examples:
+    dependencies:
+      '@maskera/core':
+        specifier: workspace:*
+        version: link:../packages/core
+
   packages/core:
     devDependencies:
       fast-check:

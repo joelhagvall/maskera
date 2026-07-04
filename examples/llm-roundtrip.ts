@@ -4,10 +4,10 @@
  * The model never sees real personal data — only stable placeholders it can
  * reason about. We map its answer back locally.
  *
- *   pnpm -C packages/core build
+ *   pnpm install && pnpm -C packages/core build
  *   node --experimental-strip-types examples/llm-roundtrip.ts
  */
-import { redact } from "../packages/core/src/index"
+import { redact } from "@maskera/core"
 
 const userMessage =
   "Hej, jag heter Anna Karlsson, personnummer 19900101-0017, " +
