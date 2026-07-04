@@ -32,7 +32,7 @@ All inference happens **on the device where the text is**, via
 [Transformers.js](https://huggingface.co/docs/transformers.js) / ONNX Runtime
 (browser, Node, Electron): nothing is sent to any server. At ~40 MB it is
 small enough to run **directly in a browser tab**, which is exactly how the
-maskera demo ships.
+maskera demo ships: try it live at [maskera.dev](https://maskera.dev).
 
 Benchmarked against the public Swedish NER alternatives (KB-NER,
 RecordedFuture, KBLab reallysimple/lowermix, scandi-ner, the sbx PI-detection
