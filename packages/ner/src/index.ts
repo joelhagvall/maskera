@@ -123,6 +123,18 @@ export const DEFAULT_DENYLIST: ReadonlySet<string> = new Set([
   "goddag",
   "mvh",
   "hälsningar",
+  // time words and transport/tech nouns the model tags as PER/ORG in
+  // name-like slots ("Ring Anna imorgon", "buss 070", "från IP 85.x")
+  "imorgon",
+  "idag",
+  "igår",
+  "imorse",
+  "inatt",
+  "buss",
+  "bussen",
+  "tåg",
+  "tåget",
+  "ip",
 ])
 
 export interface NerOptions {
@@ -218,7 +230,11 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
     async detect(text: string): Promise<Detection[]> {
       const pipe = await load()
       const raw = await pipe(text, { aggregation_strategy: "none" })
-      const detections = reconstruct(text, raw, labelMap, minScore)
+      // A single-character span is never meaningful PII on its own (the model
+      // tags "Q" in "Q3" as ORG); masking it just mangles the word around it.
+      const detections = reconstruct(text, raw, labelMap, minScore).filter(
+        (d) => d.value.length > 1,
+      )
       if (!denySet) return detections
       return detections.filter((d) => !denySet.has(d.value.toLowerCase()))
     },
