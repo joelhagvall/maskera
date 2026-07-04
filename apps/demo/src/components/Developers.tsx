@@ -130,33 +130,16 @@ restore(svar)
 // platshållarna byts tillbaka mot originalen, lokalt`}
           </Code>
 
-          <h2>Bara reglerna, utan modell</h2>
-          <p className="prose-note">
-            Behöver du ingen AI-modell? <code>@maskera/core</code> är regellagret ensamt: allt med
-            bestämt format (personnummer, IBAN, kortnummer, telefon med mera), noll beroenden, några
-            kB. Fristående namn och platser i löptext kräver modellen ovan.
-          </p>
-          <Code>
-            {`npm install @maskera/core
-# bara reglerna, noll beroenden`}
-          </Code>
-          <Code>
-            {`import { redact } from "@maskera/core"
-
-const { text } = redact("Ring mig på 070-123 45 67, pnr 19900101-0017")
-// "Ring mig på [PHONE_1], pnr [PERSONNUMMER_1]"`}
-          </Code>
-
           <p className="prose-foot">
-            Paketen finns på npm:{" "}
-            <a href={NPM_CORE} target="_blank" rel="noreferrer">
-              <code>@maskera/core</code>
-            </a>{" "}
-            och{" "}
+            Paketet finns på npm:{" "}
             <a href={NPM_NER} target="_blank" rel="noreferrer">
               <code>maskera</code>
             </a>
-            . Fullständig dokumentation, benchmarks och all källkod finns på{" "}
+            . Behöver du bara regellagret, utan AI-modell, finns{" "}
+            <a href={NPM_CORE} target="_blank" rel="noreferrer">
+              <code>@maskera/core</code>
+            </a>{" "}
+            (noll beroenden). Fullständig dokumentation, benchmarks och all källkod finns på{" "}
             <a href={GITHUB} target="_blank" rel="noreferrer">
               GitHub
               <ArrowUpRightIcon size={13} />
