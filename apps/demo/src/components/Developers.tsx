@@ -111,7 +111,8 @@ export function Developers({ onBack }: { onBack: () => void }) {
           <Code>
             {`import { createNerRecognizer, redactWithNer } from "maskera"
 
-const recognizer = createNerRecognizer() // maskeras svenska modell, ca 40 MB, körs lokalt
+// maskeras svenska modell, ca 40 MB, körs lokalt
+const recognizer = createNerRecognizer()
 
 const { text, restore } = await redactWithNer(
   "hej jag heter anna karlsson, personnummer 19900101-0017, och bor i uppsala",
