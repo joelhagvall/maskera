@@ -2,7 +2,8 @@
 
 > Swedish-first, client-side PII redaction: mask personal data before text
 > reaches an LLM, restore it in the answer. Nothing leaves the device.
-> [Repo & demo](https://github.com/joelhagvall/maskera).
+> [Live demo: maskera.dev](https://maskera.dev) ·
+> [Repo on GitHub](https://github.com/joelhagvall/maskera).
 
 Two layers, one import. Deterministic rule detectors handle *structured* PII
 (personnummer, org-nr, IBAN, card, phone, ...), and a small Swedish

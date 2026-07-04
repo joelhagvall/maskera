@@ -1,7 +1,9 @@
 # @maskera/core
 
 Swedish-first, **zero-dependency** PII detection & redaction. Runs in the
-browser, Node, and edge runtimes. Part of [maskera](https://github.com/joelhagvall/maskera).
+browser, Node, and edge runtimes. Part of
+[maskera](https://github.com/joelhagvall/maskera), live demo at
+[maskera.dev](https://maskera.dev).
 
 ```bash
 pnpm add @maskera/core
