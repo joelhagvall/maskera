@@ -123,6 +123,31 @@ describe("reconstruct", () => {
     expect(out).toEqual([])
   })
 
+  it("widens over a trailing genitive s (Anna Karlssons must not leak)", () => {
+    // The vocab-trimmed model stops before the possessive s; the whole-word
+    // guard used to reject the span wholesale and leak the full name.
+    const text = "Anna Karlssons journal ska uppdateras."
+    const out = reconstruct(
+      text,
+      [tok("B-PER", "Anna", 1), tok("I-PER", "Karlsson", 2)],
+      labelMap,
+      0.5,
+    )
+    expect(out).toEqual([{ start: 0, end: 14, value: "Anna Karlssons", label: "PERSON" }])
+  })
+
+  it("widens over a lowercase genitive s too", () => {
+    const text = "det är annas bil som står utanför"
+    const out = reconstruct(text, [tok("B-PER", "anna", 3)], labelMap, 0.5)
+    expect(out[0]).toMatchObject({ value: "annas", label: "PERSON" })
+  })
+
+  it("still rejects a prefix of a genuinely different word (Lars in Larssons)", () => {
+    const text = "Larssons väg är lång."
+    const out = reconstruct(text, [tok("B-PER", "Lars", 1)], labelMap, 0.5)
+    expect(out).toEqual([])
+  })
+
   it("drops groups below minScore", () => {
     const text = "Kanske Anna kommer."
     const out = reconstruct(text, [tok("B-PER", "Anna", 2, 0.3)], labelMap, 0.5)

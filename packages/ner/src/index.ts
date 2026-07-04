@@ -313,12 +313,19 @@ export function reconstruct(
         // whole word is redacted instead of leaked; lone fragments inside a
         // longer word are still rejected by isWholeWord below.
         while (start > 0 && LETTER.test(text[start - 1] ?? "")) start--
+        let end = span.end
+        // Swedish genitive: the (vocab-trimmed) model can stop right before
+        // the possessive s ("Anna Karlsson" inside "Anna Karlssons"), and the
+        // whole-word guard would then reject the span and leak the full name.
+        // If exactly one s remains to the word boundary, take it. Anything
+        // longer is a genuinely different word and still gets rejected.
+        if ((text[end] === "s" || text[end] === "S") && !LETTER.test(text[end + 1] ?? "")) end++
         const soloFragment = group.length === 1 && (group[0]?.word.startsWith("##") ?? false)
-        if (!soloFragment && isWholeWord(text, start, span.end)) {
+        if (!soloFragment && isWholeWord(text, start, end)) {
           const label = labelMap(base)
           if (label) {
-            out.push({ start, end: span.end, value: text.slice(start, span.end), label })
-            cursor = span.end
+            out.push({ start, end, value: text.slice(start, end), label })
+            cursor = end
           }
         }
       }

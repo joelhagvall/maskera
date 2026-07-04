@@ -289,6 +289,31 @@ silencing the trim/quant steps in run scripts, and gate a run on the QUANTIZED
 artifact's gold-real recall (the fp32 student's score is not the thing that
 ships).
 
+### v7 casing/chat round (2026-07-04): two targets hit, gate said no, and the real genitive fix was in the pipeline
+
+Ran the seeded pipeline on the v9 data round (more sentence-initial full-name
+genitives, greeting hard negatives, bare-name chat turns, lowercase
+augmentation 0.16 / caps 0.05). Outcome: the two chat leaks were fixed at the
+weight level ("RING LARS NORDSTRÖM" all-caps and bare lowercase "fatima" are
+now caught, greetings no longer tag as PER), but the gate failed at 0.90
+gold-real recall (floor 0.90, v5 measures 0.95) and the curated corpus showed
+6 leaks vs v5's. Not shipped; v5 stays.
+
+The stubborn one, capitalized full-name genitive, turned out not to be a
+model problem at all. Bisection: the teacher AND the full student catch "Anna
+Karlssons", but the VOCAB-TRIMMED student stops one character short ("Anna
+Karlsson"), and reconstruct()'s whole-word guard then rejected the span
+wholesale, leaking the entire name. Fixed in @maskera/ner reconstruct: if
+exactly one possessive s remains to the word boundary, widen over it (the
+mirror of the existing start-widening for "dr Svensson"). With that fix the
+ALREADY PUBLISHED v5 artifact measures its best numbers yet on the curated
+corpus: span F1 96.6, precision 95.2, recall 98.0, leaks 1 of 197 (Klarna).
+
+Lesson: bisect teacher -> student -> trimmed -> quantized before blaming the
+model; two of this project's three "model" bugs so far lived in the pipeline.
+The all-caps and bare-name cases are now graded in the gold corpus, so the
+round that does ship them will show up in CI.
+
 `eval/gold-real.txt` is 22 verbatim sentences from public Swedish Wikipedia
 (Stefan Löfven, Spotify): **real prose written by others**, hand-labelled
 (gold). It removes WikiANN's silver/noisy-label caveat. PER/LOC/ORG only.

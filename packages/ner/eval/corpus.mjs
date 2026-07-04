@@ -771,6 +771,17 @@ export const corpus = [
     text: "Det är Anna Karlssons bil som står där.",
     entities: [{ value: "Anna Karlssons", label: "PERSON" }],
   },
+  // Two more leaks from the 2026-07-04 stress test, graded so future rounds
+  // are measured on them: an ALL CAPS name in a caps sentence, and a bare
+  // lowercase first name in a chat turn.
+  {
+    text: "VIKTIGT: RING LARS NORDSTRÖM OMGÅENDE IDAG.",
+    entities: [{ value: "LARS NORDSTRÖM", label: "PERSON" }],
+  },
+  {
+    text: "hejhej det är fatima igen, hör av dig när du kan",
+    entities: [{ value: "fatima", label: "PERSON" }],
+  },
   {
     text: "Anna Karlssons personnummer finns i akten.",
     entities: [{ value: "Anna Karlssons", label: "PERSON" }],
