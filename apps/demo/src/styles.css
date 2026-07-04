@@ -208,7 +208,21 @@ body {
   font-weight: 500;
 }
 .dot.ready {
-  background: var(--fg);
+  background: #15803d;
+}
+.dot.ready.analyzing {
+  animation: dot-pulse 1.1s ease-in-out infinite;
+}
+@keyframes dot-pulse {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dot.ready.analyzing {
+    animation: none;
+  }
 }
 .dot.error {
   background: #b45309;
