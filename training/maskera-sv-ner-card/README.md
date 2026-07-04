@@ -119,20 +119,21 @@ const out = await ner("Anna Lindqvist bor i Göteborg.")
 
 The canonical, dated benchmark tables live in the maskera repo:
 [`docs/BENCHMARKS.md`](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md).
-Numbers below are copied from there (measured 2026-07-03, `dtype="q4"`,
+Numbers below are copied from there (measured 2026-07-04, `dtype="q4"`,
 **exact-span matching**, via the shipped `maskera` pipeline); when they
 disagree, BENCHMARKS.md wins.
 
-Curated maskera corpus (139 hand-authored sentences, 197 free-text PER/LOC/ORG
-entities, incl. 25 hard negatives and all-lowercase / ALL CAPS / genitive hard
-cases). Clean, well-formed sentences that share an author with the training
-generator, so treat it as an upper bound and regression tracker:
+Curated maskera corpus (148 hand-authored sentences, 204 free-text PER/LOC/ORG
+entities, incl. hard negatives and all-lowercase / ALL CAPS / genitive hard
+cases, two of which the model is known to miss, graded honestly). Clean,
+well-formed sentences that share an author with the training generator, so
+treat it as an upper bound and regression tracker:
 
 | metric    | score | meaning                                  |
 | --------- | ----- | ---------------------------------------- |
-| precision | 95.0% | of predictions, how many were correct    |
+| precision | 95.2% | of predictions, how many were correct    |
 | recall    | 97.5% | of real entities, how many were found    |
-| span F1   | 96.2% | harmonic mean, label-agnostic            |
+| span F1   | 96.4% | harmonic mean, label-agnostic            |
 | leaks     | 1.0%  | entities missed entirely (the safety number) |
 
 Independent gold set (22 sentences of real Swedish Wikipedia prose,
@@ -141,10 +142,10 @@ directional independent floor:
 
 | metric    | score | meaning                                  |
 | --------- | ----- | ---------------------------------------- |
-| precision | 89.8% | of predictions, how many were correct    |
-| recall    | 91.4% | of real entities, how many were found    |
-| span F1   | 90.6% | harmonic mean, label-agnostic            |
-| leaks     | 3.4%  | entities missed entirely                 |
+| precision | 90.0% | of predictions, how many were correct    |
+| recall    | 93.1% | of real entities, how many were found    |
+| span F1   | 91.5% | harmonic mean, label-agnostic            |
+| leaks     | 1.7%  | entities missed entirely                 |
 
 The model is trained on synthetic Swedish (with whole-sentence lowercase,
 ALL CAPS and genitive augmentation, since chat users type lowercase) plus the

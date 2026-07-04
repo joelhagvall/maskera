@@ -5,30 +5,33 @@ Every other document (README, Hugging Face model card, transparency page,
 training notes) links here instead of copying tables. If a number elsewhere
 disagrees with this file, this file wins and the other document has drifted.
 
-- **Measured:** 2026-07-03
+- **Measured:** 2026-07-04
 - **Artifact:** [`joelhagvall/maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner),
   `onnx/model_q4.onnx` (`dtype: "q4"`, the default and what the demo ships),
   sha256 `f34aa2d9e2272aa8cadded3ff819827d858cb5ab07c9b40f2bc4d1d147dd5625`
+  (unchanged; the 2026-07-04 gains come from the pipeline, not new weights)
 - **Pipeline:** the shipped `maskera` path (model + `reconstruct()`
-  post-processing), graded by [`packages/ner/eval/run-eval.mjs`](../packages/ner/eval/run-eval.mjs)
+  post-processing), `maskera@0.4.1`, graded by
+  [`packages/ner/eval/run-eval.mjs`](../packages/ner/eval/run-eval.mjs)
 - **Matching:** exact character span. This is the strict harness CI gates on;
   see [method notes](#method-notes) for why older overlap-based numbers read higher.
 
 ## Curated corpus (upper bound, regression tracker)
 
-139 hand-authored Swedish sentences, 197 free-text entities
-(PERSON / LOCATION / ORGANIZATION), including 25 hard negatives and
-all-lowercase / ALL CAPS / genitive hard cases. It shares an author with the
-training-data generator, so read it as an **upper bound and regression
-tracker**, not a universal score.
+148 hand-authored Swedish sentences, 204 free-text entities
+(PERSON / LOCATION / ORGANIZATION), including hard negatives and
+all-lowercase / ALL CAPS / genitive hard cases (the 2026-07-04 additions come
+from an npm-user-input stress test, including two cases the model is KNOWN to
+miss, graded honestly). It shares an author with the training-data generator,
+so read it as an **upper bound and regression tracker**, not a universal score.
 
 | metric     | score | meaning                                        |
 | ---------- | ----- | ---------------------------------------------- |
-| precision  | 95.0% | of predictions, how many were correct          |
+| precision  | 95.2% | of predictions, how many were correct          |
 | recall     | 97.5% | of real entities, how many were found          |
-| span F1    | 96.2% | harmonic mean, label-agnostic                  |
-| labeled F1 | 95.2% | same, but the label must also be right         |
-| leaks      | 1.0%  | entities missed entirely, 2 of 197 (the safety number) |
+| span F1    | 96.4% | harmonic mean, label-agnostic                  |
+| labeled F1 | 95.4% | same, but the label must also be right         |
+| leaks      | 1.0%  | entities missed entirely, 2 of 204 (the safety number) |
 
 Reproduce (downloads the published model from the Hub):
 
@@ -46,11 +49,11 @@ than the support/healthcare/legal text maskera targets, so read it as a
 
 | metric     | score | meaning                                        |
 | ---------- | ----- | ---------------------------------------------- |
-| precision  | 89.8% | of predictions, how many were correct          |
-| recall     | 91.4% | of real entities, how many were found          |
-| span F1    | 90.6% | harmonic mean, label-agnostic                  |
-| labeled F1 | 90.6% | same, but the label must also be right         |
-| leaks      | 3.4%  | entities missed entirely, 2 of 58              |
+| precision  | 90.0% | of predictions, how many were correct          |
+| recall     | 93.1% | of real entities, how many were found          |
+| span F1    | 91.5% | harmonic mean, label-agnostic                  |
+| labeled F1 | 91.5% | same, but the label must also be right         |
+| leaks      | 1.7%  | entities missed entirely, 1 of 58              |
 
 Reproduce:
 
