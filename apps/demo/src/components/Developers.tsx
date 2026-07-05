@@ -6,14 +6,13 @@ import { ArrowUpRightIcon, CheckIcon, CopyIcon, MaskeraMark } from "../icons"
 const TOKEN =
   /(\/\/[^\n]*|#[^\n]*)|("(?:[^"\\]|\\.)*")|\b(import|from|const|await)\b|([A-Za-z_$][\w$]*)(?=\()/g
 
-/** Tiny syntax highlighter for the static snippets below. */
-function Code({ children }: { children: string }) {
-  const src = children
+function highlight(line: string): ReactNode[] {
   const nodes: ReactNode[] = []
   let last = 0
-  let m = TOKEN.exec(src)
+  TOKEN.lastIndex = 0
+  let m = TOKEN.exec(line)
   while (m) {
-    if (m.index > last) nodes.push(src.slice(last, m.index))
+    if (m.index > last) nodes.push(line.slice(last, m.index))
     const cls = m[1] ? "tok-c" : m[2] ? "tok-s" : m[3] ? "tok-k" : "tok-f"
     nodes.push(
       <span key={m.index} className={cls}>
@@ -21,9 +20,18 @@ function Code({ children }: { children: string }) {
       </span>,
     )
     last = m.index + m[0].length
-    m = TOKEN.exec(src)
+    m = TOKEN.exec(line)
   }
-  if (last < src.length) nodes.push(src.slice(last))
+  if (last < line.length) nodes.push(line.slice(last))
+  return nodes
+}
+
+/** Tiny syntax highlighter for the static snippets below. */
+function Code({ children }: { children: string }) {
+  const src = children
+  // One block element per source line: on mobile, wrapped continuations get
+  // a hanging indent so a long command reads as one line, not as cut off.
+  const lines = src.split("\n")
   // Copy the runnable part only: comment-only lines are display guidance
   // ("# allt i ett: ..."), not something to paste into a terminal.
   const copyText = src
@@ -38,7 +46,14 @@ function Code({ children }: { children: string }) {
   return (
     <div className="code-block">
       <pre>
-        <code>{nodes}</code>
+        <code>
+          {lines.map((line, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static content, never reorders
+            <span key={i} className="code-line">
+              {highlight(line)}
+            </span>
+          ))}
+        </code>
       </pre>
       <CopyButton text={copyText} />
     </div>
