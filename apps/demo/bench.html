@@ -1,0 +1,14 @@
+<!doctype html>
+<!-- Latency bench page. Not part of the deployed site: only built when
+     BENCH=1 (see vite.config.ts), driven headlessly by
+     scripts/bench-browser.mjs. Results land in docs/BENCHMARKS.md. -->
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <title>maskera latency bench</title>
+  </head>
+  <body>
+    <pre id="out">running…</pre>
+    <script type="module" src="/src/bench.ts"></script>
+  </body>
+</html>
