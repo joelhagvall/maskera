@@ -22,8 +22,6 @@ only want the zero-dependency rule layer. Core's entire API is re-exported
 here, so one import covers rules and model alike:
 `import { redact, redactWithNer } from "maskera"`.
 
-> Renamed from `@maskera/ner` in 0.3.0: same code, same API, same model.
-
 ## Usage
 
 ```ts
