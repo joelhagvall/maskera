@@ -102,3 +102,42 @@ console.log(
     chars / texts.length / warm.mean,
   )} kchars/s warm`,
 )
+
+// --- Longer inputs (support tickets, transcripts). Inputs past BERT's
+// 512-token window are split into overlapping chunks (see runChunk in
+// src/index.ts), so latency should grow roughly linearly with length;
+// this section verifies that instead of asserting it. Texts are built by
+// concatenating corpus sentences, rotating the start sentence per sample
+// so no two samples are identical.
+const LONG_TARGETS = [500, 2000, 10000]
+const LONG_SAMPLES = 20
+
+function buildLongText(targetChars, startIdx) {
+  const parts = []
+  let len = 0
+  for (let i = startIdx; len < targetChars; i++) {
+    const t = texts[i % texts.length]
+    parts.push(t)
+    len += t.length + 1
+  }
+  return parts.join(" ")
+}
+
+console.log("\n=== longer inputs (warm, chunked past 512 tokens) ===")
+for (const target of LONG_TARGETS) {
+  const samples = []
+  let actualChars = 0
+  for (let i = 0; i < LONG_SAMPLES; i++) {
+    const text = buildLongText(target, i * 7)
+    actualChars += text.length
+    const s = performance.now()
+    await recognizer.detect(text)
+    samples.push(performance.now() - s)
+  }
+  const st = stats(samples)
+  console.log(
+    `~${target} chars (avg ${Math.round(actualChars / LONG_SAMPLES)}): median ${ms(
+      st.median,
+    )}   p95 ${ms(st.p95)}   mean ${ms(st.mean)}   (n=${LONG_SAMPLES})`,
+  )
+}

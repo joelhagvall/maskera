@@ -141,6 +141,28 @@ Cache Storage).
 | Node (onnxruntime native, cpu) | 0.21 s | 3.5 ms / 5.1 ms | server-side |
 | Rules only (`@maskera/core`) | none | ~0.002 ms | no model, no network capability |
 
+### Longer inputs
+
+The per-sentence figures above cover the chat-message case (average 46
+chars). Longer inputs (support tickets, transcripts) are split into
+overlapping chunks past BERT's 512-token window (`runChunk` in
+`packages/ner/src/index.ts`), so latency grows roughly linearly with
+length. Measured 2026-07-05, same machine, Node (onnxruntime native, cpu),
+warm, on texts built by concatenating curated-corpus sentences (n=20 per
+length):
+
+| Input length | Warm (median / p95) |
+| ------------ | ------------------- |
+| ~500 chars | 18 ms / 25 ms |
+| ~2,000 chars | 75 ms / 94 ms |
+| ~10,000 chars | 428 ms / 458 ms |
+
+The same benchmark script prints these rows (`=== longer inputs ===`). The
+other environments have not been measured at these lengths; since chunking
+just multiplies the number of model passes, expect them to scale roughly
+proportionally to their per-sentence figures (browser WASM at ~14x the
+native CPU time, WebGPU at parity).
+
 Reproduce:
 
 ```bash
