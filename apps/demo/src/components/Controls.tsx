@@ -27,9 +27,7 @@ function ModelStatus({
   return (
     <div className="status">
       <span className={`dot ${status}${analyzing ? " analyzing" : ""}`} aria-hidden="true" />
-      {status === "ready" && (
-        <span>maskeras AI-modell aktiv</span>
-      )}
+      {status === "ready" && <span>maskeras AI-modell aktiv</span>}
       {status === "error" && <span>AI-modellen kunde inte laddas</span>}
     </div>
   )
