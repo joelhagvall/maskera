@@ -1,4 +1,5 @@
 import { GITHUB, HF_MODEL } from "../constants"
+import { navClick, viewPaths } from "../routing"
 
 export function Footer({ onTransparency }: { onTransparency: () => void }) {
   return (
@@ -11,9 +12,9 @@ export function Footer({ onTransparency }: { onTransparency: () => void }) {
         , allt körs i din webbläsare. Ingen data skickas någonstans.
       </p>
       <p className="footer-row">
-        <button type="button" className="footer-link" onClick={onTransparency}>
+        <a className="footer-link" href={viewPaths.transparency} onClick={navClick(onTransparency)}>
           Integritet & transparens
-        </button>{" "}
+        </a>{" "}
         ·{" "}
         <a href="/whitepaper.pdf" target="_blank" rel="noreferrer">
           Whitepaper (PDF)

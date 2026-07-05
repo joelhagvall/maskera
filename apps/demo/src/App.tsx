@@ -6,13 +6,14 @@ import { Header } from "./components/Header"
 import { InputCard } from "./components/InputCard"
 import { OutputCard } from "./components/OutputCard"
 import { Transparency } from "./components/Transparency"
+import { useRoute } from "./routing"
 import { type Scenario, scenarios } from "./scenarios"
 import { useSwedishNer } from "./useSwedishNer"
 
 export function App() {
   const [active, setActive] = useState<Scenario>(scenarios[0])
   const [text, setText] = useState<string>(scenarios[0].text)
-  const [view, setView] = useState<"demo" | "transparency" | "dev">("demo")
+  const { view, navigate } = useRoute()
   const ner = useSwedishNer(text)
 
   // Always land at the top when switching between the demo and the subpages.
@@ -26,13 +27,13 @@ export function App() {
     setText(s.text)
   }
 
-  const goDemo = () => setView("demo")
+  const goDemo = () => navigate("demo")
 
   return (
     <div className="app">
       {view === "demo" && (
         <>
-          <Header onDev={() => setView("dev")} />
+          <Header onDev={() => navigate("dev")} />
           <main>
             <Controls
               activeId={active.id}
@@ -56,7 +57,7 @@ export function App() {
       )}
       {view === "dev" && <Developers onBack={goDemo} />}
       {view === "transparency" && <Transparency onBack={goDemo} />}
-      <Footer onTransparency={() => setView("transparency")} />
+      <Footer onTransparency={() => navigate("transparency")} />
     </div>
   )
 }

@@ -549,6 +549,7 @@ body {
   font: inherit;
   font-size: 13px;
   color: var(--muted);
+  text-decoration: none;
   cursor: pointer;
 }
 .back:hover {
