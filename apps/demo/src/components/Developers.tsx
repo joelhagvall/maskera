@@ -1,6 +1,7 @@
 import { type ReactNode, useRef, useState } from "react"
 import { GITHUB, HF_MODEL, NPM_NER } from "../constants"
 import { ArrowUpRightIcon, CheckIcon, CopyIcon, MaskeraMark } from "../icons"
+import { navClick, viewPaths } from "../routing"
 
 // Order matters: comments win over strings win over keywords/function names.
 const TOKEN =
@@ -100,9 +101,9 @@ export function Developers({ onBack }: { onBack: () => void }) {
           <ArrowUpRightIcon size={13} />
         </a>
       </div>
-      <button type="button" className="back" onClick={onBack}>
+      <a className="back" href={viewPaths.demo} onClick={navClick(onBack)}>
         ← Tillbaka till startsidan
-      </button>
+      </a>
 
       <main>
         <article className="prose">

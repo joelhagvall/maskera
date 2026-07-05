@@ -1,5 +1,6 @@
 import { GITHUB, HF_MODEL } from "../constants"
 import { ArrowUpRightIcon, MaskeraMark } from "../icons"
+import { navClick, viewPaths } from "../routing"
 
 export function Transparency({ onBack }: { onBack: () => void }) {
   return (
@@ -14,9 +15,9 @@ export function Transparency({ onBack }: { onBack: () => void }) {
           <ArrowUpRightIcon size={13} />
         </a>
       </div>
-      <button type="button" className="back" onClick={onBack}>
+      <a className="back" href={viewPaths.demo} onClick={navClick(onBack)}>
         ← Tillbaka till startsidan
-      </button>
+      </a>
 
       <main>
         <article className="prose">

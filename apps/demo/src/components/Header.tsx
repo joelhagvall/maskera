@@ -1,5 +1,6 @@
 import { GITHUB } from "../constants"
 import { ArrowUpRightIcon, MaskeraMark } from "../icons"
+import { navClick, viewPaths } from "../routing"
 
 export function Header({ onDev }: { onDev: () => void }) {
   return (
@@ -10,9 +11,9 @@ export function Header({ onDev }: { onDev: () => void }) {
           maskera
         </span>
         <nav className="head-links">
-          <button type="button" className="ghlink" onClick={onDev}>
+          <a className="ghlink" href={viewPaths.dev} onClick={navClick(onDev)}>
             För utvecklare
-          </button>
+          </a>
           <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
             GitHub
             <ArrowUpRightIcon size={13} />
