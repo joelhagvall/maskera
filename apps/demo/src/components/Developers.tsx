@@ -28,7 +28,7 @@ function highlight(line: string): ReactNode[] {
 }
 
 /** Tiny syntax highlighter for the static snippets below. */
-function Code({ children }: { children: string }) {
+function Code({ children, lang }: { children: string; lang: string }) {
   const src = children
   // One block element per source line. Long lines scroll sideways inside the
   // block (never wrap), so each source line stays on a single visual line.
@@ -46,6 +46,9 @@ function Code({ children }: { children: string }) {
     .trim()
   return (
     <div className="code-block">
+      <span className="code-lang" aria-hidden="true">
+        {lang}
+      </span>
       <pre>
         <code>
           {lines.map((line, i) => (
@@ -118,13 +121,13 @@ export function Developers({ onBack }: { onBack: () => void }) {
           </p>
 
           <h2>Installera</h2>
-          <Code>
+          <Code lang="bash">
             {`npm install maskera @huggingface/transformers
 # regler + AI-modell, hela API:t importeras från maskera`}
           </Code>
 
           <h2>Maskera en text</h2>
-          <Code>
+          <Code lang="ts">
             {`import { createNerRecognizer, redactWithNer } from "maskera"
 
 // maskeras svenska modell, ca 40 MB, körs lokalt
@@ -140,8 +143,13 @@ text
           </Code>
 
           <h2>Skicka till AI-tjänsten och återställ svaret</h2>
-          <Code>
-            {`const svar = await minAiTjanst(text) // tjänsten ser bara platshållarna
+          <Code lang="ts">
+            {`// skicka den maskerade texten till valfri AI
+// (OpenAI, Claude, egen modell ...) — den ser bara platshållarna
+const svar = await fetch("https://api.example.com/chat", {
+  method: "POST",
+  body: JSON.stringify({ prompt: text }),
+}).then((r) => r.text())
 
 restore(svar)
 // platshållarna byts tillbaka mot originalen, lokalt`}

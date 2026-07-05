@@ -657,6 +657,20 @@ body {
   /* Flex item in the mobile column layout: allow it to shrink so the
      horizontal scroll lives inside the block, not on the page. */
   min-width: 0;
+  /* Reserve a top strip for the language label + copy button so neither
+     overlaps the first line of code. */
+  padding-top: 34px;
+}
+.code-lang {
+  position: absolute;
+  top: 10px;
+  left: 16px;
+  z-index: 1;
+  font: 600 10.5px var(--sans);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  user-select: none;
 }
 .prose pre code {
   display: block;
@@ -685,6 +699,11 @@ body {
     order: -1;
     align-self: flex-end;
     margin-bottom: 8px;
+  }
+  /* The copy button now owns the top strip; the language label sits on that
+     same row (left side), so the code no longer needs reserved top padding. */
+  .code-block pre {
+    padding-top: 14px;
   }
 }
 .tok-k {
