@@ -8,7 +8,9 @@ export function Footer({ onTransparency }: { onTransparency: () => void }) {
         <a href={HF_MODEL} target="_blank" rel="noreferrer">
           en egentränad svensk AI-modell
         </a>
-        , allt körs i din webbläsare. Ingen data skickas någonstans.{" "}
+        , allt körs i din webbläsare. Ingen data skickas någonstans.
+      </p>
+      <p className="footer-row">
         <button type="button" className="footer-link" onClick={onTransparency}>
           Integritet & transparens
         </button>{" "}
