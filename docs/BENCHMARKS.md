@@ -124,6 +124,49 @@ Takeaways:
   output, they do not motivate a backbone switch (see the base-model check in
   [training/README.md](../training/README.md)).
 
+## Latency
+
+Measured 2026-07-05 on an Apple M4 Pro (24 GB), Node v25.8.2, Google Chrome
+148, against the curated corpus (148 sentences, average 46 chars). Warm
+figures are per sentence. Browser rows run the production demo bundle with
+the self-hosted model, i.e. exactly what maskera.dev ships; "first visit"
+cold start was measured against localhost, so a real first visit adds the
+network transfer of the ~38 MB model on top (returning visitors read it from
+Cache Storage).
+
+| Environment | Cold start | Warm inference (median / p95) | Notes |
+| ----------- | ---------- | ----------------------------- | ----- |
+| Browser, WASM (demo default) | 0.19 s returning / 1.4 s first visit + download | 50 ms / 58 ms | single-threaded, no GPU needed |
+| Browser, WebGPU | 0.21 s returning; first inference adds ~0.5 s shader compile | 3.7 ms / 4.6 ms | opt-in via `device: "webgpu"` |
+| Node (onnxruntime native, cpu) | 0.21 s | 3.5 ms / 5.1 ms | server-side |
+| Rules only (`@maskera/core`) | none | ~0.002 ms | no model, no network capability |
+
+Reproduce:
+
+```bash
+# Node + rules
+pnpm -C packages/ner build
+MASKERA_REMOTE=1 node packages/ner/eval/bench-latency.mjs
+
+# Browser (needs Chrome; puppeteer-core is deliberately not a repo dep)
+BENCH=1 pnpm --filter demo build
+npm --prefix /tmp/bench install puppeteer-core
+cd apps/demo && NODE_PATH=/tmp/bench/node_modules node scripts/bench-browser.mjs
+DEVICE=webgpu NODE_PATH=/tmp/bench/node_modules node scripts/bench-browser.mjs
+```
+
+## Known misses (published, on purpose)
+
+The three sentences the published artifact is known to miss, graded honestly
+in the tables above. Publishing them is part of the trust model: the eval
+harness prints every leak verbatim, nothing is filtered.
+
+| Corpus | Input | Expected | Status |
+| ------ | ----- | -------- | ------ |
+| curated | "Klarna rekryterade Daniel från Spotify i fjol." | `Klarna` ORGANIZATION | known miss (sentence-initial org reads as a name-like subject; `Daniel` and `Spotify` are caught) |
+| curated | "hejhej det är fatima igen, hör av dig när du kan" | `fatima` PERSON | known miss (all-lowercase chat text, no casing cues; see the lowercased benchmark) |
+| gold-real | "Den 6 mars 2018 besökte Löfven Vita huset och hade sitt första officiella möte med …" | `Vita huset` LOCATION | known miss (metonymic building name; `Löfven` and the rest are caught) |
+
 ## Metric definitions
 
 - **precision / recall / F1** use exact span matching (start and end must both

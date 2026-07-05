@@ -7,6 +7,7 @@
 \usepackage{lmodern}
 \usepackage{microtype}
 \usepackage[margin=32mm,top=30mm,bottom=32mm]{geometry}
+\usepackage{amssymb}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{tikz}
@@ -23,7 +24,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{July 5, 2026 \quad\textperiodcentered\quad Whitepaper v1.2}
+\date{July 5, 2026 \quad\textperiodcentered\quad Whitepaper v1.3}
 
 \begin{document}
 \maketitle
@@ -159,6 +160,24 @@ requests, which suits procurement requirements that no new subprocessors be
 introduced, as well as air-gapped environments. The rule layer has no network
 capability at all.
 
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llll}
+\toprule
+Mode & Network requests & New subprocessors & Best for \\
+\midrule
+Default & static assets once (HF Hub, CDN) & possibly HF/CDN & evaluation, demos \\
+Self-hosted model & caller's own origin only & none & production \\
+Rules only & none & none & logs, pipelines \\
+Air-gapped & none & none & strict environments \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+In every mode, including the default, the requests carry no user content:
+the only things ever fetched are the static model and runtime files.
+
 \section{Model provenance and reproducibility}
 
 In a vendor assessment of AI components, two questions dominate: what was the
@@ -268,6 +287,35 @@ exceptions, are in \pkg{BENCHMARKS.md}. One known exception is reported
 openly: on text entirely without capital letters, KBLab's lowermix model
 leads (typed $F_1$ 0.90 versus maskera's 0.86). None of the alternative
 models detects street addresses or fits in a web application.
+
+\subsection{Latency}
+
+Measured \textbf{2026-07-05} on an Apple M4 Pro laptop against the curated
+corpus (average sentence 46 characters); warm figures are per sentence,
+median and 95th percentile. The browser rows run the production demo bundle
+with the self-hosted model, exactly what maskera.dev ships. A real first
+visit adds the network download of the $\sim$40\,MB model; returning
+visitors read it from the browser cache.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrl}
+\toprule
+Environment & Cold start & Warm (median / p95) & Notes \\
+\midrule
+Browser, WASM (demo default) & 0.19\,s & 50 / 58\,ms & no GPU needed \\
+Browser, WebGPU & 0.21\,s & 3.7 / 4.6\,ms & opt-in, slower first run \\
+Node (native CPU runtime) & 0.21\,s & 3.5 / 5.1\,ms & server-side \\
+Rules only (\pkg{@maskera/core}) & none & $\sim$0.002\,ms & no model, no network \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+In practice: masking a chat message costs tens of milliseconds in the
+browser and single-digit milliseconds on a server, and the deterministic
+rule layer is effectively free. The measurement scripts live in the
+repository, under \pkg{packages/ner/eval/} and \pkg{apps/demo/scripts/}.
 
 \subsection{Continuous verification}
 
@@ -391,6 +439,25 @@ For production use, the project's operations guide
         healthcare, financial decisions).
 \end{itemize}
 
+\subsection{Reviewer checklist}
+
+The same recommendations in checklist form, for pasting into an internal
+security or privacy review:
+
+\begin{itemize}
+  \item[$\square$] Redaction runs \emph{before} the LLM call, the log write,
+        and the analytics event.
+  \item[$\square$] The restore mapping is never logged and never stored next
+        to the redacted text.
+  \item[$\square$] Model files are self-hosted (or \pkg{allowRemoteModels:
+        false} is set); zero external requests confirmed in the network tab.
+  \item[$\square$] On model failure the system fails closed to the rule
+        layer, never open to raw text.
+  \item[$\square$] A domain eval corpus of real (consented) sentences runs in
+        CI, gated on leakage.
+  \item[$\square$] Human review remains in place for high-stakes flows.
+\end{itemize}
+
 \section{Auditing and verification}
 
 Everything claimed in this document can be checked without asking us:
@@ -399,8 +466,10 @@ Everything claimed in this document can be checked without asking us:
   \item \textbf{The code:} MIT-licensed, open in full at
         \url{https://github.com/joelhagvall/maskera}.
   \item \textbf{The model:} published openly on Hugging Face
-        (\pkg{joelhagvall/maskera-sv-ner}) with a model card and artifact
-        hash.
+        (\pkg{joelhagvall/maskera-sv-ner}) with a model card. The shipped
+        artifact is \pkg{onnx/model\_q4.onnx}, SHA-256\\
+        {\footnotesize\texttt{f34aa2d9e2272aa8cadded3ff819827d858cb5ab07c9b40f2bc4d1d147dd5625}};\\
+        the current hash always lives in \pkg{docs/BENCHMARKS.md}.
   \item \textbf{The numbers:} canonical in \pkg{docs/BENCHMARKS.md}, dated,
         and reproducible with documented commands against the published
         model.
@@ -410,9 +479,37 @@ Everything claimed in this document can be checked without asking us:
         tools against the live demo at \url{https://maskera.dev}.
 \end{itemize}
 
+\section*{Appendix: the sentences the model is known to miss}
+
+The evaluation harness prints every leak verbatim and nothing is filtered.
+As of the artifact above, three gold entities across both corpora have no
+overlapping detection; they are published here deliberately. In each
+sentence every other entity is caught.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{p{62mm}llp{34mm}}
+\toprule
+Input & Missed & Type & Reading \\
+\midrule
+``Klarna rekryterade Daniel fr\aa n Spotify i fjol.'' & Klarna & ORG &
+sentence-initial org in subject position \\
+``hejhej det \"ar fatima igen, h\"or av dig n\"ar du kan'' & fatima & PER &
+all-lowercase chat text, no casing cues \\
+``Den 6 mars 2018 bes\"okte L\"ofven Vita huset och hade sitt f\"orsta
+officiella m\"ote med USA:s president Donald Trump.'' & Vita huset & LOC &
+metonymic building name \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+These are also why the rule layer exists and why leakage, not $F_1$, is the
+gated metric: the failure modes are visible, characterised, and tracked in
+the public regression corpus.
+
 \vfill
 \noindent\rule{\textwidth}{0.4pt}\\[0.3em]
-{\footnotesize maskera \textperiodcentered{} whitepaper v1.2
+{\footnotesize maskera \textperiodcentered{} whitepaper v1.3
 \textperiodcentered{} July 5, 2026 \textperiodcentered{} Joel H\"agvall
 \textperiodcentered{} maskera.dev \textperiodcentered{}
 github.com/joelhagvall/maskera. Current numbers always live in
