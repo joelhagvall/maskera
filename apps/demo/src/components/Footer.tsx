@@ -11,7 +11,11 @@ export function Footer({ onTransparency }: { onTransparency: () => void }) {
         , allt körs i din webbläsare. Ingen data skickas någonstans.{" "}
         <button type="button" className="footer-link" onClick={onTransparency}>
           Integritet & transparens
-        </button>
+        </button>{" "}
+        ·{" "}
+        <a href="/whitepaper.pdf" target="_blank" rel="noreferrer">
+          Whitepaper (PDF)
+        </a>
       </p>
       <p className="footer-en" lang="en">
         Swedish PII redaction, on-device. English docs on{" "}

@@ -1,0 +1,388 @@
+% maskera whitepaper. Compile: node scripts/build-whitepaper.mjs (tectonic).
+% Output ships as apps/demo/public/whitepaper.pdf -> maskera.dev/whitepaper.pdf
+% Numbers are a dated snapshot; docs/BENCHMARKS.md is always canonical.
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[margin=32mm,top=30mm,bottom=32mm]{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+\usepackage{parskip}
+\setlength{\parskip}{0.45\baselineskip}
+
+\newcommand{\pkg}[1]{\texttt{#1}}
+
+\title{\textbf{Client-Side Redaction of Swedish\\Personally Identifiable Information}\\[0.6em]
+\large\textmd{maskera: deterministic rules and a 40\,MB on-device NER model\\that mask PII before text reaches an LLM, a log, or analytics}}
+\author{Joel H\"agvall\\[0.2em]
+\normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
+\normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
+\date{July 5, 2026 \quad\textperiodcentered\quad Whitepaper v1.1}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent maskera is an open-source (MIT) library that redacts Swedish personally
+identifiable information locally, in the browser or in the caller's own server
+process, before text is sent anywhere. Structured identifiers (personnummer,
+organisation numbers, phone numbers, bank account references, and others) are
+caught by deterministic, checksum-validated rules. Names, places,
+organisations, and street addresses in free text are caught by a purpose-built
+Swedish NER model of 40\,MB, small enough to run where the text already is,
+including inside a browser tab. No text leaves the device, no telemetry is
+collected, and the mapping that restores masked values never leaves the
+caller's environment. Measured on independent Swedish text, the pipeline flags
+98\% of all PII entities and achieves the highest typed $F_1$ of every public
+Swedish NER model tested, at less than a tenth of their size. maskera is a
+data-minimisation and data-protection-by-design tool, not a compliance
+guarantee; this document reports method and limitations with the same candour
+as the results. Intended readers: data protection officers, security teams,
+architects, and legal reviewers.
+\end{abstract}
+
+\section{The problem: free text leaks PII}
+
+Swedish organisations now send user-generated text to more external systems
+than ever: large language models behind third-party APIs (frequently hosted
+outside the EU/EEA), log platforms, analytics pipelines, and support tooling.
+That text is largely free-form, and free-form text carries personal data:
+customers type their personnummer into chat windows, case workers mention
+names and home addresses in ticket notes, patients describe their situation
+with full identities attached.
+
+Every such flow is a processing operation under data-protection law. Where the
+recipient is a third-party vendor, questions of processing agreements and
+third-country transfers follow, and every system that stores the raw text
+widens the incident surface. The simplest way to reduce all of these risks at
+once is to not send the personal data at all.
+
+The established technical countermeasures share two weaknesses. Server-side
+DLP services and redaction proxies only see the text \emph{after} it has left
+the client, and they are themselves one more system processing raw personal
+data. The publicly available Swedish NER models, for their part, are on the
+order of 500\,MB; they require a dedicated inference service with a GPU or a
+strong CPU, which in practice again means a new system that sees the raw text.
+
+maskera takes the opposite approach: redact the text \emph{where it already
+is}, in the browser before a form is submitted, or inside the caller's own
+server process before the outbound API call. No new data recipient is
+introduced.
+
+\section{Architecture: two layers, rules first}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  node distance=6mm,
+  box/.style={draw=black!60, rounded corners=1.2pt, align=center,
+              font=\scriptsize, inner sep=4pt, text width=26mm,
+              minimum height=18mm},
+  arr/.style={-{Stealth[length=1.8mm]}, black!70}
+]
+\node[box, fill=black!4] (raw) {\textbf{Raw text}\\``hej jag heter anna karlsson, pnr 19900101-2385''};
+\node[box, fill=black!4, right=of raw] (mask) {\textbf{maskera (local)}\\rules + NER model; restore key stays here};
+\node[box, right=of mask] (ext) {\textbf{External recipient}\\LLM, log, or analytics sees only placeholders};
+\node[box, fill=black!4, right=of ext] (res) {\textbf{restore() (local)}\\placeholders swapped back to real values};
+\draw[arr] (raw) -- (mask);
+\draw[arr] (mask) -- (ext);
+\draw[arr] (ext) -- (res);
+\end{tikzpicture}
+\end{figure}
+
+The redaction flow is: raw text $\rightarrow$ \pkg{redact()} $\rightarrow$
+masked text with placeholders $\rightarrow$ LLM / log / analytics
+$\rightarrow$ \pkg{restore()} locally. The external recipient only ever sees
+placeholders such as \texttt{[PERSON\_1]} and \texttt{[PERSONNUMMER\_1]};
+shaded boxes run inside the caller's environment.
+
+\subsection{Layer 1: deterministic rules (\pkg{@maskera/core})}
+
+Structured Swedish identifiers are matched by patterns that are
+checksum-validated wherever a checksum exists: personnummer,
+samordningsnummer, organisation numbers, phone numbers, e-mail addresses,
+postcodes, bankgiro, plusgiro, IBAN, card numbers, IP addresses, and URLs.
+Validation is what makes the layer precise; ``2019-2024'' is not read as a
+bankgiro number, because its checksum fails. The layer is deterministic,
+synchronous, and has zero dependencies, and can be used entirely on its own,
+for example for log masking.
+
+\subsection{Layer 2: a free-text NER model (\pkg{maskera})}
+
+What rules can never catch, such as free-text names written without capital
+letters, is caught by \pkg{maskera-sv-ner}, a purpose-built Swedish
+named-entity-recognition model with four entity types: person, location,
+organisation, and street address. It handles text the way people actually
+type it: all lowercase (``hej jag heter anna karlsson''), ALL CAPS, and
+genitive forms. The model is 40\,MB and runs in the browser (WebGPU or WASM)
+and in Node.
+
+\subsection{The hybrid rule: the deterministic layer always wins}
+
+When both layers run, any model detection that overlaps a rule detection is
+dropped. A personnummer is therefore always classified by checksum logic,
+never by a probabilistic guess. Within one call, the same value always
+receives the same placeholder, so a language model can reason about
+\texttt{[PERSON\_1]} consistently without ever seeing the underlying value.
+Restoration happens locally: the placeholder-to-value mapping never leaves
+the caller's environment, and must never be logged or stored next to the
+redacted text.
+
+\section{Privacy model: what leaves the device}
+
+\textbf{The caller's text never leaves the device.} All redaction runs
+locally, in the browser or in the caller's Node process. The packages contain
+no telemetry and phone home to nothing. The claim is verifiable: the code is
+open, and the browser's developer tools show that typed text triggers no
+network requests.
+
+For completeness, two network calls exist in the default setup, both fetching
+static assets and never content:
+
+\begin{itemize}
+  \item \textbf{Model weights} ($\sim$40\,MB), downloaded once from the
+        Hugging Face Hub or from a host of the caller's choosing, then cached.
+  \item \textbf{The WASM runtime} for Transformers.js, loaded from a CDN.
+\end{itemize}
+
+Both can be eliminated. The model is a set of static files that can be served
+from the caller's own origin, and \pkg{allowRemoteModels: false} forbids
+remote fetches outright. In that configuration maskera makes zero external
+requests, which suits procurement requirements that no new subprocessors be
+introduced, as well as air-gapped environments. The rule layer has no network
+capability at all.
+
+\section{Model provenance and reproducibility}
+
+In a vendor assessment of AI components, two questions dominate: what was the
+model trained on, and can the answer be checked? For \pkg{maskera-sv-ner},
+both answers are public.
+
+\begin{itemize}
+  \item \textbf{Base model:} \pkg{KBLab/bert-base-swedish-cased}, the National
+        Library of Sweden's Swedish BERT, released under CC0. It was
+        fine-tuned for entity recognition, then distilled into a smaller
+        student model quantised to a 40\,MB ONNX artifact.
+  \item \textbf{Training data:} approximately 24{,}000 synthetic,
+        template-generated Swedish sentences (the generator is public in the
+        repository and contains no real personal data), plus approximately
+        6{,}900 real news sentences from the Swedish NER Corpus, a public,
+        openly licensed research dataset of already-published text about
+        public figures.
+  \item \textbf{No user data:} nothing was scraped or collected for this
+        project, and no data from people who use maskera enters training (no
+        such collection exists).
+  \item \textbf{Reproducibility:} the entire chain, from data generation
+        through training, distillation, ONNX export, and evaluation, exists
+        as runnable scripts in the repository. An outside auditor can follow
+        and re-create every step.
+\end{itemize}
+
+This openness matters both for the caller's own GDPR assessment of the
+component and for the transparency and documentation duties that follow from
+the EU AI Act.
+
+\section{Measured quality}
+
+All numbers below were measured on \textbf{2026-07-04} against the published
+artifact (\pkg{maskera@0.4.1}, q4 quantisation) using \textbf{exact character
+spans}, the strict criterion under which both start and end offsets must
+match. The canonical, always-current document is \pkg{docs/BENCHMARKS.md} in
+the repository; this section is a dated snapshot, and where the two disagree,
+\pkg{BENCHMARKS.md} wins. In a privacy setting the number to weigh most
+heavily is \textbf{leakage}: the share of entities missed entirely and thus
+left unmasked.
+
+\subsection{Curated corpus (upper bound, regression tracker)}
+
+148 hand-authored Swedish sentences, 204 free-text entities, including hard
+cases (lowercase, ALL CAPS, genitives, deliberate traps). The corpus shares
+an author with the training-data generator and should be read as an upper
+bound, not a universal score.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrl}
+\toprule
+Metric & Result & Meaning \\
+\midrule
+Precision & 95.2\% & of the model's detections, how many were correct \\
+Recall & 97.5\% & of the real entities, how many were found \\
+Span $F_1$ & 96.4\% & harmonic mean, label-agnostic \\
+Leakage & 1.0\% & entities missed entirely, 2 of 204 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Independent gold corpus (honest floor)}
+
+22 verbatim sentences of Swedish Wikipedia prose, 58 entities, written by
+others and held out of all training data. A small sample; read it as a
+directional independent floor.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrl}
+\toprule
+Metric & Result & Meaning \\
+\midrule
+Precision & 90.0\% & of the model's detections, how many were correct \\
+Recall & 93.1\% & of the real entities, how many were found \\
+Span $F_1$ & 91.5\% & harmonic mean, label-agnostic \\
+Leakage & 1.7\% & entities missed entirely, 1 of 58 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Comparison with public Swedish NER models}
+
+Same independent gold corpus, same harness, overlap matching, labels mapped
+to person/location/organisation. ``Flagged'' is the share of entities marked
+at all, under any label, i.e.\ the safety number.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrr}
+\toprule
+Model & Size & Flagged & Typed $F_1$ \\
+\midrule
+\textbf{maskera} (runs in the browser) & \textbf{40\,MB} & 0.98 & \textbf{0.96} \\
+KBLab lowermix reallysimple-ner & $\sim$475\,MB & 1.00 & 0.94 \\
+NB AI-Lab scandi-ner & $\sim$500\,MB & 1.00 & 0.94 \\
+KB-NER (the SUC classic) & $\sim$475\,MB & 1.00 & 0.92 \\
+KBLab reallysimple-ner & $\sim$475\,MB & 0.98 & 0.91 \\
+RecordedFuture Swedish-NER & $\sim$500\,MB & 1.00 & 0.88 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Full tables, including all-lowercase text, method notes, and known
+exceptions, are in \pkg{BENCHMARKS.md}. One known exception is reported
+openly: on text entirely without capital letters, KBLab's lowermix model
+leads (typed $F_1$ 0.90 versus maskera's 0.86). None of the alternative
+models detects street addresses or fits in a web application.
+
+\subsection{Continuous verification}
+
+Quality is not a one-off measurement. Every code change in the project
+re-runs the evaluation against the published model with an $F_1$ floor
+(0.90) and a leakage ceiling (0.08) that fail the build on regression, and a
+weekly automated canary re-measures the published model against the latest
+runtime version and raises an alarm on drift. Both pipelines are public in
+the repository's CI.
+
+\section{Regulatory positioning}
+
+\emph{This section describes how maskera relates to the regulatory
+frameworks; it is not legal advice.}
+
+\begin{itemize}
+  \item \textbf{Data minimisation (Art.\ 5(1)(c) GDPR).} maskera's function
+        is that less personal data reaches third parties: what is masked
+        before the API call is never processed by the recipient.
+  \item \textbf{Pseudonymisation (Art.\ 4(5) GDPR).} Masked text with a
+        locally held restore key is pseudonymisation: the data can no longer
+        be attributed to a person without the additional information the
+        caller keeps separately. Pseudonymised text may still constitute
+        personal data, but the measure is explicitly recognised as a
+        safeguard in Art.\ 25 (data protection by design) and Art.\ 32
+        (security of processing).
+  \item \textbf{Third-country transfers (Chapter V GDPR).} Personal data
+        that is never sent to a vendor outside the EU/EEA needs no transfer
+        mechanism. Masking before the call shrinks the transfer question
+        accordingly; it does not replace the caller's analysis of whatever
+        is still sent.
+  \item \textbf{The EU AI Act.} maskera supports the data-protection
+        objectives and is fully documented and reproducible, which eases the
+        caller's vendor and system documentation. The classification of the
+        caller's AI system is not changed by maskera itself.
+\end{itemize}
+
+\textbf{maskera is data minimisation, not a compliance guarantee.} Compliance
+is decided by the caller's whole system: legal basis, contracts, storage,
+access, and retention. The caller remains the data controller, and maskera
+makes no legal claims.
+
+\section{Limitations}
+
+A privacy tool that overstates its accuracy is more dangerous than no tool at
+all, so the limitations are reported as plainly as the results.
+
+\begin{itemize}
+  \item \textbf{The model misses things.} The rule layer is deterministic and
+        highly reliable for structured identifiers, but free-text recognition
+        is probabilistic. Unusual names, heavy misspellings, and OCR noise
+        will sometimes slip through. On independent text the leakage is low
+        (1 of 58 entities) but not zero.
+  \item \textbf{Four entity types, one language.} The model recognises
+        persons, locations, organisations, and street addresses in Swedish
+        text. Data outside those types, and PII in other languages, is not
+        caught by the model (structured identifiers are caught by the rules
+        regardless).
+  \item \textbf{The independent test set is small.} 22 sentences give a
+        direction, not a final grade. A larger independent gold set is the
+        project's top measurement priority, and no annotated test set yet
+        exists for the target domains of support, healthcare, and legal text.
+  \item \textbf{Defence in depth.} maskera is a strong first layer, not the
+        only one. Keep access controls, processing agreements, logging
+        policies, and human review in high-stakes flows.
+\end{itemize}
+
+\section{Recommended deployment}
+
+For production use, the project's operations guide
+(\pkg{docs/PRODUCTION.md}) recommends:
+
+\begin{itemize}
+  \item Redact \emph{before} the text reaches the language model, the log, or
+        the analytics pipeline, never after.
+  \item If the model layer fails, fall back to the rule layer, never to raw
+        text.
+  \item Never log the restore key and never store it next to the redacted
+        text; restoration happens only inside the caller's environment.
+  \item Self-host the model files if the Hugging Face Hub is not an
+        acceptable dependency; zero external requests are then made.
+  \item Evaluate against your own text: build a small domain corpus of real
+        (internal, consented) sentences and run it in your CI. The metric
+        that matters is leakage. Sentences the model misses in production are
+        added to the corpus, so every future model update is graded against
+        your own failures.
+  \item Human review remains in place for high-stakes flows (legal,
+        healthcare, financial decisions).
+\end{itemize}
+
+\section{Auditing and verification}
+
+Everything claimed in this document can be checked without asking us:
+
+\begin{itemize}
+  \item \textbf{The code:} MIT-licensed, open in full at
+        \url{https://github.com/joelhagvall/maskera}.
+  \item \textbf{The model:} published openly on Hugging Face
+        (\pkg{joelhagvall/maskera-sv-ner}) with a model card and artifact
+        hash.
+  \item \textbf{The numbers:} canonical in \pkg{docs/BENCHMARKS.md}, dated,
+        and reproducible with documented commands against the published
+        model.
+  \item \textbf{The training:} the whole pipeline exists as runnable scripts
+        in \pkg{training/}.
+  \item \textbf{The network claims:} verifiable in the browser's developer
+        tools against the live demo at \url{https://maskera.dev}.
+\end{itemize}
+
+\vfill
+\noindent\rule{\textwidth}{0.4pt}\\[0.3em]
+{\footnotesize maskera \textperiodcentered{} whitepaper v1.1
+\textperiodcentered{} July 5, 2026 \textperiodcentered{} Joel H\"agvall
+\textperiodcentered{} maskera.dev \textperiodcentered{}
+github.com/joelhagvall/maskera. Current numbers always live in
+docs/BENCHMARKS.md; where this document disagrees, that file wins. This
+document is not legal advice.}
+
+\end{document}
