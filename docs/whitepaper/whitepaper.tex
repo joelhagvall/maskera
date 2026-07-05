@@ -9,6 +9,7 @@
 \usepackage[margin=32mm,top=30mm,bottom=32mm]{geometry}
 \usepackage{amssymb}
 \usepackage{booktabs}
+\usepackage{float}
 \usepackage{array}
 \usepackage{tikz}
 \usetikzlibrary{positioning,arrows.meta}
@@ -164,7 +165,7 @@ capability at all.
 
 The choices above collapse into four modes:
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \begin{tabular}{llll}
@@ -230,7 +231,7 @@ cases (lowercase, ALL CAPS, genitives, deliberate traps). The corpus shares
 an author with the training-data generator and should be read as an upper
 bound, not a universal score.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \begin{tabular}{lrl}
 \toprule
@@ -250,7 +251,7 @@ Leakage & 1.0\% & entities missed entirely, 2 of 204 \\
 others and held out of all training data. A small sample; read it as a
 directional independent floor.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \begin{tabular}{lrl}
 \toprule
@@ -270,7 +271,7 @@ Same independent gold corpus, same harness, overlap matching, labels mapped
 to person, location, and organisation. ``Flagged'' is the share of entities
 marked at all, under any label, i.e.\ the safety number.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \begin{tabular}{lrrr}
 \toprule
@@ -302,7 +303,7 @@ visit adds the network download of the $\sim$40\,MB model; returning
 visitors read it from the browser cache. The WebGPU path is opt-in and
 compiles shaders on the first inference ($\sim$0.5\,s, once per visit).
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \begin{tabular}{lrrl}
@@ -494,7 +495,7 @@ sentences are hand-authored test cases with invented names, and the
 gold-real sentence is verbatim, already-published Wikipedia prose about
 public figures. No user data and no real private persons appear below.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \begin{tabular}{p{62mm}llp{34mm}}
 \toprule
