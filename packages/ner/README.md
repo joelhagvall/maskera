@@ -130,8 +130,8 @@ The default (and only bundled default) model is
 (`MASKERA_SV_NER_MODEL`, MIT, 40 MB q4): PER/LOC/ORG/ADR, distilled from
 KB-BERT, trained on synthetic + real Swedish with lowercase/ALL CAPS/genitive
 augmentation (chat users type lowercase). On the packaged gold corpus it
-scores 96.2% span-F1 with a 1.0% leak rate; on independent real text, 90.6%
-and 3.4%. The canonical, dated tables live in
+scores 96.4% span-F1 with a 1.0% leak rate; on independent real text, 91.5%
+and 1.7% (measured 2026-07-04). The canonical, dated tables live in
 [docs/BENCHMARKS.md](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md).
 Run the eval yourself:
 
@@ -151,6 +151,10 @@ Any other Transformers.js token-classification model id also works via
 - Swedish-first: behaviour on other languages is undefined.
 - Structured identifiers are deliberately out of scope; the rule layer owns
   them, and `redactWithNer` drops any model detection that overlaps a rule hit.
+
+For DPOs, security teams and legal reviewers there is a whitepaper covering
+architecture, privacy model, training data and GDPR positioning:
+[maskera.dev/whitepaper.pdf](https://maskera.dev/whitepaper.pdf).
 
 ## License
 

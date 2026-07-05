@@ -114,6 +114,9 @@ const out = await ner("Anna Lindqvist bor i Göteborg.")
 - Trained for Swedish; behaviour on other languages is undefined.
 - Structured identifiers (personnummer, IBAN, phone numbers, …) are deliberately
   out of scope; use maskera's rule layer for those.
+- For DPOs, security teams and legal reviewers assessing the full system:
+  the maskera whitepaper covers architecture, privacy model, training data
+  and GDPR positioning: [maskera.dev/whitepaper.pdf](https://maskera.dev/whitepaper.pdf).
 
 ## Evaluation
 
