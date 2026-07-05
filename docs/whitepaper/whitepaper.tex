@@ -25,7 +25,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{July 5, 2026 \quad\textperiodcentered\quad Whitepaper v1.5}
+\date{July 5, 2026 \quad\textperiodcentered\quad Whitepaper v1.6}
 
 \begin{document}
 \maketitle
@@ -35,7 +35,7 @@
 identifiable information locally, in the browser or in the caller's own server
 process, before text is sent anywhere. Structured identifiers (personnummer,
 organisation numbers, phone numbers, bank account references, and others) are
-caught by deterministic, checksum-validated rules. Names, places,
+caught by deterministic rules, checksum-validated where a checksum exists. Names, places,
 organisations, and street addresses in free text are caught by a purpose-built
 Swedish NER model of 40\,MB, small enough to run where the text already is,
 including inside a browser tab. The input text never leaves the caller's
@@ -104,7 +104,9 @@ The redaction flow is: raw text $\rightarrow$ \pkg{redact()} $\rightarrow$
 masked text with placeholders $\rightarrow$ LLM / log / analytics
 $\rightarrow$ \pkg{restore()} locally. The external recipient only ever sees
 placeholders such as \texttt{[PERSON\_1]} and \texttt{[PERSONNUMMER\_1]};
-shaded boxes run inside the caller's environment.
+shaded boxes run inside the caller's environment. Restoration is optional:
+in many logging and analytics flows it is never performed, and the
+placeholders are the final stored form.
 
 \subsection{Layer 1: deterministic rules (\pkg{@maskera/core})}
 
@@ -229,7 +231,7 @@ match. The canonical, always-current document is \pkg{docs/BENCHMARKS.md} in
 the repository; this section is a dated snapshot, and where the two disagree,
 \pkg{BENCHMARKS.md} wins. In a privacy setting the number to weigh most
 heavily is \textbf{leakage}: the share of entities missed entirely and thus
-left unmasked.
+left unmasked. Every leaked entity is listed verbatim in the appendix.
 
 \subsection{Curated corpus (upper bound, regression tracker)}
 
@@ -547,7 +549,7 @@ visible failure modes.
 
 \vfill
 \noindent\rule{\textwidth}{0.4pt}\par\smallskip
-{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.5
+{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.6
 \textperiodcentered{} July 5, 2026 \textperiodcentered{} Joel H\"agvall
 \textperiodcentered{} maskera.dev. Current numbers live in
 \pkg{docs/BENCHMARKS.md}; where this document disagrees, that file wins.
