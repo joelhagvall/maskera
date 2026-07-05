@@ -132,6 +132,32 @@ export function Transparency({ onBack, onDev }: { onBack: () => void; onDev: () 
             </li>
           </ul>
 
+          <h2 id="integritetspolicy">Integritetspolicy</h2>
+          <ul>
+            <li>
+              <strong>Personuppgiftsansvarig:</strong> Joel Hägvall. Kontakt sker via{" "}
+              <a href="https://joelhagvall.com" target="_blank" rel="noreferrer">
+                joelhagvall.com
+              </a>
+              .
+            </li>
+            <li>
+              <strong>Vad den här webbplatsen samlar in:</strong> endast anonym, cookiefri
+              besöksstatistik (Vercel Analytics) för att räkna sidvisningar. Inga cookies, ingen
+              profilering, inga personuppgifter, och aldrig text du skriver i verktyget.
+            </li>
+            <li>
+              <strong>Vad verktyget behandlar:</strong> ingenting lämnar din enhet. Text du maskerar
+              behandlas lokalt i din webbläsare och skickas aldrig till oss eller till tredje part.
+              Se avsnitten ovan för detaljer.
+            </li>
+            <li>
+              <strong>Dina rättigheter:</strong> eftersom vi varken lagrar eller kan koppla data
+              till dig finns inga personuppgifter att begära ut, rätta eller radera. Har du frågor,
+              hör av dig via länken ovan.
+            </li>
+          </ul>
+
           <p className="prose-foot">
             Fullständig version (med FAQ) och all källkod finns på GitHub.{" "}
             <a href={`${GITHUB}/blob/main/docs/TRANSPARENCY.md`} target="_blank" rel="noreferrer">

@@ -620,13 +620,25 @@ body {
   position: relative;
   margin: 14px 0 28px;
 }
+/* Header strip shared by every code block: language label (or the PM tabs) on
+   the left, copy button on the right, a divider below. Gives the block a
+   framed, card-like top instead of a label + button floating over the code. */
+.code-block .code-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px 5px 16px;
+  background: var(--gray-100);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
 .code-block .code-copy {
-  position: absolute;
-  top: 8px;
-  right: 8px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  margin-left: auto;
+  flex: none;
   padding: 4px 9px;
   font: 500 11.5px var(--sans);
   color: var(--muted);
@@ -644,6 +656,13 @@ body {
   border-color: #bbe3c8;
   background: #f0faf3;
 }
+.code-lang {
+  font: 600 10.5px var(--sans);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  user-select: none;
+}
 .prose pre {
   margin: 14px 0 28px;
   padding: 14px 16px;
@@ -652,25 +671,15 @@ body {
   border-radius: var(--radius-sm);
   overflow-x: auto;
 }
+/* The pre sits directly under the header strip: no top rounding, and the
+   head's borderless bottom edge doubles as the divider. */
 .code-block pre {
   margin: 0;
-  /* Flex item in the mobile column layout: allow it to shrink so the
-     horizontal scroll lives inside the block, not on the page. */
+  /* Allow the pre to shrink so its horizontal scroll lives inside the block,
+     not on the page. */
   min-width: 0;
-  /* Reserve a top strip for the language label + copy button so neither
-     overlaps the first line of code. */
-  padding-top: 34px;
-}
-.code-lang {
-  position: absolute;
-  top: 10px;
-  left: 16px;
-  z-index: 1;
-  font: 600 10.5px var(--sans);
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--muted-2);
-  user-select: none;
+  padding-top: 14px;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
 }
 .prose pre code {
   display: block;
@@ -686,25 +695,47 @@ body {
 .code-line:empty::before {
   content: "\200B";
 }
-@media (max-width: 820px) {
-  /* On mobile the copy button moves above the block (it would otherwise
-     cover the first code line). The code keeps scrolling sideways rather
-     than wrapping, so every source line stays on a single visual line. */
-  .code-block {
-    display: flex;
-    flex-direction: column;
-  }
-  .code-block .code-copy {
-    position: static;
-    order: -1;
-    align-self: flex-end;
-    margin-bottom: 8px;
-  }
-  /* The copy button now owns the top strip; the language label sits on that
-     same row (left side), so the code no longer needs reserved top padding. */
-  .code-block pre {
-    padding-top: 14px;
-  }
+
+/* Package-manager tabs (npm / pnpm / bun / yarn) sharing one install block. */
+.install-tabs {
+  margin: 14px 0 10px;
+}
+.install-tabs .code-head {
+  /* Tabs bring their own vertical padding, so the head hugs them. */
+  padding: 0 8px;
+}
+.install-tabs .code-tabs {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+}
+.install-tabs .code-tab {
+  padding: 9px 10px 8px;
+  font: 500 12.5px var(--sans);
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.install-tabs .code-tab:hover {
+  color: #2a2a2a;
+}
+.install-tabs .code-tab.on {
+  color: var(--fg);
+  border-bottom-color: var(--fg);
+}
+.code-block.install-tabs pre {
+  padding-top: 12px;
+}
+.install-note {
+  margin: 0 0 28px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.install-note code {
+  font-size: 12px;
 }
 .tok-k {
   color: #7e22ce;
