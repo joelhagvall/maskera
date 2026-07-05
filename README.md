@@ -37,9 +37,9 @@ places, organisations and street addresses, including all-lowercase chat text
 ("hej jag heter anna karlsson"), ALL CAPS and genitive forms, because that is
 how people actually type.
 
-> **Benchmarks:** span F1 **96.2%** on the curated corpus, **90.6%** on
-> independent real text, leak rate 1.0% / 3.4% (exact-span, q4, measured
-> 2026-07-03). One canonical, dated, reproducible table:
+> **Benchmarks:** span F1 **96.4%** on the curated corpus, **91.5%** on
+> independent real text, leak rate 1.0% / 1.7% (exact-span, q4, measured
+> 2026-07-04). One canonical, dated, reproducible table:
 > **[docs/BENCHMARKS.md](docs/BENCHMARKS.md)**; every other number in this
 > repo defers to it.
 

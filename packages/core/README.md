@@ -93,6 +93,15 @@ value to redact. `validate` can reject false positives (e.g. failing a checksum)
 
 `luhnValid`, `isPersonnummer`, `isSamordningsnummer`, `isOrganisationsnummer`.
 
+## More
+
+Part of [maskera](https://github.com/joelhagvall/maskera); add the
+[`maskera`](https://www.npmjs.com/package/maskera) package for free-text
+names/places via the Swedish NER model. For DPOs, security teams and legal
+reviewers there is a whitepaper covering architecture, privacy model,
+training data and GDPR positioning:
+[maskera.dev/whitepaper.pdf](https://maskera.dev/whitepaper.pdf).
+
 ## License
 
 MIT
