@@ -1,5 +1,13 @@
 # maskera
 
+## 0.4.3
+
+### Patch Changes
+
+- README: link the whitepaper for DPOs/security teams, sync benchmark numbers with docs/BENCHMARKS.md (2026-07-04)
+- Updated dependencies
+  - @maskera/core@0.3.3
+
 ## 0.4.2
 
 ### Patch Changes
