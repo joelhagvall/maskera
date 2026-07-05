@@ -25,7 +25,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{July 5, 2026 \quad\textperiodcentered\quad Whitepaper v1.6}
+\date{July 5, 2026 \quad\textperiodcentered\quad Whitepaper v1.7}
 
 \begin{document}
 \maketitle
@@ -41,8 +41,8 @@ Swedish NER model of 40\,MB, small enough to run where the text already is,
 including inside a browser tab. The input text never leaves the caller's
 environment, no telemetry is collected, and the mapping that restores masked
 values is held locally by the caller. In the default setup the browser
-downloads the static model once from a public host; a self-hosted model
-makes zero external requests. Measured on a small independent Swedish gold set, the
+downloads the static assets once from a public host; self-hosting those
+assets makes zero external requests. Measured on a small independent Swedish gold set, the
 pipeline flagged 98\% of PII entities and achieved the highest typed $F_1$
 among the public Swedish NER models tested, at less than a tenth of their size. maskera is a
 data-minimisation and data-protection-by-design tool, not a compliance
@@ -177,7 +177,7 @@ The choices above collapse into four modes:
 Mode & Network requests & New subprocessors & Best for \\
 \midrule
 Default & static assets once (HF Hub, CDN) & possibly HF/CDN & evaluation, demos \\
-Self-hosted model & caller's own origin only & none & production \\
+Self-hosted assets & caller's own origin only & none & production \\
 Rules only & none & none & logs, pipelines \\
 Air-gapped & none & none & strict environments \\
 \bottomrule
@@ -218,9 +218,9 @@ both answers are public.
         and re-create every step.
 \end{itemize}
 
-This openness matters both for the caller's own GDPR assessment of the
-component and for the transparency and documentation duties that follow from
-the EU AI Act.
+This openness supports the caller's own GDPR assessment of the component
+and their vendor-risk and EU AI Act documentation where applicable; it does
+not determine which obligations apply.
 
 \section{Measured quality}
 
@@ -549,7 +549,7 @@ visible failure modes.
 
 \vfill
 \noindent\rule{\textwidth}{0.4pt}\par\smallskip
-{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.6
+{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.7
 \textperiodcentered{} July 5, 2026 \textperiodcentered{} Joel H\"agvall
 \textperiodcentered{} maskera.dev. Current numbers live in
 \pkg{docs/BENCHMARKS.md}; where this document disagrees, that file wins.
