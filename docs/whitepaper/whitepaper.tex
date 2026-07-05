@@ -25,7 +25,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{July 5, 2026 \quad\textperiodcentered\quad Whitepaper v1.4}
+\date{July 5, 2026 \quad\textperiodcentered\quad Whitepaper v1.5}
 
 \begin{document}
 \maketitle
@@ -364,11 +364,10 @@ frameworks; it is not legal advice.}
         personal data, but the measure is explicitly recognised as a
         safeguard in Art.\ 25 (data protection by design) and Art.\ 32
         (security of processing).
-  \item \textbf{Third-country transfers (Chapter V GDPR).} Personal data
-        that is never sent to a vendor outside the EU/EEA needs no transfer
-        mechanism. Masking before the call shrinks the transfer question
-        accordingly; it does not replace the caller's analysis of whatever
-        is still sent.
+  \item \textbf{Third-country transfers (Chapter V GDPR).} To the extent
+        masking removes personal data before it is sent to a vendor outside
+        the EU/EEA, the transfer analysis is correspondingly narrowed. It
+        does not replace the caller's analysis of whatever is still sent.
   \item \textbf{The EU AI Act.} maskera supports the data-protection
         objectives and is fully documented and reproducible, which eases the
         caller's vendor and system documentation. The classification of the
@@ -518,14 +517,14 @@ figures. No user data and no real private persons appear below.
 
 \begin{table}[H]
 \centering
-\begin{tabular}{p{62mm}llp{34mm}}
+\begin{tabular}{p{55mm}llp{41mm}}
 \toprule
 Input & Missed & Type & Reading \\
 \midrule
 ``Klarna rekryterade Daniel fr\aa n Spotify i fjol.'' & Klarna & ORG &
 sentence-initial org in subject position \\
 ``hejhej det \"ar fatima igen, h\"or av dig n\"ar du kan'' & fatima & PER &
-lowercase text interacting with name rarity (see below) \\
+lowercase text plus a rare name (see below) \\
 ``Den 6 mars 2018 bes\"okte L\"ofven Vita huset och hade sitt f\"orsta
 officiella m\"ote med [\dots]'' & Vita huset & LOC &
 metonymic building name \\
@@ -548,7 +547,7 @@ visible failure modes.
 
 \vfill
 \noindent\rule{\textwidth}{0.4pt}\par\smallskip
-{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.4
+{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.5
 \textperiodcentered{} July 5, 2026 \textperiodcentered{} Joel H\"agvall
 \textperiodcentered{} maskera.dev. Current numbers live in
 \pkg{docs/BENCHMARKS.md}; where this document disagrees, that file wins.
