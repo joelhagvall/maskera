@@ -1,5 +1,11 @@
 # @maskera/core
 
+## 0.3.4
+
+### Patch Changes
+
+- npm homepage now points at maskera.dev; drop the stale @maskera/ner rename note from the README
+
 ## 0.3.3
 
 ### Patch Changes
