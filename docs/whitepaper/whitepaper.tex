@@ -23,7 +23,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{July 5, 2026 \quad\textperiodcentered\quad Whitepaper v1.1}
+\date{July 5, 2026 \quad\textperiodcentered\quad Whitepaper v1.2}
 
 \begin{document}
 \maketitle
@@ -38,9 +38,9 @@ organisations, and street addresses in free text are caught by a purpose-built
 Swedish NER model of 40\,MB, small enough to run where the text already is,
 including inside a browser tab. No text leaves the device, no telemetry is
 collected, and the mapping that restores masked values never leaves the
-caller's environment. Measured on independent Swedish text, the pipeline flags
-98\% of all PII entities and achieves the highest typed $F_1$ of every public
-Swedish NER model tested, at less than a tenth of their size. maskera is a
+caller's environment. Measured on a small independent Swedish gold set, the
+pipeline flagged 98\% of PII entities and achieved the highest typed $F_1$
+among the public Swedish NER models tested, at less than a tenth of their size. maskera is a
 data-minimisation and data-protection-by-design tool, not a compliance
 guarantee; this document reports method and limitations with the same candour
 as the results. Intended readers: data protection officers, security teams,
@@ -334,6 +334,39 @@ all, so the limitations are reported as plainly as the results.
         policies, and human review in high-stakes flows.
 \end{itemize}
 
+\section{Threat model: what maskera does not protect against}
+
+Data minimisation has a boundary, and a reviewer should know where it runs.
+maskera does not protect against:
+
+\begin{itemize}
+  \item \textbf{Sensitive content that is not an entity.} maskera masks
+        identifiers and named entities. A sentence can remain deeply
+        revealing without containing either: a health condition, a workplace
+        conflict, or a situation described precisely enough to point at one
+        person all survive redaction intact. Masking makes text less
+        identifying; it does not make it harmless.
+  \item \textbf{Mishandling of the restore mapping.} The
+        placeholder-to-value mapping is the key that undoes the
+        pseudonymisation. If the caller logs it, stores it next to the
+        redacted text, or sends it downstream, the protection is reversed
+        outside maskera's control. Keep the mapping in memory, short-lived,
+        and local.
+  \item \textbf{Whatever happens after redaction.} maskera controls what the
+        recipient receives, not what the caller's downstream logic or the
+        recipient does with it. An application that re-attaches identifiers
+        after restoration and then logs the result has left the protected
+        path.
+  \item \textbf{Re-identification from context.} As noted under regulatory
+        positioning, redacted text may still constitute personal data. Rare
+        combinations of unmasked facts (a job title, a small town, a date)
+        can identify a person even with every entity masked.
+\end{itemize}
+
+None of this is unusual; it is the standard boundary of any redaction layer.
+It is stated here so that the caller's remaining controls, described in the
+next section, are chosen deliberately rather than assumed away.
+
 \section{Recommended deployment}
 
 For production use, the project's operations guide
@@ -378,7 +411,7 @@ Everything claimed in this document can be checked without asking us:
 
 \vfill
 \noindent\rule{\textwidth}{0.4pt}\\[0.3em]
-{\footnotesize maskera \textperiodcentered{} whitepaper v1.1
+{\footnotesize maskera \textperiodcentered{} whitepaper v1.2
 \textperiodcentered{} July 5, 2026 \textperiodcentered{} Joel H\"agvall
 \textperiodcentered{} maskera.dev \textperiodcentered{}
 github.com/joelhagvall/maskera. Current numbers always live in
