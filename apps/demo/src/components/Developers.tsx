@@ -30,8 +30,8 @@ function highlight(line: string): ReactNode[] {
 /** Tiny syntax highlighter for the static snippets below. */
 function Code({ children }: { children: string }) {
   const src = children
-  // One block element per source line: on mobile, wrapped continuations get
-  // a hanging indent so a long command reads as one line, not as cut off.
+  // One block element per source line. Long lines scroll sideways inside the
+  // block (never wrap), so each source line stays on a single visual line.
   const lines = src.split("\n")
   // Copy the runnable part only: comment-only lines are display guidance
   // ("# allt i ett: ..."), not something to paste into a terminal.

@@ -654,6 +654,9 @@ body {
 }
 .code-block pre {
   margin: 0;
+  /* Flex item in the mobile column layout: allow it to shrink so the
+     horizontal scroll lives inside the block, not on the page. */
+  min-width: 0;
 }
 .prose pre code {
   display: block;
@@ -670,9 +673,9 @@ body {
   content: "\200B";
 }
 @media (max-width: 820px) {
-  /* On mobile the copy button moves above the block (it would cover the
-     first code line), and the code wraps instead of scrolling sideways so
-     all of it stays readable. */
+  /* On mobile the copy button moves above the block (it would otherwise
+     cover the first code line). The code keeps scrolling sideways rather
+     than wrapping, so every source line stays on a single visual line. */
   .code-block {
     display: flex;
     flex-direction: column;
@@ -682,16 +685,6 @@ body {
     order: -1;
     align-self: flex-end;
     margin-bottom: 8px;
-  }
-  .prose pre code {
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-  }
-  /* Hanging indent: when a long line wraps, its continuation is indented,
-     so it reads as one logical line instead of looking cut off. */
-  .code-line {
-    padding-left: 1.5em;
-    text-indent: -1.5em;
   }
 }
 .tok-k {
