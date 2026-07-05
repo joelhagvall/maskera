@@ -185,8 +185,8 @@ model trained on, and can the answer be checked? For \pkg{maskera-sv-ner},
 both answers are public.
 
 \begin{itemize}
-  \item \textbf{Base model:} \pkg{KBLab/bert-base-swedish-cased}, the National
-        Library of Sweden's Swedish BERT, released under CC0. It was
+  \item \textbf{Base model:} \pkg{KBLab/}\allowbreak\pkg{bert-base-swedish-cased},
+        the National Library of Sweden's BERT, released under CC0. It was
         fine-tuned for entity recognition, then distilled into a smaller
         student model quantised to a 40\,MB ONNX artifact.
   \item \textbf{Training data:} approximately 24{,}000 synthetic,
@@ -263,8 +263,8 @@ Leakage & 1.7\% & entities missed entirely, 1 of 58 \\
 \subsection{Comparison with public Swedish NER models}
 
 Same independent gold corpus, same harness, overlap matching, labels mapped
-to person/location/organisation. ``Flagged'' is the share of entities marked
-at all, under any label, i.e.\ the safety number.
+to person, location, and organisation. ``Flagged'' is the share of entities
+marked at all, under any label, i.e.\ the safety number.
 
 \begin{table}[h]
 \centering
@@ -282,11 +282,11 @@ RecordedFuture Swedish-NER & $\sim$500\,MB & 1.00 & 0.88 \\
 \end{tabular}
 \end{table}
 
-Full tables, including all-lowercase text, method notes, and known
-exceptions, are in \pkg{BENCHMARKS.md}. One known exception is reported
-openly: on text entirely without capital letters, KBLab's lowermix model
-leads (typed $F_1$ 0.90 versus maskera's 0.86). None of the alternative
-models detects street addresses or fits in a web application.
+The full tables, all-lowercase results, method notes, and known exceptions
+are in \pkg{BENCHMARKS.md}. One known exception is reported openly: on text
+entirely without capital letters, KBLab's lowermix model leads (typed $F_1$
+0.90 versus maskera's 0.86). None of the alternative models detects street
+addresses or fits in a web application.
 
 \subsection{Latency}
 
@@ -498,13 +498,21 @@ Input & Missed & Type & Reading \\
 ``Klarna rekryterade Daniel fr\aa n Spotify i fjol.'' & Klarna & ORG &
 sentence-initial org in subject position \\
 ``hejhej det \"ar fatima igen, h\"or av dig n\"ar du kan'' & fatima & PER &
-all-lowercase chat text, no casing cues \\
+lowercase text interacting with name rarity (see below) \\
 ``Den 6 mars 2018 bes\"okte L\"ofven Vita huset och hade sitt f\"orsta
-officiella m\"ote med USA:s president Donald Trump.'' & Vita huset & LOC &
+officiella m\"ote med [\dots]'' & Vita huset & LOC &
 metonymic building name \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+The second row deserves a sharper reading than ``no casing cues'':
+capitalised ``Fatima'' \emph{is} caught, and so is lowercase ``anna''. The
+failure is the combination of lowercase text and a name further from the
+training distribution, i.e.\ robustness across name origins in casing-free
+text. That gap is stated openly and targeted: the next data round adds
+lowercase augmentation, and the project's gold-set plan requires invented
+names spanning many origins, not only Swedish ones.
 
 These are also why the rule layer exists and why leakage, not $F_1$, is the
 gated metric: the failure modes are visible, characterised, and tracked in

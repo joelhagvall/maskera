@@ -42,9 +42,12 @@ person) and can't be scraped legally. Two channels:
 - **Donated paraphrases:** 3 to 5 Swedish speakers each write 20 to 30
   realistic support/chat messages with invented but plausible PII (invented
   names, real street names with invented numbers, valid-checksum test
-  personnummer). They must never see the training generator's templates;
-  give them scenario prompts only ("write an angry delivery complaint",
-  "reschedule a medical appointment").
+  personnummer). The invented names must span many name origins, not only
+  Swedish ones: the "fatima" known miss (BENCHMARKS.md) shows lowercase
+  text interacts with name rarity, so name-origin robustness is exactly
+  what this register has to measure. They must never see the training
+  generator's templates; give them scenario prompts only ("write an angry
+  delivery complaint", "reschedule a medical appointment").
 - **Own consented traffic:** any real user-reported miss (like the two npm
   stress-test cases already in the curated corpus) goes here when consent
   allows, otherwise into the private CI corpus.
