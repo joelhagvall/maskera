@@ -13,13 +13,20 @@ import { useSwedishNer } from "./useSwedishNer"
 export function App() {
   const [active, setActive] = useState<Scenario>(scenarios[0])
   const [text, setText] = useState<string>(scenarios[0].text)
+  const [anchor, setAnchor] = useState<string | null>(null)
   const { view, navigate } = useRoute()
   const ner = useSwedishNer(text)
 
-  // Always land at the top when switching between the demo and the subpages.
+  // On a view switch, jump to the requested section if one was set (e.g. the
+  // footer's "Integritetspolicy" link), otherwise land at the top.
   // biome-ignore lint/correctness/useExhaustiveDependencies: view is the trigger
   useEffect(() => {
-    window.scrollTo(0, 0)
+    if (anchor) {
+      document.getElementById(anchor)?.scrollIntoView()
+      setAnchor(null)
+    } else {
+      window.scrollTo(0, 0)
+    }
   }, [view])
 
   function pick(s: Scenario) {
@@ -28,6 +35,10 @@ export function App() {
   }
 
   const goDemo = () => navigate("demo")
+  const goPolicy = () => {
+    setAnchor("integritetspolicy")
+    navigate("transparency")
+  }
 
   return (
     <div className="app">
@@ -56,10 +67,8 @@ export function App() {
         </>
       )}
       {view === "dev" && <Developers onBack={goDemo} />}
-      {view === "transparency" && (
-        <Transparency onBack={goDemo} onDev={() => navigate("dev")} />
-      )}
-      <Footer onTransparency={() => navigate("transparency")} />
+      {view === "transparency" && <Transparency onBack={goDemo} onDev={() => navigate("dev")} />}
+      <Footer onTransparency={() => navigate("transparency")} onPolicy={goPolicy} />
     </div>
   )
 }

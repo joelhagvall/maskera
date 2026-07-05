@@ -46,9 +46,12 @@ function Code({ children, lang }: { children: string; lang: string }) {
     .trim()
   return (
     <div className="code-block">
-      <span className="code-lang" aria-hidden="true">
-        {lang}
-      </span>
+      <div className="code-head">
+        <span className="code-lang" aria-hidden="true">
+          {lang}
+        </span>
+        <CopyButton text={copyText} />
+      </div>
       <pre>
         <code>
           {lines.map((line, i) => (
@@ -59,7 +62,6 @@ function Code({ children, lang }: { children: string; lang: string }) {
           ))}
         </code>
       </pre>
-      <CopyButton text={copyText} />
     </div>
   )
 }
@@ -88,6 +90,45 @@ function CopyButton({ text }: { text: string }) {
       {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
       {copied ? "Kopierad" : "Kopiera"}
     </button>
+  )
+}
+
+// Same install, four package managers. Copy yields just the command for the
+// active tab (no comment), like the code blocks above.
+const INSTALL = [
+  { id: "npm", cmd: "npm install maskera @huggingface/transformers" },
+  { id: "pnpm", cmd: "pnpm add maskera @huggingface/transformers" },
+  { id: "bun", cmd: "bun add maskera @huggingface/transformers" },
+  { id: "yarn", cmd: "yarn add maskera @huggingface/transformers" },
+]
+
+function InstallTabs() {
+  const [pm, setPm] = useState(INSTALL[0])
+  return (
+    <div className="code-block install-tabs">
+      <div className="code-head">
+        <div className="code-tabs" role="tablist" aria-label="Pakethanterare">
+          {INSTALL.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              role="tab"
+              aria-selected={p.id === pm.id}
+              className={`code-tab${p.id === pm.id ? " on" : ""}`}
+              onClick={() => setPm(p)}
+            >
+              {p.id}
+            </button>
+          ))}
+        </div>
+        <CopyButton text={pm.cmd} />
+      </div>
+      <pre>
+        <code>
+          <span className="code-line">{highlight(pm.cmd)}</span>
+        </code>
+      </pre>
+    </div>
   )
 }
 
@@ -121,10 +162,10 @@ export function Developers({ onBack }: { onBack: () => void }) {
           </p>
 
           <h2>Installera</h2>
-          <Code lang="bash">
-            {`npm install maskera @huggingface/transformers
-# regler + AI-modell, hela API:t importeras från maskera`}
-          </Code>
+          <InstallTabs />
+          <p className="install-note">
+            Regler och AI-modell, hela API:t importeras från <code>maskera</code>.
+          </p>
 
           <h2>Maskera en text</h2>
           <Code lang="ts">

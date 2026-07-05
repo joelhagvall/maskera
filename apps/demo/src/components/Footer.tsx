@@ -1,7 +1,13 @@
 import { GITHUB, HF_MODEL } from "../constants"
 import { navClick, viewPaths } from "../routing"
 
-export function Footer({ onTransparency }: { onTransparency: () => void }) {
+export function Footer({
+  onTransparency,
+  onPolicy,
+}: {
+  onTransparency: () => void
+  onPolicy: () => void
+}) {
   return (
     <footer className="footer">
       <p className="footer-row">
@@ -14,6 +20,14 @@ export function Footer({ onTransparency }: { onTransparency: () => void }) {
       <p className="footer-row">
         <a className="footer-link" href={viewPaths.transparency} onClick={navClick(onTransparency)}>
           Integritet & transparens
+        </a>{" "}
+        ·{" "}
+        <a
+          className="footer-link"
+          href={`${viewPaths.transparency}#integritetspolicy`}
+          onClick={navClick(onPolicy)}
+        >
+          Integritetspolicy
         </a>{" "}
         ·{" "}
         <a href="/whitepaper.pdf" target="_blank" rel="noreferrer">
