@@ -6,7 +6,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{microtype}
-\usepackage[margin=32mm,top=30mm,bottom=32mm]{geometry}
+\usepackage[margin=32mm,top=30mm,bottom=30mm]{geometry}
 \usepackage{amssymb}
 \usepackage{booktabs}
 \usepackage{float}
@@ -16,7 +16,7 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{url}
 \usepackage{parskip}
-\setlength{\parskip}{0.45\baselineskip}
+\setlength{\parskip}{0.4\baselineskip}
 
 \newcommand{\pkg}[1]{\texttt{#1}}
 
@@ -25,7 +25,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{July 5, 2026 \quad\textperiodcentered\quad Whitepaper v1.3}
+\date{July 5, 2026 \quad\textperiodcentered\quad Whitepaper v1.4}
 
 \begin{document}
 \maketitle
@@ -181,7 +181,12 @@ Air-gapped & none & none & strict environments \\
 \end{table}
 
 In every mode, including the default, the requests carry no user content:
-the only things ever fetched are the static model and runtime files.
+the only things ever fetched are the static model and runtime files. The
+word \emph{possibly} is deliberate: like any HTTP request, an asset fetch
+exposes the client's IP address to the host, and in the browser that
+client is the end user, so a legal review may still want to assess Hugging
+Face and the CDN. The self-hosted mode exists precisely so that this
+assessment never arises.
 
 \section{Model provenance and reproducibility}
 
@@ -318,10 +323,16 @@ Rules only (\pkg{@maskera/core}) & none & $\sim$0.002\,ms & no model, no network
 \end{tabular}
 \end{table}
 
-In practice: masking a chat message costs tens of milliseconds in the
-browser and single-digit milliseconds on a server, and the deterministic
-rule layer is effectively free. The measurement scripts live in the
-repository, under \pkg{packages/ner/eval/} and \pkg{apps/demo/scripts/}.
+The figures above are per chat-message-sized input. Longer texts are
+split into overlapping chunks past the model's 512-token window, so
+latency grows roughly linearly with length:
+in Node, warm, $\sim$500 characters take 18\,ms, $\sim$2{,}000 characters
+75\,ms, and $\sim$10{,}000 characters 0.43\,s (medians; p95 and method in
+\pkg{BENCHMARKS.md}). In practice: masking a chat message costs tens of
+milliseconds in the browser and single-digit milliseconds on a server, a
+full support ticket stays under half a second, and the deterministic rule
+layer is effectively free. The measurement scripts live in the repository,
+under \pkg{packages/ner/eval/} and \pkg{apps/demo/scripts/}.
 
 \subsection{Continuous verification}
 
@@ -373,8 +384,9 @@ all, so the limitations are reported as plainly as the results.
   \item \textbf{The model misses things.} The rule layer is deterministic and
         highly reliable for structured identifiers, but free-text recognition
         is probabilistic. Unusual names, heavy misspellings, and OCR noise
-        will sometimes slip through. On independent text the leakage is low
-        (1 of 58 entities) but not zero.
+        will sometimes slip through, including a name-origin robustness
+        gap in all-lowercase text (see the appendix). On independent text
+        the leakage is low (1 of 58 entities) but not zero.
   \item \textbf{Four entity types, one language.} The model recognises
         persons, locations, organisations, and street addresses in Swedish
         text. Data outside those types, and PII in other languages, is not
@@ -383,7 +395,12 @@ all, so the limitations are reported as plainly as the results.
   \item \textbf{The independent test set is small.} 22 sentences give a
         direction, not a final grade. A larger independent gold set is the
         project's top measurement priority, and no annotated test set yet
-        exists for the target domains of support, healthcare, and legal text.
+        exists for the target domains of support, healthcare, and legal
+        text. The staged plan for closing this gap is public
+        (\pkg{docs/GOLD\_SET\_PLAN.md}): 200+ sentences, on the order of
+        500 entities, across the authority/legal and support/chat
+        registers, annotated before any model output is seen, with a
+        blind second-pass agreement check and per-register reporting.
   \item \textbf{Defence in depth.} maskera is a strong first layer, not the
         only one. Keep access controls, processing agreements, logging
         policies, and human review in high-stakes flows.
@@ -448,7 +465,7 @@ For production use, the project's operations guide
 \subsection{Reviewer checklist}
 
 The same recommendations in checklist form, for pasting into an internal
-security or privacy review:
+review:
 
 \begin{itemize}
   \item[$\square$] Redaction runs \emph{before} the LLM call, the log write,
@@ -476,24 +493,23 @@ Everything claimed in this document can be checked without asking us:
         artifact is \pkg{onnx/model\_q4.onnx}, SHA-256\\
         {\footnotesize\texttt{f34aa2d9e2272aa8cadded3ff819827d858cb5ab07c9b40f2bc4d1d147dd5625}};\\
         the current hash always lives in \pkg{docs/BENCHMARKS.md}.
-  \item \textbf{The numbers:} canonical in \pkg{docs/BENCHMARKS.md}, dated,
-        and reproducible with documented commands against the published
-        model.
+  \item \textbf{The numbers:} canonical in \pkg{docs/BENCHMARKS.md},
+        dated and reproducible.
   \item \textbf{The training:} the whole pipeline exists as runnable scripts
         in \pkg{training/}.
   \item \textbf{The network claims:} verifiable in the browser's developer
-        tools against the live demo at \url{https://maskera.dev}.
+        tools at \url{https://maskera.dev}.
 \end{itemize}
 
 \section*{Appendix: the sentences the model is known to miss}
 
 The evaluation harness prints every leak verbatim and nothing is filtered.
 As of the artifact above, three gold entities across both corpora have no
-overlapping detection; they are published here deliberately. In each
-sentence every other entity is caught. On provenance: the two curated
-sentences are hand-authored test cases with invented names, and the
-gold-real sentence is verbatim, already-published Wikipedia prose about
-public figures. No user data and no real private persons appear below.
+overlapping detection; they are published here deliberately, and in each
+sentence every other entity is caught. Provenance: the two curated
+sentences are hand-authored test cases with invented names; the gold-real
+sentence is verbatim, already-published Wikipedia prose about public
+figures. No user data and no real private persons appear below.
 
 \begin{table}[H]
 \centering
@@ -514,23 +530,19 @@ metonymic building name \\
 
 The second row deserves a sharper reading than ``no casing cues'':
 capitalised ``Fatima'' \emph{is} caught, and so is lowercase ``anna''. The
-failure is the combination of lowercase text and a name further from the
-training distribution, i.e.\ robustness across name origins in casing-free
-text. That gap is stated openly and targeted: the next data round adds
-lowercase augmentation, and the project's gold-set plan requires invented
-names spanning many origins, not only Swedish ones.
+failure is lowercase text combined with a name further from the training
+distribution, i.e.\ robustness across name origins in casing-free text.
+It is targeted: the next data round adds lowercase augmentation, and the
+gold-set plan requires invented names spanning many origins. These misses
+are why leakage, not $F_1$, is the gated metric: every failure mode is
+visible and tracked in the public regression corpus.
 
-These are also why the rule layer exists and why leakage, not $F_1$, is the
-gated metric: the failure modes are visible, characterised, and tracked in
-the public regression corpus.
-
-\vfill
+\medskip
 \noindent\rule{\textwidth}{0.4pt}\\[0.3em]
-{\footnotesize maskera \textperiodcentered{} whitepaper v1.3
+{\footnotesize maskera \textperiodcentered{} whitepaper v1.4
 \textperiodcentered{} July 5, 2026 \textperiodcentered{} Joel H\"agvall
-\textperiodcentered{} maskera.dev \textperiodcentered{}
-github.com/joelhagvall/maskera. Current numbers always live in
-docs/BENCHMARKS.md; where this document disagrees, that file wins. This
-document is not legal advice.}
+\textperiodcentered{} maskera.dev. Current numbers live in
+docs/BENCHMARKS.md; where this document disagrees, that file wins. Not
+legal advice.}
 
 \end{document}
