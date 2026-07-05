@@ -177,5 +177,8 @@ Two things make numbers in older documents read higher than this file:
 
 Re-run the commands above against the new artifact, update the tables, the
 date and the artifact hash, in one commit with the model change. The
+whitepaper ([`whitepaper/whitepaper.tex`](whitepaper/whitepaper.tex))
+carries a dated snapshot of these numbers; update its section 5 and rebuild
+the PDF (`node scripts/build-whitepaper.mjs`) in the same commit. The
 round-by-round training history stays in [`training/README.md`](../training/README.md);
 this file only ever describes the currently published artifact.

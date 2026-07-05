@@ -121,6 +121,13 @@ model and the WASM runtime (never your text), self-hostable, trained without
 collecting anyone's data
 (synthetic sentences plus one public, openly licensed news dataset).
 
+For DPOs, security teams and legal reviewers there is a whitepaper covering
+architecture, privacy model, training data, measured quality and GDPR
+positioning: **[maskera.dev/whitepaper.pdf](https://maskera.dev/whitepaper.pdf)**
+(LaTeX source in [`docs/whitepaper/`](docs/whitepaper/), rebuilt with
+`node scripts/build-whitepaper.mjs`, requires `brew install tectonic`;
+numbers always defer to [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md)).
+
 ## Development
 
 ```bash
