@@ -36,9 +36,9 @@ organisation numbers, phone numbers, bank account references, and others) are
 caught by deterministic, checksum-validated rules. Names, places,
 organisations, and street addresses in free text are caught by a purpose-built
 Swedish NER model of 40\,MB, small enough to run where the text already is,
-including inside a browser tab. No text leaves the device, no telemetry is
-collected, and the mapping that restores masked values never leaves the
-caller's environment. Measured on a small independent Swedish gold set, the
+including inside a browser tab. The input text never leaves the caller's
+environment, no telemetry is collected, and the mapping that restores masked
+values is held locally by the caller. Measured on a small independent Swedish gold set, the
 pipeline flagged 98\% of PII entities and achieved the highest typed $F_1$
 among the public Swedish NER models tested, at less than a tenth of their size. maskera is a
 data-minimisation and data-protection-by-design tool, not a compliance
@@ -136,7 +136,8 @@ redacted text.
 
 \section{Privacy model: what leaves the device}
 
-\textbf{The caller's text never leaves the device.} All redaction runs
+\textbf{The caller's input text never leaves the caller's environment.} All
+redaction runs
 locally, in the browser or in the caller's Node process. The packages contain
 no telemetry and phone home to nothing. The claim is verifiable: the code is
 open, and the browser's developer tools show that typed text triggers no
