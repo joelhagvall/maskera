@@ -25,15 +25,15 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{July 5, 2026 \quad\textperiodcentered\quad Whitepaper v1.7}
+\date{July 5, 2026 \quad\textperiodcentered\quad Whitepaper v1.8}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-\noindent maskera is an open-source (MIT) library that redacts Swedish personally
-identifiable information locally, in the browser or in the caller's own server
-process, before text is sent anywhere. Structured identifiers (personnummer,
+\noindent maskera is an open-source (MIT) library that redacts personally
+identifiable information in Swedish text locally, in the browser or in the
+caller's own server process, before text is sent anywhere. Structured identifiers (personnummer,
 organisation numbers, phone numbers, bank account references, and others) are
 caught by deterministic rules, checksum-validated where a checksum exists. Names, places,
 organisations, and street addresses in free text are caught by a purpose-built
@@ -358,7 +358,8 @@ frameworks; it is not legal advice.}
 \begin{itemize}
   \item \textbf{Data minimisation (Art.\ 5(1)(c) GDPR).} maskera's function
         is that less personal data reaches third parties: what is masked
-        before the API call is never processed by the recipient.
+        before the outbound call or write is never processed by the
+        recipient.
   \item \textbf{Pseudonymisation (Art.\ 4(5) GDPR).} Masked text with a
         locally held restore key is pseudonymisation: the data can no longer
         be attributed to a person without the additional information the
@@ -549,7 +550,7 @@ visible failure modes.
 
 \vfill
 \noindent\rule{\textwidth}{0.4pt}\par\smallskip
-{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.7
+{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.8
 \textperiodcentered{} July 5, 2026 \textperiodcentered{} Joel H\"agvall
 \textperiodcentered{} maskera.dev. Current numbers live in
 \pkg{docs/BENCHMARKS.md}; where this document disagrees, that file wins.
