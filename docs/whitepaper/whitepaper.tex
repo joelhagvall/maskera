@@ -160,6 +160,10 @@ requests, which suits procurement requirements that no new subprocessors be
 introduced, as well as air-gapped environments. The rule layer has no network
 capability at all.
 
+\subsection{Deployment modes}
+
+The choices above collapse into four modes:
+
 \begin{table}[h]
 \centering
 \small
@@ -295,7 +299,8 @@ corpus (average sentence 46 characters); warm figures are per sentence,
 median and 95th percentile. The browser rows run the production demo bundle
 with the self-hosted model, exactly what maskera.dev ships. A real first
 visit adds the network download of the $\sim$40\,MB model; returning
-visitors read it from the browser cache.
+visitors read it from the browser cache. The WebGPU path is opt-in and
+compiles shaders on the first inference ($\sim$0.5\,s, once per visit).
 
 \begin{table}[h]
 \centering
@@ -305,7 +310,7 @@ visitors read it from the browser cache.
 Environment & Cold start & Warm (median / p95) & Notes \\
 \midrule
 Browser, WASM (demo default) & 0.19\,s & 50 / 58\,ms & no GPU needed \\
-Browser, WebGPU & 0.21\,s & 3.7 / 4.6\,ms & opt-in, slower first run \\
+Browser, WebGPU & 0.21\,s & 3.7 / 4.6\,ms & opt-in \\
 Node (native CPU runtime) & 0.21\,s & 3.5 / 5.1\,ms & server-side \\
 Rules only (\pkg{@maskera/core}) & none & $\sim$0.002\,ms & no model, no network \\
 \bottomrule
