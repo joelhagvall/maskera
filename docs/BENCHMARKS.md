@@ -168,7 +168,7 @@ persons appear here.
 | Corpus | Input | Expected | Status |
 | ------ | ----- | -------- | ------ |
 | curated | "Klarna rekryterade Daniel från Spotify i fjol." | `Klarna` ORGANIZATION | known miss (sentence-initial org reads as a name-like subject; `Daniel` and `Spotify` are caught) |
-| curated | "hejhej det är fatima igen, hör av dig när du kan" | `fatima` PERSON | known miss (all-lowercase chat text, no casing cues; see the lowercased benchmark) |
+| curated | "hejhej det är fatima igen, hör av dig när du kan" | `fatima` PERSON | known miss. Not casing alone: capitalised "Fatima" is caught, and so is lowercase "anna". The failure is lowercase text combined with a name further from the training distribution; name-origin robustness in casing-free text is a tracked gap (see the lowercased benchmark and GOLD_SET_PLAN.md) |
 | gold-real | "Den 6 mars 2018 besökte Löfven Vita huset och hade sitt första officiella möte med …" | `Vita huset` LOCATION | known miss (metonymic building name; `Löfven` and the rest are caught) |
 
 ## Metric definitions
