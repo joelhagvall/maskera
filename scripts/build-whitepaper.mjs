@@ -10,11 +10,7 @@ const root = resolve(import.meta.dirname, "..")
 const src = resolve(root, "docs/whitepaper/whitepaper.tex")
 const out = resolve(root, "apps/demo/public/whitepaper.pdf")
 
-const tectonics = [
-  "/opt/homebrew/bin/tectonic",
-  "/usr/local/bin/tectonic",
-  "/usr/bin/tectonic",
-]
+const tectonics = ["/opt/homebrew/bin/tectonic", "/usr/local/bin/tectonic", "/usr/bin/tectonic"]
 const tectonic = tectonics.find((p) => existsSync(p))
 if (!tectonic) {
   console.error("tectonic not found; install with: brew install tectonic")
