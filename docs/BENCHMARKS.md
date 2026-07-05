@@ -159,7 +159,11 @@ DEVICE=webgpu NODE_PATH=/tmp/bench/node_modules node scripts/bench-browser.mjs
 
 The three sentences the published artifact is known to miss, graded honestly
 in the tables above. Publishing them is part of the trust model: the eval
-harness prints every leak verbatim, nothing is filtered.
+harness prints every leak verbatim, nothing is filtered. Provenance: the two
+curated sentences are hand-authored test cases with invented names ("Daniel",
+"fatima"), and the gold-real sentence is verbatim, already-published
+Wikipedia prose about public figures. No user data and no real private
+persons appear here.
 
 | Corpus | Input | Expected | Status |
 | ------ | ----- | -------- | ------ |
