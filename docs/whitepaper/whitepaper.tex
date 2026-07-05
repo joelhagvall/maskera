@@ -6,7 +6,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{microtype}
-\usepackage[margin=32mm,top=30mm,bottom=30mm]{geometry}
+\usepackage[margin=32mm,top=28mm,bottom=26mm]{geometry}
 \usepackage{amssymb}
 \usepackage{booktabs}
 \usepackage{float}
@@ -16,7 +16,7 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{url}
 \usepackage{parskip}
-\setlength{\parskip}{0.4\baselineskip}
+\setlength{\parskip}{0.34\baselineskip}
 
 \newcommand{\pkg}[1]{\texttt{#1}}
 
@@ -40,7 +40,9 @@ organisations, and street addresses in free text are caught by a purpose-built
 Swedish NER model of 40\,MB, small enough to run where the text already is,
 including inside a browser tab. The input text never leaves the caller's
 environment, no telemetry is collected, and the mapping that restores masked
-values is held locally by the caller. Measured on a small independent Swedish gold set, the
+values is held locally by the caller. In the default setup the browser
+downloads the static model once from a public host; a self-hosted model
+makes zero external requests. Measured on a small independent Swedish gold set, the
 pipeline flagged 98\% of PII entities and achieved the highest typed $F_1$
 among the public Swedish NER models tested, at less than a tenth of their size. maskera is a
 data-minimisation and data-protection-by-design tool, not a compliance
@@ -292,11 +294,14 @@ RecordedFuture Swedish-NER & $\sim$500\,MB & 1.00 & 0.88 \\
 \end{tabular}
 \end{table}
 
-The full tables, all-lowercase results, method notes, and known exceptions
-are in \pkg{BENCHMARKS.md}. One known exception is reported openly: on text
-entirely without capital letters, KBLab's lowermix model leads (typed $F_1$
-0.90 versus maskera's 0.86). None of the alternative models detects street
-addresses or fits in a web application.
+This comparison is an engineering smoke test, not a definitive public
+leaderboard: its purpose is to confirm that a browser-sized model stays
+competitive enough to justify local deployment, not to rank the field on
+58 entities. The full tables, all-lowercase results, method notes, and
+known exceptions are in \pkg{BENCHMARKS.md}. One known exception is reported
+openly: on text entirely without capital letters, KBLab's lowermix model
+leads (typed $F_1$ 0.90 versus maskera's 0.86). None of the alternative
+models detects street addresses or fits in a web application.
 
 \subsection{Latency}
 
@@ -537,12 +542,16 @@ gold-set plan requires invented names spanning many origins. These misses
 are why leakage, not $F_1$, is the gated metric: every failure mode is
 visible and tracked in the public regression corpus.
 
-\medskip
-\noindent\rule{\textwidth}{0.4pt}\\[0.3em]
-{\footnotesize maskera \textperiodcentered{} whitepaper v1.4
+In short: maskera does not make text harmless, but it materially reduces
+what leaves the caller's environment, with reproducible evidence and
+visible failure modes.
+
+\vfill
+\noindent\rule{\textwidth}{0.4pt}\par\smallskip
+{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.4
 \textperiodcentered{} July 5, 2026 \textperiodcentered{} Joel H\"agvall
 \textperiodcentered{} maskera.dev. Current numbers live in
-docs/BENCHMARKS.md; where this document disagrees, that file wins. Not
-legal advice.}
+\pkg{docs/BENCHMARKS.md}; where this document disagrees, that file wins.
+Not legal advice.\par}
 
 \end{document}
