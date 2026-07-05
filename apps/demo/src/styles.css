@@ -656,6 +656,13 @@ body {
   font: 12.5px / 1.7 var(--mono);
   white-space: pre;
 }
+.code-line {
+  display: block;
+}
+/* Empty source lines still take up a line of height. */
+.code-line:empty::before {
+  content: "\200B";
+}
 @media (max-width: 820px) {
   /* On mobile the copy button moves above the block (it would cover the
      first code line), and the code wraps instead of scrolling sideways so
@@ -673,6 +680,12 @@ body {
   .prose pre code {
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+  }
+  /* Hanging indent: when a long line wraps, its continuation is indented,
+     so it reads as one logical line instead of looking cut off. */
+  .code-line {
+    padding-left: 1.5em;
+    text-indent: -1.5em;
   }
 }
 .tok-k {
