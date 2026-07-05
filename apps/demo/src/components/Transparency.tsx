@@ -2,7 +2,7 @@ import { GITHUB, HF_MODEL } from "../constants"
 import { ArrowUpRightIcon, MaskeraMark } from "../icons"
 import { navClick, viewPaths } from "../routing"
 
-export function Transparency({ onBack }: { onBack: () => void }) {
+export function Transparency({ onBack, onDev }: { onBack: () => void; onDev: () => void }) {
   return (
     <>
       <div className="topbar">
@@ -10,10 +10,15 @@ export function Transparency({ onBack }: { onBack: () => void }) {
           <MaskeraMark size={20} />
           maskera
         </span>
-        <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
-          GitHub
-          <ArrowUpRightIcon size={13} />
-        </a>
+        <nav className="head-links">
+          <a className="ghlink" href={viewPaths.dev} onClick={navClick(onDev)}>
+            För utvecklare
+          </a>
+          <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
+            GitHub
+            <ArrowUpRightIcon size={13} />
+          </a>
+        </nav>
       </div>
       <a className="back" href={viewPaths.demo} onClick={navClick(onBack)}>
         ← Tillbaka till startsidan

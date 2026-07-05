@@ -11,7 +11,8 @@
     "audit:lighthouse": "start-server-and-test preview http://127.0.0.1:4173 lighthouse:run",
     "lighthouse:run": "mkdir -p reports && lighthouse http://127.0.0.1:4173 --only-categories=performance,accessibility,best-practices,seo --chrome-flags=\"--headless=new\" --output=html --output=json --output-path=./reports/lighthouse --quiet",
     "audit:a11y": "start-server-and-test preview http://127.0.0.1:4173 a11y:run",
-    "a11y:run": "pa11y --config .pa11yrc.json --include-warnings http://127.0.0.1:4173"
+    "a11y:run": "pa11y --config .pa11yrc.json --include-warnings http://127.0.0.1:4173",
+    "record:demo": "node scripts/record-demo.mjs"
   },
   "dependencies": {
     "@huggingface/transformers": "^3.3.1",
@@ -27,6 +28,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "lighthouse": "^13.4.0",
     "pa11y": "^9.1.1",
+    "playwright": "^1.61.1",
     "start-server-and-test": "^3.0.11",
     "tslib": "^2.8.1",
     "typescript": "^5.7.2",
