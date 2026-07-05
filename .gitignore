@@ -12,8 +12,12 @@ training/.publish-*
 .vscode/
 training/.benchmark/
 packages/ner/eval/corpus-domain.mjs
+packages/ner/eval/corpus-stage2.mjs
 apps/demo/reports/
 apps/demo/public/ort/
+# recorded demo clips (scripts/record-demo.mjs output)
+apps/demo/*.mp4
+apps/demo/*.webm
 docs/LINKEDIN_POST.md
 docs/LINKEDIN_POST_SV.md
 CLAUDE.md

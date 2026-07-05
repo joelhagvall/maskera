@@ -56,7 +56,9 @@ export function App() {
         </>
       )}
       {view === "dev" && <Developers onBack={goDemo} />}
-      {view === "transparency" && <Transparency onBack={goDemo} />}
+      {view === "transparency" && (
+        <Transparency onBack={goDemo} onDev={() => navigate("dev")} />
+      )}
       <Footer onTransparency={() => navigate("transparency")} />
     </div>
   )
