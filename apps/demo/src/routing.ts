@@ -1,4 +1,4 @@
-import { type MouseEvent, useEffect, useState } from "react"
+import { type MouseEvent, useEffect, useState, useTransition } from "react"
 
 export type View = "demo" | "transparency" | "dev"
 
@@ -23,9 +23,14 @@ function viewFromPath(pathname: string): View {
 
 export function useRoute() {
   const [view, setView] = useState<View>(() => viewFromPath(window.location.pathname))
+  // Navigating to a code-split page suspends while its chunk loads. Driving the
+  // view change through a transition keeps the current page on screen until the
+  // next chunk is ready, so the switch never flashes a blank Suspense fallback,
+  // even on the first visit before the idle prefetch has warmed the cache.
+  const [pending, startTransition] = useTransition()
 
   useEffect(() => {
-    const onPop = () => setView(viewFromPath(window.location.pathname))
+    const onPop = () => startTransition(() => setView(viewFromPath(window.location.pathname)))
     window.addEventListener("popstate", onPop)
     return () => window.removeEventListener("popstate", onPop)
   }, [])
@@ -38,10 +43,10 @@ export function useRoute() {
     if (viewFromPath(window.location.pathname) !== next) {
       window.history.pushState(null, "", viewPaths[next])
     }
-    setView(next)
+    startTransition(() => setView(next))
   }
 
-  return { view, navigate }
+  return { view, navigate, pending }
 }
 
 // Wraps an in-app navigation on a real <a href>: plain left-clicks route via
