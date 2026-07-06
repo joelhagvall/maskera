@@ -130,6 +130,20 @@ export const CheckIcon = (p: IconProps) => (
   </Svg>
 )
 
+export const ChatIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 5h16v11H9l-4 4v-4H4z" />
+    <path d="M8 10h8M8 13h5" />
+  </Svg>
+)
+
+export const KeyIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="7.5" cy="8.5" r="3.5" />
+    <path d="M10 11l8 8M15 16l2-2M18 19l2-2" />
+  </Svg>
+)
+
 // --- mapping: scenario id -> icon ---------------------------------------
 
 export const DOMAIN_ICONS: Record<string, (p: IconProps) => ReactElement> = {
