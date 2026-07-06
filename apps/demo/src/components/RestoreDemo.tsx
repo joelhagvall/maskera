@@ -16,13 +16,68 @@ function pickToken(map: Record<string, string>, ...labels: string[]): string | n
 }
 
 /**
+ * Per-scenario AI replies, each written in its own domain (screening, support,
+ * journal, litigation, casework) so the answer card follows the scenario the
+ * visitor picked. Every reply is built from the live map's placeholders, so it
+ * restores end to end and gracefully drops a clause when a token is absent.
+ */
+const REPLIES: Record<string, (map: Record<string, string>) => string> = {
+  hr: (map) => {
+    const namn = pickToken(map, "NAMN", "PER", "PERSON")
+    const email = pickToken(map, "EMAIL")
+    const who = namn ? ` för ${namn}` : ""
+    const back = namn
+      ? `Boka en första intervju och återkoppla till ${namn}${email ? ` på ${email}` : ""}.`
+      : "Boka en första intervju och dokumentera bedömningen."
+    return `Tack! Jag har gått igenom CV:t${who} mot rollbeskrivningen och profilen ser stark ut. Förslag på intervjufrågor finns nedan. ${back}`
+  },
+  support: (map) => {
+    const namn = pickToken(map, "NAMN", "PER", "PERSON")
+    const card = pickToken(map, "CREDIT_CARD")
+    const contact = pickToken(map, "PHONE", "EMAIL")
+    const who = namn ? ` för ${namn}` : ""
+    const sparr = card ? ` och spärrat kortet ${card}` : ""
+    const back = contact
+      ? `Nästa steg: beställ nytt kort och återkoppla${namn ? ` till ${namn}` : ""} på ${contact}.`
+      : "Nästa steg: beställ nytt kort och dokumentera ärendet."
+    return `Tack för underlaget! Jag har skapat ärendet${who}${sparr}. ${back}`
+  },
+  vard: (map) => {
+    const namn = pickToken(map, "NAMN", "PER", "PERSON")
+    const email = pickToken(map, "EMAIL")
+    const phone = pickToken(map, "PHONE")
+    const who = namn ? ` för ${namn}` : ""
+    const mail = email ? ` Sammanfattningen skickas till ${email}.` : ""
+    const anhorig = phone ? ` Nå anhörig på ${phone} om läget förändras.` : ""
+    return `Journalanteckningen${who} är uppdaterad med EKG-svaret.${mail}${anhorig}`
+  },
+  juridik: (map) => {
+    const namn = pickToken(map, "NAMN", "PER", "PERSON")
+    const konto = pickToken(map, "BANKGIRO", "IBAN", "PLUSGIRO")
+    const who = namn ? ` för ${namn}` : ""
+    const pay = konto ? ` Bekräfta att betalning ska ske till ${konto}.` : ""
+    return `Jag har sammanställt ärendet${who} inför förhandlingen och yrkandet om skadestånd är dokumenterat.${pay} Återkoppla inför mötet.`
+  },
+  kommun: (map) => {
+    const namn = pickToken(map, "NAMN", "PER", "PERSON")
+    const email = pickToken(map, "EMAIL")
+    const who = namn ? ` för ${namn}` : ""
+    const back = namn && email ? ` Återkoppla beslutet till ${namn} på ${email}.` : ""
+    return `Ärendet${who} är sammanställt för handläggaren och underlaget om försörjningsstöd är komplett.${back}`
+  },
+}
+
+/**
  * A believable AI reply for the current redaction, written with the very
  * placeholders the model would have received. Restoring it demonstrates the
  * round trip end to end without asking the visitor to actually call an AI.
  * Derived from the live map, so it gains the person's name the moment the
- * model layer adds it.
+ * model layer adds it. When a scenario id is given, its domain-specific reply
+ * is used; otherwise (e.g. "Egen text") a generic case-handling reply.
  */
-export function sampleAiReply(map: Record<string, string>): string {
+export function sampleAiReply(map: Record<string, string>, scenarioId?: string): string {
+  const builder = scenarioId ? REPLIES[scenarioId] : undefined
+  if (builder) return builder(map)
   const namn = pickToken(map, "NAMN", "PER", "PERSON")
   const contact = pickToken(map, "PHONE", "EMAIL")
   const who = namn ? ` för ${namn}` : ""
@@ -38,9 +93,15 @@ export function sampleAiReply(map: Record<string, string>): string {
  * and maskera swaps the originals back in locally, using the key that never
  * left the device. Only rendered when there is something to restore.
  */
-export function RestoreDemo({ result }: { result: RedactResult }) {
+export function RestoreDemo({
+  result,
+  scenarioId,
+}: {
+  result: RedactResult
+  scenarioId?: string
+}) {
   const { map } = result
-  const auto = useMemo(() => sampleAiReply(map), [map])
+  const auto = useMemo(() => sampleAiReply(map, scenarioId), [map, scenarioId])
   // null = untouched (mirror the generated sample); a string = the visitor's edit.
   const [draft, setDraft] = useState<string | null>(null)
   const [open, setOpen] = useState(false)

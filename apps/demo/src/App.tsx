@@ -67,7 +67,7 @@ export function App() {
                 Only shown once there is something to restore. key resets the
                 edited draft when the scenario changes. */}
             {Object.keys(ner.result.map).length > 0 && (
-              <RestoreDemo key={active.id} result={ner.result} />
+              <RestoreDemo key={active.id} result={ner.result} scenarioId={active.id} />
             )}
           </main>
         </>
