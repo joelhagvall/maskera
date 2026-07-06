@@ -4,6 +4,7 @@ import { Footer } from "./components/Footer"
 import { Header } from "./components/Header"
 import { InputCard } from "./components/InputCard"
 import { OutputCard } from "./components/OutputCard"
+import { RestoreDemo } from "./components/RestoreDemo"
 import { Developers, Transparency } from "./pages"
 import { useRoute } from "./routing"
 import { type Scenario, scenarios } from "./scenarios"
@@ -62,6 +63,12 @@ export function App() {
               {/* key resets the card's local protect/showMap state per scenario */}
               <OutputCard key={active.id} result={ner.result} analyzing={ner.analyzing} />
             </div>
+            {/* Step three: paste the AI's answer back and un-mask it locally.
+                Only shown once there is something to restore. key resets the
+                edited draft when the scenario changes. */}
+            {Object.keys(ner.result.map).length > 0 && (
+              <RestoreDemo key={active.id} result={ner.result} />
+            )}
           </main>
         </>
       )}

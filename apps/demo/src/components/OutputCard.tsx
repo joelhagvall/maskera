@@ -1,8 +1,30 @@
 import type { RedactResult } from "@maskera/core"
 import { useMemo, useState } from "react"
-import { EyeIcon } from "../icons"
+import { CheckIcon, CopyIcon, EyeIcon } from "../icons"
 import { labelMeta } from "../labels"
 import { RedactedText } from "../segments"
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <button
+      type="button"
+      className="clear copy"
+      onClick={() => {
+        navigator.clipboard?.writeText(text).then(
+          () => {
+            setCopied(true)
+            setTimeout(() => setCopied(false), 1500)
+          },
+          () => {},
+        )
+      }}
+    >
+      {copied ? <CheckIcon size={13} /> : <CopyIcon size={13} />}
+      {copied ? "Kopierat" : "Kopiera"}
+    </button>
+  )
+}
 
 function Stats({ result }: { result: RedactResult }) {
   const counts = useMemo(() => {
@@ -70,6 +92,7 @@ export function OutputCard({ result, analyzing }: { result: RedactResult; analyz
           Vad AI:n ser
           {analyzing && <span className="card-sub">analyserar…</span>}
         </span>
+        {result.text ? <CopyButton text={result.text} /> : null}
       </div>
 
       <div className={`output ${analyzing ? "analyzing" : ""}`}>
