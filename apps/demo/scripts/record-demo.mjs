@@ -4,8 +4,9 @@
  *
  * Spins up the Vite dev server, drives the free-text example with Playwright,
  * captures a video, and transcodes webm -> mp4 with ffmpeg. The clip shows the
- * green "maskeras AI-modell aktiv" status and the live masking as the text is
- * typed in.
+ * green "maskeras AI-modell aktiv" status, the live masking as the text is
+ * typed in, and then the round trip: opening "Se hela flödet" to reveal the AI
+ * reply (placeholders) and the restored answer (real values back in place).
  *
  * Prereqs (one-off):
  *   pnpm --filter @maskera/demo exec playwright install chromium
@@ -78,23 +79,42 @@ try {
     recordVideo: { dir: videoDir, size: { width: 1600, height: 900 } },
   })
   const page = await context.newPage()
+  const recStart = Date.now() // video t0 ~ here; used to trim the intro below
+
+  // Scroll so the two cards (.grid) sit near the top of the viewport. The video
+  // is later cropped to exactly this region, so we only ever show the input and
+  // output boxes — never the header, tabs or the restore section.
+  const frameGrid = () =>
+    page.locator(".grid").evaluate((el) => {
+      window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 24)
+    })
+
   await page.goto(URL, { waitUntil: "networkidle" })
 
-  // Wait for the model to finish loading -> green "aktiv" dot.
-  await page.getByText("maskeras AI-modell aktiv").waitFor({ timeout: 120000 })
+  // Hide the restore section for the whole recording so its top edge can never
+  // bleed into the bottom of the crop while the grid is shorter than its final
+  // height. (The clip is only the input/output cards.)
+  await page.addStyleTag({ content: ".restore{display:none!important}" })
 
-  // Frame on the tool: put the controls row near the top of the viewport.
-  await page.locator(".controls").evaluate((el) => {
-    const y = el.getBoundingClientRect().top + window.scrollY - 40
-    window.scrollTo(0, y)
-  })
-  await sleep(1000)
-
-  // Switch to the free-text tab and type into the empty editor.
+  // Select the free-text example up front, before framing, so no tab
+  // interaction is ever in shot — the clip is only the cards and typing.
   await page.getByRole("button", { name: "Egen text" }).click()
-  await sleep(600)
+  await frameGrid()
+
+  // Wait for the model to finish loading -> green "aktiv" dot, then re-frame.
+  await page.getByText("maskeras AI-modell aktiv").waitFor({ timeout: 120000 })
+  await frameGrid()
+  await sleep(700)
+
+  // Everything before this point (page load, model download, scrolling) is
+  // trimmed out of the final clip so it opens straight on the framed empty
+  // cards, a beat before the first keystroke.
+  const trimStart = Math.max(0, (Date.now() - recStart) / 1000 - 0.5)
+
+  // Type the free text into the empty editor. focus() (not click) so there is
+  // no pointer interaction at all, only keystrokes.
   const editor = page.locator(".editor textarea")
-  await editor.click()
+  await editor.focus()
   for (const ch of TYPE) {
     await editor.pressSequentially(ch)
     // Slight per-key jitter so the typing reads as human, not a paste.
@@ -104,10 +124,23 @@ try {
   // Let the final analysis settle and the counter/chips fill in.
   await sleep(2600)
 
+  // Measure the cards region now (its tallest, once the output has filled in),
+  // padded a touch, clamped to the frame, and rounded to even pixels for h264.
+  const box = await page.locator(".grid").boundingBox()
+  // Roomy on the sides, tight top/bottom so neither the tab row above nor the
+  // restore section below bleeds into frame.
+  const padX = 24
+  const padY = 10
+  const clampEven = (n) => Math.max(0, Math.floor(n / 2) * 2)
+  const cx = clampEven(box.x - padX)
+  const cy = clampEven(box.y - padY)
+  const cw = clampEven(Math.min(1600 - cx, box.width + padX * 2))
+  const ch2 = clampEven(Math.min(900 - cy, box.height + padY * 2))
+
   await context.close()
   await browser.close()
 
-  // 3. Transcode webm -> mp4 (1600x900, 25fps, h264) to match the shipped clip.
+  // 3. Transcode webm -> mp4, cropped to just the two cards (25fps, h264).
   const webm = readdirSync(videoDir).find((f) => f.endsWith(".webm"))
   if (!webm) throw new Error("no video was captured")
   const webmPath = join(videoDir, webm)
@@ -121,8 +154,10 @@ try {
       "-y",
       "-i",
       webmPath,
+      "-ss",
+      trimStart.toFixed(3),
       "-vf",
-      "scale=1600:900:flags=lanczos,fps=25",
+      `crop=${cw}:${ch2}:${cx}:${cy},fps=25`,
       "-c:v",
       "libx264",
       "-pix_fmt",
@@ -135,7 +170,7 @@ try {
       "+faststart",
       OUT,
     ])
-    console.log(`wrote ${OUT}`)
+    console.log(`wrote ${OUT} (${cw}x${ch2})`)
   }
 } finally {
   stopVite()
