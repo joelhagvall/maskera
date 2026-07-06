@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { Controls } from "./components/Controls"
-import { Developers } from "./components/Developers"
 import { Footer } from "./components/Footer"
 import { Header } from "./components/Header"
 import { InputCard } from "./components/InputCard"
 import { OutputCard } from "./components/OutputCard"
-import { Transparency } from "./components/Transparency"
+import { Developers, Transparency } from "./pages"
 import { useRoute } from "./routing"
 import { type Scenario, scenarios } from "./scenarios"
 import { useSwedishNer } from "./useSwedishNer"
@@ -66,8 +65,16 @@ export function App() {
           </main>
         </>
       )}
-      {view === "dev" && <Developers onBack={goDemo} />}
-      {view === "transparency" && <Transparency onBack={goDemo} onDev={() => navigate("dev")} />}
+      {view === "dev" && (
+        <Suspense fallback={null}>
+          <Developers onBack={goDemo} />
+        </Suspense>
+      )}
+      {view === "transparency" && (
+        <Suspense fallback={null}>
+          <Transparency onBack={goDemo} onDev={() => navigate("dev")} />
+        </Suspense>
+      )}
       <Footer onTransparency={() => navigate("transparency")} onPolicy={goPolicy} />
     </div>
   )

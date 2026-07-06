@@ -1,4 +1,5 @@
 import { GITHUB, HF_MODEL } from "../constants"
+import { preloadTransparency } from "../pages"
 import { navClick, viewPaths } from "../routing"
 
 export function Footer({
@@ -18,7 +19,13 @@ export function Footer({
         , allt körs i din webbläsare. Ingen data skickas någonstans.
       </p>
       <p className="footer-row">
-        <a className="footer-link" href={viewPaths.transparency} onClick={navClick(onTransparency)}>
+        <a
+          className="footer-link"
+          href={viewPaths.transparency}
+          onClick={navClick(onTransparency)}
+          onPointerEnter={() => preloadTransparency()}
+          onFocus={() => preloadTransparency()}
+        >
           Integritet & transparens
         </a>{" "}
         ·{" "}
@@ -26,6 +33,8 @@ export function Footer({
           className="footer-link"
           href={`${viewPaths.transparency}#integritetspolicy`}
           onClick={navClick(onPolicy)}
+          onPointerEnter={() => preloadTransparency()}
+          onFocus={() => preloadTransparency()}
         >
           Integritetspolicy
         </a>{" "}
