@@ -274,6 +274,20 @@ Leakage & 1.7\% & entities missed entirely, 1 of 58 \\
 \end{tabular}
 \end{table}
 
+\subsection{Street addresses (the class no comparison model has)}
+
+The three gold sets above cover person, location, and organisation; none
+contains street addresses, the fourth class the model emits. Addresses are
+therefore measured on their own held-out set of 27 sentences (21 address
+spans), with street names chosen to avoid the training generator's stems.
+Measured \textbf{2026-07-07} on the same q4 artifact: redaction recall is
+\textbf{100\%} (every address masked) with \textbf{zero leaks}, and address
+precision is 95.5\%. The one weakness is the span boundary: on 17 of 21 the
+model tags the street name but drops the house number (\emph{Sveavägen}, not
+\emph{Sveavägen 44}). Because a bare house number is far less identifying than
+the street, leakage stays at zero, but tightening the address span to include
+the trailing number is the clear next training step for this class.
+
 \subsection{Comparison with public Swedish NER models}
 
 Same independent gold corpus, same harness, overlap matching, labels mapped

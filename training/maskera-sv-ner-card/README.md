@@ -59,10 +59,14 @@ through `maskera`, the raw tags map to the placeholder names you see in
 redacted output: `PER` → `PERSON`, `LOC` → `LOCATION`, `ORG` → `ORGANIZATION`,
 `ADR` → `ADDRESS` (e.g. `[PERSON_1]`).
 
-Note: the benchmark sets below cover PER / LOC / ORG only, neither contains
-street addresses, so `ADR` accuracy is **not** independently measured. Historical
-per-type numbers from training are in the
-[training notes](https://github.com/joelhagvall/maskera/tree/main/training).
+Note: the PER / LOC / ORG benchmark sets below contain no street addresses, so
+`ADR` is measured on its own set (27 sentences, 21 address spans, held out of
+training). Measured 2026-07-07 on the shipped q4 artifact: **redaction recall
+100%** (every address masked), **0% leaks**, ADDRESS precision 95.5%. The one
+weakness is span boundary — on 17 of 21 the model tags the street name but drops
+the house number (`Sveavägen` not `Sveavägen 44`), a partial exposure rather
+than a leak. Full breakdown:
+[BENCHMARKS.md → Address (ADR) eval](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md#address-adr-eval-the-one-class-the-other-sets-miss).
 
 ## Quantizations
 
