@@ -61,12 +61,6 @@
   box-sizing: border-box;
 }
 
-html {
-  /* Reserve the scrollbar gutter so expanding content (e.g. "Se hela flödet")
-     never appears/removes the vertical scrollbar and shifts the centered
-     layout sideways. */
-  scrollbar-gutter: stable;
-}
 html,
 body {
   margin: 0;
@@ -282,6 +276,18 @@ body {
   }
   .tab-divider {
     display: none;
+  }
+  /* Stack the restore header on mobile. Side by side, the toggle button is
+     flex:none and sits next to the intro, so the note paragraph's width tracks
+     the button width, and the button changes width between "Se hela flödet"
+     and "Dölj flödet", which re-wrapped the note text on every toggle. Stacking
+     gives the note a full, stable width independent of the button. */
+  .restore-head {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .restore-toggle {
+    align-self: flex-start;
   }
 }
 .card {
