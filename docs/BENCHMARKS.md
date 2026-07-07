@@ -64,12 +64,155 @@ CORPUS_FILE=<printed path> MASKERA_REMOTE=1 MASKERA_F1_FLOOR=0 MASKERA_LEAK_CEIL
   node packages/ner/eval/run-eval.mjs
 ```
 
+## Address (ADR) eval (the one class the other sets miss)
+
+- **Measured:** 2026-07-07, same q4 artifact as everywhere else (sha unchanged).
+
+The shipped model has four classes (PER / LOC / ORG / **ADR**), but every set
+above covers only the first three: the Swedish NER Corpus has no address class,
+and the curated / stage-2 sets leave structured-looking data to the rule layer.
+So `ADR` was the one shipped class with no independent number. This set closes
+that gap. 27 sentences, 21 street-address spans, authored for this eval and held
+out of training; street names were picked to **avoid** the training generator's
+stem list (real streets like Sveavägen, Hornsgatan, Renstiernas gata), so the
+surface forms are out-of-distribution, not memorised. It shares our annotation
+style, so read it like the curated corpus, not like the independent Wikipedia
+set. Distractor sentences (a bare house number, a PO box, a postcode, a phone
+number) measure whether the model over-flags addresses.
+
+| metric | score | meaning |
+| ------ | ----- | ------- |
+| redaction recall (any label) | **100%** (21/21) | address masked under some label |
+| labeled ADDRESS recall | **100%** (21/21) | masked *and* correctly typed ADDRESS |
+| leaks | **0%** (0/21) | addresses missed entirely (the safety number) |
+| ADDRESS precision | 95.5% (21/22) | one false flag: "Vårdcentralen" tagged ADDRESS |
+| exact-span recall | **19%** (4/21) | street *and* house number both inside the span |
+
+The headline is the split between the first three rows and the last: the model
+detects and correctly types **every** address with zero leaks, but on 17 of 21
+it **drops the house number** — it tags `Sveavägen` but not `Sveavägen 44`. The
+four exact matches are all cases where a letter is glued to the number
+(`Odengatan 12B`, `skånegatan 74 b`, `Ynglingavägen 4 D`); a plain `Gata NN`
+loses the digits. For redaction that is a **partial exposure**: the street is
+masked (`[ADDRESS_1] 44`) but a bare house number can remain in the clear. A
+lone number is far less identifying than the street, so leakage stays 0%, but
+tightening the ADR span boundary to include the trailing number is the clear
+next training lever for this class. (The training generator emits addresses as
+`street SP number`; the model learned the stem strongly and treats the detached
+number as `O`.)
+
+Reproduce (needs the model locally; corpus is committed, no download):
+
+```bash
+pnpm install && pnpm -C packages/ner build
+CORPUS_FILE="./corpus-adr.mjs" \
+  MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v5 \
+  node packages/ner/eval/analyze-adr.mjs   # ADR-only breakdown + every gold vs predicted span
+```
+
+(`run-eval.mjs` on the same corpus reports an aggregate span-F1 of 57.8%, but
+that conflates the number-dropping boundary miss with detection; `analyze-adr.mjs`
+separates the two, which is why the per-metric table above is the honest read.)
+
+## Swedish NER Corpus test split (large held-out, in-distribution)
+
+- **Measured:** 2026-07-05, same q4 artifact as above (sha unchanged).
+
+2453 sentences, 1280 PER/LOC/ORG entities, from the public Swedish NER Corpus
+(klintan / Webbnyheter 2012) **test** split. Authored and labeled by others, so
+it is not anchored to our own annotation style, and the sentences are held out
+(disjoint from training). **But** the shipped model trained on this corpus's
+**train** split (see [What the model was trained on](#what-the-model-was-trained-on)),
+so test and train share source, domain, register and annotation guidelines. Read
+this as a **large in-distribution held-out** number: honest about memorisation
+(the exact sentences were never seen) but *not* a clean independent or
+out-of-domain measure. It is the most reliable per-type breakdown we have.
+
+| metric     | score | meaning                                        |
+| ---------- | ----- | ---------------------------------------------- |
+| precision  | 84.6% | of predictions, how many were correct          |
+| recall     | 87.3% | of real entities, how many were found          |
+| span F1    | 85.9% | harmonic mean, label-agnostic                  |
+| labeled F1 | 81.9% | same, but the label must also be right         |
+| leaks      | 8.4%  | 108 of 1280 missed entirely (above the 8% CI ceiling; this is the harder set) |
+
+Recall by type (exact span): **PERSON 91.8%** (562/612), **LOCATION 91.0%**
+(323/355), **ORGANIZATION 74.4%** (233/313). ORG is the weakest type here, as it
+is across every round of the [training journal](../training/README.md); the
+address (ADR) class has no counterpart in this corpus and is scored separately
+in [Address (ADR) eval](#address-adr-eval-the-one-class-the-other-sets-miss).
+
+Reproduce (needs the model locally; downloads the test split, gitignored):
+
+```bash
+pnpm install && pnpm -C packages/ner build
+curl -fsSL https://raw.githubusercontent.com/klintan/swedish-ner-corpus/master/test_corpus.txt \
+  -o training/.benchmark/test_corpus.txt
+MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v5 \
+  node packages/ner/eval/benchmark-swedish-ner.mjs
+```
+
+## Error analysis (where the model actually fails)
+
+Measured 2026-07-05 on the 2453-sentence Swedish NER Corpus test split, to turn
+the two known weaknesses (ORG recall, lowercase text) into specifics that a
+training round can act on. Both are honest bad news, recorded on purpose.
+
+### ORG misses are mostly real company names, not acronyms
+
+Of 313 gold ORG entities, 80 are missed (exact span). Of those 80, **63 are
+total leaks** (no overlapping prediction at all); ORG redaction recall (caught
+under any label) is 79.9%. A convenient story would be "the misses are just bare
+acronyms" — the data refutes it:
+
+| Category | Count | Share | Examples |
+| -------- | ----- | ----- | -------- |
+| single Capitalised word (real orgs) | 52 | 65% | Apple, Google, Samsung, Skandia, Villaägarna, Djurgården, Fritidsresor |
+| multiword organisation | 22 | 27.5% | Högsta domstolen, Davis Cup, Rio de Janeiros Zoo, The Voice, Rosa bandet |
+| acronym (ALLCAPS ≤6) | 6 | 7.5% | S, C, IOK |
+
+Three actionable patterns: **international brands** (Apple, Google, Samsung,
+Sprint, Opel) under-represented in Swedish-first training data; **genitive ORG**
+forms (Opels, Apples, Samsungs, Googles, Socialdemokaternas, Fotbollförbundets);
+and **multiword institutions** (courts, media, sports). Next ORG data round:
+add these three, in that order.
+
+### Lowercase is a bigger weakness than the 22-sentence set showed
+
+Same corpus, forced lowercase (a proxy for the chat/support register maskera
+targets), cased vs lowercased:
+
+| metric | cased | lowercased | delta |
+| ------ | ----- | ---------- | ----- |
+| span precision | 84.6% | 78.0% | −6.5pp |
+| span recall | 87.3% | 69.4% | −18.0pp |
+| span F1 | 85.9% | 73.4% | −12.5pp |
+| labeled F1 | 81.9% | 67.2% | −14.8pp |
+| **leak rate** | 8.4% | **24.8%** | **+16.3pp** |
+| PERSON recall | 91.8% | 81.7% | −10.1pp |
+| LOCATION recall | 91.0% | 66.5% | −24.5pp |
+| ORGANIZATION recall | 74.4% | 48.6% | −25.9pp |
+
+Leaks nearly triple without casing cues: **1 in 4 entities slips through**.
+PERSON holds up best (names carry non-casing signal); LOCATION and ORG collapse.
+This matters because the **target domain is lowercase**: support and chat text is
+where the product is used and where the model is weakest. The 22-sentence gold
+set understated this (≈−5pp); at 2453 sentences it is −12.5pp span F1 and a
+tripled leak rate. Lowercase augmentation (cf. KBLab's lowermix recipe in the
+comparison below) is the single biggest open lever, ahead of the ORG round.
+
+Reproduce: the analysis script is not committed; regenerate both tables by
+running the model over the test split cased and `text.toLowerCase()`, scoring
+each with [`score.mjs`](../packages/ner/eval/score.mjs).
+
 ## How maskera compares to other Swedish NER models
 
 Measured 2026-07-04 with [`training/benchmark_competitors.py`](../training/benchmark_competitors.py):
 every model on the same gold sets, overlap matching, labels mapped to
-PER / LOC / ORG (the cross-model comparable types; ADR is excluded because no
-other model has an address class). **Redaction recall** is the safety number:
+PER / LOC / ORG (the cross-model comparable types; ADR is excluded here because
+no other model has an address class — it is scored on its own in
+[Address (ADR) eval](#address-adr-eval-the-one-class-the-other-sets-miss)).
+**Redaction recall** is the safety number:
 was the entity flagged at all, under any label. Cross-model *precision* is
 indicative rather than definitive, since label schemes differ. The maskera row
 is the fp32 student; the shipped q4 artifact costs about 0.01 overlap F1 on
@@ -236,11 +379,23 @@ Two things make numbers in older documents read higher than this file:
 
 ## Known gaps
 
-- The independent set is 22 sentences. A larger independent gold set is the
-  top measurement TODO.
+- The largest held-out number (span F1 85.9% on the 2453-sentence Swedish NER
+  Corpus test split) is **in-distribution**: the model trained on that corpus's
+  train split. It confirms the model generalises to unseen sentences of the
+  training distribution, but it is not clean independence.
+- The only **clean independent** set (different distribution, held out from all
+  training) is the 22-sentence Wikipedia set: enough for a direction, not a
+  grade. A larger clean-independent gold set is the top measurement TODO; the
+  staged plan to build one is in [GOLD_SET_PLAN.md](GOLD_SET_PLAN.md).
 - No eval set covers the actual target domain (support / healthcare / legal
   text); the true target-domain number is unknown until real annotated text
-  from those domains exists.
+  from those domains exists. That is exactly what GOLD_SET_PLAN.md stage 2
+  (donated support/chat text) is designed to produce.
+- **Lowercase is the biggest quality gap, not ORG.** On the 2453-sentence set,
+  forcing lowercase drops span F1 −12.5pp and triples the leak rate to 24.8%
+  (see [Error analysis](#error-analysis-where-the-model-actually-fails)). Since
+  the target register (chat/support) is lowercase, lowercase augmentation is the
+  top training priority, ahead of the ORG recall round.
 
 ## Updating this file
 
