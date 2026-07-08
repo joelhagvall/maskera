@@ -32,9 +32,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
         if: matrix.node == 24
+      - run: pnpm build
+      # After build: ner/demo typecheck against @maskera/core's emitted
+      # dist/*.d.ts, which only exists once build has run.
       - run: pnpm typecheck
         if: matrix.node == 24
-      - run: pnpm build
       - run: pnpm test
       - run: pnpm smoke
 
