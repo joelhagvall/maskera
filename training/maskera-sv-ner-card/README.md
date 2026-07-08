@@ -4,7 +4,7 @@ language:
   - sv
 library_name: transformers.js
 pipeline_tag: token-classification
-base_model: KB/bert-base-swedish-cased
+base_model: KBLab/bert-base-swedish-cased
 tags:
   - pii
   - ner
@@ -39,7 +39,7 @@ RecordedFuture, KBLab reallysimple/lowermix, scandi-ner, the sbx PI-detection
 pair), it has the **best typed F1 on independent Swedish text of all models
 tested, at under a tenth of their size**; see [How it compares](#how-it-compares).
 
-- **Base model:** [KB/bert-base-swedish-cased](https://huggingface.co/KB/bert-base-swedish-cased) (KB-BERT, CC0), 6 transformer layers
+- **Base model:** [KBLab/bert-base-swedish-cased](https://huggingface.co/KBLab/bert-base-swedish-cased) (KB-BERT, CC0), 6 transformer layers
 - **Task:** token classification (BIO), entity types `PER`, `LOC`, `ORG`, `ADR`
 - **Languages:** Swedish
 - **License:** MIT
@@ -182,7 +182,7 @@ which wins on any disagreement):
 | sbx KB-bert PI-detection (general / detailed)       | ~475 MB | 0.10 / 0.19 |
 
 The alternatives run fine on a local machine too; the practical difference is
-that at 10x the size none of them can ship inside a web app or to thin
+that at more than 10x the size none of them can ship inside a web app or to thin
 clients, which is where maskera puts the redaction: on the device where the
 text already is.
 
@@ -200,7 +200,7 @@ mismatch on PER/LOC/ORG rather than general quality.
 ## License & attribution
 
 - **This model:** MIT.
-- **Base model:** KB-BERT (`KB/bert-base-swedish-cased`) is released CC0 by the
+- **Base model:** KB-BERT (`KBLab/bert-base-swedish-cased`) is released CC0 by the
   National Library of Sweden (Kungliga biblioteket). No obligations attach, but
   we acknowledge it gratefully; see `NOTICE`.
 

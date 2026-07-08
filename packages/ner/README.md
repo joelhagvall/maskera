@@ -67,7 +67,7 @@ await redactWithNer(text, {
 ```ts
 createNerRecognizer({
   model: MASKERA_SV_NER_MODEL, // default; any HF token-classification model id works
-  dtype: "q4",                 // "q4" (40 MB, default) | "q8" (53 MB) | "fp32" (211 MB)
+  dtype: "q4",                 // "q4" (40 MB, default) | "q8" (55 MB) | "fp32" (220 MB)
   device: "auto",              // "wasm" | "webgpu" | "cpu" | "auto"
   minScore: 0.5,               // drop predictions below this confidence
   labelMap: (group) => group,  // remap or drop entity groups (return null to drop)
