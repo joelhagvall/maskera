@@ -32,6 +32,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
         if: matrix.node == 24
+      - run: pnpm typecheck
+        if: matrix.node == 24
       - run: pnpm build
       - run: pnpm test
       - run: pnpm smoke
