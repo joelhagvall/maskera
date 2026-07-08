@@ -274,7 +274,7 @@ Measured 2026-07-05 on an Apple M4 Pro (24 GB), Node v25.8.2, Google Chrome
 figures are per sentence. Browser rows run the production demo bundle with
 the self-hosted model, i.e. exactly what maskera.dev ships; "first visit"
 cold start was measured against localhost, so a real first visit adds the
-network transfer of the ~38 MB model on top (returning visitors read it from
+network transfer of the ~40 MB model on top (returning visitors read it from
 Cache Storage).
 
 | Environment | Cold start | Warm inference (median / p95) | Notes |
