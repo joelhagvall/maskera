@@ -9,6 +9,7 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "smoke": "node scripts/pack-smoke.mjs",
+    "typecheck": "for p in packages/core packages/ner apps/demo; do node node_modules/typescript-7/lib/tsc.js -p $p/tsconfig.json --noEmit || exit 1; done",
     "eval": "pnpm -C packages/ner eval",
     "demo": "pnpm -C apps/demo dev",
     "lint": "biome check .",
@@ -21,6 +22,7 @@
     "@changesets/cli": "^2.27.10",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
+    "typescript-7": "npm:typescript@7.0.2",
     "vitest": "^2.1.8"
   },
   "engines": {
