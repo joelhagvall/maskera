@@ -8,11 +8,14 @@ export const viewPaths: Record<View, string> = {
   transparency: "/integritet",
 }
 
-// Page identity first, brand last: the favicon already carries the maskera
-// mark, and browsers/bookmarks/history truncate the tail, so leading with the
-// page keeps it legible when the title is clipped.
+// The tab shows this at runtime; the favicon already carries the maskera mark.
+// Safari hides the leading word of a tab title (favicon/close button cover it)
+// and clips the tail when long, so a long title loses "maskera" either way.
+// Home is the brand: keep it to the bare word so it never truncates and the
+// name stays visible. Sub-pages lead with the page, brand last. The descriptive
+// tagline lives on in the static <title> + og/twitter tags for SEO and sharing.
 const viewTitles: Record<View, string> = {
-  demo: "maskera personuppgifter innan AI:n ser dem · maskera",
+  demo: "maskera",
   dev: "för utvecklare · maskera",
   transparency: "integritet & transparens · maskera",
 }
