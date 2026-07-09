@@ -55,7 +55,12 @@ const recognizerPromise = (async () => {
 recognizerPromise
   .then(() => postMessage({ type: "ready" } satisfies NerWorkerMsg))
   .catch((err) => {
-    console.error(err)
+    // A failed model load is an expected, handled state: the UI shows an
+    // "AI-modellen kunde inte laddas" status off the message below. Keep the
+    // raw stack for local debugging, but don't spew it to the production
+    // console (no telemetry reads it, and it trips Lighthouse's console-error
+    // audit when the audit's throttling cuts the 40 MB download short).
+    if (import.meta.env.DEV) console.error(err)
     postMessage({ type: "error" } satisfies NerWorkerMsg)
   })
 
