@@ -43,17 +43,21 @@ export function Footer({
           Whitepaper (PDF)
         </a>
       </p>
-      <p className="footer-en" lang="en">
-        Swedish PII redaction, on-device. English docs on{" "}
-        <a href={`${GITHUB}#readme`} target="_blank" rel="noreferrer">
-          GitHub
-        </a>
-        .
+      <p className="footer-row">
+        Vill du använda maskera i ditt team, eller integrera det? Hör av dig:{" "}
+        <a href="mailto:work@joelhagvall.com">work@joelhagvall.com</a>
       </p>
       <p className="footer-row">
         Byggd av{" "}
         <a href="https://joelhagvall.com" target="_blank" rel="noreferrer">
           Joel Hägvall
+        </a>
+        .
+      </p>
+      <p className="footer-en" lang="en">
+        Swedish PII redaction, on-device. English docs on{" "}
+        <a href={`${GITHUB}#readme`} target="_blank" rel="noreferrer">
+          GitHub
         </a>
         .
       </p>
