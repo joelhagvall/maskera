@@ -8,10 +8,13 @@ export const viewPaths: Record<View, string> = {
   transparency: "/integritet",
 }
 
+// Page identity first, brand last: the favicon already carries the maskera
+// mark, and browsers/bookmarks/history truncate the tail, so leading with the
+// page keeps it legible when the title is clipped.
 const viewTitles: Record<View, string> = {
-  demo: "maskera · maskera personuppgifter innan AI:n ser dem",
-  dev: "maskera · för utvecklare",
-  transparency: "maskera · integritet & transparens",
+  demo: "maskera personuppgifter innan AI:n ser dem · maskera",
+  dev: "för utvecklare · maskera",
+  transparency: "integritet & transparens · maskera",
 }
 
 function viewFromPath(pathname: string): View {
