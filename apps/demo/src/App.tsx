@@ -5,7 +5,7 @@ import { Header } from "./components/Header"
 import { InputCard } from "./components/InputCard"
 import { OutputCard } from "./components/OutputCard"
 import { RestoreDemo } from "./components/RestoreDemo"
-import { Developers, Transparency } from "./pages"
+import { Developers, Transparency, prefetchPagesWhenIdle } from "./pages"
 import { useRoute } from "./routing"
 import { type Scenario, scenarios } from "./scenarios"
 import { useSwedishNer } from "./useSwedishNer"
@@ -16,6 +16,13 @@ export function App() {
   const [anchor, setAnchor] = useState<string | null>(null)
   const { view, navigate } = useRoute()
   const ner = useSwedishNer(text)
+
+  // Warm the code-split sub-pages after first paint so the first "För
+  // utvecklare" / transparency navigation is instant, even on touch where
+  // there is no hover or focus to trigger the per-link preload.
+  useEffect(() => {
+    prefetchPagesWhenIdle()
+  }, [])
 
   // On a view switch, jump to the requested section if one was set (e.g. the
   // footer's "Integritetspolicy" link), otherwise land at the top.
