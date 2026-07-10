@@ -40,7 +40,7 @@ import { createNerRecognizer, redactWithNer, MASKERA_SV_NER_MODEL } from "masker
 
 const input = "Ring 070-123 45 67, personnummer 19900101-2385, mejla a@b.se"
 const r = redact(input)
-for (const token of ["[PHONE_1]", "[PERSONNUMMER_1]", "[EMAIL_1]"]) {
+for (const token of ["[TELEFON_1]", "[PERSONNUMMER_1]", "[EPOST_1]"]) {
   if (!r.text.includes(token)) throw new Error("ESM redact missing " + token + ": " + r.text)
 }
 if (restore(r.text, r.map) !== input) throw new Error("ESM roundtrip broken")
