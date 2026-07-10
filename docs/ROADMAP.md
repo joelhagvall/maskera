@@ -29,51 +29,50 @@ per-package history in the changelogs.
   zero external requests, CSP-enforced.
 - **Production guide**: [`PRODUCTION.md`](PRODUCTION.md).
 
-## Next: v12, the ORG round (prepared, ready to run)
+## Done: v12, the ORG round (2026-07-10, trained, pending publish)
 
-ORG is now the weakest type in both registers (70.9% recall cased, 54.6%
-lowercased on the 2453-sentence set). The remaining leaks are consistent
-across every eval: **startup/brand names** (Voi, Northmill on the curated
-set) and **multiword authorities/institutions** (Inspektionen för vård och
-omsorg, Försvarets materielverk). The v12 recipe:
+The category-level gazetteer round + MultiCoNER v2 sv. Full journal with the
+four takes in [training/README.md](../training/README.md); candidate
+`training/student-v12-onnx` (q4, 42.7 MB) passes every gate and awaits
+`scripts/publish-model.sh` + the BENCHMARKS.md sync commit.
 
-- [ ] **Category-level gazetteer round**: add Swedish startups/scaleups,
-      full-length authority names (Myndigheten för X, Inspektionen för Y,
-      N:s materielverk patterns) and org-heavy templates to
-      `training/generate_data.mjs`. NEVER add the eval entities themselves
-      (Voi, Northmill, STIM, IFPI, Sveriges riksdag...): that trains on the
-      gate. Category, not instances.
-- [ ] **Mind the v5.1 lesson** while doing it: org names that are common
-      Swedish words over-fire under lowercase augmentation. Keep the
-      hard-negative counterweight (greetings, common nouns) in the same round.
-- [ ] **Sweep the mix knobs against dev sets, not gold**: `SUCX_SHARE`
-      (0.25 shipped; try 0.35 for more cased ORG signal), `MASSIVE_EMPTY_SHARE`,
-      `LC_AUG`/`KLINTAN_LC_AUG`/`SUCX_LC_AUG` (all 0.35 shipped). Select on
-      data/val.jsonl + klintan TRAIN-side dev, run gold gates ONCE on the
-      winner (training/README.md documents the discipline).
-- [ ] **Known misses to beat** (tracked in BENCHMARKS.md): "Klarna
-      rekryterade..." (sentence-initial ORG), "VIKTIGT: RING LARS NORDSTRÖM
-      OMGÅENDE IDAG." (long ALL CAPS), bare surname "Löfven".
-- [ ] Ship criterion: klintan ORG recall toward 74%+ cased (v6 level) while
-      holding the v11 lowercase and ADR wins, and gold-real recall >= 0.90 on
-      the q4 artifact.
+- [x] Category-level gazetteer (startups, multiword authorities, small-biz
+      builder), eval entities excluded; MultiCoNER v2 sv converter with class
+      audit (`training/convert_multiconer.mjs`).
+- [x] Both v11 authority leaks fixed at the weight level (Inspektionen för
+      vård och omsorg, Försvarets materielverk); lowercase probes for the
+      leak categories all pass.
+- [x] Best model so far on gold-real (94.7 F1), curated (97.0), klintan
+      lowercase (80.6 F1, leaks 20.5% -> 19.2%).
+- [x] **Root-cause find of the round**: `trim_vocab.py` at 16k cut the
+      rare-name tail (bare "Löfven" regression); fixed by trimming at 20k
+      (+3.1 MB). Data-level fixes were tried and measurably rejected.
+- [ ] **Missed the round's cased-ORG aspiration**: klintan cased ORG recall
+      fell 70.9% -> 67.7% (leaks 11.3% -> 12.5%), the third straight release
+      where cased-news leaks crept up (8.4 -> 11.3 -> 12.5). Carry to v13.
 
-Verified data reserves if the gazetteer round is not enough (licenses checked
-2026-07-09, converters exist for the first three sources):
+## Next: v13 (hypotheses, not yet started)
 
-- **MultiCoNER v2 sv**: 16k all-lowercase sentences, CC BY 4.0, fine-grained
-  tags collapse to PER/LOC/ORG; directly targets lowercase ORG.
-- **ai4privacy openpii-1.5m (sv slice)**: the only large Swedish
-  STREET/ZIPCODE/CITY source, CC BY 4.0, synthetic and noisy (filter English
-  dates); no ORG label.
-- **Flashback/Familjeliv/Bloggmix (Språkbanken, CC BY 4.0)**: hundreds of
-  millions of tokens of unannotated informal Swedish; the pseudo-labeling
-  pool. Label with the teacher + the sbx PI-detection models (GPL-3.0,
-  trained on SweLL gold) as an ensemble; keep only high-agreement sentences.
-- Dead ends already checked, do not re-research: SweLL (research-only),
-  MultiNERD/WikiNEuRal (no Swedish), polyglot_ner (unknown license),
-  Twittermix (no full-text download). No public Swedish chat/support NER
-  dataset exists.
+- [ ] **Short brand names** (Voi, Northmill, Knowit still leak): a LENGTH
+      problem, not a category problem; more gazetteer entries will not fix
+      2-4-letter brands. Needs its own idea (context weighting, or a rules
+      assist in `@maskera/core`).
+- [ ] **Municipal "-avdelningen" suffix** (Bygglovsavdelningen leaks): the
+      AUTHORITIES list covers -nämnden/-förvaltningen/-kontoret but not
+      -avdelningen; five-minute gazetteer fix, take it in any next round.
+- [ ] **Reverse the cased-news ORG slide** (see above) while holding the
+      lowercase wins; sweep `SUCX_SHARE` 0.35 for more cased ORG signal.
+- [ ] **Flashback/Familjeliv pseudo-labeling** (Språkbanken, CC BY 4.0):
+      hundreds of millions of informal tokens; label with the improved v12
+      teacher + the sbx PI-detection models (GPL-3.0) as an ensemble, keep
+      high-agreement sentences only. Biggest lever now that the teacher is
+      stronger.
+- [ ] Remaining data reserves: **ai4privacy openpii-1.5m (sv)** for ADR only
+      (no ORG label: poison for ORG rounds, see the v12 notes). Dead ends
+      already checked, do not re-research: SweLL (research-only),
+      MultiNERD/WikiNEuRal (no Swedish), polyglot_ner (unknown license),
+      Twittermix (no full-text download). No public Swedish chat/support NER
+      dataset exists.
 
 ## Next: data beyond v12 (the real lever)
 

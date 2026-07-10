@@ -743,58 +743,18 @@ const ORGS = [
 // --- entity builders ----------------------------------------------------
 const hyphenFirst = () =>
   `${pick(FIRST)}-${pick(["Erik", "Marie", "Britt", "Olof", "Lena", "Gustaf", "Louise"])}`
-// v12c: surnames VERIFIED to decompose into multiple wordpieces under the full
-// KB-BERT vocab (tokenizer-checked 2026-07-10, no [UNK]). The v12 gate fail
-// was bare "Löfven": distillation runs with the 50k vocab where rare names are
-// single tokens, then trim_vocab makes them decompose at inference, a
-// tokenization the weights never trained on. These names train the GENERIC
-// decomposed-capitalized-name pattern (incl. single-letter starts Ö/B/M) so
-// the ability survives the trim. Eval surnames (Löfven, Hägglöf, Öhrn,
-// Sjökvist...) are deliberately absent.
-const RARE_LAST = [
-  "Öfverberg",
-  "Lööv",
-  "Bäfverfeldt",
-  "Hjortzberg",
-  "Kjellgren",
-  "Tjernström",
-  "Öqvist",
-  "Åkerlöf",
-  "Löfstrand",
-  "Gyllenmärs",
-  "Bäverhjelm",
-  "Näsvall",
-  "Sköldebrand",
-  "Tjäderborn",
-  "Öfverström",
-  "Ljunglöf",
-  "Läckström",
-  "Yxkull",
-  "Fjellner",
-  "Hälleberg",
-  "Mjöberg",
-  "Kärrlander",
-  "Djurklou",
-  "Väderström",
-  "Sjölund",
-  "Lönnroth",
-  "Öhrvall",
-  "Åtterlöf",
-  "Väsström",
-  "Hökmark",
-  "Löfroth",
-  "Tjulander",
-]
-const surname = () => (chance(0.25) ? pick(RARE_LAST) : pick(LAST))
+// v12c tried a RARE_LAST decomposing-surname gazetteer + 8% bare-surname share
+// here to fix the trim-vocab tokenization mismatch at the data level. It made
+// the gate WORSE (gold-real recall 0.90 -> 0.86, curated P 0.96 -> 0.93, new
+// LOC misses from "till {bare surname}" shapes) without fixing bare "Löfven".
+// The mismatch is fixed in trim_vocab TARGET instead (16k -> 20k keeps the
+// name tail); do not reintroduce bare-surname slots without a sweep.
 const person = () => {
   const r = rand()
   if (r < 0.12) return pick(FIRST)
-  // v12c: bare surname in name position ("Löfven besökte..."), the news shape
-  // both v11 and v12 handled only by luck. Was 0 share before.
-  if (r < 0.2) return surname()
-  if (r < 0.29) return `${hyphenFirst()} ${surname()}`
-  if (r < 0.36) return `${pick(FIRST)} ${pick(LAST)}-${pick(LAST)}`
-  return `${pick(FIRST)} ${surname()}`
+  if (r < 0.22) return `${hyphenFirst()} ${pick(LAST)}`
+  if (r < 0.3) return `${pick(FIRST)} ${pick(LAST)}-${pick(LAST)}`
+  return `${pick(FIRST)} ${pick(LAST)}`
 }
 const FOREIGN = [
   "Oslo",
