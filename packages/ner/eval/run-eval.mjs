@@ -76,6 +76,11 @@ const recognizer = createNerRecognizer({
   ...(REMOTE
     ? { allowRemoteModels: true }
     : { localModelPath: MODEL_PATH, allowLocalModels: true, allowRemoteModels: false }),
+  // The gold corpora keep the CoNLL-style vocabulary (PERSON/LOCATION/...)
+  // even though the product default is Swedish (NAMN/PLATS/...), so map
+  // explicitly instead of relying on the default.
+  labelMap: (g) =>
+    ({ PER: "PERSON", LOC: "LOCATION", ORG: "ORGANIZATION", ADR: "ADDRESS" })[g] ?? g,
 })
 
 console.log(

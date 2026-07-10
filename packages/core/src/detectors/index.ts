@@ -66,7 +66,7 @@ export const organisationsnummer = regexDetector(
 
 // åäö in both parts: addresses like "åsa.öberg@example.se" exist in the wild,
 // and a leading \b would never match before "å" (JS \b is ASCII-only).
-export const email = regexDetector("EMAIL", /[A-ZÅÄÖ0-9._%+-]+@[A-ZÅÄÖ0-9.-]+\.[A-Z]{2,}\b/gi)
+export const email = regexDetector("EPOST", /[A-ZÅÄÖ0-9._%+-]+@[A-ZÅÄÖ0-9.-]+\.[A-Z]{2,}\b/gi)
 
 /**
  * Swedish phone numbers: +46 / 0 prefix, mobile and landline, including the
@@ -76,7 +76,7 @@ export const email = regexDetector("EMAIL", /[A-ZÅÄÖ0-9._%+-]+@[A-ZÅÄÖ0-9.
  * "kundnummer 100200-3000".
  */
 export const phone = regexDetector(
-  "PHONE",
+  "TELEFON",
   /(?:^|[^\d])((?:\+46[\s-]?(?:\(0\)[\s-]?)?|0)(?:7[02369]|[1-9]\d?)(?:[\s-]?\d){6,8})\b/g,
 )
 
@@ -114,13 +114,13 @@ export const iban = regexDetector("IBAN", /\bSE\d{2}(?:\s?\d){20}\b/gi)
 
 // Anchored on a digit at both ends so the captured value can't include a
 // trailing space or dash (the old `(?:\d[ -]?){13,19}` swallowed the separator).
-export const creditCard = regexDetector("CREDIT_CARD", /\b\d(?:[ -]?\d){12,18}\b/g, (v) => {
+export const creditCard = regexDetector("KORTNUMMER", /\b\d(?:[ -]?\d){12,18}\b/g, (v) => {
   const digits = v.replace(/\D/g, "")
   return digits.length >= 13 && digits.length <= 19 && luhnValid(digits)
 })
 
 export const ipAddress = regexDetector(
-  "IP_ADDRESS",
+  "IP_ADRESS",
   /\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b/g,
 )
 

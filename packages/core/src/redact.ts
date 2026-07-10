@@ -30,7 +30,7 @@ function resolveOverlaps(detections: Detection[]): Detection[] {
 /**
  * Detect and replace PII in `input`, returning the redacted text plus a
  * restore map. Placeholders are *stable*: the same value always maps to the
- * same token within one call, so an LLM can reason about `[PERSON_1]`
+ * same token within one call, so an LLM can reason about `[NAMN_1]`
  * consistently and you can map results back afterwards.
  */
 export function redact(input: string, options: RedactOptions = {}): RedactResult {

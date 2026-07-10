@@ -62,6 +62,6 @@ describe("overlap resolution between structured identifiers", () => {
     expect(labels).toContain("PERSONNUMMER")
     expect(labels).toContain("ORGANISATIONSNUMMER")
     expect(labels).toContain("IBAN")
-    expect(labels).toContain("CREDIT_CARD")
+    expect(labels).toContain("KORTNUMMER")
   })
 })

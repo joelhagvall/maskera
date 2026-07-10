@@ -1,5 +1,20 @@
 # @maskera/core
 
+## 0.4.0
+
+### Minor Changes
+
+- Swedish placeholder vocabulary throughout. The NER layer now maps model tags
+  to the same Swedish labels the rule detectors use (`PER` -> `NAMN`,
+  `LOC` -> `PLATS`, `ORG` -> `ORGANISATION`, `ADR` -> `ADRESS`), and the last
+  English rule labels are renamed: `EMAIL` -> `EPOST`, `PHONE` -> `TELEFON`,
+  `CREDIT_CARD` -> `KORTNUMMER`, `IP_ADDRESS` -> `IP_ADRESS`.
+
+  Breaking if you match on placeholder tokens or `label` values: redacted text
+  now reads `[NAMN_1]`, `[TELEFON_1]`, `[EPOST_1]` instead of `[PERSON_1]`,
+  `[PHONE_1]`, `[EMAIL_1]`. Pass your own `labelMap` / `placeholder` to keep the
+  old vocabulary.
+
 ## 0.3.4
 
 ### Patch Changes

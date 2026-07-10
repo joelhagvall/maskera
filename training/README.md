@@ -531,6 +531,71 @@ Data levers for reproduction/sweeps: `SUCX_SHARE`, `SUCX_LC_AUG`,
 converter's header). Raw dumps land in `.benchmark/` via the parquet API
 (see `run_v11.sh` provenance comments in the converters).
 
+### v12 gazetteer round (2026-07-10): ORG categories work, trim mismatch found
+
+**STATUS: take 3 (`run_v12c.sh`) is built but has NOT been trained to
+completion yet; takes 1-2 failed the gate.** Pick up by running
+`sh run_v12c.sh` (about 2h) and reading the gate result in
+`run_v12c-pipeline.log`.
+
+All remaining v11 leaks were ORG (startup brands + multiword authorities), so
+v12 attacks that category from both sides, with the eval entities themselves
+deliberately excluded everywhere (checked programmatically, 0 collisions):
+
+- `generate_data.mjs`: ~60 startup brands in ORGS, an `AUTHORITIES` list
+  (multiword agencies + municipal boards + "Länsstyrelsen i X län"), a
+  `smallBiz()` builder for the "Däckcentralen Arvika AB" category, and 3
+  support-register ORG templates. `org()` reweighted: 24% institution,
+  14% authority, 8% small business, 54% brand list.
+- `convert_multiconer.mjs`: MultiCoNER v2 sv (HF, CC BY 4.0), 16.4k gold
+  ALL-LOWERCASE wiki sentences, the only large gold source with uncased org
+  mentions. Class audit before mapping (the v11a lesson): 7 person classes
+  to PER, HumanSettlement to LOC, 7 org classes to ORG; Software and
+  WrittenWork rows DROPPED (org-name pollution: youtube/spotify/svenska
+  dagbladet), OtherLOC/Facility/Station rows DROPPED (generic nouns mixed
+  with ORG-worthy institutions); medical + clean product classes kept as O
+  hard negatives; generic single-word spans (kommun, stad, svensk) remapped
+  to O via stoplist. Knobs: `MULTICONER_SHARE` 0.5, `MULTICONER_EMPTY_SHARE`
+  0.15, `MULTICONER_DEV_SHARE` 0.15. Yield: 4,912 rows, 6,451 entities,
+  4,000 poison rows dropped. Mix total 58k rows, audit-clean.
+
+**Take 1 (`run_v12.sh`) failed the gate by a hair and the category lever
+itself works.** Quantized artifact: curated 96.6 F1 (back at the v5 level,
+v11b was 94.4), gold-real 92.0 F1 but recall 0.8996 vs the 0.90 floor. All
+three new leak-category spot probes pass, lowercase included: "inspektionen
+för strategiska produkter", "kivra", "länsstyrelsen i örebro län" all tagged
+ORG. "Sveriges riksdag" (a v11 miss) is now caught. The entire recall
+regression is ONE surname: bare "Löfven" missed 4x (v11 missed it 1x).
+
+**The bisection found a structural bug, not a data bug: the trim-vocab
+tokenization mismatch.** q4 = q8 = fp32 (not quantization); teacher catches
+every miss at 1.00 (not the data); pre-trim student catches them at 1.00;
+post-trim student misses them. Mechanism: distillation runs with the full
+50k vocab where rare names ("Löfven") are single tokens, then
+`trim_vocab.py` (16k) makes them decompose at inference (`L ##ö ##f ##ven`),
+a token sequence the weights never saw in training. v11-trimmed decomposes
+identically but happens to cope: the capability was luck of the mix, never a
+property the pipeline guaranteed.
+
+**Take 2 (`run_v12b.sh`, recovery finetune of the trimmed student) failed
+and proved the fix cannot be post-hoc.** One epoch of
+`finetune_student.py` at 1e-5 on the trimmed student left Löfven missed,
+cost curated F1 (96.6 to 96.0) and degraded an authority span. The trimmed
+TEACHER is equally blind to decomposed names, so re-distilling from it
+cannot help either: the ability has to be created at training time, it
+exists nowhere to be transferred from.
+
+**Take 3 (`run_v12c.sh`, untrained): teach decomposed surnames in the
+data.** `generate_data.mjs` adds `RARE_LAST`: 32 surnames tokenizer-verified
+(2026-07-10) to decompose into multiple wordpieces under the FULL vocab, no
+[UNK], spread over single-letter starts (Ö/B/M) and varied piece patterns;
+eval surnames (Löfven, Hägglöf, Öhrn, Sjökvist) deliberately absent. And
+`person()` gets an 8% bare-surname share ("Löfstrand besökte..."), a shape
+that previously had zero explicit training signal. Teacher and student then
+train the generic decomposed-capitalized-name pattern from the start. Mix is
+otherwise identical to take 1, so the outcome bisects to exactly this
+change.
+
 ## Publish to Hugging Face (single hosted source)
 
 Hosting the model once means the demo and every future `@maskera` package point at

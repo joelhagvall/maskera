@@ -26,11 +26,11 @@ describe("redactWithNer", () => {
     const input = "Min granne Lars mejlar lars@example.se."
     const recognizer = fakeRecognizer((t) => {
       const start = t.indexOf("Lars")
-      return [{ start, end: start + 4, value: "Lars", label: "PERSON" }]
+      return [{ start, end: start + 4, value: "Lars", label: "NAMN" }]
     })
 
     const { text } = await redactWithNer(input, { recognizer })
-    expect(text).toBe("Min granne [PERSON_1] mejlar [EMAIL_1].")
+    expect(text).toBe("Min granne [NAMN_1] mejlar [EPOST_1].")
   })
 
   it("lets rule detections win on overlap (earliest+longest)", async () => {
@@ -38,18 +38,18 @@ describe("redactWithNer", () => {
     // NER wrongly flags just the local-part "lars" inside the email.
     const recognizer = fakeRecognizer((t) => {
       const start = t.indexOf("lars")
-      return [{ start, end: start + 4, value: "lars", label: "PERSON" }]
+      return [{ start, end: start + 4, value: "lars", label: "NAMN" }]
     })
 
     const { text, redactions } = await redactWithNer(input, { recognizer })
-    expect(text).toBe("Maila [EMAIL_1] nu.")
-    expect(redactions.map((r) => r.label)).toEqual(["EMAIL"])
+    expect(text).toBe("Maila [EPOST_1] nu.")
+    expect(redactions.map((r) => r.label)).toEqual(["EPOST"])
   })
 
   it("can run NER-only when detectors is empty", async () => {
-    const recognizer = fakeRecognizer(() => [{ start: 0, end: 4, value: "Lars", label: "PERSON" }])
+    const recognizer = fakeRecognizer(() => [{ start: 0, end: 4, value: "Lars", label: "NAMN" }])
     const { text } = await redactWithNer("Lars är här.", { recognizer, detectors: [] })
-    expect(text).toBe("[PERSON_1] är här.")
+    expect(text).toBe("[NAMN_1] är här.")
   })
 
   it("clips a model span that glues a name to the e-mail local-part (name must not leak)", async () => {
@@ -57,23 +57,23 @@ describe("redactWithNer", () => {
     const nameStart = input.indexOf("Anna")
     const spanEnd = input.indexOf("@") // model span swallows the local-part
     const recognizer = fakeRecognizer(() => [
-      { start: nameStart, end: spanEnd, value: input.slice(nameStart, spanEnd), label: "PERSON" },
+      { start: nameStart, end: spanEnd, value: input.slice(nameStart, spanEnd), label: "NAMN" },
     ])
     const { text, restore } = await redactWithNer(input, { recognizer })
     expect(text).not.toContain("Anna Karlsson")
-    expect(text).toContain("[EMAIL_1]")
+    expect(text).toContain("[EPOST_1]")
     expect(restore(text)).toBe(input)
   })
 
   it("keeps both sides when a rule span sits inside a model span", async () => {
     const input = "ring Lars 070-174 06 58 Eriksson imorgon"
     const recognizer = fakeRecognizer(() => [
-      { start: 5, end: 32, value: input.slice(5, 32), label: "PERSON" },
+      { start: 5, end: 32, value: input.slice(5, 32), label: "NAMN" },
     ])
     const { text, restore } = await redactWithNer(input, { recognizer })
     expect(text).not.toContain("Lars")
     expect(text).not.toContain("Eriksson")
-    expect(text).toContain("[PHONE_1]")
+    expect(text).toContain("[TELEFON_1]")
     expect(restore(text)).toBe(input)
   })
 

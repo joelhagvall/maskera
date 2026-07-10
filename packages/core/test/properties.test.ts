@@ -8,7 +8,7 @@ import { redact } from "../src/index"
  *
  * Inputs are built by interleaving random bracket-free "filler" prose with real
  * PII values drawn from a pool. Bracket-free filler matters: placeholder tokens
- * look like `[EMAIL_1]`, so by keeping `[`/`]` out of the surrounding text we
+ * look like `[EPOST_1]`, so by keeping `[`/`]` out of the surrounding text we
  * guarantee a token can never collide with untouched prose, which is the only
  * way round-trip restoration could legitimately fail.
  */

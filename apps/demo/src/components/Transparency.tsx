@@ -36,7 +36,7 @@ export function Transparency({ onBack, onDev }: { onBack: () => void; onDev: () 
           <ul>
             <li>
               maskera läser texten och ersätter personuppgifter med platshållare, till exempel{" "}
-              <code>[PERSON_1]</code> eller <code>[PERSONNUMMER_1]</code>. AI-tjänsten får bara
+              <code>[NAMN_1]</code> eller <code>[PERSONNUMMER_1]</code>. AI-tjänsten får bara
               platshållarna, och efteråt kan du sätta tillbaka originalen lokalt.
             </li>
             <li>

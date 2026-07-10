@@ -663,17 +663,138 @@ const ORGS = [
   "Starbucks",
   "Ryanair",
   "Lufthansa",
+  // v12: startup/scaleup brands. Every remaining v11 curated leak was ORG and
+  // half were startup brands (category, not the eval entities: those specific
+  // names are deliberately NOT here, the model must generalise to them).
+  // Same curation rule as v5.1/v10: distinctive names only, no common Swedish
+  // words (Karma, Juni, Stegra, Meds are real startups but skipped).
+  "Anyfin",
+  "Rocker",
+  "Qliro",
+  "Zimpler",
+  "Brite",
+  "Froda",
+  "Treyd",
+  "Lendo",
+  "Safello",
+  "Billogram",
+  "Bokio",
+  "Fortnox",
+  "Visma",
+  "Zettle",
+  "Svea Ekonomi",
+  "Resurs Bank",
+  "Ikano Bank",
+  "Marginalen Bank",
+  "TF Bank",
+  "Intrum",
+  "Instabee",
+  "Instabox",
+  "Airmee",
+  "Bolt",
+  "Foodora",
+  "Wolt",
+  "Doktor.se",
+  "Min Doktor",
+  "Doktor24",
+  "Werlabs",
+  "Natural Cycles",
+  "Lifesum",
+  "Joint Academy",
+  "Mindler",
+  "Mentimeter",
+  "Detectify",
+  "Yubico",
+  "Neo4j",
+  "Voyado",
+  "Quinyx",
+  "Benify",
+  "Acast",
+  "Podme",
+  "Readly",
+  "Oneflow",
+  "Scrive",
+  "GetAccept",
+  "Soundtrack Your Brand",
+  "Sana Labs",
+  "Kognity",
+  "Tibber",
+  "Aira",
+  "Candela",
+  "X Shore",
+  "Heart Aerospace",
+  "Kivra",
+  "CDON",
+  "Fyndiq",
+  "Tradera",
+  "Matsmart",
+  "Apotea",
+  "Sellpy",
+  "Estrid",
+  "NA-KD",
+  "Nelly",
+  "Bygghemma",
+  "Verisure",
+  "Anticimex",
+  "Sector Alarm",
+  "Hemfrid",
 ]
 
 // --- entity builders ----------------------------------------------------
 const hyphenFirst = () =>
   `${pick(FIRST)}-${pick(["Erik", "Marie", "Britt", "Olof", "Lena", "Gustaf", "Louise"])}`
+// v12c: surnames VERIFIED to decompose into multiple wordpieces under the full
+// KB-BERT vocab (tokenizer-checked 2026-07-10, no [UNK]). The v12 gate fail
+// was bare "Löfven": distillation runs with the 50k vocab where rare names are
+// single tokens, then trim_vocab makes them decompose at inference, a
+// tokenization the weights never trained on. These names train the GENERIC
+// decomposed-capitalized-name pattern (incl. single-letter starts Ö/B/M) so
+// the ability survives the trim. Eval surnames (Löfven, Hägglöf, Öhrn,
+// Sjökvist...) are deliberately absent.
+const RARE_LAST = [
+  "Öfverberg",
+  "Lööv",
+  "Bäfverfeldt",
+  "Hjortzberg",
+  "Kjellgren",
+  "Tjernström",
+  "Öqvist",
+  "Åkerlöf",
+  "Löfstrand",
+  "Gyllenmärs",
+  "Bäverhjelm",
+  "Näsvall",
+  "Sköldebrand",
+  "Tjäderborn",
+  "Öfverström",
+  "Ljunglöf",
+  "Läckström",
+  "Yxkull",
+  "Fjellner",
+  "Hälleberg",
+  "Mjöberg",
+  "Kärrlander",
+  "Djurklou",
+  "Väderström",
+  "Sjölund",
+  "Lönnroth",
+  "Öhrvall",
+  "Åtterlöf",
+  "Väsström",
+  "Hökmark",
+  "Löfroth",
+  "Tjulander",
+]
+const surname = () => (chance(0.25) ? pick(RARE_LAST) : pick(LAST))
 const person = () => {
   const r = rand()
   if (r < 0.12) return pick(FIRST)
-  if (r < 0.22) return `${hyphenFirst()} ${pick(LAST)}`
-  if (r < 0.3) return `${pick(FIRST)} ${pick(LAST)}-${pick(LAST)}`
-  return `${pick(FIRST)} ${pick(LAST)}`
+  // v12c: bare surname in name position ("Löfven besökte..."), the news shape
+  // both v11 and v12 handled only by luck. Was 0 share before.
+  if (r < 0.2) return surname()
+  if (r < 0.29) return `${hyphenFirst()} ${surname()}`
+  if (r < 0.36) return `${pick(FIRST)} ${pick(LAST)}-${pick(LAST)}`
+  return `${pick(FIRST)} ${surname()}`
 }
 const FOREIGN = [
   "Oslo",
@@ -703,6 +824,125 @@ const COURTS = [
   "Kammarrätten",
   "Patent- och marknadsdomstolen",
 ]
+// v12: multiword authorities, the other remaining v11 leak category
+// ("Inspektionen för vård och omsorg", "Försvarets materielverk" style names).
+// Category-level instances only: the eval-set authorities themselves are
+// deliberately excluded so the gate still measures generalisation. Covers the
+// productive patterns "Myndigheten/Inspektionen för X", "Statens/Försvarets X",
+// compound -verket/-styrelsen/-inspektionen names not already in ORGS, and
+// municipal boards ("Överförmyndarnämnden" category).
+const AUTHORITIES = [
+  "Myndigheten för samhällsskydd och beredskap",
+  "Myndigheten för digital förvaltning",
+  "Myndigheten för yrkeshögskolan",
+  "Myndigheten för ungdoms- och civilsamhällesfrågor",
+  "Inspektionen för socialförsäkringen",
+  "Inspektionen för strategiska produkter",
+  "Inspektionen för arbetslöshetsförsäkringen",
+  "Statens servicecenter",
+  "Statens institutionsstyrelse",
+  "Statens fastighetsverk",
+  "Statens haverikommission",
+  "Statens veterinärmedicinska anstalt",
+  "Försvarets radioanstalt",
+  "Totalförsvarets forskningsinstitut",
+  "Post- och telestyrelsen",
+  "Havs- och vattenmyndigheten",
+  "Brottsförebyggande rådet",
+  "Allmänna reklamationsnämnden",
+  "Universitets- och högskolerådet",
+  "Universitetskanslersämbetet",
+  "Kammarkollegiet",
+  "Riksgälden",
+  "Riksrevisionen",
+  "Diskrimineringsombudsmannen",
+  "Barnombudsmannen",
+  "Läkemedelsverket",
+  "Jordbruksverket",
+  "Skogsstyrelsen",
+  "Elsäkerhetsverket",
+  "Kemikalieinspektionen",
+  "Skolinspektionen",
+  "Finansinspektionen",
+  "Integritetsskyddsmyndigheten",
+  "Strålsäkerhetsmyndigheten",
+  "Ekobrottsmyndigheten",
+  "Åklagarmyndigheten",
+  "Domstolsverket",
+  "Rättsmedicinalverket",
+  "Transportstyrelsen",
+  "Sjöfartsverket",
+  "Luftfartsverket",
+  "Boverket",
+  "Konsumentverket",
+  "Tillväxtverket",
+  "Spelinspektionen",
+  "Fastighetsmäklarinspektionen",
+  "Vetenskapsrådet",
+  "Vinnova",
+  "Socialnämnden",
+  "Byggnadsnämnden",
+  "Miljönämnden",
+  "Kommunstyrelsen",
+  "Socialförvaltningen",
+  "Stadsbyggnadskontoret",
+  "Miljöförvaltningen",
+  "Kulturförvaltningen",
+  "Utbildningsförvaltningen",
+  "Omsorgsförvaltningen",
+  "Barn- och utbildningsnämnden",
+  "Tekniska nämnden",
+]
+// County boards are productive too: "Länsstyrelsen i X län".
+const LAN = [
+  "Skåne län",
+  "Hallands län",
+  "Värmlands län",
+  "Dalarnas län",
+  "Kalmar län",
+  "Blekinge län",
+  "Örebro län",
+  "Uppsala län",
+  "Gävleborgs län",
+  "Norrbottens län",
+  "Västerbottens län",
+  "Södermanlands län",
+  "Västmanlands län",
+  "Kronobergs län",
+  "Östergötlands län",
+]
+const authority = () => (chance(0.12) ? `Länsstyrelsen i ${pick(LAN)}` : pick(AUTHORITIES))
+
+// v12: small local businesses, the "Däckcentralen Arvika AB" category in
+// gold-real. Composed «verksamhet» [i] «ort» [AB] so the eval names
+// themselves never appear.
+const BIZ_STEMS = [
+  "Bilverkstaden",
+  "Däckhotellet",
+  "Rörjouren",
+  "Elfirman",
+  "Måleriet",
+  "Glasmästeriet",
+  "Plåtslageriet",
+  "Städbolaget",
+  "Flyttfirman",
+  "Redovisningsbyrån",
+  "Snickeriet",
+  "Låsservice",
+  "Byggteamet",
+  "Trädfällarna",
+  "Fastighetsservice",
+  "Markentreprenad",
+]
+const smallBiz = () => {
+  const stem = pick(BIZ_STEMS)
+  const city = pick(CITIES)
+  const r = rand()
+  if (r < 0.45) return `${stem} i ${city} AB`
+  if (r < 0.7) return `${stem} ${city} AB`
+  return `${stem} i ${city}`
+}
+
 // Institutions are organisations too — composed names the model kept missing.
 const INSTITUTION = () => {
   const r = rand()
@@ -716,7 +956,16 @@ const INSTITUTION = () => {
   if (r < 0.94) return pick(COURTS)
   return `${pick(CITIES)} tingsrätt`
 }
-const org = () => (chance(0.3) ? INSTITUTION() : pick(ORGS))
+// v12 weights: institutions keep their v10 share; authorities and small
+// businesses (the two leak categories) take theirs from the plain-ORGS share,
+// which also grew ~60 startup brands, so named-brand density stays similar.
+const org = () => {
+  const r = rand()
+  if (r < 0.24) return INSTITUTION()
+  if (r < 0.38) return authority()
+  if (r < 0.46) return smallBiz()
+  return pick(ORGS)
+}
 
 // Genitive forms ("Annas bil", "Volvos fabrik") are still entity tokens, but
 // v4 never saw them and dropped the whole entity. Swedish genitive appends
@@ -899,6 +1148,12 @@ const TEMPLATES = [
   "{PERG} chef på {ORG} godkände semestern.",
   "{ORGG} kontor i {LOC} stänger vid årsskiftet.",
   "Paketet skickades med {ORGG} egen budfirma.",
+  // v12: support-register ORG shapes matching the leak contexts (brand or
+  // authority mid-sentence in an informal complaint). Kept to 3 so ORG
+  // density doesn't spike (the v5.1 precision lesson).
+  "har ni sett att {ORG} dragit beloppet två gånger?",
+  "beslutet från {ORG} kom med posten i fredags.",
+  "jag chattade med {ORG} igår men fick inget svar.",
 ]
 
 function tokenizeFiller(str) {

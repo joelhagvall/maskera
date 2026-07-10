@@ -104,7 +104,7 @@ decorative.
 ### Placeholders
 
 The default is `[LABEL_N]`. The same value always gets the same token within
-a call, so an LLM can reason about `[PERSON_1]` consistently. Customize if
+a call, so an LLM can reason about `[NAMN_1]` consistently. Customize if
 your downstream expects a different shape:
 
 ```ts
@@ -153,7 +153,7 @@ never be a name on their own; "Björk" is a real surname, "bankgiro" is not.
 Only care about people, not places? Drop labels in the recognizer:
 
 ```ts
-createNerRecognizer({ labelMap: (g) => (g === "PER" ? "PERSON" : null) })
+createNerRecognizer({ labelMap: (g) => (g === "PER" ? "NAMN" : null) })
 ```
 
 ## Self-hosting the model (no Hub dependency)

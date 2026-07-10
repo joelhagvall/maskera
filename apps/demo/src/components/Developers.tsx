@@ -180,7 +180,7 @@ const { text, restore } = await redactWithNer(
 )
 
 text
-// "hej jag heter [PERSON_1], personnummer [PERSONNUMMER_1], och bor i [LOCATION_1]"`}
+// "hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]"`}
           </Code>
 
           <h2>Skicka till AI-tjänsten och återställ svaret</h2>
