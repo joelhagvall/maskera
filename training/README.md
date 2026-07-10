@@ -531,12 +531,12 @@ Data levers for reproduction/sweeps: `SUCX_SHARE`, `SUCX_LC_AUG`,
 converter's header). Raw dumps land in `.benchmark/` via the parquet API
 (see `run_v11.sh` provenance comments in the converters).
 
-### v12 gazetteer round (2026-07-10): ORG categories work, trim mismatch found
+### v12 gazetteer round (2026-07-10): passes every gate at 20k trim
 
-**STATUS: take 3 (`run_v12c.sh`) is built but has NOT been trained to
-completion yet; takes 1-2 failed the gate.** Pick up by running
-`sh run_v12c.sh` (about 2h) and reading the gate result in
-`run_v12c-pipeline.log`.
+**Shipped-candidate: `student-v12-onnx` (q4, 42.7 MB), four takes deep.**
+The round's headline lesson is NOT the gazetteer (which worked first try),
+it is that `trim_vocab.py` at 16k had been silently truncating the model's
+rare-name ability, and only this round's mix made it visible.
 
 All remaining v11 leaks were ORG (startup brands + multiword authorities), so
 v12 attacks that category from both sides, with the eval entities themselves
@@ -585,16 +585,45 @@ TEACHER is equally blind to decomposed names, so re-distilling from it
 cannot help either: the ability has to be created at training time, it
 exists nowhere to be transferred from.
 
-**Take 3 (`run_v12c.sh`, untrained): teach decomposed surnames in the
-data.** `generate_data.mjs` adds `RARE_LAST`: 32 surnames tokenizer-verified
-(2026-07-10) to decompose into multiple wordpieces under the FULL vocab, no
-[UNK], spread over single-letter starts (Ö/B/M) and varied piece patterns;
-eval surnames (Löfven, Hägglöf, Öhrn, Sjökvist) deliberately absent. And
-`person()` gets an 8% bare-surname share ("Löfstrand besökte..."), a shape
-that previously had zero explicit training signal. Teacher and student then
-train the generic decomposed-capitalized-name pattern from the start. Mix is
-otherwise identical to take 1, so the outcome bisects to exactly this
-change.
+**Take 3 (`run_v12c.sh`) tried teaching decomposed surnames in the data and
+made everything WORSE: rejected.** `RARE_LAST` (32 tokenizer-verified
+decomposing surnames) + an 8% bare-surname share in `person()` dropped
+gold-real recall to 0.86 and curated precision to 0.93, added new LOC misses
+(the "till {bare surname}" shapes taught the model to read rare capitalized
+words after prepositions as PER), and still missed bare "Löfven". The
+changes are reverted; do not reintroduce bare-surname slots without a sweep.
+
+**Take 4 (final): raise the trim target 16k -> 20k. No retraining, the
+take-1 teacher/student are untouched.** Frequency analysis showed the fix is
+not about one name: 844 capitalized name-tokens sit in the 16k-20k window,
+i.e. 16k cuts exactly the name tail ("Löfven" needs ~19.1k). Cost: q4
+artifact 39.6 -> 42.7 MB. Result: best model so far on every text metric.
+
+| Metric (q4 artifact)          | v5 (published) | v11b        | v12 (20k trim) |
+| ----------------------------- | -------------- | ----------- | -------------- |
+| gold-real F1 / recall (GATE)  | 91.5 / 0.95    | 91.5 / 0.93 | **94.7** / 0.93 ✅ |
+| curated set F1 / leaks        | 96.6 / 1       | 94.4 / 4    | **97.0** / 4   |
+| klintan cased span F1 / leaks | 85.9 / **8.4%** | **86.6** / 11.3% | 86.5 / 12.5% |
+| klintan lowercase F1 / leaks  | 73.4 / 24.8%   | 78.9 / 20.5% | **80.6** / **19.2%** |
+| lowercase ORG / LOC recall    | 48.6 / 66.5    | 54.6 / 74.9 | **55.6** / **81.7** |
+| chat + leak-category probes   | ❌              | chat only   | **all pass** ✅ |
+| q4 size                       | 39.6 MB        | 39.6 MB     | 42.7 MB        |
+
+The leak-category probes (lowercase "kivra", "inspektionen för strategiska
+produkter", "länsstyrelsen i örebro län") all tag ORG at the weight level,
+and v11b's two authority leaks (Inspektionen för vård och omsorg, Försvarets
+materielverk) are fixed: the category-level gazetteer generalises. Remaining
+curated leaks are Voi, Northmill, Knowit and Bygglovsavdelningen: SHORT
+startup brand names (a length problem, not a category problem) and the
+municipal "-avdelningen" suffix pattern the AUTHORITIES list lacks.
+
+Honest miss: the round's cased-ORG aspiration (klintan ORG recall toward
+74%) was NOT met; it fell 70.9% -> 67.7% and cased leaks have now crept up
+three releases straight (8.4 -> 11.3 -> 12.5%). The explicit v11 trade
+(target register over news register) continued in the same direction. That
+trend, the short-brand problem, the "-avdelningen" gap and the
+Flashback/Familjeliv pseudo-labeling (better now that the teacher improved)
+are the v13 levers; see [docs/ROADMAP.md](../docs/ROADMAP.md).
 
 ## Publish to Hugging Face (single hosted source)
 

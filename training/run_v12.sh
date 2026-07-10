@@ -26,7 +26,12 @@ $PY train.py model-v12 >run_v12-teacher.log 2>&1
 echo "[2/6] distill student-v12 (log: run_v12-distill.log)..."
 $PY distill.py 6 student-v12 model-v12 >run_v12-distill.log 2>&1
 echo "[3/6] trim vocab..."
-$PY trim_vocab.py student-v12 student-v12-trimmed 16000
+# 20000, not 16000: the take-1 gate fail was bare "Löfven", and the bisection
+# showed 16k trims away the name tail (844 capitalized tokens sit in the
+# 16k-20k frequency window) that the full-vocab-distilled weights need at
+# inference. 20k keeps it for +3.1 MB q4. Data-level fixes were tried and
+# rejected (see run_v12b.sh, run_v12c.sh and the README v12 section).
+$PY trim_vocab.py student-v12 student-v12-trimmed 20000
 echo "[4/6] export onnx..."
 rm -rf student-v12-onnx
 $PY export_onnx.py student-v12-trimmed student-v12-onnx
