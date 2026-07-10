@@ -29,12 +29,16 @@ per-package history in the changelogs.
   zero external requests, CSP-enforced.
 - **Production guide**: [`PRODUCTION.md`](PRODUCTION.md).
 
-## Done: v12, the ORG round (2026-07-10, trained, pending publish)
+## Done: v12, the ORG round (2026-07-10, trained, publish HELD)
 
 The category-level gazetteer round + MultiCoNER v2 sv. Full journal with the
-four takes in [training/README.md](../training/README.md); candidate
-`training/student-v12-onnx` (q4, 42.7 MB) passes every gate and awaits
-`scripts/publish-model.sh` + the BENCHMARKS.md sync commit.
+four takes AND the publish-hold decision in
+[training/README.md](../training/README.md). The candidate
+`training/student-v12-onnx` (q4, 42.7 MB) passes every gate, but a
+pre-publish probe found it leaks rare decomposed surnames in the target
+register where v11 masks them ("hej jag heter tjulander..." unmasked;
+gold-real full leaks 1 -> 4 of 58). v11 stays live; v12's data work carries
+into v13.
 
 - [x] Category-level gazetteer (startups, multiword authorities, small-biz
       builder), eval entities excluded; MultiCoNER v2 sv converter with class
@@ -53,6 +57,14 @@ four takes in [training/README.md](../training/README.md); candidate
 
 ## Next: v13 (hypotheses, not yet started)
 
+- [ ] **Decomposed-surname robustness, the publish blocker: do this FIRST.**
+      v12 leaks rare surnames ("hej jag heter tjulander") that v11 catches;
+      the robustness was luck-of-the-mix, never designed. Plan: (1) build a
+      rare-surname chat-register eval (a few hundred generated sentences,
+      surnames verified to decompose, NOT reused in training) to quantify
+      both models; (2) subword-dropout during distillation so the student
+      trains on decomposed variants of ALL names; (3) publish gate: v13 must
+      beat v11 on that eval, not just tie.
 - [ ] **Short brand names** (Voi, Northmill, Knowit still leak): a LENGTH
       problem, not a category problem; more gazetteer entries will not fix
       2-4-letter brands. Needs its own idea (context weighting, or a rules

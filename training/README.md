@@ -531,9 +531,11 @@ Data levers for reproduction/sweeps: `SUCX_SHARE`, `SUCX_LC_AUG`,
 converter's header). Raw dumps land in `.benchmark/` via the parquet API
 (see `run_v11.sh` provenance comments in the converters).
 
-### v12 gazetteer round (2026-07-10): passes every gate at 20k trim
+### v12 gazetteer round (2026-07-10): passes every gate, publish HELD
 
-**Shipped-candidate: `student-v12-onnx` (q4, 42.7 MB), four takes deep.**
+**Candidate: `student-v12-onnx` (q4, 42.7 MB), four takes deep, NOT
+published: a publish-time probe found a rare-surname leak regression in the
+target register (see "Publish decision" below). v11 stays live.**
 The round's headline lesson is NOT the gazetteer (which worked first try),
 it is that `trim_vocab.py` at 16k had been silently truncating the model's
 rare-name ability, and only this round's mix made it visible.
@@ -620,10 +622,34 @@ municipal "-avdelningen" suffix pattern the AUTHORITIES list lacks.
 Honest miss: the round's cased-ORG aspiration (klintan ORG recall toward
 74%) was NOT met; it fell 70.9% -> 67.7% and cased leaks have now crept up
 three releases straight (8.4 -> 11.3 -> 12.5%). The explicit v11 trade
-(target register over news register) continued in the same direction. That
-trend, the short-brand problem, the "-avdelningen" gap and the
-Flashback/Familjeliv pseudo-labeling (better now that the teacher improved)
-are the v13 levers; see [docs/ROADMAP.md](../docs/ROADMAP.md).
+(target register over news register) continued in the same direction.
+
+**Publish decision (2026-07-10): HELD, v11 stays live.** The pre-publish
+sync run of the strict harness (`run-eval.mjs`, exact span) showed v12
+better nearly everywhere (curated span F1 98.0 -> **99.3**, gold-real
+labeled F1 86.4 -> **91.2**, ADR **100%**), but gold-real full leaks went
+**1 -> 4 of 58**, and a chat-register probe showed the regression reaches
+the target register:
+
+| probe                                        | v11 (live) | v12   |
+| -------------------------------------------- | ---------- | ----- |
+| "hej det är löfven igen, ringde igår..."     | PER ✅     | PER ✅ |
+| "be löfven återkomma imorgon"                | PER ✅     | ❌ miss |
+| "hej jag heter tjulander och min beställning saknas" | PER ✅ | ❌ miss |
+| "RING LÖFVEN OMGÅENDE"                       | ❌         | ❌    |
+
+"hej jag heter {rare surname}" unmasked is a broken core promise for a
+privacy tool; leaks are the safety metric and PER is the most sensitive
+class, so the ORG/LOC wins do not buy this back. Mechanism: the v12 mix
+lost v11's (never-engineered, luck-of-the-mix) robustness for DECOMPOSED
+rare surnames; the 20k trim only rescues names that fit the vocab
+("tjulander" does not). The v13 fix is to make that robustness designed
+instead of lucky: subword-dropout during distillation (student sees
+decomposed variants of ALL names), then re-run these probes plus a proper
+rare-surname chat-register measurement (a few hundred generated sentences,
+both models) before any publish. The gazetteer, MultiCoNER converter and
+20k-trim lesson all carry into v13 unchanged; see
+[docs/ROADMAP.md](../docs/ROADMAP.md).
 
 ## Publish to Hugging Face (single hosted source)
 
