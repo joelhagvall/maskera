@@ -31,7 +31,7 @@ describe("createNerRecognizer denylist", () => {
       tok("I-PER", "Johansson", 4),
     ]
     const out = await createNerRecognizer().detect("Kund Maria Johansson hör av sig.")
-    expect(out).toEqual([{ start: 5, end: 20, value: "Maria Johansson", label: "PERSON" }])
+    expect(out).toEqual([{ start: 5, end: 20, value: "Maria Johansson", label: "NAMN" }])
   })
 
   it('drops "Mail" and "maila" false positives (case-insensitive)', async () => {
@@ -52,19 +52,19 @@ describe("createNerRecognizer denylist", () => {
     rawTokens = [tok("B-ORG", "Bankgiro", 1), tok("I-ORG", "##centralen", 2), tok("I-ORG", "AB", 3)]
     const out = await createNerRecognizer().detect("Avtal med Bankgirocentralen AB idag.")
     expect(out).toEqual([
-      { start: 10, end: 30, value: "Bankgirocentralen AB", label: "ORGANIZATION" },
+      { start: 10, end: 30, value: "Bankgirocentralen AB", label: "ORGANISATION" },
     ])
   })
 
   it("denylist: null disables the filter", async () => {
     rawTokens = [tok("B-PER", "Kun", 1), tok("B-PER", "##d", 2)]
     const out = await createNerRecognizer({ denylist: null }).detect("Kund hör av sig.")
-    expect(out).toEqual([{ start: 0, end: 4, value: "Kund", label: "PERSON" }])
+    expect(out).toEqual([{ start: 0, end: 4, value: "Kund", label: "NAMN" }])
   })
 
   it("a custom denylist replaces the default", async () => {
     rawTokens = [tok("B-PER", "Kun", 1), tok("B-PER", "##d", 2)]
     const out = await createNerRecognizer({ denylist: ["imorgon"] }).detect("Kund hör av sig.")
-    expect(out).toEqual([{ start: 0, end: 4, value: "Kund", label: "PERSON" }])
+    expect(out).toEqual([{ start: 0, end: 4, value: "Kund", label: "NAMN" }])
   })
 })

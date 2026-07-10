@@ -13,7 +13,7 @@ pnpm add @maskera/core
 import { redact } from "@maskera/core"
 
 const { text, restore } = redact("Personnummer 19900101-2385, tel 070-123 45 67.")
-text // "Personnummer [PERSONNUMMER_1], tel [PHONE_1]."
+text // "Personnummer [PERSONNUMMER_1], tel [TELEFON_1]."
 ```
 
 ## Highlights
@@ -34,14 +34,14 @@ a checksum exists, so look-alikes (year ranges, reference numbers) don't fire.
 | `PERSONNUMMER`         | `19900101-2385`, `900101-2385`         | date + Luhn           |
 | `SAMORDNINGSNUMMER`    | day + 60 variant                       | date + Luhn           |
 | `ORGANISATIONSNUMMER`  | `556016-0680`                          | Luhn, third digit ≥ 2 |
-| `EMAIL`                | `anna@example.se`                      | pattern               |
-| `PHONE`                | `070-123 45 67`, `+46 8 123 456`       | Swedish mobile + landline |
+| `EPOST`                | `anna@example.se`                      | pattern               |
+| `TELEFON`                | `070-123 45 67`, `+46 8 123 456`       | Swedish mobile + landline |
 | `POSTNUMMER`           | `114 55`                               | pattern               |
 | `BANKGIRO`             | `5050-1055`                            | Luhn check digit      |
 | `PLUSGIRO`             | `90 19 50-6` (spaces tolerated)        | Luhn check digit      |
 | `IBAN`                 | `SE45 5000 0000 0583 9825 7466`        | SE pattern            |
-| `CREDIT_CARD`          | 13-19 digits, spaces/dashes tolerated  | Luhn                  |
-| `IP_ADDRESS` / `URL`   | IPv4 / http(s)                         | pattern               |
+| `KORTNUMMER`          | 13-19 digits, spaces/dashes tolerated  | Luhn                  |
+| `IP_ADRESS` / `URL`     | IPv4 / http(s)                         | pattern               |
 
 Add your own with `regexDetector` (below); mix and match via
 `options.detectors`.

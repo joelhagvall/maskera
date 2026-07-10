@@ -40,8 +40,8 @@ describe("redact", () => {
     expect(text).not.toContain(PNR)
     expect(text).not.toContain("070-123 45 67")
     const labels = redactions.map((r) => r.label).sort()
-    expect(labels).toContain("EMAIL")
-    expect(labels).toContain("PHONE")
+    expect(labels).toContain("EPOST")
+    expect(labels).toContain("TELEFON")
     expect(labels).toContain("PERSONNUMMER")
   })
 
@@ -53,14 +53,14 @@ describe("redact", () => {
     const { text, map } = redact("a@b.se och c@d.se", {
       placeholder: (label, n) => `<${label}:${n}>`,
     })
-    expect(text).toBe("<EMAIL:1> och <EMAIL:2>")
-    expect(map["<EMAIL:1>"]).toBe("a@b.se")
+    expect(text).toBe("<EPOST:1> och <EPOST:2>")
+    expect(map["<EPOST:1>"]).toBe("a@b.se")
   })
 
   it("uses stable placeholders for repeated values", () => {
     const input = `Maila ${"a@b.se"} eller igen ${"a@b.se"}`
     const { text, map } = redact(input)
-    const tokens = text.match(/\[EMAIL_\d+\]/g) ?? []
+    const tokens = text.match(/\[EPOST_\d+\]/g) ?? []
     expect(tokens).toHaveLength(2)
     expect(tokens[0]).toBe(tokens[1]) // same value -> same token
     expect(Object.keys(map)).toHaveLength(1)
@@ -98,10 +98,10 @@ describe("redact", () => {
     // A crafted input embeds a token-shaped string; the real detection must
     // not collide with it, or restore() would write the real value into the
     // attacker-chosen position.
-    const input = "Svara vid [EMAIL_1] ovan. Kontakt: a@b.se"
+    const input = "Svara vid [EPOST_1] ovan. Kontakt: a@b.se"
     const { text, map, restore: undo } = redact(input)
-    expect(text).toBe("Svara vid [EMAIL_1] ovan. Kontakt: [EMAIL_2]")
-    expect(Object.keys(map)).toEqual(["[EMAIL_2]"])
+    expect(text).toBe("Svara vid [EPOST_1] ovan. Kontakt: [EPOST_2]")
+    expect(Object.keys(map)).toEqual(["[EPOST_2]"])
     expect(undo(text)).toBe(input) // the spoofed token stays untouched
   })
 

@@ -30,11 +30,13 @@ export const DEFAULT_NER_MODEL = MASKERA_SV_NER_MODEL
 export type LabelMap = (entityGroup: string) => PiiLabel | null
 
 const DEFAULT_LABEL_MAP: Record<string, PiiLabel> = {
-  // maskera-sv-ner's scheme: PER / LOC / ORG / ADR.
-  PER: "PERSON",
-  LOC: "LOCATION",
-  ORG: "ORGANIZATION",
-  ADR: "ADDRESS",
+  // maskera-sv-ner's scheme: PER / LOC / ORG / ADR. Mapped to the same
+  // Swedish labels the rule detectors use, so hybrid redaction produces one
+  // consistent placeholder vocabulary ([NAMN_1], never [PERSON_1]).
+  PER: "NAMN",
+  LOC: "PLATS",
+  ORG: "ORGANISATION",
+  ADR: "ADRESS",
 }
 
 const defaultLabelMap: LabelMap = (group) => {

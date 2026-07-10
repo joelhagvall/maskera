@@ -36,7 +36,7 @@ olagligt.
 **Lösningen** är att *maskera* uppgifterna först:
 
 ```
-hej jag heter [PERSON_1], personnummer [PERSONNUMMER_1], och bor i [LOCATION_1]
+hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]
 ```
 
 AI:n får en meningsfull mening, kan svara, och du byter tillbaka platshållarna

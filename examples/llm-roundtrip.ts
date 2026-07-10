@@ -17,10 +17,10 @@ const { text, map, restore } = redact(userMessage)
 
 console.log("Sent to LLM:\n", text)
 // Hej, jag heter Anna Karlsson, personnummer [PERSONNUMMER_1],
-// och jag når er på [PHONE_1] eller [EMAIL_1].
+// och jag når er på [TELEFON_1] eller [EPOST_1].
 
 // --- pretend this came back from your model -----------------------------
-const fakeLlmAnswer = "Tack! Jag har noterat [PHONE_1] som kontaktnummer och mejlar [EMAIL_1]."
+const fakeLlmAnswer = "Tack! Jag har noterat [TELEFON_1] som kontaktnummer och mejlar [EPOST_1]."
 
 console.log("\nRestored locally:\n", restore(fakeLlmAnswer))
 // Tack! Jag har noterat 070-123 45 67 som kontaktnummer och mejlar anna@example.se.

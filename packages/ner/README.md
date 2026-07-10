@@ -39,8 +39,8 @@ const result = await redactWithNer(
   { recognizer },
 )
 result.text
-// "Min granne [PERSON_1] bor på [LOCATION_1], personnummer [PERSONNUMMER_1]."
-result.restore("Jag har meddelat [PERSON_1].")
+// "Min granne [NAMN_1] bor på [PLATS_1], personnummer [PERSONNUMMER_1]."
+result.restore("Jag har meddelat [NAMN_1].")
 // "Jag har meddelat Lars."
 ```
 

@@ -23,8 +23,8 @@ function pickToken(map: Record<string, string>, ...labels: string[]): string | n
  */
 const REPLIES: Record<string, (map: Record<string, string>) => string> = {
   hr: (map) => {
-    const namn = pickToken(map, "NAMN", "PER", "PERSON")
-    const email = pickToken(map, "EMAIL")
+    const namn = pickToken(map, "NAMN")
+    const email = pickToken(map, "EPOST")
     const who = namn ? ` för ${namn}` : ""
     const back = namn
       ? `Boka en första intervju och återkoppla till ${namn}${email ? ` på ${email}` : ""}.`
@@ -32,9 +32,9 @@ const REPLIES: Record<string, (map: Record<string, string>) => string> = {
     return `Tack! Jag har gått igenom CV:t${who} mot rollbeskrivningen och profilen ser stark ut. Förslag på intervjufrågor finns nedan. ${back}`
   },
   support: (map) => {
-    const namn = pickToken(map, "NAMN", "PER", "PERSON")
-    const card = pickToken(map, "CREDIT_CARD")
-    const contact = pickToken(map, "PHONE", "EMAIL")
+    const namn = pickToken(map, "NAMN")
+    const card = pickToken(map, "KORTNUMMER")
+    const contact = pickToken(map, "TELEFON", "EPOST")
     const who = namn ? ` för ${namn}` : ""
     const sparr = card ? ` och spärrat kortet ${card}` : ""
     const back = contact
@@ -43,24 +43,24 @@ const REPLIES: Record<string, (map: Record<string, string>) => string> = {
     return `Tack för underlaget! Jag har skapat ärendet${who}${sparr}. ${back}`
   },
   vard: (map) => {
-    const namn = pickToken(map, "NAMN", "PER", "PERSON")
-    const email = pickToken(map, "EMAIL")
-    const phone = pickToken(map, "PHONE")
+    const namn = pickToken(map, "NAMN")
+    const email = pickToken(map, "EPOST")
+    const phone = pickToken(map, "TELEFON")
     const who = namn ? ` för ${namn}` : ""
     const mail = email ? ` Sammanfattningen skickas till ${email}.` : ""
     const anhorig = phone ? ` Nå anhörig på ${phone} om läget förändras.` : ""
     return `Journalanteckningen${who} är uppdaterad med EKG-svaret.${mail}${anhorig}`
   },
   juridik: (map) => {
-    const namn = pickToken(map, "NAMN", "PER", "PERSON")
+    const namn = pickToken(map, "NAMN")
     const konto = pickToken(map, "BANKGIRO", "IBAN", "PLUSGIRO")
     const who = namn ? ` för ${namn}` : ""
     const pay = konto ? ` Bekräfta att betalning ska ske till ${konto}.` : ""
     return `Jag har sammanställt ärendet${who} inför förhandlingen och yrkandet om skadestånd är dokumenterat.${pay} Återkoppla inför mötet.`
   },
   kommun: (map) => {
-    const namn = pickToken(map, "NAMN", "PER", "PERSON")
-    const email = pickToken(map, "EMAIL")
+    const namn = pickToken(map, "NAMN")
+    const email = pickToken(map, "EPOST")
     const who = namn ? ` för ${namn}` : ""
     const back = namn && email ? ` Återkoppla beslutet till ${namn} på ${email}.` : ""
     return `Ärendet${who} är sammanställt för handläggaren och underlaget om försörjningsstöd är komplett.${back}`
@@ -78,8 +78,8 @@ const REPLIES: Record<string, (map: Record<string, string>) => string> = {
 export function sampleAiReply(map: Record<string, string>, scenarioId?: string): string {
   const builder = scenarioId ? REPLIES[scenarioId] : undefined
   if (builder) return builder(map)
-  const namn = pickToken(map, "NAMN", "PER", "PERSON")
-  const contact = pickToken(map, "PHONE", "EMAIL")
+  const namn = pickToken(map, "NAMN")
+  const contact = pickToken(map, "TELEFON", "EPOST")
   const who = namn ? ` för ${namn}` : ""
   const first = `Tack för underlaget! Jag har sammanställt ärendet${who} och föreslår nästa steg nedan.`
   const second = contact

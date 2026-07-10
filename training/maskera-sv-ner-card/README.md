@@ -57,8 +57,7 @@ chat-style text**; see [How it compares](#how-it-compares).
 
 Tags are emitted in BIO form (`B-PER`, `I-PER`, …). When you run the model
 through `maskera`, the raw tags map to the placeholder names you see in
-redacted output: `PER` → `PERSON`, `LOC` → `LOCATION`, `ORG` → `ORGANIZATION`,
-`ADR` → `ADDRESS` (e.g. `[PERSON_1]`).
+redacted output: `PER` → `NAMN`, `LOC` → `PLATS`, `ORG` → `ORGANISATION`,`ADR` → `ADRESS` (e.g. `[NAMN_1]`).
 
 Note: the PER / LOC / ORG benchmark sets below contain no street addresses, so
 `ADR` is measured on its own set (27 sentences, 21 address spans, held out of
@@ -93,7 +92,7 @@ const { text, restore } = await redactWithNer(
   "Anna Lindqvist på Volvo i Göteborg ringde om fakturan.",
   { recognizer },
 )
-// text -> "[PERSON_1] på [ORGANIZATION_1] i [LOCATION_1] ringde om fakturan."
+// text -> "[NAMN_1] på [ORGANISATION_1] i [PLATS_1] ringde om fakturan."
 ```
 
 ### With Transformers.js directly

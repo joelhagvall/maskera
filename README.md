@@ -4,7 +4,7 @@
 
 > **Swedish PII redaction, on-device. Names, personnummer, addresses are masked before your text reaches an LLM, a log, or analytics.**
 
-<a href="https://maskera.dev"><img src="docs/demo.png" alt="maskera-demon: svensk text med markerade personuppgifter till vänster, samma text med platshållare som [PERSON_1] till höger" width="100%"></a>
+<a href="https://maskera.dev"><img src="docs/demo.png" alt="maskera-demon: svensk text med markerade personuppgifter till vänster, samma text med platshållare som [NAMN_1] till höger" width="100%"></a>
 
 ```bash
 npm install maskera @huggingface/transformers   # all-in-one: rules + our Swedish AI model
@@ -19,7 +19,7 @@ const { text, restore } = await redactWithNer(
   { recognizer },
 )
 text
-// "hej jag heter [PERSON_1], personnummer [PERSONNUMMER_1], och bor i [LOCATION_1]"
+// "hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]"
 ```
 
 Everything runs client-side. Nothing is sent anywhere, no telemetry, and the
@@ -82,7 +82,7 @@ const result = restore(answer)       // placeholders back to real values, locall
 ```
 
 Placeholders are **stable**: the same value always maps to the same token, so
-the model can reason about `[PERSON_1]` consistently. The same one-liner works
+the model can reason about `[NAMN_1]` consistently. The same one-liner works
 before logging: `logger.info(redact(msg).text)`. Runnable example:
 [`examples/llm-roundtrip.ts`](examples/llm-roundtrip.ts).
 

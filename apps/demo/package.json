@@ -1,6 +1,6 @@
 {
   "name": "@maskera/demo",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,7 +12,8 @@
     "lighthouse:run": "mkdir -p reports && lighthouse http://127.0.0.1:4173 --only-categories=performance,accessibility,best-practices,seo --chrome-flags=\"--headless=new\" --output=html --output=json --output-path=./reports/lighthouse --quiet",
     "audit:a11y": "start-server-and-test preview http://127.0.0.1:4173 a11y:run",
     "a11y:run": "pa11y --config .pa11yrc.json --include-warnings http://127.0.0.1:4173",
-    "record:demo": "node scripts/record-demo.mjs"
+    "record:demo": "node scripts/record-demo.mjs",
+    "record:linkedin": "node scripts/record-linkedin-demo.mjs"
   },
   "dependencies": {
     "@huggingface/transformers": "^3.3.1",

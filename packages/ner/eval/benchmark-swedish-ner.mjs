@@ -145,6 +145,10 @@ const recognizer = createNerRecognizer({
   allowLocalModels: true,
   allowRemoteModels: false,
   minScore: process.env.MIN_SCORE ? Number(process.env.MIN_SCORE) : 0.5,
+  // Gold uses the CoNLL-style vocabulary (see TAG_TO_LABEL); the product
+  // default is Swedish (NAMN/PLATS/...), so map explicitly.
+  labelMap: (g) =>
+    ({ PER: "PERSON", LOC: "LOCATION", ORG: "ORGANIZATION", ADR: "ADDRESS" })[g] ?? g,
 })
 try {
   await recognizer.ready
