@@ -17,13 +17,46 @@
  */
 import { writeFileSync } from "node:fs"
 
-let seed = 1337
+let seed = Number(process.env.DATA_SEED ?? 1337) >>> 0
+if (!Number.isInteger(Number(process.env.DATA_SEED ?? 1337))) {
+  throw new Error(`DATA_SEED must be an integer; got ${process.env.DATA_SEED}`)
+}
+// Mulberry32: a small deterministic 32-bit PRNG with much better distribution
+// than the previous `x * 1103515245` expression. JavaScript cannot represent
+// that LCG multiplication exactly, and the resulting sequence produced only
+// 1,656 unique rows out of 24,000 generated examples.
 const rand = () => {
-  seed = (seed * 1103515245 + 12345) & 0x7fffffff
-  return seed / 0x7fffffff
+  seed = (seed + 0x6d2b79f5) >>> 0
+  let value = seed
+  value = Math.imul(value ^ (value >>> 15), value | 1)
+  value ^= value + Math.imul(value ^ (value >>> 7), value | 61)
+  return ((value ^ (value >>> 14)) >>> 0) / 2 ** 32
 }
 const pick = (a) => a[Math.floor(rand() * a.length)]
 const chance = (p) => rand() < p
+
+// v10: casing-augmentation shares, tunable via env without editing the file.
+// The 2026-07-05 error analysis (docs/BENCHMARKS.md "Error analysis") showed
+// lowercase text TRIPLES the leak rate (8.4% -> 24.8% on 2453 sentences) and
+// the target register (chat/support) is lowercase, so the v9 lowercase share of
+// 0.16 was too low. Default raised to 0.35. Sweep it against BOTH the cased and
+// the lowercased benchmark when retraining: too high a share erodes the casing
+// signal and can cost cased precision (the v5.1 precision-collapse lesson), so
+// the success gate is "lowercase leak drops AND cased span-F1 holds".
+const LC_AUG = Number(process.env.LC_AUG ?? 0.35) // whole-sentence lowercase
+const UC_AUG = Number(process.env.UC_AUG ?? 0.05) // whole-sentence ALL CAPS
+
+for (const [name, value] of [
+  ["LC_AUG", LC_AUG],
+  ["UC_AUG", UC_AUG],
+]) {
+  if (!Number.isFinite(value) || value < 0 || value >= 1) {
+    throw new Error(`${name} must be a number in [0, 1); got ${value}`)
+  }
+}
+if (LC_AUG + UC_AUG >= 1) {
+  throw new Error(`LC_AUG + UC_AUG must be below 1; got ${LC_AUG + UC_AUG}`)
+}
 
 // --- gazetteers ---------------------------------------------------------
 const FIRST = [
@@ -585,6 +618,51 @@ const ORGS = [
   "Svenska kyrkan",
   "Skandia",
   "Folktandvården",
+  // v10: international brands. The 2026-07-05 error analysis found ORG misses
+  // are mostly real company names, not acronyms, and international brands (Apple,
+  // Google, Samsung, Opel) were the biggest bucket — under-represented in a
+  // Swedish-first gazetteer. These also feed orgGenitive() so "Apples"/"Googles"
+  // get taught too. DELIBERATELY excluding brands that are common Swedish words
+  // (Visa->visa, Meta->meta, Sprint->sprint) to avoid the v5.1 precision hit,
+  // especially now that lowercase augmentation is higher.
+  "Apple",
+  "Google",
+  "Samsung",
+  "Microsoft",
+  "Amazon",
+  "Netflix",
+  "Facebook",
+  "Instagram",
+  "YouTube",
+  "Sony",
+  "Huawei",
+  "Nokia",
+  "Siemens",
+  "Bosch",
+  "Philips",
+  "Panasonic",
+  "Opel",
+  "Volkswagen",
+  "Audi",
+  "Toyota",
+  "Tesla",
+  "Renault",
+  "Nike",
+  "Adidas",
+  "Zalando",
+  "PayPal",
+  "Mastercard",
+  "Uber",
+  "Airbnb",
+  "Nvidia",
+  "Intel",
+  "Oracle",
+  "Coca-Cola",
+  "Nestlé",
+  "McDonald's",
+  "Starbucks",
+  "Ryanair",
+  "Lufthansa",
 ]
 
 // --- entity builders ----------------------------------------------------
@@ -615,16 +693,28 @@ const place = () => {
 }
 const address = () =>
   `${pick(STREET_STEMS)}${pick(STREET_SUFFIX)} ${1 + Math.floor(rand() * 119)}${chance(0.25) ? pick(["A", "B", "C", "D"]) : ""}`
+// v10: multiword institutions the error analysis flagged as ORG misses
+// (courts especially). Distinctive names, low over-fire risk.
+const COURTS = [
+  "Högsta domstolen",
+  "Högsta förvaltningsdomstolen",
+  "Arbetsdomstolen",
+  "Svea hovrätt",
+  "Kammarrätten",
+  "Patent- och marknadsdomstolen",
+]
 // Institutions are organisations too — composed names the model kept missing.
 const INSTITUTION = () => {
   const r = rand()
-  if (r < 0.25) return `${pick(CITIES)} lasarett`
-  if (r < 0.45) return `${pick(CITIES)} kommun`
-  if (r < 0.6)
+  if (r < 0.2) return `${pick(CITIES)} lasarett`
+  if (r < 0.36) return `${pick(CITIES)} kommun`
+  if (r < 0.5)
     return `Region ${pick(["Skåne", "Halland", "Stockholm", "Värmland", "Dalarna", "Jämtland", "Uppsala"])}`
-  if (r < 0.75) return `${pick(STREET_STEMS)}gårdens äldreboende`
-  if (r < 0.88) return `${pick(CITIES)} universitet`
-  return `${pick(STREET_STEMS)}skolan`
+  if (r < 0.62) return `${pick(STREET_STEMS)}gårdens äldreboende`
+  if (r < 0.74) return `${pick(CITIES)} universitet`
+  if (r < 0.84) return `${pick(STREET_STEMS)}skolan`
+  if (r < 0.94) return pick(COURTS)
+  return `${pick(CITIES)} tingsrätt`
 }
 const org = () => (chance(0.3) ? INSTITUTION() : pick(ORGS))
 
@@ -852,10 +942,11 @@ function buildExample() {
     // ALL CAPS), and v4 collapsed on both. Whole-sentence variants teach the
     // model to rely on context, not capitalisation, for entity cues.
     const r = rand()
-    // v9: lowercase 0.12 -> 0.16, caps 0.03 -> 0.05 (chat/caps leaks in v5).
-    if (r < 0.16) {
+    // v10: whole-sentence lowercase/caps shares are the LC_AUG/UC_AUG knobs above
+    // (v9 hardcoded 0.16 / 0.05; raised because lowercase was the biggest leak).
+    if (r < LC_AUG) {
       for (let k = 0; k < tokens.length; k++) tokens[k] = tokens[k].toLowerCase()
-    } else if (r < 0.21) {
+    } else if (r < LC_AUG + UC_AUG) {
       for (let k = 0; k < tokens.length; k++) tokens[k] = tokens[k].toUpperCase()
     } else if (chance(0.2) && tags[0] === "O") {
       tokens[0] = tokens[0].toLowerCase()
@@ -871,19 +962,36 @@ function buildExample() {
 const trainCount = Number(process.argv[2] ?? 24000)
 const valCount = Number(process.argv[3] ?? 2000)
 
+const usedExamples = new Set()
+
 function writeSet(path, n) {
   const lines = []
-  for (let i = 0; i < n; i++) lines.push(JSON.stringify(buildExample()))
+  let attempts = 0
+  while (lines.length < n) {
+    const line = JSON.stringify(buildExample())
+    attempts++
+    if (usedExamples.has(line)) continue
+    usedExamples.add(line)
+    lines.push(line)
+    if (attempts > n * 100) {
+      throw new Error(`Could not generate ${n} unique examples after ${attempts} attempts`)
+    }
+  }
   writeFileSync(path, `${lines.join("\n")}\n`)
+  return attempts - n
 }
 
 const dir = new URL("./data/", import.meta.url)
-writeSet(new URL("train.jsonl", dir), trainCount)
-writeSet(new URL("val.jsonl", dir), valCount)
+const trainDuplicates = writeSet(new URL("train.jsonl", dir), trainCount)
+const valDuplicates = writeSet(new URL("val.jsonl", dir), valCount)
 
 const sample = buildExample()
 console.log(`Wrote ${trainCount} train + ${valCount} val examples`)
 console.log(
+  `Uniqueness: skipped ${trainDuplicates} duplicate train + ${valDuplicates} duplicate/overlapping val rows`,
+)
+console.log(
   `Gazetteers: ${FIRST.length} first, ${LAST.length} last, ${CITIES.length} cities, ${ORGS.length} orgs, ${TEMPLATES.length} templates`,
 )
+console.log(`Casing augmentation: lowercase ${LC_AUG}, ALL CAPS ${UC_AUG} (LC_AUG/UC_AUG env)`)
 console.log("Sample:", sample.tokens.join(" "))

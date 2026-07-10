@@ -50,6 +50,77 @@ describe("reconstruct", () => {
     expect(out[0]).toMatchObject({ value: "H&M", label: "ORGANIZATION" })
   })
 
+  it("keeps a trailing house number in an address span", () => {
+    const text = "Jag bor på Sveavägen 44 i Stockholm."
+    const out = reconstruct(
+      text,
+      [tok("B-ADR", "Svea", 4), tok("B-ADR", "##vägen", 5), tok("I-ADR", "44", 6)],
+      labelMap,
+      0.5,
+    )
+    expect(out).toEqual([{ start: 11, end: 23, value: "Sveavägen 44", label: "ADR" }])
+  })
+
+  it("still drops a numeric-only address prediction", () => {
+    const text = "Mötet är 14 30 idag."
+    const out = reconstruct(text, [tok("B-ADR", "14", 3), tok("I-ADR", "30", 4)], labelMap, 0.5)
+    expect(out).toEqual([])
+  })
+
+  it("extends an address over a detached A-D house suffix", () => {
+    const text = "Paketet går till Sturegatan 46 C imorgon."
+    const out = reconstruct(
+      text,
+      [tok("B-ADR", "Sturegatan", 4), tok("I-ADR", "46", 5)],
+      labelMap,
+      0.5,
+    )
+    expect(out[0]).toMatchObject({ value: "Sturegatan 46 C", label: "ADR" })
+  })
+
+  it("does not absorb a following preposition into an address", () => {
+    const text = "Jag bor på Sturegatan 46 i Stockholm."
+    const out = reconstruct(
+      text,
+      [tok("B-ADR", "Sturegatan", 4), tok("I-ADR", "46", 5)],
+      labelMap,
+      0.5,
+    )
+    expect(out[0]).toMatchObject({ value: "Sturegatan 46", label: "ADR" })
+  })
+
+  it("merges adjacent address fragments separated only by whitespace", () => {
+    const text = "Skicka till Renstiernas gata 22 idag."
+    const out = reconstruct(
+      text,
+      [
+        tok("B-ADR", "Ren", 3),
+        tok("B-ADR", "##stiernas", 4),
+        tok("B-ADR", "gata", 5),
+        tok("I-ADR", "22", 6),
+      ],
+      labelMap,
+      0.5,
+    )
+    expect(out[0]).toMatchObject({ value: "Renstiernas gata 22", label: "ADR" })
+  })
+
+  it("repairs an address prefix that q4 mislabeled as another entity", () => {
+    const text = "Skicka till Renstiernas gata 22 idag."
+    const out = reconstruct(
+      text,
+      [
+        tok("B-ORG", "Ren", 3),
+        tok("B-ORG", "##stiernas", 4),
+        tok("B-ADR", "gata", 5),
+        tok("I-ADR", "22", 6),
+      ],
+      labelMap,
+      0.5,
+    )
+    expect(out).toEqual([{ start: 12, end: 31, value: "Renstiernas gata 22", label: "ADR" }])
+  })
+
   it("merges subword continuations without inserting spaces", () => {
     const text = "Patienten Muhammed al-Rashid kom in."
     const out = reconstruct(

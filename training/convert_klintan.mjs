@@ -16,16 +16,58 @@
  * IN-DISTRIBUTION, so measure honest generalisation on a different independent
  * set (gold-real Wikipedia, WikiANN), not on klintan test.
  *
- * Usage: node convert_klintan.mjs [srcConll] [destJsonl]
+ * A deterministic slice of the source train split is reserved for validation.
+ * This keeps checkpoint selection from relying only on the synthetic validation
+ * set (which saturates at F1 1.00 and does not measure generalisation).
+ *
+ * Usage: node convert_klintan.mjs [srcConll] [trainJsonl] [valJsonl]
  */
 import { appendFileSync, readFileSync } from "node:fs"
 
 const SRC = process.argv[2] ?? ".benchmark/train_corpus.txt"
 const DEST = process.argv[3] ?? "data/train.jsonl"
+const VAL_DEST = process.argv[4] ?? "data/val.jsonl"
 const KEEP = new Set(["PER", "LOC", "ORG"])
 
+// Seeded so the lowercase-augmentation choice is reproducible run to run (the
+// rest of the pipeline is seeded 1337; this used Math.random and drifted).
+let seed = 1337
+const rand = () => {
+  seed = (seed + 0x6d2b79f5) >>> 0
+  let value = seed
+  value = Math.imul(value ^ (value >>> 15), value | 1)
+  value ^= value + Math.imul(value ^ (value >>> 7), value | 61)
+  return ((value ^ (value >>> 14)) >>> 0) / 2 ** 32
+}
+// v10: real-text lowercase-duplicate share, aligned with the synthetic set's
+// LC_AUG (0.35) since lowercase is the biggest leak; was a hardcoded 0.10.
+const LC_AUG = Number(process.env.KLINTAN_LC_AUG ?? 0.35)
+// This is a development split carved only from klintan's TRAIN partition. The
+// public test partition remains untouched. Hashing the sentence makes the split
+// stable even if augmentation settings or input order change.
+const DEV_SHARE = Number(process.env.KLINTAN_DEV_SHARE ?? 0.1)
+
+for (const [name, value] of [
+  ["KLINTAN_LC_AUG", LC_AUG],
+  ["KLINTAN_DEV_SHARE", DEV_SHARE],
+]) {
+  if (!Number.isFinite(value) || value < 0 || value >= 1) {
+    throw new Error(`${name} must be a number in [0, 1); got ${value}`)
+  }
+}
+
+const hash01 = (value) => {
+  let hash = 2166136261
+  for (let i = 0; i < value.length; i++) {
+    hash ^= value.charCodeAt(i)
+    hash = Math.imul(hash, 16777619)
+  }
+  return (hash >>> 0) / 2 ** 32
+}
+
 const lines = readFileSync(SRC, "utf8").split(/\r?\n/)
-const out = []
+const trainOut = []
+const valOut = []
 let toks = []
 
 function flush() {
@@ -40,12 +82,27 @@ function flush() {
     else tags.push(`${t === prev ? "I" : "B"}-${t}`)
     prev = t
   }
-  out.push(JSON.stringify({ tokens, tags }))
-  // v7: emit a lowercased duplicate for ~10% of sentences, so the model also
+  const serialized = JSON.stringify({ tokens, tags })
+  const isValidation = hash01(tokens.join("\u001f")) < DEV_SHARE
+  if (isValidation) {
+    valOut.push(serialized)
+    // Grade checkpoint selection on the same real sentence both with and
+    // without casing cues. This is deliberately paired instead of sampled.
+    const lower = tokens.map((t) => t.toLowerCase())
+    if (lower.some((token, i) => token !== tokens[i])) {
+      valOut.push(JSON.stringify({ tokens: lower, tags }))
+    }
+    toks = []
+    return
+  }
+
+  trainOut.push(serialized)
+  // v10: emit a lowercased duplicate for LC_AUG of sentences, so the model also
   // sees REAL text without capitalisation cues (chat style), not just the
-  // synthetic lowercase variants.
-  if (Math.random() < 0.1) {
-    out.push(JSON.stringify({ tokens: tokens.map((t) => t.toLowerCase()), tags }))
+  // synthetic lowercase variants. Share raised 0.10 -> 0.35 (env KLINTAN_LC_AUG)
+  // to attack the lowercase leak the error analysis quantified.
+  if (rand() < LC_AUG) {
+    trainOut.push(JSON.stringify({ tokens: tokens.map((t) => t.toLowerCase()), tags }))
   }
   toks = []
 }
@@ -62,9 +119,17 @@ for (const ln of lines) {
 }
 flush()
 
-appendFileSync(DEST, `${out.join("\n")}\n`)
-const ents = out.reduce(
+appendFileSync(DEST, `${trainOut.join("\n")}\n`)
+appendFileSync(VAL_DEST, `${valOut.join("\n")}\n`)
+const trainEnts = trainOut.reduce(
   (n, l) => n + JSON.parse(l).tags.filter((t) => t.startsWith("B-")).length,
   0,
 )
-console.log(`Appended ${out.length} real sentences (${ents} entities) from ${SRC} -> ${DEST}`)
+const valEnts = valOut.reduce(
+  (n, l) => n + JSON.parse(l).tags.filter((t) => t.startsWith("B-")).length,
+  0,
+)
+console.log(`Appended ${trainOut.length} real train sentences (${trainEnts} entities) -> ${DEST}`)
+console.log(
+  `Appended ${valOut.length} paired real validation sentences (${valEnts} entities) -> ${VAL_DEST}`,
+)
