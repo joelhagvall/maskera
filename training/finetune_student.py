@@ -14,6 +14,7 @@ Example: finetune_student.py student-v5 student-v6 2 1e-5
 """
 
 import json
+import os
 import sys
 
 import numpy as np
@@ -35,7 +36,7 @@ EPOCHS = float(sys.argv[3]) if len(sys.argv) > 3 else 2
 LR = float(sys.argv[4]) if len(sys.argv) > 4 else 1e-5
 MAX_LEN = 128
 # Seeded so runs are comparable (see train.py).
-SEED = 1337
+SEED = int(os.environ.get("MASKERA_SEED", "1337"))
 
 LABELS = ["O", "B-PER", "I-PER", "B-LOC", "I-LOC", "B-ORG", "I-ORG", "B-ADR", "I-ADR"]
 label2id = {l: i for i, l in enumerate(LABELS)}

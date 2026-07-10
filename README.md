@@ -37,16 +37,16 @@ places, organisations and street addresses, including all-lowercase chat text
 ("hej jag heter anna karlsson"), ALL CAPS and genitive forms, because that is
 how people actually type.
 
-> **Benchmarks:** span F1 **96.4%** on the curated corpus, **91.5%** on
+> **Benchmarks:** span F1 **98.0%** on the curated corpus, **88.1%** on
 > independent real text, leak rate 1.0% / 1.7% (exact-span, q4, measured
-> 2026-07-04). One canonical, dated, reproducible table:
+> 2026-07-10). One canonical, dated, reproducible table:
 > **[docs/BENCHMARKS.md](docs/BENCHMARKS.md)**; every other number in this
 > repo defers to it.
 
 Measured against every public Swedish NER alternative on the same gold sets,
-it has the best typed F1 on independent text (0.96 vs 0.88-0.94 for the
-~500 MB models, including KB-BERT NER); the one known exception is
-all-lowercase text, where KBLab's lowermix model leads. Tables, method and
+it ties the best ~500 MB models on independent text (typed F1 0.94) at a
+tenth of their size, and on all-lowercase chat text, previously its known
+weakness, it now matches the case-robust leader (redaction recall 0.97). Tables, method and
 caveats: [docs/BENCHMARKS.md](docs/BENCHMARKS.md). The training pipeline and
 the round-by-round journey are fully reproducible: see
 [`training/`](training/). Every push to this repo re-grades the published

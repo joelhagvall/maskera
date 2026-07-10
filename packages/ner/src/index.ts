@@ -374,9 +374,22 @@ export function reconstruct(
     }
 
     // Trim punctuation-only tokens at the edges (a group ending in "-" can
-    // never sit on a word boundary and would be rejected wholesale).
-    while (group.length > 0 && !LETTER.test(pieceOf(group[group.length - 1] as RawToken)))
+    // never sit on a word boundary and would be rejected wholesale). Keep a
+    // trailing house number for ADR when the group already starts with a
+    // street-name token: the model reliably emits `I-ADR 44`, and discarding
+    // it here used to turn "Sveavägen 44" into the partial span "Sveavägen".
+    // Numeric-only predictions still fail the LETTER check below, and digits
+    // remain forbidden at the leading edge, so this does not revive the bare-
+    // number false positives the precision guard was added to suppress.
+    while (group.length > 0) {
+      const tail = pieceOf(group[group.length - 1] as RawToken)
+      const keepHouseNumber =
+        base === "ADR" &&
+        DIGIT.test(tail) &&
+        group.slice(0, -1).some((part) => LETTER.test(pieceOf(part)))
+      if (LETTER.test(tail) || keepHouseNumber) break
       group.pop()
+    }
     while (group.length > 0 && !LETTER.test(pieceOf(group[0] as RawToken))) group.shift()
     if (group.length === 0) {
       i = j
@@ -401,6 +414,16 @@ export function reconstruct(
         // If exactly one s remains to the word boundary, take it. Anything
         // longer is a genuinely different word and still gets rejected.
         if ((text[end] === "s" || text[end] === "S") && !LETTER.test(text[end + 1] ?? "")) end++
+        // Swedish apartment/entrance suffixes are commonly written as a
+        // detached A-D after the house number ("Sturegatan 46 C"). q4 can
+        // confidently tag the street + number but leave that final letter O.
+        // Restrict the extension to A-D and require a non-word boundary after
+        // it, so ordinary following words such as "i Stockholm" are untouched.
+        if (base === "ADR" && DIGIT.test(text[end - 1] ?? "")) {
+          const suffix = text.slice(end).match(/^(\s+[A-Da-d])(?=$|[^\p{L}\p{N}])/u)
+          const suffixText = suffix?.[1]
+          if (suffixText) end += suffixText.length
+        }
         const soloFragment = group.length === 1 && (group[0]?.word.startsWith("##") ?? false)
         if (!soloFragment && isWholeWord(text, start, end)) {
           const label = labelMap(base)
@@ -413,11 +436,41 @@ export function reconstruct(
     }
     i = j
   }
-  return out
+  // q4 can split a multiword address into adjacent same-label groups
+  // ("Renstiernas" + "gata 22"). Joining only ADDRESS spans separated by
+  // whitespace is safe and restores the full redaction boundary.
+  const addressLabel = labelMap("ADR")
+  if (!addressLabel) return out
+  const merged: Detection[] = []
+  for (const detection of out) {
+    const previous = merged[merged.length - 1]
+    const whitespaceSeparated =
+      previous !== undefined && /^\s+$/u.test(text.slice(previous.end, detection.start))
+    const continuesStreetAddress =
+      detection.label === addressLabel && STREET_ADDRESS_TAIL.test(detection.value)
+    if (
+      whitespaceSeparated &&
+      ((previous.label === addressLabel && detection.label === addressLabel) ||
+        continuesStreetAddress)
+    ) {
+      previous.end = detection.end
+      previous.value = text.slice(previous.start, previous.end)
+      // A q4 boundary error can label the street-name prefix as another
+      // entity ("Renstiernas" ORG + "gata 22" ADR). A numbered street-type
+      // tail is strong address evidence, so make the combined span ADDRESS.
+      if (continuesStreetAddress) previous.label = addressLabel
+    } else {
+      merged.push(detection)
+    }
+  }
+  return merged
 }
 
 const LETTER = /\p{L}/u
+const DIGIT = /\p{N}/u
 const WHITESPACE = /\s/
+const STREET_ADDRESS_TAIL =
+  /^(?:gata(?:n)?|väg(?:en)?|gränd(?:en)?|allé(?:n)?|torg(?:et)?|plan)\s+\p{N}/iu
 
 /** The surface text a token contributes, without the subword marker. */
 const pieceOf = (t: RawToken) => (t.word.startsWith("##") ? t.word.slice(2) : t.word)

@@ -10,3 +10,19 @@ This model was fine-tuned/distilled on top of:
   https://huggingface.co/KB/bert-base-swedish-cased
 
 CC0 imposes no conditions; this acknowledgement is provided as a courtesy.
+
+Training data includes, alongside synthetic text, the following public
+corpora, all released under CC BY 4.0 (attribution given here):
+
+  Swedish NER Corpus (klintan / Webbnyheter 2012)
+  https://github.com/klintan/swedish-ner-corpus
+
+  SUCX 3.0 NER (KBLab remix of SUC 3.0, Språkbanken Text)
+  https://huggingface.co/datasets/KBLab/sucx3_ner
+  https://spraakbanken.gu.se/en/resources/suc3
+
+  MASSIVE 1.1, sv-SE subset (Amazon Science)
+  https://huggingface.co/datasets/AmazonScience/massive
+
+  SIC2, Stockholm Internet Corpus (Språkbanken Text)
+  https://spraakbanken.gu.se/en/resources/sic2

@@ -17,6 +17,9 @@ Copying the teacher's weights fixes that.
 """
 
 import json
+import os
+import sys
+
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -28,11 +31,10 @@ from transformers import (
     BertConfig,
     BertForTokenClassification,
     DataCollatorForTokenClassification,
+    EarlyStoppingCallback,
     Trainer,
     TrainingArguments,
 )
-
-import sys
 
 from transformers import set_seed
 
@@ -44,7 +46,7 @@ MAX_LEN = 128
 ALPHA = 0.5        # weight on hard-label CE vs soft distillation
 TEMPERATURE = 2.0
 # Seeded so runs are comparable (see train.py).
-SEED = 1337
+SEED = int(os.environ.get("MASKERA_SEED", "1337"))
 set_seed(SEED)
 
 LABELS = ["O", "B-PER", "I-PER", "B-LOC", "I-LOC", "B-ORG", "I-ORG", "B-ADR", "I-ADR"]
@@ -52,7 +54,7 @@ label2id = {l: i for i, l in enumerate(LABELS)}
 id2label = {i: l for i, l in enumerate(LABELS)}
 
 device = "mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu"
-print(f"== device: {device} ==")
+print(f"== device: {device}, seed: {SEED} ==")
 
 tokenizer = AutoTokenizer.from_pretrained(TEACHER)
 
@@ -178,6 +180,7 @@ trainer = DistillTrainer(
     eval_dataset=tokenized["validation"],
     data_collator=collator,
     compute_metrics=compute_metrics,
+    callbacks=[EarlyStoppingCallback(early_stopping_patience=1)],
 )
 
 print("== distilling ==")

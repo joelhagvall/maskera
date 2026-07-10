@@ -1,9 +1,15 @@
 #!/usr/bin/env node
 /**
- * INDEPENDENT benchmark: grade maskera-sv-ner against the public Swedish NER
- * Corpus (klintan / Webbnyheter 2012), which we did NOT author. This is the
- * honest signal our own hand-written corpus (./corpus.mjs) cannot give: the
- * sentences, entities and writing style are someone else's.
+ * LARGE HELD-OUT benchmark: grade maskera-sv-ner against the public Swedish NER
+ * Corpus (klintan / Webbnyheter 2012) test split, authored and labeled by
+ * others. The sentences are held out (disjoint from training), so this is not a
+ * memorisation check. But it is NOT clean independence: the shipped model
+ * trained on this corpus's TRAIN split (see docs/BENCHMARKS.md "What the model
+ * was trained on"), so test and train share source, domain and annotation
+ * style. Read it as a large in-distribution held-out number and the most
+ * reliable per-type breakdown; for a clean independent number use the
+ * 22-sentence Wikipedia gold set (convert-gold-real.mjs), and see
+ * docs/GOLD_SET_PLAN.md for the plan to build a larger independent one.
  *
  * Data: CoNLL-style "token  TAG" lines, blank line between sentences, tags
  * PER / LOC / ORG / MISC and "0" for outside. Non-BIO: consecutive same-tag
@@ -23,6 +29,7 @@
  *   MASKERA_MODEL      model folder/id (default: maskera-sv-ner)
  *   MASKERA_DTYPE      dtype (default: q4)
  *   LIMIT              only score the first N sentences (default: all)
+ *   LOWERCASE=1        grade the corpus forced to lowercase (chat-register proxy)
  *
  * NOTE on fairness: MISC is outside our label space (we do PER/LOC/ORG only).
  * Model predictions overlapping a gold MISC span are dropped before scoring, so
@@ -37,6 +44,12 @@ const MODEL = process.env.MASKERA_MODEL ?? "maskera-sv-ner"
 const MODEL_PATH = process.env.MASKERA_MODEL_PATH
 const DTYPE = process.env.MASKERA_DTYPE ?? "q4"
 const LIMIT = process.env.LIMIT ? Number(process.env.LIMIT) : Number.POSITIVE_INFINITY
+// LOWERCASE=1 grades the model on the SAME corpus forced to lowercase, a proxy
+// for the chat/support register maskera targets. Gold char spans are unchanged
+// (toLowerCase preserves length for Latin/Swedish letters), so scoring still
+// lines up. Run it alongside the cased pass and compare, per docs/BENCHMARKS.md
+// "Error analysis" (lowercase is the biggest leak).
+const LOWERCASE = process.env.LOWERCASE === "1"
 
 const TAG_TO_LABEL = { PER: "PERSON", LOC: "LOCATION", ORG: "ORGANIZATION" }
 
@@ -121,6 +134,7 @@ const subset = Number.isFinite(LIMIT) ? docs.slice(0, LIMIT) : docs
 const totalGold = subset.reduce((n, d) => n + d.gold.length, 0)
 
 console.log(`\nBenchmark: ${subset.length} sentences, ${totalGold} PER/LOC/ORG entities`)
+if (LOWERCASE) console.log("Mode: LOWERCASE (text forced to lowercase, chat-register proxy)")
 console.log(`Loading model "${MODEL}" (dtype=${DTYPE}) from ${MODEL_PATH} ...`)
 
 const recognizer = createNerRecognizer({
@@ -147,7 +161,8 @@ const perLabel = {
 const results = []
 let done = 0
 for (const doc of subset) {
-  const predRaw = await recognizer.detect(doc.text)
+  const input = LOWERCASE ? doc.text.toLowerCase() : doc.text
+  const predRaw = await recognizer.detect(input)
   // Fairness: drop predictions that overlap a gold MISC span (out of our scope).
   const pred = predRaw.filter((p) => !overlapsAny(p, doc.misc))
   const r = scoreDocument(doc.gold, pred)
@@ -165,7 +180,9 @@ for (const doc of subset) {
 const m = aggregate(results)
 const pct = (x) => `${(x * 100).toFixed(1)}%`
 
-console.log("\n=== Swedish NER Corpus (independent) ===")
+console.log(
+  `\n=== Swedish NER Corpus test split (large held-out, in-distribution)${LOWERCASE ? " [LOWERCASED]" : ""} ===`,
+)
 console.log(`sentences:        ${subset.length}`)
 console.log(`gold entities:    ${m.support}`)
 console.log(`model predictions:${m.predicted}`)
@@ -181,5 +198,6 @@ console.log("--- recall by type (exact span) ---")
 for (const [label, c] of Object.entries(perLabel)) {
   console.log(`${label.padEnd(13)} ${pct(c.gold ? c.found / c.gold : 1)}  (${c.found}/${c.gold})`)
 }
-console.log("\nNote: an independent, messier corpus than our own. Lower than the curated")
-console.log("corpus.mjs numbers is expected and honest.\n")
+console.log("\nNote: a larger, messier held-out set than our own. In-distribution (we")
+console.log("trained on this corpus's train split), so lower than curated and NOT a")
+console.log("clean independent number; see docs/BENCHMARKS.md.\n")

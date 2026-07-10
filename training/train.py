@@ -10,6 +10,9 @@ Runs on Apple Silicon (MPS), CUDA, or CPU automatically.
 """
 
 import json
+import os
+import sys
+
 import numpy as np
 import torch
 from datasets import load_dataset
@@ -18,11 +21,10 @@ from transformers import (
     AutoModelForTokenClassification,
     AutoTokenizer,
     DataCollatorForTokenClassification,
+    EarlyStoppingCallback,
     Trainer,
     TrainingArguments,
 )
-
-import sys
 
 from transformers import set_seed
 
@@ -31,7 +33,7 @@ OUT_DIR = sys.argv[1] if len(sys.argv) > 1 else "model"  # usage: train.py [out_
 MAX_LEN = 128
 # Seeded so runs are comparable: an unseeded 2026-07-04 round produced students
 # whose ORG margins collapsed under quantization while a sibling run was fine.
-SEED = 1337
+SEED = int(os.environ.get("MASKERA_SEED", "1337"))
 set_seed(SEED)
 
 LABELS = ["O", "B-PER", "I-PER", "B-LOC", "I-LOC", "B-ORG", "I-ORG", "B-ADR", "I-ADR"]
@@ -43,7 +45,7 @@ device = (
     else "cuda" if torch.cuda.is_available()
     else "cpu"
 )
-print(f"== device: {device} ==")
+print(f"== device: {device}, seed: {SEED} ==")
 
 tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
 
@@ -134,6 +136,7 @@ trainer = Trainer(
     eval_dataset=tokenized["validation"],
     data_collator=collator,
     compute_metrics=compute_metrics,
+    callbacks=[EarlyStoppingCallback(early_stopping_patience=1)],
 )
 
 print("== training ==")

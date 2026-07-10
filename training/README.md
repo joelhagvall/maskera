@@ -28,7 +28,16 @@ recall is weak. This pipeline trains a Swedish-first model instead.
 #    then append the real Swedish NER Corpus train split (see the v6 journal
 #    entry below). Skipping the append step collapses precision on real text.
 node generate_data.mjs            # -> data/train.jsonl, data/val.jsonl
-node convert_klintan.mjs          # appends real news sentences to train.jsonl
+node convert_klintan.mjs          # appends real news train + held-out dev data
+node convert_sucx.mjs             # v11: SUCX 3.0 gold sample (lowercase lever)
+node convert_sic2.mjs             # v11: informal blog gold (target register)
+node convert_massive.mjs          # v11: chat-register gold (target register)
+# Experimental only: a full Swe-NERC mix regressed the independent safety gate.
+# If revisited, sample/weight it and require every q4 gate to pass.
+# node convert_swenerc.mjs
+# Optional, once separately annotated target-domain data exists:
+node convert_domain_jsonl.mjs domain-data/annotated.jsonl
+node audit_data.mjs               # schema/BIO/duplicates/train-val leakage gate
 
 # 2. Set up env (uv + Python 3.11; torch supports MPS on Apple Silicon)
 uv venv --python 3.11
@@ -376,6 +385,151 @@ support/healthcare/legal text maskera targets, so the next real gain is annotate
 text from those domains (public court rulings and municipal records are a legal,
 GDPR-safe start; see the repo README's data section). A larger independent gold
 set is also still needed just to measure the target domain honestly.
+
+### v10 casing/ORG round (2026-07-05): error analysis picked the target, not intuition
+
+Before touching data, graded the shipped model on the full 2453-sentence klintan
+test split and ran an error analysis (tables in
+[docs/BENCHMARKS.md](../docs/BENCHMARKS.md) "Error analysis"). Two findings, one
+of which killed a comfortable assumption:
+
+1. **ORG misses are mostly real company names, not acronyms.** Of 80 exact-span
+   ORG misses, only 6 (7.5%) are acronyms; 52 (65%) are single-word org names,
+   heavily **international brands** (Apple, Google, Samsung, Opel) plus genitive
+   forms (Opels, Apples), and 22 (27.5%) are multiword institutions (courts,
+   media). The "just acronyms" story we could have told is false.
+2. **Lowercase is a bigger leak than the 22-sentence set showed.** Forcing the
+   whole test split lowercase drops span F1 −12.5pp and **triples the leak rate
+   (8.4% → 24.8%)**; LOC and ORG recall roughly halve. Since the target register
+   (chat/support) is lowercase, this is the biggest open lever, ahead of ORG.
+
+Data changes made and evaluated locally (no new weights were shipped):
+
+- **Lowercase augmentation raised and made tunable.** `generate_data.mjs`
+  `LC_AUG` env, default 0.16 → **0.35**; `convert_klintan.mjs` real-text
+  lowercase-duplicate share 0.10 → **0.35** (`KLINTAN_LC_AUG`), and its RNG is
+  now seeded 1337 like the rest of the pipeline (it used `Math.random`).
+- **Synthetic RNG fixed.** The old JavaScript LCG yielded only 1,656 unique
+  rows among 24,000 generated examples because its large integer multiply lost
+  precision. The generator now uses deterministic Mulberry32 (`DATA_SEED`), and
+  data QA must confirm high uniqueness before a run starts.
+- **International brands** added to the ORG gazetteer (Apple, Google, Samsung,
+  Opel, Toyota…); they feed `orgGenitive()` too, so "Apples"/"Googles" are
+  taught. Brands that are common Swedish words (Visa, Meta, Sprint) were
+  deliberately excluded to avoid the v5.1 precision collapse, which higher
+  lowercase augmentation makes riskier.
+- **Courts / multiword institutions** added to `INSTITUTION()` (Högsta
+  domstolen, hovrätt, tingsrätt…).
+
+Success gate for the round: **lowercase leak drops from 24.8% toward <12% while
+cased span-F1 holds ≥ ~85%.** If cased precision falls more than ~1pp, `LC_AUG`
+was too high; sweep 0.25 / 0.30 / 0.35 against BOTH benchmarks. The lowercase
+benchmark is now a flag, not a hand-edit: `LOWERCASE=1 node
+packages/ner/eval/benchmark-swedish-ner.mjs`. Reminder from the v7/2026-07-04
+retry: gate on the QUANTIZED artifact, not the fp32 student, and ship via the
+full teacher → distill pipeline (the fast finetune path loses recall).
+
+Two complete teacher → student → 16k-vocabulary → q4 candidates were trained on
+2026-07-09. Both stayed at **39,633,680 bytes**, but neither cleared every
+release gate:
+
+- **v10a (full Swe-NERC mix): rejected.** It improved the authored regression
+  set, but independent gold F1 fell to 84.5% with five leaks. Adding a large
+  real corpus is not automatically useful when its register and annotation
+  policy are weighted too heavily.
+- **v10b (synthetic + klintan, no Swe-NERC): rejected for release.** It improved
+  the large klintan test from 85.9% to **86.6%** span F1 and the lowercased test
+  from 73.4% to **79.0%** (leaks 24.8% → **20.5%**), while the curated set rose
+  from 96.4% to **97.6%**. However, the independent gold set fell from 91.5% to
+  **87.9%** and leaks rose from one to three. The untrimmed student was also
+  weaker on that set, so q4 itself was not the root cause.
+
+Conclusion: keep the published v5 weights. The v10 data/RNG/audit improvements
+remain useful infrastructure, but a future weight release needs genuinely
+target-domain annotated examples and must beat v5 after vocabulary trimming and
+q4 quantization. Never train on `eval/gold-real.txt` to make this gate pass.
+
+`MASKERA_SEED` controls the teacher, distillation and fast-path trainer (default
+1337). For a release candidate, compare a small fixed seed set only after q4
+quantization and select by the held-out development sets. Do not select a seed
+on the final gold corpora; those remain one-shot release gates.
+
+#### Getting the real target-domain data without poisoning evaluation
+
+The highest-value new data is not more news or more generated templates. It is
+annotated text from the actual support, healthcare and legal registers. Keep two
+strictly separate collections:
+
+1. **Gold/eval:** independently written messages that are never passed to a
+   training converter. This remains the honest measurement set described in
+   `docs/GOLD_SET_PLAN.md`.
+2. **Training/dev:** donated messages with invented PII, consented private data
+   that stays private, or lawfully public domain text. Annotate exact character
+   spans in the JSONL format shown by `domain-data.example.jsonl`, then run
+   `convert_domain_jsonl.mjs`. The converter validates offsets, labels,
+   duplicates and overlaps, and reserves a stable 20% development split. Set
+   `group` to the conversation/ticket id when several messages belong together;
+   the converter keeps each group wholly in train or development.
+
+Start with roughly 300-500 diverse support/chat messages, including 25-40% hard
+negatives with no PII. Do not select only easy or entity-dense messages: sample
+from real scenarios, then prioritise uncertain/error-producing examples for the
+next annotation batch. Keep source/register metadata outside the public text if
+the corpus must remain private.
+
+### v11 real-register round (2026-07-10): first candidate to pass every gate
+
+The v10 conclusion said the next gain needed genuinely different real data, not
+more news or synthetic. A verified source sweep found three gold corpora that
+fill the register gap, all CC BY 4.0 (commercial OK with attribution):
+
+- **SUCX 3.0 NER** (`KBLab/sucx3_ner`, simple_cased): 43k gold sentences,
+  balanced 1990s genres. The data behind KBLab's lowermix model, the only
+  competitor that beat us on lowercase. Sampled at `SUCX_SHARE` 0.25
+  (`convert_sucx.mjs`), the v10a lesson applied: weight, never append wholesale.
+- **MASSIVE sv-SE** (`AmazonScience/massive`): 11.5k professionally localized
+  utterances in exactly the target register: lowercase, informal, first person.
+  person/artist_name→PER, place_name→LOC, business_name/transport_agency/
+  app_name→ORG (`convert_massive.mjs`).
+- **SIC2** (Språkbanken): 892 manually annotated informal blog sentences
+  (`convert_sic2.mjs`).
+
+New mix: 24k synthetic + 8.5k klintan + 14.6k SUCX + 1.1k SIC2 + ~5k MASSIVE
+= 53k rows, audit-clean (0.4% dup, 0.14% train/val overlap).
+
+**Take 1 (v11a) failed the gate at 0.897 recall and taught the round's big
+lesson: slot poison.** MASSIVE slots we mapped to O (media_type, app_name,
+radio_name, podcast_name, news_topic) often hold real org/person names
+(facebook, spotify, aftonbladet, uber, "alex och sigges", trump), so training
+tagged thousands of org names as non-entities. Klintan ORG recall collapsed
+72%→61%. Bisection (teacher → student → trimmed → q4) showed the damage was in
+the TEACHER, i.e. the data, not the pipeline. Fix: clean org slots remapped to
+ORG, mixed slots dropped wholesale (825 rows).
+
+**Take 2 (v11b = shipped-candidate `student-v11-onnx`) passes every gate,**
+q4 artifact 39.6 MB:
+
+| Metric (q4 artifact)          | v5 (published) | v11b        |
+| ----------------------------- | -------------- | ----------- |
+| gold-real F1 / recall (GATE)  | 91.5 / 0.95    | **91.5** / 0.93 ✅ |
+| curated set F1 / leaks        | **96.6** / 1   | 94.4 / 4    |
+| klintan cased span F1 / leaks | 85.9 / **8.4%** | **86.6** / 11.3% |
+| klintan lowercase F1 / leaks  | 73.4 / 24.8%   | **78.9** / **20.5%** |
+| lowercase ORG / LOC recall    | 48.6 / 66.5    | **54.6** / **74.9** |
+| chat spot checks (fatima, RING LARS NORDSTRÖM, john och lennart) | ❌ misses | **✅ all pass** |
+
+The trade is explicit: the target register (lowercase chat/support) improves
+across the board (+5.5 F1, leaks −4.3pp) and both tracked chat leaks are fixed
+at the weight level, at the cost of cased-news recall (klintan leaks +2.9pp)
+and 4 curated ORG leaks (Voi, Northmill, Inspektionen för vård och omsorg,
+Försvarets materielverk) vs v5's 1 (Klarna). All remaining leaks are ORG:
+startup brands and multiword authorities, a category-level gazetteer round
+(NOT the eval entities themselves) is the obvious v12 lever.
+
+Data levers for reproduction/sweeps: `SUCX_SHARE`, `SUCX_LC_AUG`,
+`MASSIVE_EMPTY_SHARE`, `MASSIVE_DEV_SHARE`, `SIC2_LC_AUG` (see each
+converter's header). Raw dumps land in `.benchmark/` via the parquet API
+(see `run_v11.sh` provenance comments in the converters).
 
 ## Publish to Hugging Face (single hosted source)
 

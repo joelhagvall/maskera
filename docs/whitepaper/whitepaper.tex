@@ -205,10 +205,13 @@ both answers are public.
         student model quantised to a 40\,MB ONNX artifact.
   \item \textbf{Training data:} approximately 24{,}000 synthetic,
         template-generated Swedish sentences (the generator is public in the
-        repository and contains no real personal data), plus approximately
-        6{,}900 real news sentences from the Swedish NER Corpus, a public,
-        openly licensed research dataset of already-published text about
-        public figures.
+        repository and contains no real personal data), plus four public,
+        openly licensed (CC~BY~4.0) corpora of already-published text:
+        approximately 6{,}900 real news sentences from the Swedish NER
+        Corpus, a weighted sample of SUCX~3.0 (Spr\aa kbanken/KBLab,
+        balanced genres), the Swedish subset of Amazon's MASSIVE corpus
+        (lowercase chat-register utterances, professionally localised), and
+        SIC2 (Spr\aa kbanken, informal blog text).
   \item \textbf{No user data:} nothing was scraped or collected for this
         project, and no data from people who use maskera enters training (no
         such collection exists).
@@ -224,10 +227,10 @@ not determine which obligations apply.
 
 \section{Measured quality}
 
-All numbers below were measured on \textbf{2026-07-04} against the published
-artifact (\pkg{maskera@0.4.1}, q4 quantisation) using \textbf{exact character
-spans}, the strict criterion under which both start and end offsets must
-match. The canonical, always-current document is \pkg{docs/BENCHMARKS.md} in
+All numbers below were measured on \textbf{2026-07-10} against the published
+artifact (\pkg{maskera@0.4.5}, q4 quantisation, the v11 training round) using
+\textbf{exact character spans}, the strict criterion under which both start
+and end offsets must match. The canonical, always-current document is \pkg{docs/BENCHMARKS.md} in
 the repository; this section is a dated snapshot, and where the two disagree,
 \pkg{BENCHMARKS.md} wins. In a privacy setting the number to weigh most
 heavily is \textbf{leakage}: the share of entities missed entirely and thus
@@ -246,9 +249,9 @@ bound, not a universal score.
 \toprule
 Metric & Result & Meaning \\
 \midrule
-Precision & 95.2\% & of the model's detections, how many were correct \\
-Recall & 97.5\% & of the real entities, how many were found \\
-Span $F_1$ & 96.4\% & harmonic mean, label-agnostic \\
+Precision & 97.6\% & of the model's detections, how many were correct \\
+Recall & 98.5\% & of the real entities, how many were found \\
+Span $F_1$ & 98.0\% & harmonic mean, label-agnostic \\
 Leakage & 1.0\% & entities missed entirely, 2 of 204 \\
 \bottomrule
 \end{tabular}
@@ -266,9 +269,9 @@ directional independent floor.
 \toprule
 Metric & Result & Meaning \\
 \midrule
-Precision & 90.0\% & of the model's detections, how many were correct \\
-Recall & 93.1\% & of the real entities, how many were found \\
-Span $F_1$ & 91.5\% & harmonic mean, label-agnostic \\
+Precision & 86.7\% & of the model's detections, how many were correct \\
+Recall & 89.7\% & of the real entities, how many were found \\
+Span $F_1$ & 88.1\% & harmonic mean, label-agnostic \\
 Leakage & 1.7\% & entities missed entirely, 1 of 58 \\
 \bottomrule
 \end{tabular}
@@ -280,13 +283,11 @@ The three gold sets above cover person, location, and organisation; none
 contains street addresses, the fourth class the model emits. Addresses are
 therefore measured on their own held-out set of 27 sentences (21 address
 spans), with street names chosen to avoid the training generator's stems.
-Measured \textbf{2026-07-07} on the same q4 artifact: redaction recall is
-\textbf{100\%} (every address masked) with \textbf{zero leaks}, and address
-precision is 95.5\%. The one weakness is the span boundary: on 17 of 21 the
-model tags the street name but drops the house number (\emph{Sveavägen}, not
-\emph{Sveavägen 44}). Because a bare house number is far less identifying than
-the street, leakage stays at zero, but tightening the address span to include
-the trailing number is the clear next training step for this class.
+Measured \textbf{2026-07-10} on the same q4 artifact: redaction recall is
+\textbf{100\%} (every address masked) with \textbf{zero leaks}, address
+precision is \textbf{100\%} (no false flags on the distractor set), and the
+exact span including the house number is recovered on \textbf{21 of 21}
+addresses (\emph{Sveavägen 44}, not just \emph{Sveavägen}).
 
 \subsection{Comparison with public Swedish NER models}
 
@@ -300,7 +301,7 @@ marked at all, under any label, i.e.\ the safety number.
 \toprule
 Model & Size & Flagged & Typed $F_1$ \\
 \midrule
-\textbf{maskera} (runs in the browser) & \textbf{40\,MB} & 0.98 & \textbf{0.96} \\
+\textbf{maskera} (runs in the browser) & \textbf{40\,MB} & 1.00 & \textbf{0.94} \\
 KBLab lowermix reallysimple-ner & $\sim$475\,MB & 1.00 & 0.94 \\
 NB AI-Lab scandi-ner & $\sim$500\,MB & 1.00 & 0.94 \\
 KB-NER (the SUC classic) & $\sim$475\,MB & 1.00 & 0.92 \\
@@ -314,10 +315,12 @@ This comparison is an engineering smoke test, not a definitive public
 leaderboard: its purpose is to confirm that a browser-sized model stays
 competitive enough to justify local deployment, not to rank the field on
 58 entities. The full tables, all-lowercase results, method notes, and
-known exceptions are in \pkg{BENCHMARKS.md}. One known exception is reported
-openly: on text entirely without capital letters, KBLab's lowermix model
-leads (typed $F_1$ 0.90 versus maskera's 0.86). None of the alternative
-models detects street addresses or fits in a web application.
+known exceptions are in \pkg{BENCHMARKS.md}. On text entirely without
+capital letters, previously maskera's known weak register, the v11 training
+round closed the gap to the case-robust leader: KBLab's lowermix model
+measures typed $F_1$ 0.90 versus maskera's 0.89, with equal redaction
+recall (0.97). None of the alternative models detects street addresses or
+fits in a web application.
 
 \subsection{Latency}
 
@@ -405,9 +408,9 @@ all, so the limitations are reported as plainly as the results.
   \item \textbf{The model misses things.} The rule layer is deterministic and
         highly reliable for structured identifiers, but free-text recognition
         is probabilistic. Unusual names, heavy misspellings, and OCR noise
-        will sometimes slip through, including a name-origin robustness
-        gap in all-lowercase text (see the appendix). On independent text
-        the leakage is low (1 of 58 entities) but not zero.
+        will sometimes slip through, and all-lowercase text still trails
+        cased text (see the appendix). On independent text the leakage is
+        low (1 of 58 entities) but not zero.
   \item \textbf{Four entity types, one language.} The model recognises
         persons, locations, organisations, and street addresses in Swedish
         text. Data outside those types, and PII in other languages, is not
@@ -540,23 +543,21 @@ Input & Missed & Type & Reading \\
 \midrule
 ``Klarna rekryterade Daniel fr\aa n Spotify i fjol.'' & Klarna & ORG &
 sentence-initial org in subject position \\
-``hejhej det \"ar fatima igen, h\"or av dig n\"ar du kan'' & fatima & PER &
-lowercase text plus a rare name (see below) \\
+``VIKTIGT: RING LARS NORDSTR\"OM OMG\AA ENDE IDAG.'' & LARS NORDSTR\"OM & PER &
+long all-caps sentence; the shorter ``RING LARS NORDSTR\"OM'' is caught \\
 ``Den 6 mars 2018 bes\"okte L\"ofven Vita huset och hade sitt f\"orsta
-officiella m\"ote med [\dots]'' & Vita huset & LOC &
-metonymic building name \\
+officiella m\"ote med [\dots]'' & L\"ofven & PER &
+bare surname without a first name \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The second row deserves a sharper reading than ``no casing cues'':
-capitalised ``Fatima'' \emph{is} caught, and so is lowercase ``anna''. The
-failure is lowercase text combined with a name further from the training
-distribution, i.e.\ robustness across name origins in casing-free text.
-It is targeted: the next data round adds lowercase augmentation, and the
-gold-set plan requires invented names spanning many origins. These misses
-are why leakage, not $F_1$, is the gated metric: every failure mode is
-visible and tracked in the public regression corpus.
+Two previously published misses were fixed by the v11 training round
+(real informal-register corpora) and moved out of this table: lowercase
+``fatima'' (a name-origin robustness gap in casing-free text) and the
+metonymic ``Vita huset''. These misses are why leakage, not $F_1$, is the
+gated metric: every failure mode is visible and tracked in the public
+regression corpus.
 
 In short: maskera does not make text harmless, but it materially reduces
 what leaves the caller's environment, with reproducible evidence and

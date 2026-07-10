@@ -7,6 +7,7 @@ student-onnx/
 student-trimmed/
 student-trimmed-onnx/
 data/
+domain-data/
 *.log
 __pycache__/
 student-3l/
@@ -40,3 +41,7 @@ model-v7/
 student-v7/
 student-v7-trimmed/
 student-v7-onnx/
+# Future numbered experiment artifacts (specific older entries above are kept
+# for compatibility with existing working copies).
+model-v*/
+student-v*/
