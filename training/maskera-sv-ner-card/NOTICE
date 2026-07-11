@@ -26,3 +26,6 @@ corpora, all released under CC BY 4.0 (attribution given here):
 
   SIC2, Stockholm Internet Corpus (Språkbanken Text)
   https://spraakbanken.gu.se/en/resources/sic2
+
+  MultiCoNER v2, Swedish subset (SemEval-2023 shared task)
+  https://huggingface.co/datasets/MultiCoNER/multiconer_v2

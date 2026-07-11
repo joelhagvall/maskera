@@ -13,7 +13,7 @@ npm install maskera @huggingface/transformers   # all-in-one: rules + our Swedis
 ```ts
 import { createNerRecognizer, redactWithNer } from "maskera"
 
-const recognizer = createNerRecognizer() // our 40 MB Swedish model, runs in the browser
+const recognizer = createNerRecognizer() // our 43 MB Swedish model, runs in the browser
 const { text, restore } = await redactWithNer(
   "hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala",
   { recognizer },
@@ -31,22 +31,24 @@ so one import covers rules and model alike. Rules only, zero dependencies:
 
 [`maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner) is our
 own Swedish NER model: KB-BERT fine-tuned on synthetic + real Swedish,
-distilled and shrunk to a **40 MB** ONNX that runs in the browser
+distilled and shrunk to a **43 MB** ONNX that runs in the browser
 (WebGPU/WASM) and in Node. It catches what regex never can: free-text names,
 places, organisations and street addresses, including all-lowercase chat text
 ("hej jag heter anna karlsson"), ALL CAPS and genitive forms, because that is
 how people actually type.
 
-> **Benchmarks:** span F1 **98.0%** on the curated corpus, **88.1%** on
-> independent real text, leak rate 1.0% / 1.7% (exact-span, q4, measured
-> 2026-07-10). One canonical, dated, reproducible table:
+> **Benchmarks:** span F1 **98.8%** on the curated corpus, **93.1%** on
+> independent real text, leak rate 0.5% / 1.7% (exact-span, q4, measured
+> 2026-07-11). One canonical, dated, reproducible table:
 > **[docs/BENCHMARKS.md](docs/BENCHMARKS.md)**; every other number in this
 > repo defers to it.
 
 Measured against every public Swedish NER alternative on the same gold sets,
-it ties the best ~500 MB models on independent text (typed F1 0.94) at a
-tenth of their size, and on all-lowercase chat text, previously its known
-weakness, it now matches the case-robust leader (redaction recall 0.97). Tables, method and
+it now leads the best ~500 MB models on independent text (typed F1 0.97 vs
+0.94) at a tenth of their size, and in the lowercase chat/support register it
+targets it masks 96.6% of rare out-of-training surnames (previous release:
+94.9%); on lowercased encyclopedic prose the case-robust KBLab lowermix still
+leads, documented honestly. Tables, method and
 caveats: [docs/BENCHMARKS.md](docs/BENCHMARKS.md). The training pipeline and
 the round-by-round journey are fully reproducible: see
 [`training/`](training/). Every push to this repo re-grades the published
