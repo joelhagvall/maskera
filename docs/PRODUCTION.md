@@ -58,7 +58,7 @@ export async function safeCompletion(userInput: string) {
 }
 ```
 
-- The recognizer downloads the model (~40 MB) on first use and caches it.
+- The recognizer downloads the model (~43 MB) on first use and caches it.
   Await `recognizer.ready` at startup if you want to pay that cost at boot
   instead of on the first request.
 - Inference is CPU-bound and synchronous inside the ONNX runtime. At high
@@ -84,7 +84,7 @@ the [demo](../apps/demo) does, so there is never a blank wait:
 
 ```ts
 const recognizer = createNerRecognizer({
-  onProgress: (p) => updateLoadingBar(p), // ~40 MB, one time, then cached
+  onProgress: (p) => updateLoadingBar(p), // ~43 MB, one time, then cached
 })
 ```
 

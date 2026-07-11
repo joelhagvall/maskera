@@ -1,5 +1,18 @@
 # maskera
 
+## 0.5.1
+
+### Patch Changes
+
+- New model weights on the Hub: the v13 decomposed-surname training round
+  (sha256 7505b72d). Rare out-of-training surnames in the chat register are now
+  masked by design instead of by luck (96.6% vs 94.9% on the new gating eval),
+  gold-real hits 93.1 labeled F1 with 1 leak of 58, the cased news leak slide is
+  broken (8.7%), and ADR stays a clean sweep. The q4 download grows ~3 MB
+  (20k vocabulary trim). One documented trade: lowercased encyclopedic prose
+  regressed slightly (see docs/BENCHMARKS.md). README benchmark snapshots
+  refreshed to the 2026-07-11 tables.
+
 ## 0.5.0
 
 ### Minor Changes

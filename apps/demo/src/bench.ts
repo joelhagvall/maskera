@@ -24,7 +24,7 @@ function stats(samples: number[]) {
 async function main() {
   const t0 = performance.now()
   const recognizer = createNerRecognizer({
-    model: "maskera-sv-ner-v11",
+    model: "maskera-sv-ner-v13",
     localModelPath: "/models/",
     allowLocalModels: true,
     allowRemoteModels: false,

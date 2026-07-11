@@ -27,7 +27,7 @@ here, so one import covers rules and model alike:
 ```ts
 import { createNerRecognizer, redactWithNer } from "maskera"
 
-// Downloads maskera-sv-ner (~40 MB, q4) from the Hugging Face Hub on first
+// Downloads maskera-sv-ner (~43 MB, q4) from the Hugging Face Hub on first
 // use, then serves it from cache.
 const recognizer = createNerRecognizer()
 await recognizer.ready
@@ -67,7 +67,7 @@ await redactWithNer(text, {
 ```ts
 createNerRecognizer({
   model: MASKERA_SV_NER_MODEL, // default; any HF token-classification model id works
-  dtype: "q4",                 // "q4" (40 MB, default) | "q8" (55 MB) | "fp32" (220 MB)
+  dtype: "q4",                 // "q4" (43 MB, default) | "q8" (59 MB) | "fp32" (233 MB)
   device: "auto",              // "wasm" | "webgpu" | "cpu" | "auto"
   minScore: 0.5,               // drop predictions below this confidence
   labelMap: (group) => group,  // remap or drop entity groups (return null to drop)
@@ -125,11 +125,11 @@ highlighting.
 
 The default (and only bundled default) model is
 [maskera-sv-ner](https://huggingface.co/joelhagvall/maskera-sv-ner)
-(`MASKERA_SV_NER_MODEL`, MIT, 40 MB q4): PER/LOC/ORG/ADR, distilled from
+(`MASKERA_SV_NER_MODEL`, MIT, 43 MB q4): PER/LOC/ORG/ADR, distilled from
 KB-BERT, trained on synthetic + real Swedish with lowercase/ALL CAPS/genitive
 augmentation (chat users type lowercase). On the packaged gold corpus it
-scores 98.0% span-F1 with a 1.0% leak rate; on independent real text, 88.1%
-and 1.7% (measured 2026-07-10). The canonical, dated tables live in
+scores 98.8% span-F1 with a 0.5% leak rate; on independent real text, 93.1%
+and 1.7% (measured 2026-07-11). The canonical, dated tables live in
 [docs/BENCHMARKS.md](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md).
 Run the eval yourself:
 

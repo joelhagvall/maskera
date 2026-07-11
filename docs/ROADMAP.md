@@ -55,23 +55,48 @@ into v13.
       fell 70.9% -> 67.7% (leaks 11.3% -> 12.5%), the third straight release
       where cased-news leaks crept up (8.4 -> 11.3 -> 12.5). Carry to v13.
 
-## Next: v13 (hypotheses, not yet started)
+## Done: v13 decomposed-surname round (PUBLISHED 2026-07-11)
 
-- [ ] **Decomposed-surname robustness, the publish blocker: do this FIRST.**
-      v12 leaks rare surnames ("hej jag heter tjulander") that v11 catches;
-      the robustness was luck-of-the-mix, never designed. Plan: (1) build a
-      rare-surname chat-register eval (a few hundred generated sentences,
-      surnames verified to decompose, NOT reused in training) to quantify
-      both models; (2) subword-dropout during distillation so the student
-      trains on decomposed variants of ALL names; (3) publish gate: v13 must
-      beat v11 on that eval, not just tie.
+Full journal incl. the pre-publish battery and the accepted
+lowercase-encyclopedic trade in [training/README.md](../training/README.md)
+(v13 section). Live artifact: take 4 (`student-v13d-onnx`, sha256 7505b72d).
+
+Carried to v14: lowercase declarative-prose name frames (the accepted
+regression), PER-typing of rare names in unseen frames, rotate the
+rare-surname gate eval's frames + re-baseline, short brand names,
+the municipal "-avdelningen" suffix (still not generalising).
+
+- [x] **Decomposed-surname robustness, the publish blocker.**
+  - [x] (1) rare-surname chat-register eval built and baselined:
+        `training/eval/rare-surnames.txt` (294 sentences, 98 decomposing
+        out-of-training surnames) + `packages/ner/eval/benchmark-rare-surnames.mjs`.
+        Masked-at-all: v11 94.9% (15 leaks), v12 90.5% (28): confirms the hold.
+  - [x] (2) subword replacement during distillation (`MASKERA_SUBWORD_DROPOUT`),
+        student on trimmed-vocab tokenizations, teacher on full, word-aligned
+        KL. Take 1 alone scored 84.0% (unsupervised continuation subtokens
+        gave incoherent B/I chains that reconstruct() rejects); take 2 added
+        continuation I- labels: 92.9%, "tjulander" caught in q4, ALL-CAPS
+        leaks 8 -> 2, and record gold sets (our 97.9, gold-real 96.6 F1).
+  - [x] (3) publish gate v13 > v11: **PASSED by take 4** (96.6% vs 94.9%,
+        10 vs 15 leaks) after take 3's support-register frames (94.2%) and
+        take 4's eval-near frames. Best model so far on everything else too:
+        gold-real 98.3 F1 / 0.98 recall, klintan cased 91.2 span F1 with the
+        three-release leak slide broken (8.7%), lowercase 86.3 / 15.5%
+        leaks, cased ORG recall 72.5% (v11: 70.9%).
+  - [x] Fresh-frame check run (2026-07-11): `--fresh` variant with 18
+        disjoint frames confirms the margin is real off-frame (v13d 94.9%
+        vs v11 92.2% masked). Carry-over for the next round: rotate the
+        PRIMARY gate eval's frames, and fix PER-TYPING of rare names in
+        unseen frames (v13d 68.7% vs v11 74.5% fresh-frame typed; masking
+        is ahead, labeling lags).
 - [ ] **Short brand names** (Voi, Northmill, Knowit still leak): a LENGTH
       problem, not a category problem; more gazetteer entries will not fix
       2-4-letter brands. Needs its own idea (context weighting, or a rules
       assist in `@maskera/core`).
-- [ ] **Municipal "-avdelningen" suffix** (Bygglovsavdelningen leaks): the
-      AUTHORITIES list covers -nämnden/-förvaltningen/-kontoret but not
-      -avdelningen; five-minute gazetteer fix, take it in any next round.
+- [ ] **Municipal "-avdelningen" suffix** (Bygglovsavdelningen leaks):
+      gazetteer entries added in v13 (10 category instances), but the
+      lowercase probe still misses in takes 1-2, so the suffix category has
+      not generalised yet; re-check after take 3.
 - [ ] **Reverse the cased-news ORG slide** (see above) while holding the
       lowercase wins; sweep `SUCX_SHARE` 0.35 for more cased ORG signal.
 - [ ] **Flashback/Familjeliv pseudo-labeling** (Språkbanken, CC BY 4.0):

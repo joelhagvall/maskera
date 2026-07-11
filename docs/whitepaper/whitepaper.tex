@@ -21,7 +21,7 @@
 \newcommand{\pkg}[1]{\texttt{#1}}
 
 \title{\textbf{Client-Side Redaction of Swedish\\Personally Identifiable Information}\\[0.6em]
-\large\textmd{maskera: deterministic rules and a 40\,MB on-device NER model\\that mask PII before text reaches an LLM, a log, or analytics}}
+\large\textmd{maskera: deterministic rules and a 43\,MB on-device NER model\\that mask PII before text reaches an LLM, a log, or analytics}}
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
@@ -37,7 +37,7 @@ caller's own server process, before text is sent anywhere. Structured identifier
 organisation numbers, phone numbers, bank account references, and others) are
 caught by deterministic rules, checksum-validated where a checksum exists. Names, places,
 organisations, and street addresses in free text are caught by a purpose-built
-Swedish NER model of 40\,MB, small enough to run where the text already is,
+Swedish NER model of 43\,MB, small enough to run where the text already is,
 including inside a browser tab. The input text never leaves the caller's
 environment, no telemetry is collected, and the mapping that restores masked
 values is held locally by the caller. In the default setup the browser
@@ -126,7 +126,7 @@ letters, is caught by \pkg{maskera-sv-ner}, a purpose-built Swedish
 named-entity-recognition model with four entity types: person, location,
 organisation, and street address. It handles text the way people actually
 type it: all lowercase (``hej jag heter anna karlsson''), ALL CAPS, and
-genitive forms. The model is 40\,MB and runs in the browser (WebGPU or WASM)
+genitive forms. The model is 43\,MB and runs in the browser (WebGPU or WASM)
 and in Node.
 
 \subsection{The hybrid rule: the deterministic layer always wins}
@@ -153,7 +153,7 @@ For completeness, two network calls exist in the default setup, both fetching
 static assets and never content:
 
 \begin{itemize}
-  \item \textbf{Model weights} ($\sim$40\,MB), downloaded once from the
+  \item \textbf{Model weights} ($\sim$43\,MB), downloaded once from the
         Hugging Face Hub or from a host of the caller's choosing, then cached.
   \item \textbf{The WASM runtime} for Transformers.js, loaded from a CDN.
 \end{itemize}
@@ -202,7 +202,7 @@ both answers are public.
   \item \textbf{Base model:} \pkg{KBLab/}\allowbreak\pkg{bert-base-swedish-cased},
         the National Library of Sweden's BERT, released under CC0. It was
         fine-tuned for entity recognition, then distilled into a smaller
-        student model quantised to a 40\,MB ONNX artifact.
+        student model quantised to a 43\,MB ONNX artifact.
   \item \textbf{Training data:} approximately 24{,}000 synthetic,
         template-generated Swedish sentences (the generator is public in the
         repository and contains no real personal data), plus four public,
@@ -227,8 +227,8 @@ not determine which obligations apply.
 
 \section{Measured quality}
 
-All numbers below were measured on \textbf{2026-07-10} against the published
-artifact (\pkg{maskera@0.4.5}, q4 quantisation, the v11 training round) using
+All numbers below were measured on \textbf{2026-07-11} against the published
+artifact (\pkg{maskera@0.5.1}, q4 quantisation, the v13 training round) using
 \textbf{exact character spans}, the strict criterion under which both start
 and end offsets must match. The canonical, always-current document is \pkg{docs/BENCHMARKS.md} in
 the repository; this section is a dated snapshot, and where the two disagree,
@@ -249,10 +249,10 @@ bound, not a universal score.
 \toprule
 Metric & Result & Meaning \\
 \midrule
-Precision & 97.6\% & of the model's detections, how many were correct \\
+Precision & 99.0\% & of the model's detections, how many were correct \\
 Recall & 98.5\% & of the real entities, how many were found \\
-Span $F_1$ & 98.0\% & harmonic mean, label-agnostic \\
-Leakage & 1.0\% & entities missed entirely, 2 of 204 \\
+Span $F_1$ & 98.8\% & harmonic mean, label-agnostic \\
+Leakage & 0.5\% & entities missed entirely, 1 of 204 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -269,9 +269,9 @@ directional independent floor.
 \toprule
 Metric & Result & Meaning \\
 \midrule
-Precision & 86.7\% & of the model's detections, how many were correct \\
-Recall & 89.7\% & of the real entities, how many were found \\
-Span $F_1$ & 88.1\% & harmonic mean, label-agnostic \\
+Precision & 93.1\% & of the model's detections, how many were correct \\
+Recall & 93.1\% & of the real entities, how many were found \\
+Span $F_1$ & 93.1\% & harmonic mean, label-agnostic \\
 Leakage & 1.7\% & entities missed entirely, 1 of 58 \\
 \bottomrule
 \end{tabular}
@@ -283,7 +283,7 @@ The three gold sets above cover person, location, and organisation; none
 contains street addresses, the fourth class the model emits. Addresses are
 therefore measured on their own held-out set of 27 sentences (21 address
 spans), with street names chosen to avoid the training generator's stems.
-Measured \textbf{2026-07-10} on the same q4 artifact: redaction recall is
+Measured \textbf{2026-07-11} on the same q4 artifact: redaction recall is
 \textbf{100\%} (every address masked) with \textbf{zero leaks}, address
 precision is \textbf{100\%} (no false flags on the distractor set), and the
 exact span including the house number is recovered on \textbf{21 of 21}
@@ -301,7 +301,7 @@ marked at all, under any label, i.e.\ the safety number.
 \toprule
 Model & Size & Flagged & Typed $F_1$ \\
 \midrule
-\textbf{maskera} (runs in the browser) & \textbf{40\,MB} & 1.00 & \textbf{0.94} \\
+\textbf{maskera} (runs in the browser) & \textbf{43\,MB} & 0.98 & \textbf{0.97} \\
 KBLab lowermix reallysimple-ner & $\sim$475\,MB & 1.00 & 0.94 \\
 NB AI-Lab scandi-ner & $\sim$500\,MB & 1.00 & 0.94 \\
 KB-NER (the SUC classic) & $\sim$475\,MB & 1.00 & 0.92 \\
@@ -316,11 +316,13 @@ leaderboard: its purpose is to confirm that a browser-sized model stays
 competitive enough to justify local deployment, not to rank the field on
 58 entities. The full tables, all-lowercase results, method notes, and
 known exceptions are in \pkg{BENCHMARKS.md}. On text entirely without
-capital letters, previously maskera's known weak register, the v11 training
-round closed the gap to the case-robust leader: KBLab's lowermix model
-measures typed $F_1$ 0.90 versus maskera's 0.89, with equal redaction
-recall (0.97). None of the alternative models detects street addresses or
-fits in a web application.
+capital letters the picture is register-dependent and reported honestly
+there: in the chat/support register maskera targets, the v13 round is the
+strongest measured (96.6\% of rare out-of-training surnames masked, versus
+94.9\% for the previous release, on a dedicated 294-sentence eval), while on
+lowercased encyclopedic prose the case-robust KBLab lowermix model still
+leads. None of the alternative models detects street addresses or fits in a
+web application.
 
 \subsection{Latency}
 
@@ -328,7 +330,7 @@ Measured \textbf{2026-07-05} on an Apple M4 Pro laptop against the curated
 corpus (average sentence 46 characters); warm figures are per sentence,
 median and 95th percentile. The browser rows run the production demo bundle
 with the self-hosted model, exactly what maskera.dev ships. A real first
-visit adds the network download of the $\sim$40\,MB model; returning
+visit adds the network download of the $\sim$43\,MB model; returning
 visitors read it from the browser cache. The WebGPU path is opt-in and
 compiles shaders on the first inference ($\sim$0.5\,s, once per visit).
 
@@ -528,12 +530,12 @@ Everything claimed in this document can be checked without asking us:
 \section*{Appendix: the sentences the model is known to miss}
 
 The evaluation harness prints every leak verbatim and nothing is filtered.
-As of the artifact above, three gold entities across both corpora have no
+As of the artifact above, two gold entities across both corpora have no
 overlapping detection; they are published here deliberately, and in each
-sentence every other entity is caught. Provenance: the two curated
-sentences are hand-authored test cases with invented names; the gold-real
-sentence is verbatim, already-published Wikipedia prose about public
-figures. No user data and no real private persons appear below.
+sentence every other entity is caught. Provenance: the curated sentence is
+a hand-authored test case with an invented name; the gold-real sentence is
+verbatim, already-published Wikipedia prose about public figures. No user
+data and no real private persons appear below.
 
 \begin{table}[H]
 \centering
@@ -543,20 +545,23 @@ Input & Missed & Type & Reading \\
 \midrule
 ``Klarna rekryterade Daniel fr\aa n Spotify i fjol.'' & Klarna & ORG &
 sentence-initial org in subject position \\
-``VIKTIGT: RING LARS NORDSTR\"OM OMG\AA ENDE IDAG.'' & LARS NORDSTR\"OM & PER &
-long all-caps sentence; the shorter ``RING LARS NORDSTR\"OM'' is caught \\
 ``Den 6 mars 2018 bes\"okte L\"ofven Vita huset och hade sitt f\"orsta
-officiella m\"ote med [\dots]'' & L\"ofven & PER &
-bare surname without a first name \\
+officiella m\"ote med [\dots]'' & Vita huset & LOC &
+metonymic building-as-institution \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Two previously published misses were fixed by the v11 training round
-(real informal-register corpora) and moved out of this table: lowercase
-``fatima'' (a name-origin robustness gap in casing-free text) and the
-metonymic ``Vita huset''. These misses are why leakage, not $F_1$, is the
-gated metric: every failure mode is visible and tracked in the public
+Two previously published misses were fixed by the v13 training round
+(subword-robust distillation plus support-register frames) and moved out of
+this table: bare ``L\"ofven'' and the all-caps ``VIKTIGT: RING LARS
+NORDSTR\"OM OMG\AA ENDE IDAG.'' The metonymic ``Vita huset'', fixed in v11,
+regressed back in the same round and returns to the table. One register
+regression is documented alongside: on the independent corpus forced
+lowercase, coverage fell from 51 to 48 of 58 entities (bare lowercase
+surnames in declarative prose), while both large lowercase benchmarks
+improved; see \pkg{BENCHMARKS.md}. These misses are why leakage, not $F_1$,
+is the gated metric: every failure mode is visible and tracked in the public
 regression corpus.
 
 In short: maskera does not make text harmless, but it materially reduces

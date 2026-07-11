@@ -19,6 +19,7 @@ Copying the teacher's weights fixes that.
 import json
 import os
 import sys
+import zlib
 
 import numpy as np
 import torch
@@ -49,11 +50,33 @@ TEMPERATURE = 2.0
 SEED = int(os.environ.get("MASKERA_SEED", "1337"))
 set_seed(SEED)
 
+# --- v13: subword dropout (the decomposed-surname fix) ----------------------
+# The v12 publish hold: distillation runs with the full 50k vocab where rare
+# names are single tokens, then trim_vocab.py makes them DECOMPOSE at
+# inference ("tjulander" -> tj ##ulan ##der), token sequences the weights
+# never saw. v11's robustness to this was luck-of-the-mix; v12 lost it.
+# Fix: with probability SUBWORD_DROPOUT per word, the STUDENT sees the word
+# tokenized by the trimmed inference vocab (DROPOUT_VOCAB, the exact
+# decompositions it will face after trim_vocab.py), so the ability is trained
+# in, not lucked into. The TEACHER always sees the original full-vocab
+# tokenization: the v12 bisection proved the trimmed teacher (same weights,
+# only embedding rows removed) is blind to decomposed names, so soft labels
+# from decomposed input would be poison. The KL loss is word-aligned instead:
+# both tokenizations label exactly the first subtoken of each word, so the
+# labeled positions match one-to-one in word order.
+SUBWORD_DROPOUT = float(os.environ.get("MASKERA_SUBWORD_DROPOUT", "0"))
+DROPOUT_VOCAB = os.environ.get("MASKERA_DROPOUT_VOCAB", "")
+if SUBWORD_DROPOUT > 0 and not DROPOUT_VOCAB:
+    sys.exit("MASKERA_SUBWORD_DROPOUT needs MASKERA_DROPOUT_VOCAB (trimmed tokenizer dir)")
+
 LABELS = ["O", "B-PER", "I-PER", "B-LOC", "I-LOC", "B-ORG", "I-ORG", "B-ADR", "I-ADR"]
 label2id = {l: i for i, l in enumerate(LABELS)}
 id2label = {i: l for i, l in enumerate(LABELS)}
 
-device = "mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu"
+# MASKERA_DEVICE overrides (e.g. "cpu" for a smoke run beside a live MPS job).
+device = os.environ.get("MASKERA_DEVICE") or (
+    "mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu"
+)
 print(f"== device: {device}, seed: {SEED} ==")
 
 tokenizer = AutoTokenizer.from_pretrained(TEACHER)
@@ -95,42 +118,150 @@ print(f"== student params: {sum(p.numel() for p in student.parameters()) / 1e6:.
 
 raw = load_dataset("json", data_files={"train": "data/train.jsonl", "validation": "data/val.jsonl"})
 
+drop_tok = AutoTokenizer.from_pretrained(DROPOUT_VOCAB) if SUBWORD_DROPOUT > 0 else None
+if drop_tok is not None:
+    print(f"== subword dropout: p={SUBWORD_DROPOUT}, trimmed vocab {DROPOUT_VOCAB} "
+          f"({drop_tok.vocab_size} pieces) ==")
 
-def align(batch):
-    tok = tokenizer(batch["tokens"], truncation=True, max_length=MAX_LEN, is_split_into_words=True)
-    labels = []
-    for i, tags in enumerate(batch["tags"]):
-        word_ids = tok.word_ids(batch_index=i)
-        prev, seq = None, []
-        for wid in word_ids:
-            if wid is None:
-                seq.append(-100)
-            elif wid != prev:
-                seq.append(label2id[tags[wid]])
-            else:
-                seq.append(-100)
-            prev = wid
-        labels.append(seq)
-    tok["labels"] = labels
-    return tok
+CLS_ID, SEP_ID, UNK = tokenizer.cls_token_id, tokenizer.sep_token_id, tokenizer.unk_token
 
 
-tokenized = raw.map(align, batched=True, remove_columns=raw["train"].column_names)
-collator = DataCollatorForTokenClassification(tokenizer)
+def _rand(*keys):
+    """Deterministic per-word uniform in [0,1): stateless, so datasets.map
+    caching and multiprocessing cannot desync the draw from the seed."""
+    return zlib.crc32(f"{SEED}:{':'.join(map(str, keys))}".encode()) / 2**32
+
+
+def make_align(dropout_p):
+    def align(batch, indices):
+        out = {k: [] for k in ("input_ids", "attention_mask", "labels", "kl_mask",
+                               "t_input_ids", "t_attention_mask", "t_labels")}
+        for i, (tokens, tags) in enumerate(zip(batch["tokens"], batch["tags"])):
+            s_words, t_words = [], []  # per-word piece lists (student / teacher)
+            for w_idx, w in enumerate(tokens):
+                t_p = tokenizer.tokenize(w) or [UNK]
+                s_p = t_p
+                if drop_tok is not None and _rand(indices[i], w_idx) < dropout_p:
+                    # Trimmed-vocab pieces are a subset of the full vocab, so
+                    # they map to valid full-vocab ids for the student.
+                    cand = drop_tok.tokenize(w)
+                    if cand and drop_tok.unk_token not in cand:
+                        s_p = cand
+                t_words.append(t_p)
+                s_words.append(s_p)
+            # Word-level truncation so BOTH tokenizations keep the same words
+            # (the word-aligned KL below needs labeled positions to match 1:1).
+            n = len(tokens)
+            while n > 0 and (
+                2 + sum(len(p) for p in s_words[:n]) > MAX_LEN
+                or 2 + sum(len(p) for p in t_words[:n]) > MAX_LEN
+            ):
+                n -= 1
+            # STUDENT labels cover EVERY piece (continuations get the I- tag):
+            # v13 take 1 left continuations at -100 and the student improvised
+            # incoherent B/B/I chains on decomposed names ("##ulan" as B-PER,
+            # tail pieces under minScore), which reconstruct()'s whole-word
+            # guard then rejected wholesale. kl_mask marks first subtokens:
+            # the word-aligned KL against the teacher stays first-piece-only.
+            ids, labs, klm = [CLS_ID], [-100], [0]
+            for w_idx in range(n):
+                pieces = s_words[w_idx]
+                tag = tags[w_idx]
+                ids += tokenizer.convert_tokens_to_ids(pieces)
+                labs += [label2id[tag]] + [label2id[tag.replace("B-", "I-")]] * (len(pieces) - 1)
+                klm += [1] + [0] * (len(pieces) - 1)
+            ids.append(SEP_ID)
+            labs.append(-100)
+            klm.append(0)
+            out["input_ids"].append(ids)
+            out["attention_mask"].append([1] * len(ids))
+            out["labels"].append(labs)
+            out["kl_mask"].append(klm)
+            # TEACHER keeps first-subtoken-only labels; t_labels != -100 is
+            # its side of the word-aligned KL mask.
+            ids, labs = [CLS_ID], [-100]
+            for w_idx in range(n):
+                pieces = t_words[w_idx]
+                ids += tokenizer.convert_tokens_to_ids(pieces)
+                labs += [label2id[tags[w_idx]]] + [-100] * (len(pieces) - 1)
+            ids.append(SEP_ID)
+            labs.append(-100)
+            out["t_input_ids"].append(ids)
+            out["t_attention_mask"].append([1] * len(ids))
+            out["t_labels"].append(labs)
+        return out
+
+    return align
+
+
+# Dropout on the train split only; validation measures the standard
+# tokenization (its teacher fields are then identical to the student's).
+tokenized = raw["train"].map(
+    make_align(SUBWORD_DROPOUT), batched=True, with_indices=True,
+    remove_columns=raw["train"].column_names,
+)
+tokenized = {
+    "train": tokenized,
+    "validation": raw["validation"].map(
+        make_align(0.0), batched=True, with_indices=True,
+        remove_columns=raw["validation"].column_names,
+    ),
+}
+
+
+class DualCollator:
+    """Pads the student and teacher tokenizations independently (they differ
+    in length when subword dropout fires), then merges into one batch."""
+
+    def __init__(self, tok):
+        self.base = DataCollatorForTokenClassification(tok)
+
+    def __call__(self, features):
+        s = [{k: f[k] for k in ("input_ids", "attention_mask", "labels")} for f in features]
+        t = [
+            {"input_ids": f["t_input_ids"], "attention_mask": f["t_attention_mask"],
+             "labels": f["t_labels"]}
+            for f in features
+        ]
+        # kl_mask rides through a labels slot so the base collator pads it
+        # (pad value -100, so `== 1` still selects exactly the first pieces).
+        k = [
+            {"input_ids": f["input_ids"], "attention_mask": f["attention_mask"],
+             "labels": f["kl_mask"]}
+            for f in features
+        ]
+        batch = self.base(s)
+        t_batch = self.base(t)
+        batch["t_input_ids"] = t_batch["input_ids"]
+        batch["t_attention_mask"] = t_batch["attention_mask"]
+        batch["t_labels"] = t_batch["labels"]
+        batch["kl_mask"] = self.base(k)["labels"]
+        return batch
+
+
+collator = DualCollator(tokenizer)
 
 
 class DistillTrainer(Trainer):
     def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
-        labels = inputs["labels"]
+        # Teacher inputs are the ORIGINAL tokenization (see the subword-
+        # dropout note at the top); pop them so the student never sees them.
+        t_ids = inputs.pop("t_input_ids")
+        t_att = inputs.pop("t_attention_mask")
+        t_lab = inputs.pop("t_labels")
+        kl_mask = inputs.pop("kl_mask")
         outputs = model(**inputs)
-        hard = outputs.loss  # CE on hard labels (labels passed in)
+        hard = outputs.loss  # CE on hard labels (ALL pieces, continuations I-)
         with torch.no_grad():
-            t_logits = teacher(
-                input_ids=inputs["input_ids"], attention_mask=inputs["attention_mask"]
-            ).logits
-        mask = labels != -100
-        s = F.log_softmax(outputs.logits[mask] / TEMPERATURE, dim=-1)
-        t = F.softmax(t_logits[mask] / TEMPERATURE, dim=-1)
+            t_logits = teacher(input_ids=t_ids, attention_mask=t_att).logits
+        # Word-aligned KL: first subtoken of each kept word on both sides, so
+        # the masked positions correspond 1:1 in order even when the student's
+        # sequence is longer (dropout decomposition).
+        s_mask = kl_mask == 1
+        t_mask = t_lab != -100
+        s = F.log_softmax(outputs.logits[s_mask] / TEMPERATURE, dim=-1)
+        t = F.softmax(t_logits[t_mask] / TEMPERATURE, dim=-1)
+        assert s.shape[0] == t.shape[0], "student/teacher labeled positions desynced"
         soft = F.kl_div(s, t, reduction="batchmean") * (TEMPERATURE**2)
         loss = ALPHA * hard + (1 - ALPHA) * soft
         return (loss, outputs) if return_outputs else loss
@@ -171,6 +302,10 @@ args = TrainingArguments(
     metric_for_best_model="f1",
     report_to="none",
     seed=SEED,
+    use_cpu=device == "cpu",
+    # The t_* teacher fields are not in the model signature; the default
+    # column pruning would silently drop them before the collator runs.
+    remove_unused_columns=False,
 )
 
 trainer = DistillTrainer(
