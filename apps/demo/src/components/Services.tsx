@@ -3,9 +3,16 @@ import { ArrowUpRightIcon, MaskeraMark } from "../icons"
 import { navClick, viewPaths } from "../routing"
 
 const EMAIL = "work@joelhagvall.com"
+const BOOKING = "https://calendly.com/joel-hagvall/30min"
 
 function mailto(subject: string) {
   return `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}`
+}
+
+// utm_content shows up on the Calendly booking, so each card's clicks stay
+// attributable to its package.
+function booking(pkg: string) {
+  return `${BOOKING}?utm_source=maskera_dev&utm_content=${pkg}`
 }
 
 type Pkg = {
@@ -13,7 +20,7 @@ type Pkg = {
   price: string
   tagline: string
   points: string[]
-  subject: string
+  slug: string
   featured?: boolean
   note?: string
 }
@@ -29,7 +36,7 @@ const PACKAGES: Pkg[] = [
       "Rekommenderad arkitektur och prioriterad åtgärdslista",
       "Fast offert på implementation, om ni vill gå vidare",
     ],
-    subject: "Maskera: AI-integritetsgranskning",
+    slug: "granskning",
   },
   {
     name: "Integrationssprint",
@@ -42,7 +49,7 @@ const PACKAGES: Pkg[] = [
       "Mätning på er data: vad som fångas, före och efter",
       "Tester, dokumentation och överlämning till ert team",
     ],
-    subject: "Maskera: integrationssprint",
+    slug: "sprint",
     // Time-limited scarcity claim: must be updated or removed no later than
     // the August launch post, and immediately once both pilot slots are
     // taken. A stale "pilotplatser kvar" reads as fake urgency.
@@ -58,7 +65,7 @@ const PACKAGES: Pkg[] = [
       "Riskgranskning när ni bygger nya AI-flöden",
       "Prioriterad support",
     ],
-    subject: "Maskera: löpande avtal",
+    slug: "avtal",
   },
 ]
 
@@ -129,7 +136,7 @@ export function Services({ onBack, onDev }: { onBack: () => void; onDev: () => v
                   ))}
                 </ul>
                 {p.note && <p className="pkg-note">{p.note}</p>}
-                <a className="pkg-cta" href={mailto(p.subject)}>
+                <a className="pkg-cta" href={booking(p.slug)} target="_blank" rel="noreferrer">
                   Boka ett kostnadsfritt samtal
                 </a>
               </section>
@@ -172,7 +179,10 @@ export function Services({ onBack, onDev }: { onBack: () => void; onDev: () => v
           </ul>
 
           <p className="prose-foot">
-            Berätta kort om ert dataflöde så återkommer jag med tider för ett samtal:{" "}
+            <a href={booking("foot")} target="_blank" rel="noreferrer">
+              Boka ett kostnadsfritt samtal
+            </a>{" "}
+            direkt i kalendern, eller mejla ett par rader om ert dataflöde:{" "}
             <a href={mailto("Maskera: tjänster")}>{EMAIL}</a>
           </p>
         </article>
