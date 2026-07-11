@@ -38,4 +38,5 @@ Benchmarks (exact-span F1, q4 quantized, measured 2026-07-03): 96.2% on the cura
 ## Optional
 
 - [Live demo](https://maskera.dev/): paste Swedish text, watch it get masked in the browser
+- [Integration services](https://maskera.dev/tjanster): fixed-price audits, integration sprints, and support retainers (Swedish)
 - [Source repository](https://github.com/joelhagvall/maskera): monorepo with packages, training pipeline, and CI that re-grades the published model against a gold corpus

@@ -1,0 +1,182 @@
+import { GITHUB } from "../constants"
+import { ArrowUpRightIcon, MaskeraMark } from "../icons"
+import { navClick, viewPaths } from "../routing"
+
+const EMAIL = "work@joelhagvall.com"
+
+function mailto(subject: string) {
+  return `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}`
+}
+
+type Pkg = {
+  name: string
+  price: string
+  tagline: string
+  points: string[]
+  subject: string
+  featured?: boolean
+  note?: string
+}
+
+const PACKAGES: Pkg[] = [
+  {
+    name: "AI-integritetsgranskning",
+    price: "från 7 500 kr",
+    tagline: "Fast pris. Vet var ni står innan ni bygger vidare.",
+    points: [
+      "Genomgång av era AI-flöden: var personuppgifter kan nå externa tjänster",
+      "Live-demo av maskering på er egen exempeldata",
+      "Rekommenderad arkitektur och prioriterad åtgärdslista",
+      "Fast offert på implementation, om ni vill gå vidare",
+    ],
+    subject: "Maskera: AI-integritetsgranskning",
+  },
+  {
+    name: "Integrationssprint",
+    price: "från 25 000 kr",
+    tagline: "5 till 10 arbetsdagar, fast pris.",
+    featured: true,
+    points: [
+      "maskera integreras i ert flöde, före OpenAI, Claude, supportverktyg eller analys",
+      "Identifierare och regler anpassas för just er datatyp",
+      "Mätning på er data: vad som fångas, före och efter",
+      "Tester, dokumentation och överlämning till ert team",
+    ],
+    subject: "Maskera: integrationssprint",
+    // Time-limited scarcity claim: must be updated or removed no later than
+    // the August launch post, and immediately once both pilot slots are
+    // taken. A stale "pilotplatser kvar" reads as fake urgency.
+    note: "2 pilotplatser kvar: från 19 000 kr, mot att projektet får användas som anonymiserat referenscase.",
+  },
+  {
+    name: "Löpande avtal",
+    price: "från 5 000 kr/mån",
+    tagline: "För er som kör maskera i produktion.",
+    points: [
+      "Modelluppdateringar och stöd för nya typer av känsliga uppgifter",
+      "Vi verifierar mot er datatyp vid varje uppdatering, så att träffsäkerheten inte försämras",
+      "Riskgranskning när ni bygger nya AI-flöden",
+      "Prioriterad support",
+    ],
+    subject: "Maskera: löpande avtal",
+  },
+]
+
+export function Services({ onBack, onDev }: { onBack: () => void; onDev: () => void }) {
+  return (
+    <>
+      <div className="topbar">
+        <span className="wordmark">
+          <MaskeraMark size={20} />
+          maskera
+        </span>
+        <nav className="head-links">
+          <a className="ghlink" href={viewPaths.dev} onClick={navClick(onDev)}>
+            För utvecklare
+          </a>
+          <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
+            GitHub
+            <ArrowUpRightIcon size={13} />
+          </a>
+        </nav>
+      </div>
+      <a className="back" href={viewPaths.demo} onClick={navClick(onBack)}>
+        ← Tillbaka till startsidan
+      </a>
+
+      <main>
+        <article className="prose prose-wide">
+          <h1>Tjänster</h1>
+          <p className="prose-lede">
+            Använder ni AI på text som kan innehålla personuppgifter? Jag hjälper er att hitta och
+            maskera känsliga uppgifter lokalt, innan texten når externa AI-tjänster, loggar eller
+            analysverktyg.
+          </p>
+          <p className="prose-sub">
+            maskera är öppen källkod och gratis att använda. Behöver ni hjälp med implementationen
+            erbjuder jag fasta tjänstepaket, och ni arbetar direkt med personen som byggt verktyget
+            och tränat den svenska modellen.
+          </p>
+
+          <div className="flow-band">
+            <p className="flow-band-label">Så ser flödet ut</p>
+            <div className="flow">
+              <span className="flow-step">Supportärende</span>
+              <span className="flow-arrow" aria-hidden="true">
+                →
+              </span>
+              <span className="flow-step">maskeras lokalt hos er</span>
+              <span className="flow-arrow" aria-hidden="true">
+                →
+              </span>
+              <span className="flow-step">OpenAI/Claude ser bara platshållare</span>
+              <span className="flow-arrow" aria-hidden="true">
+                →
+              </span>
+              <span className="flow-step">svaret återställs i ert system</span>
+            </div>
+          </div>
+
+          <div className="pkgs">
+            {PACKAGES.map((p) => (
+              <section key={p.name} className={`pkg${p.featured ? " featured" : ""}`}>
+                <h2 className="pkg-name">{p.name}</h2>
+                <p className="pkg-price">{p.price}</p>
+                <p className="pkg-tag">{p.tagline}</p>
+                <ul>
+                  {p.points.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
+                {p.note && <p className="pkg-note">{p.note}</p>}
+                <a className="pkg-cta" href={mailto(p.subject)}>
+                  Boka ett kostnadsfritt samtal
+                </a>
+              </section>
+            ))}
+          </div>
+
+          <h2>Så går det till</h2>
+          <ol className="how">
+            <li>
+              <strong>Mejla ett par rader</strong> om ert dataflöde: vilken typ av text, vart den
+              skickas i dag och vad som oroar er. Inga bilagor eller persondata behövs.
+            </li>
+            <li>
+              <strong>Kort samtal, kostnadsfritt.</strong> Vi går igenom flödet och jag visar direkt
+              hur maskering skulle se ut på ett anonymiserat exempel som liknar er data.
+            </li>
+            <li>
+              <strong>Fast offert.</strong> Tydligt avgränsad leverans till fast pris, inga löpande
+              timmar utan tak. Passar det inte säger jag det också.
+            </li>
+          </ol>
+
+          <h2>Innan ni köper, det finstilta</h2>
+          <ul>
+            <li>
+              <strong>Maskering är riskminskning, inte en garanti.</strong> Uppgifter med bestämt
+              format, som personnummer, fångas av regler och är mycket pålitligt. Namn och platser i
+              löpande text bygger på en AI-modell som kan missa saker. Jag mäter och redovisar
+              träffsäkerheten på er datatyp i stället för att lova hundra procent. Läs mer under{" "}
+              <a href={viewPaths.transparency}>integritet &amp; transparens</a>.
+            </li>
+            <li>
+              <strong>Ingen inlåsning.</strong> maskera är öppen källkod och det jag bygger åt er
+              äger ni. Säger ni upp avtalet fortsätter allt att fungera.
+            </li>
+            <li>
+              <strong>All maskering körs hos er.</strong> I webbläsaren eller på er server. Er data
+              passerar aldrig mig eller någon tredje part, inte ens under projektet.
+            </li>
+          </ul>
+
+          <p className="prose-foot">
+            Berätta kort om ert dataflöde så återkommer jag med tider för ett samtal:{" "}
+            <a href={mailto("Maskera: tjänster")}>{EMAIL}</a>
+          </p>
+        </article>
+      </main>
+    </>
+  )
+}

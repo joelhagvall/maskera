@@ -2,7 +2,15 @@ import { GITHUB, HF_MODEL } from "../constants"
 import { ArrowUpRightIcon, MaskeraMark } from "../icons"
 import { navClick, viewPaths } from "../routing"
 
-export function Transparency({ onBack, onDev }: { onBack: () => void; onDev: () => void }) {
+export function Transparency({
+  onBack,
+  onDev,
+  onServices,
+}: {
+  onBack: () => void
+  onDev: () => void
+  onServices: () => void
+}) {
   return (
     <>
       <div className="topbar">
@@ -13,6 +21,9 @@ export function Transparency({ onBack, onDev }: { onBack: () => void; onDev: () 
         <nav className="head-links">
           <a className="ghlink" href={viewPaths.dev} onClick={navClick(onDev)}>
             För utvecklare
+          </a>
+          <a className="ghlink" href={viewPaths.services} onClick={navClick(onServices)}>
+            Tjänster
           </a>
           <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
             GitHub

@@ -1,11 +1,12 @@
 import { type MouseEvent, useEffect, useState, useTransition } from "react"
 
-export type View = "demo" | "transparency" | "dev"
+export type View = "demo" | "transparency" | "dev" | "services"
 
 export const viewPaths: Record<View, string> = {
   demo: "/",
   dev: "/developers",
   transparency: "/integritet",
+  services: "/tjanster",
 }
 
 // The tab shows this at runtime; the favicon already carries the maskera mark.
@@ -18,12 +19,14 @@ const viewTitles: Record<View, string> = {
   demo: "maskera",
   dev: "för utvecklare · maskera",
   transparency: "integritet & transparens · maskera",
+  services: "tjänster · maskera",
 }
 
 function viewFromPath(pathname: string): View {
   const path = pathname.replace(/\/+$/, "") || "/"
   if (path === viewPaths.dev) return "dev"
   if (path === viewPaths.transparency) return "transparency"
+  if (path === viewPaths.services) return "services"
   return "demo"
 }
 
