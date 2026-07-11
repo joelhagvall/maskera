@@ -6,16 +6,19 @@ import { lazy } from "react"
 // before navigation warms the browser cache so the switch has no blank frame.
 const importDevelopers = () => import("./components/Developers")
 const importTransparency = () => import("./components/Transparency")
+const importServices = () => import("./components/Services")
 
 export const Developers = lazy(() => importDevelopers().then((m) => ({ default: m.Developers })))
 export const Transparency = lazy(() =>
   importTransparency().then((m) => ({ default: m.Transparency })),
 )
+export const Services = lazy(() => importServices().then((m) => ({ default: m.Services })))
 
 export const preloadDevelopers = importDevelopers
 export const preloadTransparency = importTransparency
+export const preloadServices = importServices
 
-// Warm both sub-page chunks once the main thread goes idle after first paint,
+// Warm the sub-page chunks once the main thread goes idle after first paint,
 // so the first navigation is instant even on touch (no hover/focus to trigger
 // the per-link preload). Runs at most once; failures are ignored (the lazy()
 // import will simply fetch on demand as a fallback).
@@ -23,6 +26,7 @@ export function prefetchPagesWhenIdle() {
   const warm = () => {
     importDevelopers().catch(() => {})
     importTransparency().catch(() => {})
+    importServices().catch(() => {})
   }
   if (typeof requestIdleCallback === "function") {
     requestIdleCallback(warm, { timeout: 2000 })

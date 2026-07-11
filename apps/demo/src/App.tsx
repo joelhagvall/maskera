@@ -5,7 +5,7 @@ import { Header } from "./components/Header"
 import { InputCard } from "./components/InputCard"
 import { OutputCard } from "./components/OutputCard"
 import { RestoreDemo } from "./components/RestoreDemo"
-import { Developers, Transparency, prefetchPagesWhenIdle } from "./pages"
+import { Developers, Services, Transparency, prefetchPagesWhenIdle } from "./pages"
 import { useRoute } from "./routing"
 import { type Scenario, scenarios } from "./scenarios"
 import { useSwedishNer } from "./useSwedishNer"
@@ -51,7 +51,7 @@ export function App() {
     <div className="app">
       {view === "demo" && (
         <>
-          <Header onDev={() => navigate("dev")} />
+          <Header onDev={() => navigate("dev")} onServices={() => navigate("services")} />
           <main>
             <Controls
               activeId={active.id}
@@ -81,15 +81,28 @@ export function App() {
       )}
       {view === "dev" && (
         <Suspense fallback={null}>
-          <Developers onBack={goDemo} />
+          <Developers onBack={goDemo} onServices={() => navigate("services")} />
         </Suspense>
       )}
       {view === "transparency" && (
         <Suspense fallback={null}>
-          <Transparency onBack={goDemo} onDev={() => navigate("dev")} />
+          <Transparency
+            onBack={goDemo}
+            onDev={() => navigate("dev")}
+            onServices={() => navigate("services")}
+          />
         </Suspense>
       )}
-      <Footer onTransparency={() => navigate("transparency")} onPolicy={goPolicy} />
+      {view === "services" && (
+        <Suspense fallback={null}>
+          <Services onBack={goDemo} onDev={() => navigate("dev")} />
+        </Suspense>
+      )}
+      <Footer
+        onTransparency={() => navigate("transparency")}
+        onPolicy={goPolicy}
+        onServices={() => navigate("services")}
+      />
     </div>
   )
 }

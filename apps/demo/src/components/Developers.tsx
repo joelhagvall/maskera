@@ -132,7 +132,13 @@ function InstallTabs() {
   )
 }
 
-export function Developers({ onBack }: { onBack: () => void }) {
+export function Developers({
+  onBack,
+  onServices,
+}: {
+  onBack: () => void
+  onServices: () => void
+}) {
   return (
     <>
       <div className="topbar">
@@ -140,10 +146,15 @@ export function Developers({ onBack }: { onBack: () => void }) {
           <MaskeraMark size={20} />
           maskera
         </span>
-        <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
-          GitHub
-          <ArrowUpRightIcon size={13} />
-        </a>
+        <nav className="head-links">
+          <a className="ghlink" href={viewPaths.services} onClick={navClick(onServices)}>
+            Tjänster
+          </a>
+          <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
+            GitHub
+            <ArrowUpRightIcon size={13} />
+          </a>
+        </nav>
       </div>
       <a className="back" href={viewPaths.demo} onClick={navClick(onBack)}>
         ← Tillbaka till startsidan

@@ -123,7 +123,7 @@ body {
 .lede {
   margin: 18px 0 0;
   max-width: 60ch;
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.6;
   color: var(--muted);
 }
@@ -882,4 +882,177 @@ body {
   color: var(--fg);
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/* ---- services ---- */
+/* The package grid needs three columns; the default prose measure is too
+   narrow for that, so the services article alone gets a wider cap. */
+.prose-wide {
+  max-width: 880px;
+}
+/* This page alternates prose, pills, cards; the blocks need more air between
+   them than the pure-text sub-pages do. */
+.prose-wide h2 {
+  margin-top: 44px;
+}
+/* The wide article exists for the card grid; running text must not follow it
+   out to 880px (~100 chars/line). Both intro paragraphs share one measure. */
+.prose-wide .prose-lede {
+  max-width: 62ch;
+}
+/* Same voice as the lede, one step down in size: colour stays uniform so the
+   intro reads as one block, size alone carries the hierarchy. */
+.prose-sub {
+  margin: 14px 0 0;
+  max-width: 62ch;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+/* Anchors the borrowed flow pills: a quiet labelled band instead of a bare
+   row floating between the intro and the price cards. */
+.flow-band {
+  margin-top: 28px;
+  padding: 14px 16px 16px;
+  background: var(--gray-100);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+/* On the gray-100 band, --muted-2 lands at 4.41:1 (below WCAG AA); --muted
+   clears it at 5.5:1, hence the darker tone for label and arrows here. */
+.flow-band-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.flow-band .flow {
+  margin-top: 10px;
+}
+.flow-band .flow-step {
+  background: var(--bg);
+}
+.flow-band .flow-arrow {
+  color: var(--muted);
+}
+.pkgs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 28px 0 0;
+}
+@media (max-width: 820px) {
+  .pkgs {
+    grid-template-columns: 1fr;
+  }
+}
+.pkg {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  background: var(--bg);
+}
+.pkg.featured {
+  border-color: var(--fg);
+}
+.prose .pkg-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.pkg-price {
+  margin: 10px 0 2px;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.pkg-tag {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.prose .pkg ul {
+  flex: 1;
+  margin: 0 0 18px;
+}
+.prose .pkg li {
+  padding-left: 15px;
+  margin: 8px 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+.prose .pkg li::before {
+  left: 1px;
+  top: 8px;
+  width: 4px;
+  height: 4px;
+}
+.prose .pkg-cta {
+  display: inline-flex;
+  justify-content: center;
+  padding: 8px 14px;
+  font: 500 13.5px var(--sans);
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+}
+.prose .pkg-cta:hover {
+  border-color: #c9c9c9;
+  background: var(--gray-100);
+}
+.prose .pkg.featured .pkg-cta {
+  color: var(--bg);
+  background: var(--fg);
+  border-color: var(--fg);
+}
+.prose .pkg.featured .pkg-cta:hover {
+  opacity: 0.85;
+}
+/* Pilot-offer row inside the featured card, between the list and the CTA. */
+.pkg-note {
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--fg);
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
+}
+/* Numbered steps for "Så går det till". */
+.how {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+.how li {
+  position: relative;
+  padding-left: 32px;
+  margin: 12px 0;
+  font-size: 15px;
+  line-height: 1.65;
+  color: #2a2a2a;
+  counter-increment: step;
+}
+.how li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border-2);
+  border-radius: 50%;
+  font-size: 11px;
+  color: var(--muted);
 }
