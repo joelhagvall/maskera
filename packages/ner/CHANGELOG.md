@@ -1,5 +1,14 @@
 # maskera
 
+## 0.5.2
+
+### Patch Changes
+
+- Docs-only: the self-hosting example in the README pointed at the old
+  `maskera-sv-ner-v11` model folder; it now matches the shipped v13 artifact.
+  npm freezes the README at publish time, so this patch release is what gets
+  the fix onto npmjs.com.
+
 ## 0.5.1
 
 ### Patch Changes
