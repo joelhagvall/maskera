@@ -41,7 +41,7 @@ const PACKAGES: Pkg[] = [
   {
     name: "Integrationssprint",
     price: "från 25 000 kr",
-    tagline: "5 till 10 arbetsdagar, fast pris.",
+    tagline: "3 till 5 arbetsdagar, fast pris.",
     featured: true,
     points: [
       "maskera integreras i ert flöde, före OpenAI, Claude, supportverktyg eller analys",
@@ -62,7 +62,7 @@ const PACKAGES: Pkg[] = [
     points: [
       "Modelluppdateringar och stöd för nya typer av känsliga uppgifter",
       "Vi verifierar mot er datatyp vid varje uppdatering, så att träffsäkerheten inte försämras",
-      "Riskgranskning när ni bygger nya AI-flöden",
+      "Kvartalsvis riskgenomgång av era AI-flöden, även nya",
       "Prioriterad support",
     ],
     slug: "avtal",
@@ -171,8 +171,9 @@ export function Services({ onBack, onDev }: { onBack: () => void; onDev: () => v
               <a href={viewPaths.transparency}>integritet &amp; transparens</a>.
             </li>
             <li>
-              <strong>Ingen inlåsning.</strong> maskera är öppen källkod och det jag bygger åt er
-              äger ni. Säger ni upp avtalet fortsätter allt att fungera.
+              <strong>Ingen inlåsning.</strong> maskera är öppen källkod. Integrationskod,
+              konfiguration och dokumentation som tas fram för er äger ni. Säger ni upp avtalet
+              fortsätter er integration att fungera.
             </li>
             <li>
               <strong>All maskering körs hos er.</strong> I webbläsaren eller på er server. Er data
