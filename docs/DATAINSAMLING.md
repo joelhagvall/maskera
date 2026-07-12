@@ -45,7 +45,7 @@ potentiella designpartners. Utkast (spara i `docs/LINKEDIN_POST_*.md`, den
 > Jag behöver din hjälp, 45 minuter för svensk AI-integritet.
 >
 > maskera är en öppen svensk PII-maskering som kör helt lokalt, modellen är
-> 40 MB och slår 500 MB-modellerna på svenska. Men den tränas på syntetisk
+> 43 MB och slår 500 MB-modellerna på svenska. Men den tränas på syntetisk
 > text och nyhetsspråk, för riktiga supportmeddelanden går inte att skrapa
 > lagligt. Så jag frågar er i stället.
 >
@@ -70,6 +70,14 @@ och Sverige som land. Studieupplägg:
 - Alternativ: Upwork/Fiverr, 2-3 svenska skribenter för fastpris.
 
 ### 4. Designpartner med riktig supporttrafik (störst värde, mest friktion)
+
+UPPDATERING 2026-07-12: detta spår är numera i första hand de BETALDA
+pilotsprintarna via maskera.dev/tjanster (paket, mallar och prospektlista i
+`docs/outreach/`, gitignorerad). En pilotkund ger samma måldomändata som en
+gratis designpartner, plus intäkt och referenscase. Datavillkoret nedan
+(omskrivna ärenden med påhittad PII, originalen lämnar aldrig deras miljö)
+läggs in som rad i sprintavtalet. Gratisvarianten nedan behålls som
+reservspår för bolag som inte är köpmogna men har rätt data.
 
 Små svenska SaaS-/e-handelsbolag där du känner någon, eller där du kan nå
 supportchefen. Erbjudandet: de får gratis hjälp att införa maskering av sin

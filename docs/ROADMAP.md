@@ -16,7 +16,7 @@ per-package history in the changelogs.
 - **Hybrid model layer** (`maskera`): Transformers.js/ONNX, WASM + WebGPU,
   rules win on overlap, full `@maskera/core` re-export (one install, one import).
 - **Own Swedish model** (`maskera-sv-ner`): KB-BERT fine-tuned, distilled and
-  quantized to 40 MB, hosted on the Hugging Face Hub as the default.
+  quantized to ~43 MB, hosted on the Hugging Face Hub as the default.
 - **v11 real-register round** (2026-07-10): trained on real informal Swedish
   (SUCX 3.0 sample, MASSIVE sv-SE chat register, SIC2 blogs; all CC BY 4.0).
   Lowercase leaks down 24.8% to 20.5%, the tracked chat misses ("fatima")

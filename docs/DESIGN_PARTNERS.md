@@ -92,9 +92,9 @@ utbyte mot introduktion till två av deras slutkunder, skriftligt.
 Till AI-konsult/CTO, DM eller mejl:
 
 > Hej! Jag bygger maskera (maskera.dev): svensk PII-maskering som kör helt
-> lokalt i Node/webbläsare, modellen är 40 MB. Vi har precis benchmarkat
+> lokalt i Node/webbläsare, modellen är 43 MB. Vi har benchmarkat
 > mot Microsoft Presidio och OpenAI:s nya Privacy Filter på oberoende
-> svensk text: maskera 88 procent span-F1 och 1,7 procent läckta
+> svensk text: maskera 93 procent span-F1 och 1,7 procent läckta
 > entiteter, Presidio 67 procent och 33 procent läckor, OpenAI:s modell
 > hittar inte svenska orter eller organisationer alls.
 >

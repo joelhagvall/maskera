@@ -163,7 +163,7 @@ serve them from your own origin and forbid remote fetches:
 
 ```ts
 createNerRecognizer({
-  model: "maskera-sv-ner-v11", // version the folder name: the browser caches by URL
+  model: "maskera-sv-ner-v13", // version the folder name: the browser caches by URL
   localModelPath: "/models/",
   allowLocalModels: true,
   allowRemoteModels: false,
@@ -173,7 +173,7 @@ createNerRecognizer({
 Copy `config.json`, `tokenizer.json`, `tokenizer_config.json`,
 `special_tokens_map.json`, `vocab.txt` and `onnx/model_q4.onnx` from the
 [Hub repo](https://huggingface.co/joelhagvall/maskera-sv-ner) into
-`public/models/maskera-sv-ner-v11/`. Version the folder name; Transformers.js
+`public/models/maskera-sv-ner-v13/`. Version the folder name; Transformers.js
 caches by URL in the browser and never revalidates, so a renamed folder is
 what gets returning visitors onto a new model. After that, nothing leaves your
 infrastructure, which is the whole point of the tool.
