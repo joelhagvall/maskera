@@ -29,7 +29,7 @@ const PACKAGES: Pkg[] = [
   {
     name: "AI-integritetsgranskning",
     price: "från 7 500 kr",
-    tagline: "Fast pris. Vet var ni står innan ni bygger vidare.",
+    tagline: "Fast pris. Ni vet var ni står innan ni bygger vidare.",
     points: [
       "Genomgång av era AI-flöden: var personuppgifter kan nå externa tjänster",
       "Live-demo av maskering på er egen exempeldata",
@@ -44,9 +44,9 @@ const PACKAGES: Pkg[] = [
     tagline: "3 till 5 arbetsdagar, fast pris.",
     featured: true,
     points: [
-      "maskera integreras i ert flöde, före OpenAI, Claude, supportverktyg eller analys",
+      "maskera integreras i ert flöde, före ChatGPT, Claude, supportverktyg eller analys",
       "Identifierare och regler anpassas för just er datatyp",
-      "Mätning på er data: vad som fångas, före och efter",
+      "Mätning på er data: vad som fångas, före och efter anpassningen",
       "Tester, dokumentation och överlämning till ert team",
     ],
     slug: "sprint",
@@ -62,7 +62,7 @@ const PACKAGES: Pkg[] = [
     points: [
       "Modelluppdateringar och stöd för nya typer av känsliga uppgifter",
       "Vi verifierar mot er datatyp vid varje uppdatering, så att träffsäkerheten inte försämras",
-      "Kvartalsvis riskgenomgång av era AI-flöden, även nya",
+      "Kvartalsvis riskgenomgång av era AI-flöden, även sådana som tillkommer",
       "Prioriterad support",
     ],
     slug: "avtal",
