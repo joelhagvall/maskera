@@ -7,10 +7,17 @@ Swedish gold sets, with the same scorer the maskera CI gates run
 safety-critical number for redaction.
 
 - **Measured:** 2026-07-10, Apple M4 Pro, all systems fully local.
-- maskera's own rows are the same artifact and pipeline as
-  [docs/BENCHMARKS.md](../docs/BENCHMARKS.md) (`joelhagvall/maskera-sv-ner`,
-  q4, `maskera@0.4.5`); this harness reproduces those numbers exactly, which
-  is the calibration check that the grading is identical.
+- maskera's own rows are the artifact and pipeline that
+  [docs/BENCHMARKS.md](../docs/BENCHMARKS.md) described at measurement time
+  (`joelhagvall/maskera-sv-ner`, q4, `maskera@0.4.5`, the pre-v13 weights);
+  this harness reproduced those dated numbers exactly, which was the
+  calibration check that the grading is identical.
+- **Note (2026-07-12):** the v13 release (2026-07-11, `maskera@0.5.1`,
+  ~43 MB) postdates this run and has not been re-graded through this
+  harness yet; on the same independent gold set the shipped v13 pipeline
+  measures higher than the maskera row below (see BENCHMARKS.md). The
+  competitor rows are unaffected (their weights are unchanged), so read
+  the maskera row here as a lower bound.
 
 ## Systems
 
@@ -125,7 +132,8 @@ rows:
 
 ## What this does and does not show
 
-- It shows that on Swedish free text, the shipped 40 MB maskera model beats
+- It shows that on Swedish free text, the 40 MB maskera model graded here
+  (the pre-v13 artifact; the current release is stronger still) beats
   the 2.6 GB Privacy Filter by 72.5 span-F1 points, the 2.24 GB multilingual
   EU PII Safeguard by 67.2 points, and the standard open-source choice
   (Presidio) by 20.8 points on the independent set. Its leak rate is also far

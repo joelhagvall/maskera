@@ -416,7 +416,7 @@ Two things make numbers in older documents read higher than this file:
 2. **The precision guard.** Teacher-vs-student tables in
    [`training/README.md`](../training/README.md) compare the shipped pipeline
    (with `reconstruct()`, which drops mid-word fragments and bare digits)
-   against raw teacher output. That guard is why the 40 MB student can read
+   against raw teacher output. That guard is why the 43 MB student can read
    higher than the 440 MB teacher in those tables.
 
 ## What the model was trained on

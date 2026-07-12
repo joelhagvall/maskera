@@ -91,7 +91,7 @@ yourself (they're static files) and point the recognizer at them:
 
 ```ts
 createNerRecognizer({
-  model: "maskera-sv-ner-v11", // version the folder name: the browser caches by URL
+  model: "maskera-sv-ner-v13", // version the folder name: the browser caches by URL
   localModelPath: "/models/",   // your own origin or internal CDN
   allowLocalModels: true,
   allowRemoteModels: false,     // never touch the Hub
@@ -100,7 +100,7 @@ createNerRecognizer({
 
 Copy the files from the
 [Hub repo](https://huggingface.co/joelhagvall/maskera-sv-ner) (config,
-tokenizer, `onnx/model_q4.onnx`) into `public/models/maskera-sv-ner-v11/`
+tokenizer, `onnx/model_q4.onnx`) into `public/models/maskera-sv-ner-v13/`
 (version the folder name, the browser caches model files by URL). This is
 exactly how the maskera demo runs, fully offline after first load.
 
