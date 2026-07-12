@@ -116,7 +116,9 @@ export function Services({ onBack, onDev }: { onBack: () => void; onDev: () => v
               <span className="flow-arrow" aria-hidden="true">
                 →
               </span>
-              <span className="flow-step">AI-tjänsten (t.ex. ChatGPT, Claude) ser bara platshållare</span>
+              <span className="flow-step">
+                AI-tjänsten (t.ex. ChatGPT, Claude) ser bara platshållare
+              </span>
               <span className="flow-arrow" aria-hidden="true">
                 →
               </span>
