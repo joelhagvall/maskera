@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { type RawToken, createNerRecognizer } from "../src/index"
+import { createNerRecognizer, type RawToken } from "../src/index"
 
 // The q4 model confidently tags common Swedish words in name-like positions
 // (observed in the demo scenarios): "Kund" and "Mail" as B-PER at ~1.0,

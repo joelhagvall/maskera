@@ -14,7 +14,7 @@
  * docs MUST be in corpus order; grade.mjs verifies text alignment and throws
  * on mismatch rather than silently mis-grading.
  */
-import { readFileSync, readdirSync } from "node:fs"
+import { readdirSync, readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { aggregate, scoreDocument } from "../packages/ner/eval/score.mjs"

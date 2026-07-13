@@ -1,8 +1,8 @@
 import {
-  type Redaction,
   isOrganisationsnummer,
   isPersonnummer,
   isSamordningsnummer,
+  type Redaction,
 } from "@maskera/core"
 
 /**

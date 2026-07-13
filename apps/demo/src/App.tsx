@@ -6,7 +6,7 @@ import { InputCard } from "./components/InputCard"
 import { OutputCard } from "./components/OutputCard"
 import { RestoreDemo } from "./components/RestoreDemo"
 import { invalidPersonnummer } from "./hints"
-import { Developers, Services, Transparency, prefetchPagesWhenIdle } from "./pages"
+import { Developers, prefetchPagesWhenIdle, Services, Transparency } from "./pages"
 import { useRoute } from "./routing"
 import { type Scenario, scenarios } from "./scenarios"
 import { useSwedishNer } from "./useSwedishNer"
@@ -31,7 +31,6 @@ export function App() {
 
   // On a view switch, jump to the requested section if one was set (e.g. the
   // footer's "Integritetspolicy" link), otherwise land at the top.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: view is the trigger
   useEffect(() => {
     if (anchor) {
       document.getElementById(anchor)?.scrollIntoView()

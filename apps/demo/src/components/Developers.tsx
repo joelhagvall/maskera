@@ -55,7 +55,6 @@ function Code({ children, lang }: { children: string; lang: string }) {
       <pre>
         <code>
           {lines.map((line, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static content, never reorders
             <span key={i} className="code-line">
               {highlight(line)}
             </span>
@@ -132,13 +131,7 @@ function InstallTabs() {
   )
 }
 
-export function Developers({
-  onBack,
-  onServices,
-}: {
-  onBack: () => void
-  onServices: () => void
-}) {
+export function Developers({ onBack, onServices }: { onBack: () => void; onServices: () => void }) {
   return (
     <>
       <div className="topbar">

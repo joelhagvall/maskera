@@ -1,5 +1,5 @@
 import { defaultDetectors } from "./detectors"
-import type { Detection, PiiLabel, RedactOptions, RedactResult, Redaction } from "./types"
+import type { Detection, PiiLabel, Redaction, RedactOptions, RedactResult } from "./types"
 
 function defaultPlaceholder(label: PiiLabel, index: number): string {
   return `[${label}_${index}]`

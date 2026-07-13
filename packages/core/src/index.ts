@@ -1,35 +1,29 @@
-export { redact, redactFromDetections, restore } from "./redact"
 export {
-  defaultDetectors,
-  regexDetector,
-  // structured Swedish identifiers
-  personnummer,
-  samordningsnummer,
-  organisationsnummer,
-  // contact
-  email,
-  phone,
-  postnummer,
+  adress,
   // payment
   bankgiro,
-  plusgiro,
-  iban,
   // generic
   creditCard,
-  ipAddress,
-  url,
+  defaultDetectors,
+  // contact
+  email,
   // opt-in Swedish heuristics
   heuristicDetectors,
-  adress,
+  iban,
+  ipAddress,
   lagenhetsnummer,
+  organisationsnummer,
+  // structured Swedish identifiers
+  personnummer,
+  phone,
+  plusgiro,
+  postnummer,
+  regexDetector,
   regnummer,
+  samordningsnummer,
+  url,
 } from "./detectors"
-export {
-  luhnValid,
-  isPersonnummer,
-  isSamordningsnummer,
-  isOrganisationsnummer,
-} from "./validators"
+export { redact, redactFromDetections, restore } from "./redact"
 export type {
   Detection,
   Detector,
@@ -38,3 +32,9 @@ export type {
   RedactOptions,
   RedactResult,
 } from "./types"
+export {
+  isOrganisationsnummer,
+  isPersonnummer,
+  isSamordningsnummer,
+  luhnValid,
+} from "./validators"
