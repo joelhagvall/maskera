@@ -67,7 +67,7 @@ function Code({ children, lang }: { children: string; lang: string }) {
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
-  const timer = useRef<ReturnType<typeof setTimeout>>()
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(text)

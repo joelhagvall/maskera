@@ -320,11 +320,12 @@ Takeaways:
 
 ## Latency
 
-Measured 2026-07-05 on an Apple M4 Pro (24 GB), Node v25.8.2, Google Chrome
-148, against the curated corpus (148 sentences, average 46 chars). The v13
-artifact grew 3.1 MB (a larger embedding table from the 20k vocabulary trim)
-with identical architecture and matmul shapes, so per-inference figures carry
-over; the download is ~43 MB instead of ~40. Warm
+Measured 2026-07-13 on an Apple M4 Pro (24 GB), Node v25.8.2, Google Chrome
+148, against the curated corpus (148 sentences, average 46 chars), after the
+Transformers.js 4.2 / onnxruntime-web 1.26 upgrade. That runtime costs ~20%
+on the single-threaded browser WASM path versus Transformers.js 3.8 (warm
+median 50 -> 60 ms; same model artifact, and the WebGPU, Node and rules rows
+are unchanged or slightly faster). Warm
 figures are per sentence. Browser rows run the production demo bundle with
 the self-hosted model, i.e. exactly what maskera.dev ships; "first visit"
 cold start was measured against localhost, so a real first visit adds the
@@ -333,9 +334,9 @@ Cache Storage).
 
 | Environment | Cold start | Warm inference (median / p95) | Notes |
 | ----------- | ---------- | ----------------------------- | ----- |
-| Browser, WASM (demo default) | 0.19 s returning / 1.4 s first visit + download | 50 ms / 58 ms | single-threaded, no GPU needed |
-| Browser, WebGPU | 0.21 s returning; first inference adds ~0.5 s shader compile | 3.7 ms / 4.6 ms | opt-in via `device: "webgpu"` |
-| Node (onnxruntime native, cpu) | 0.21 s | 3.5 ms / 5.1 ms | server-side |
+| Browser, WASM (demo default) | 0.30 s returning / 1.9 s first visit + download | 60 ms / 66 ms | single-threaded, no GPU needed |
+| Browser, WebGPU | 0.34 s returning; first inference adds ~45 ms shader compile | 4.0 ms / 4.8 ms | opt-in via `device: "webgpu"` |
+| Node (onnxruntime native, cpu) | 0.20 s | 3.4 ms / 5.3 ms | server-side |
 | Rules only (`@maskera/core`) | none | ~0.002 ms | no model, no network capability |
 
 ### Longer inputs
@@ -344,15 +345,15 @@ The per-sentence figures above cover the chat-message case (average 46
 chars). Longer inputs (support tickets, transcripts) are split into
 overlapping chunks past BERT's 512-token window (`runChunk` in
 `packages/ner/src/index.ts`), so latency grows roughly linearly with
-length. Measured 2026-07-05, same machine, Node (onnxruntime native, cpu),
+length. Measured 2026-07-13, same machine, Node (onnxruntime native, cpu),
 warm, on texts built by concatenating curated-corpus sentences (n=20 per
 length):
 
 | Input length | Warm (median / p95) |
 | ------------ | ------------------- |
-| ~500 chars | 18 ms / 25 ms |
-| ~2,000 chars | 75 ms / 94 ms |
-| ~10,000 chars | 428 ms / 458 ms |
+| ~500 chars | 17 ms / 22 ms |
+| ~2,000 chars | 66 ms / 69 ms |
+| ~10,000 chars | 394 ms / 426 ms |
 
 The same benchmark script prints these rows (`=== longer inputs ===`). The
 other environments have not been measured at these lengths; since chunking

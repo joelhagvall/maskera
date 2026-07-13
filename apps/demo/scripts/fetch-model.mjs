@@ -8,7 +8,15 @@
  * serves from. Skips files that already exist, so local dev costs nothing.
  */
 import { createHash } from "node:crypto"
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs"
+import { createRequire } from "node:module"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -52,13 +60,17 @@ for (const [file, expected] of Object.entries(FILES)) {
 console.log(`model verified in ${DEST}`)
 
 // Also copy the ONNX WASM runtime into public/ort/, so the demo self-hosts
-// it instead of pulling it from jsDelivr (zero external requests). Copied
-// from node_modules at build time so it always matches the installed
-// Transformers.js version.
-const ortSrc = dirname(fileURLToPath(import.meta.resolve("@huggingface/transformers")))
+// it instead of pulling it from jsDelivr (zero external requests). Since
+// Transformers.js v4 the runtime lives only in onnxruntime-web (v3 bundled a
+// copy in its own dist), so resolve that package through transformers to get
+// the exact version the bundled code will load at runtime.
+const tfEntry = fileURLToPath(import.meta.resolve("@huggingface/transformers"))
+const ortSrc = dirname(createRequire(tfEntry).resolve("onnxruntime-web"))
 const ortDest = resolve(dirname(fileURLToPath(import.meta.url)), "../public/ort")
 mkdirSync(ortDest, { recursive: true })
-for (const file of ["ort-wasm-simd-threaded.jsep.mjs", "ort-wasm-simd-threaded.jsep.wasm"]) {
+// onnxruntime-web 1.26 split the runtime into variants (plain/asyncify/jsep/
+// jspi) and picks one at load time, so ship them all.
+for (const file of readdirSync(ortSrc).filter((f) => f.startsWith("ort-wasm-simd-threaded"))) {
   copyFileSync(join(ortSrc, file), join(ortDest, file))
 }
 console.log(`ort runtime ready in ${ortDest}`)
