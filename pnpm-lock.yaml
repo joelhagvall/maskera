@@ -6,7 +6,7 @@ settings:
 
 patchedDependencies:
   '@huggingface/transformers@4.2.0':
-    hash: 312de98258121757868aaf651d9e6bb902f8fda2e6c2f0da03b524b7c0ea4fce
+    hash: a498006d9cd33d2515cc9e2dcd9bd2eecd621691057092101798c79a624b6e7f
     path: patches/@huggingface__transformers@4.2.0.patch
 
 importers:
@@ -36,7 +36,7 @@ importers:
     dependencies:
       '@huggingface/transformers':
         specifier: ^4.2.0
-        version: 4.2.0(patch_hash=312de98258121757868aaf651d9e6bb902f8fda2e6c2f0da03b524b7c0ea4fce)
+        version: 4.2.0(patch_hash=a498006d9cd33d2515cc9e2dcd9bd2eecd621691057092101798c79a624b6e7f)
       '@maskera/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -125,7 +125,7 @@ importers:
     devDependencies:
       '@huggingface/transformers':
         specifier: ^4.2.0
-        version: 4.2.0(patch_hash=312de98258121757868aaf651d9e6bb902f8fda2e6c2f0da03b524b7c0ea4fce)
+        version: 4.2.0(patch_hash=a498006d9cd33d2515cc9e2dcd9bd2eecd621691057092101798c79a624b6e7f)
       tsup:
         specifier: ^8.3.5
         version: 8.5.1(postcss@8.5.18)(typescript@5.9.3)
@@ -3715,7 +3715,7 @@ snapshots:
 
   '@huggingface/tokenizers@0.1.3': {}
 
-  '@huggingface/transformers@4.2.0(patch_hash=312de98258121757868aaf651d9e6bb902f8fda2e6c2f0da03b524b7c0ea4fce)':
+  '@huggingface/transformers@4.2.0(patch_hash=a498006d9cd33d2515cc9e2dcd9bd2eecd621691057092101798c79a624b6e7f)':
     dependencies:
       '@huggingface/jinja': 0.5.9
       '@huggingface/tokenizers': 0.1.3
