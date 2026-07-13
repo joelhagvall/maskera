@@ -29,6 +29,12 @@
     "node": ">=18"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "@biomejs/biome"]
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "@biomejs/biome"
+    ],
+    "patchedDependencies": {
+      "@huggingface/transformers@4.2.0": "patches/@huggingface__transformers@4.2.0.patch"
+    }
   }
 }
