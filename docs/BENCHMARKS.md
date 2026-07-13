@@ -13,7 +13,10 @@ disagrees with this file, this file wins and the other document has drifted.
   [training/README.md](../training/README.md); 42,705,681 bytes, +3.1 MB over
   the previous artifact from the 20k vocabulary trim, same architecture)
 - **Pipeline:** the shipped `maskera` path (model + `reconstruct()`
-  post-processing), `maskera@0.5.1`, graded by
+  post-processing), measured on `maskera@0.5.1` and re-verified unchanged on
+  `maskera@0.6.0` (2026-07-13: curated, gold-real and ADR all reproduce to
+  the digit; 0.6.0's behavior change was `redactWithNer`'s default rule
+  detectors, a layer this harness does not grade), graded by
   [`packages/ner/eval/run-eval.mjs`](../packages/ner/eval/run-eval.mjs)
 - **Matching:** exact character span. This is the strict harness CI gates on;
   see [method notes](#method-notes) for why older overlap-based numbers read higher.

@@ -61,14 +61,8 @@ Full journal incl. the pre-publish battery and the accepted
 lowercase-encyclopedic trade in [training/README.md](../training/README.md)
 (v13 section). Live artifact: take 4 (`student-v13d-onnx`, sha256 7505b72d).
 
-Carried to v14: lowercase declarative-prose name frames (the accepted
-regression), PER-typing of rare names in unseen frames, rotate the
-rare-surname gate eval's frames + re-baseline, short brand names,
-the municipal "-avdelningen" suffix (still not generalising), and
-short-form chat nicknames: "micke o bettan kommer vid åtta" passes both
-through untouched ("pelle" is caught), and lowercase "anna" is the one leak
-in the LinkedIn-register eval (surfaced by the 2026-07-13 pre-launch
-battery; eval corpus: `packages/ner/eval/corpus-linkedin.mjs`, 96.3 F1).
+Everything carried out of this round is consolidated in
+[Next: v14](#next-v14-the-informal-register-round-planned) below.
 
 - [x] **Decomposed-surname robustness, the publish blocker.**
   - [x] (1) rare-surname chat-register eval built and baselined:
@@ -93,27 +87,100 @@ battery; eval corpus: `packages/ner/eval/corpus-linkedin.mjs`, 96.3 F1).
         PRIMARY gate eval's frames, and fix PER-TYPING of rare names in
         unseen frames (v13d 68.7% vs v11 74.5% fresh-frame typed; masking
         is ahead, labeling lags).
-- [ ] **Short brand names** (Voi, Northmill, Knowit still leak): a LENGTH
-      problem, not a category problem; more gazetteer entries will not fix
-      2-4-letter brands. Needs its own idea (context weighting, or a rules
-      assist in `@maskera/core`).
-- [ ] **Municipal "-avdelningen" suffix** (Bygglovsavdelningen leaks):
-      gazetteer entries added in v13 (10 category instances), but the
-      lowercase probe still misses in takes 1-2, so the suffix category has
-      not generalised yet; re-check after take 3.
-- [ ] **Reverse the cased-news ORG slide** (see above) while holding the
-      lowercase wins; sweep `SUCX_SHARE` 0.35 for more cased ORG signal.
+## Next: v14, the informal-register round (planned)
+
+Written 2026-07-13, before any v14 training. The through-line from the v13
+ledger: **masking leads; typing and the informal register lag.** Every number
+referenced lives in [BENCHMARKS.md](BENCHMARKS.md); the accepted v13 trades
+are in the [training journal](../training/README.md).
+
+### First, fix the ruler (before any candidate is trained)
+
+- [ ] **Rotate the rare-surname gate eval's frames and re-baseline.** v13
+      take 4 trained on eval-near frames, so the primary gate is partially
+      burned. Promote the 18 fresh frames (or author new ones) to primary,
+      keep the old set as secondary, and re-baseline v13 on the rotated set.
+      No v14 candidate is graded before this exists.
+- [ ] **Add a public-term retention metric** (over-redaction on PII-free
+      text). Rampart publishes private-term recall paired with public-term
+      retention (91.69%); we track precision and ADR distractors but have no
+      named utility number. Cheap to add: run the shipped pipeline over
+      PII-free sentences, count false flags, one row per eval table.
+- [ ] **Add a Rampart row to the competitor table**
+      ([HF](https://huggingface.co/nationaldesignstudio/rampart), 14.7 MB,
+      q4 ONNX via transformers.js). The only size-class-comparable
+      competitor, and Swedish is not in its language list (uncased + NFKD
+      combining-mark stripping collapses å/ä/ö). Whatever it scores on
+      gold-real belongs in the table; it is also the strongest
+      "why Swedish-specific" argument available.
+
+### The main bet: pseudo-labeled informal Swedish at scale
+
 - [ ] **Flashback/Familjeliv pseudo-labeling** (Språkbanken, CC BY 4.0):
-      hundreds of millions of informal tokens; label with the improved v12
-      teacher + the sbx PI-detection models (GPL-3.0) as an ensemble, keep
-      high-agreement sentences only. Biggest lever now that the teacher is
-      stronger.
-- [ ] Remaining data reserves: **ai4privacy openpii-1.5m (sv)** for ADR only
+      hundreds of millions of informal tokens; label with the v13 teacher +
+      the sbx PI-detection models (GPL-3.0) as an ensemble, keep
+      high-agreement sentences only, and sample toward the known register
+      gaps (lowercase declarative name frames, nickname chat). Already
+      flagged as the biggest lever; the stronger v13 teacher makes it viable.
+- Rampart datapoint that raises the stakes: its 18.5M-param student reports
+  98.4% in-distribution recall trained on ~1.65M rows, while our
+  from-scratch small student memorised on 24k synthetic rows. A large
+  pseudo-labeled corpus is both v14's register fix AND the prerequisite for
+  any future ~15 MB student. Build it once, use it twice.
+- Data reserves unchanged: **ai4privacy openpii-1.5m (sv)** for ADR only
       (no ORG label: poison for ORG rounds, see the v12 notes). Dead ends
       already checked, do not re-research: SweLL (research-only),
       MultiNERD/WikiNEuRal (no Swedish), polyglot_ner (unknown license),
       Twittermix (no full-text download). No public Swedish chat/support NER
       dataset exists.
+
+### Targeted weight-level fixes (each needs data in the training mix)
+
+- [ ] **Lowercase declarative-prose name frames**, the accepted v13
+      regression: "löfven har varit engagerad i ..." leaks while chat
+      phrasings of the same names are caught (gold-real forced-lowercase
+      coverage 48/58 vs v11's 51/58). Add declarative/encyclopedic lowercase
+      frames to the template generator; the pseudo-label corpus should also
+      carry this shape naturally.
+- [ ] **Short-form chat nicknames**: "micke o bettan kommer vid åtta" passes
+      both names untouched ("pelle" is caught), and lowercase "anna" is the
+      one leak in the LinkedIn-register eval (surfaced by the 2026-07-13
+      pre-launch battery; corpus: `packages/ner/eval/corpus-linkedin.mjs`,
+      96.3 F1). Nickname gazetteer + chat frames.
+- [ ] **PER-typing of rare names in unseen frames**: v13 masks more but
+      types worse off-frame (68.7% typed vs v11's 74.5% on fresh frames).
+      Masking is the safety property, but typing feeds the placeholder
+      layer; weight B-PER/I-PER consistency on decomposed names during
+      distillation.
+- [ ] **Cased-news ORG**, still the weakest type (72.5% cased / 56.9%
+      lowercased) despite release bests: sweep `SUCX_SHARE` 0.35 for more
+      cased ORG signal, and attack the two known subclasses separately.
+      Short brand names (Voi, Northmill, Knowit) are a LENGTH problem more
+      gazetteer entries will not fix; candidate ideas are context weighting
+      or a rules-layer assist in `@maskera/core`. The municipal
+      "-avdelningen" suffix did not generalise from 10 gazetteer instances;
+      try 50+ across suffix families (-avdelningen, -förvaltningen,
+      -nämnden, -kontoret) before concluding it needs rules.
+
+### Publish gates (all vs the shipped v13 artifact, q4, full pipeline)
+
+1. Rotated rare-surname gate: masked-at-all must BEAT the re-baselined v13,
+   not tie it (the old primary set no longer counts).
+2. gold-real forced-lowercase coverage back to >= 51/58 (the v11 level)
+   without giving back the chat-register wins.
+3. klintan leaks: cased <= 8.7%, lowercase <= 15.5% (no new slide).
+4. ADR eval stays a clean sweep (21/21 exact, 0 false flags).
+5. Standing CI gates (curated span-F1 >= 0.90, leak ceiling 0.08).
+
+### Explicitly NOT this round
+
+- No architecture change and no ~15 MB student yet: that work starts only
+  once the pseudo-label corpus exists (see above) and a use case demands
+  the size.
+- No new entity classes: the four-class scheme (PER/LOC/ORG/ADR) is what the
+  placeholder layer and every eval are built around. Structured types keep
+  living in the rules layer, where checksums beat any model (Rampart's own
+  ML-side government-ID recall is ~68%; validated rules are the right tool).
 
 ## Next: data beyond v12 (the real lever)
 
@@ -146,8 +213,11 @@ battery; eval corpus: `packages/ner/eval/corpus-linkedin.mjs`, 96.3 F1).
       validation, VAT numbers, IPv6.
 - [ ] `confidence` scores per detection.
 - [ ] `redactStream()` for chat-as-you-type.
-- [ ] Smaller model (fewer layers / MiniLM, toward ~15 MB) if a use case
-      demands it; quality starts to cost below 40 MB.
+- [ ] Smaller model (fewer layers / MiniLM-class, toward ~15 MB) if a use
+      case demands it; quality starts to cost below 40 MB with today's data.
+      Rampart proves the size class works (14.7 MB, 18.5M params) given
+      ~1.65M training rows; the v14 pseudo-label corpus is the prerequisite,
+      not an architecture search.
 
 ## Framework wrappers: when demand exists
 
