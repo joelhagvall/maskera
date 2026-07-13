@@ -1,12 +1,12 @@
 import { type Detector, defaultDetectors, heuristicDetectors, regexDetector } from "@maskera/core"
 
 /**
- * The demo runs core's defaults plus its opt-in heuristics (adress,
- * lägenhetsnummer, regnummer), exactly what an npm user gets with
- * `[...defaultDetectors, ...heuristicDetectors]`. The only demo-only detector
- * is the name gazetteer below: in production free-text names come from
- * maskera's model, but here it lets the demo redact names instantly while the
- * model is still downloading.
+ * The demo runs maskera's hybrid defaults (core's checksum-validated
+ * detectors + adress + lägenhetsnummer) with `regnummer` added on top, i.e.
+ * what an npm user gets with `[...hybridDefaultDetectors, regnummer]`. The
+ * only demo-only detector is the name gazetteer below: in production
+ * free-text names come from maskera's model, but here it lets the demo
+ * redact names instantly while the model is still downloading.
  */
 
 // A modest gazetteer of Swedish names used across the demo scenarios + commons.
@@ -92,7 +92,7 @@ export const namn: Detector = regexDetector("NAMN", new RegExp(`\\b(${nameAltern
 export const demoDetectors: Detector[] = [namn, ...heuristicDetectors, ...defaultDetectors]
 
 /**
- * Model-state: drop the name gazetteer — the Swedish NER model handles names,
+ * Model-state: drop the name gazetteer: the Swedish NER model handles names,
  * places and orgs. We keep the rule detectors, because the model is *worse*
  * at anything with a fixed shape: personnummer/org-nr/phone/IBAN
  * (regex+checksum) and street addresses with house numbers, where the model

@@ -80,7 +80,15 @@ function RestoreMap({ map }: { map: Record<string, string> }) {
   )
 }
 
-export function OutputCard({ result, analyzing }: { result: RedactResult; analyzing: boolean }) {
+export function OutputCard({
+  result,
+  analyzing,
+  invalidPnrs,
+}: {
+  result: RedactResult
+  analyzing: boolean
+  invalidPnrs: string[]
+}) {
   const [showMap, setShowMap] = useState(false)
   const unique = Object.keys(result.map).length
 
@@ -98,6 +106,19 @@ export function OutputCard({ result, analyzing }: { result: RedactResult; analyz
       <div className={`output ${analyzing ? "analyzing" : ""}`}>
         <RedactedText text={result.text} />
       </div>
+
+      {/* 19900101-2385 är ett av Skatteverkets reserverade testpersonnummer
+          (öppna data, spärrat från att någonsin tilldelas en verklig person),
+          så demon uppmanar aldrig någon att skriva in ett riktigt nummer. */}
+      {invalidPnrs.length > 0 && (
+        <p className="checksum-note">
+          <span className="mono">{invalidPnrs.join(", ")}</span>{" "}
+          {invalidPnrs.length === 1
+            ? "ser ut som ett personnummer men kontrollsiffran stämmer inte, så det kan inte vara ett riktigt. Därför maskas det inte."
+            : "ser ut som personnummer men kontrollsiffrorna stämmer inte, så de kan inte vara riktiga. Därför maskas de inte."}{" "}
+          Testa med ett giltigt nummer, t.ex. 19900101-2385.
+        </p>
+      )}
 
       <Stats result={result} />
 

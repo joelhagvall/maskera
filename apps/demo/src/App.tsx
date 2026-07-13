@@ -1,10 +1,11 @@
-import { Suspense, useEffect, useState } from "react"
+import { Suspense, useEffect, useMemo, useState } from "react"
 import { Controls } from "./components/Controls"
 import { Footer } from "./components/Footer"
 import { Header } from "./components/Header"
 import { InputCard } from "./components/InputCard"
 import { OutputCard } from "./components/OutputCard"
 import { RestoreDemo } from "./components/RestoreDemo"
+import { invalidPersonnummer } from "./hints"
 import { Developers, Services, Transparency, prefetchPagesWhenIdle } from "./pages"
 import { useRoute } from "./routing"
 import { type Scenario, scenarios } from "./scenarios"
@@ -16,6 +17,10 @@ export function App() {
   const [anchor, setAnchor] = useState<string | null>(null)
   const { view, navigate } = useRoute()
   const ner = useSwedishNer(text)
+  const invalidPnrs = useMemo(
+    () => invalidPersonnummer(text, ner.result.redactions),
+    [text, ner.result.redactions],
+  )
 
   // Warm the code-split sub-pages after first paint so the first "För
   // utvecklare" / transparency navigation is instant, even on touch where
@@ -68,7 +73,12 @@ export function App() {
                 onChange={setText}
               />
               {/* key resets the card's local protect/showMap state per scenario */}
-              <OutputCard key={active.id} result={ner.result} analyzing={ner.analyzing} />
+              <OutputCard
+                key={active.id}
+                result={ner.result}
+                analyzing={ner.analyzing}
+                invalidPnrs={invalidPnrs}
+              />
             </div>
             {/* Step three: paste the AI's answer back and un-mask it locally.
                 Only shown once there is something to restore. key resets the

@@ -145,9 +145,28 @@ describe("postnummer detector", () => {
     expectHit(postnummer, `Adress ${s} Stockholm.`, s),
   )
 
+  it("matches the spaced form standing alone", () => {
+    expectHit(postnummer, "postnumret är 852 31 enligt registret", "852 31")
+  })
+
+  it("matches the compact form before a capitalized city", () => {
+    expectHit(postnummer, "bor på 85231 Sundsvall numera", "85231")
+  })
+
+  it("matches with an SE- prefix", () => {
+    expectHit(postnummer, "skicka till SE-114 55 tack", "114 55")
+  })
+
   it("rejects a 6-digit run that isn't a postnummer shape", () => {
     expectMiss(postnummer, "kod 1234567 fel")
   })
+
+  it.each([
+    ["bare case number", "Ärende 48213: hanteras separat"],
+    ["bare price", "priset är 12500 kr totalt"],
+    ["order id at end of sentence", "din order 84120 skickades."],
+    ["leading zero", "kod 01234 Stockholm"],
+  ])("rejects %s: %s", (_label, s) => expectMiss(postnummer, s))
 })
 
 // --- Payment identifiers --------------------------------------------------
@@ -223,12 +242,40 @@ describe("ipAddress detector", () => {
 })
 
 describe("url detector", () => {
-  it.each(["https://example.se", "http://x.io/a/b?c=1", "https://sub.domain.com/path#frag"])(
-    "matches: %s",
-    (s) => expectHit(url, `Se ${s} för mer.`, s),
+  it.each([
+    "https://example.se",
+    "http://x.io/a/b?c=1",
+    "https://sub.domain.com/path#frag",
+    "www.nordiskhandel.se",
+    "WWW.EXAMPLE.SE",
+    "www.sub.domain.co.uk/en/path",
+  ])("matches: %s", (s) => expectHit(url, `Se ${s} för mer.`, s))
+
+  it("does not double-match the www inside a full URL", () =>
+    expectHit(url, "Se https://www.example.se för mer.", "https://www.example.se"))
+
+  it.each([
+    ["comma", "Se https://example.se/sida, för mer.", "https://example.se/sida"],
+    ["full stop", "Gå till www.nordiskhandel.se.", "www.nordiskhandel.se"],
+    ["question mark", "Har du sett https://example.se/sida?", "https://example.se/sida"],
+    ["ellipsis", "kolla www.example.se...", "www.example.se"],
+    ["exclamation", "Besök https://example.se/rea!", "https://example.se/rea"],
+  ])("leaves trailing sentence punctuation outside the value: %s", (_label, s, expected) =>
+    expectHit(url, s, expected),
   )
 
-  it("rejects a bare domain without scheme", () => expectMiss(url, "besök example.se idag"))
+  it("still matches dots and query punctuation inside the path", () =>
+    expectHit(
+      url,
+      "Se https://example.se/v1.2/api?a=1,b=2 nu.",
+      "https://example.se/v1.2/api?a=1,b=2",
+    ))
+
+  it.each([
+    ["bare domain without scheme or www", "besök example.se idag"],
+    ["the word www on its own", "skriv www. och sen domänen"],
+    ["www glued into a longer word", "protokollet heter wwwexample internt"],
+  ])("rejects %s: %s", (_label, s) => expectMiss(url, s))
 })
 
 // --- Opt-in heuristics ------------------------------------------------------

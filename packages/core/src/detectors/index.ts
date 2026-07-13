@@ -80,8 +80,18 @@ export const phone = regexDetector(
   /(?:^|[^\d])((?:\+46[\s-]?(?:\(0\)[\s-]?)?|0)(?:7[02369]|[1-9]\d?)(?:[\s-]?\d){6,8})\b/g,
 )
 
-/** Postnummer: NNN NN (space optional). */
-export const postnummer = regexDetector("POSTNUMMER", /\b\d{3}\s?\d{2}\b/g)
+/**
+ * Postnummer: NNN NN. The spaced form is distinctive enough to match on its
+ * own. The compact 5-digit form only matches with context: followed by a
+ * capitalized word ("85231 Sundsvall") or preceded by an SE- prefix, because
+ * a bare digit run is far more often an order id, case number or price than a
+ * postal code, and masking those as POSTNUMMER over-redacts everyday text.
+ * Swedish postal codes never start with 0.
+ */
+export const postnummer = regexDetector(
+  "POSTNUMMER",
+  /\b[1-9]\d{2}\s\d{2}\b|\b[1-9]\d{4}\b(?=\s+[A-ZÅÄÖ])|(?<=\bSE-?)[1-9]\d{2}\s?\d{2}\b/g,
+)
 
 // --- Payment identifiers --------------------------------------------------
 
@@ -124,7 +134,14 @@ export const ipAddress = regexDetector(
   /\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b/g,
 )
 
-export const url = regexDetector("URL", /\bhttps?:\/\/[^\s<>")]+/gi)
+// Scheme-less `www.` hosts are matched too: they are everywhere in email
+// signatures ("www.foretaget.se") and leak the organisation if left in place.
+// Bare domains without either signal ("example.se") are deliberately NOT
+// guessed at: that would over-mask ordinary filenames and abbreviations.
+// The final character class refuses sentence punctuation, so "se www.x.se."
+// keeps its full stop outside the mask (mid-URL dots still match; only a
+// trailing run of `.,;:!?` is backtracked off).
+export const url = regexDetector("URL", /\b(?:https?:\/\/|www\.)[^\s<>")]*[^\s<>").,;:!?]/gi)
 
 // --- Heuristic Swedish detectors (opt-in) ----------------------------------
 //

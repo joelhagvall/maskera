@@ -1,5 +1,13 @@
 # @maskera/core
 
+## 0.4.1
+
+### Patch Changes
+
+- The postnummer detector now requires context for the compact five-digit form (a following capitalized word as in "85231 Sundsvall", or an SE- prefix). The spaced "NNN NN" form matches as before. This stops over-masking of case numbers, order numbers, and prices ("Ärende 48213" was previously masked as a postal code).
+- The url detector no longer swallows trailing sentence punctuation into the redacted value: "se www.foretaget.se." now masks `www.foretaget.se` and keeps the full stop in the text. Previously the stored value was the wrong URL (`...se.`) and the masked text lost its punctuation. Dots, commas and question marks inside a path or query string still match as before.
+- The url detector now catches scheme-less www addresses (`www.foretaget.se`), common in email signatures where the domain would otherwise leak the organization. Bare domains without `https://` or `www.` are still not guessed.
+
 ## 0.4.0
 
 ### Minor Changes

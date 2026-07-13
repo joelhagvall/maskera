@@ -30,7 +30,7 @@ export function isPersonnummer(value: string): boolean {
   // Groups: 1=century? 2=YY 3=MM 4=DD 5=birth+check
   const month = Number(m[3])
   const day = Number(m[4])
-  // Day can be 1-31 (personnummer) — samordningsnummer adds 60, handled separately.
+  // Day can be 1-31 (personnummer); samordningsnummer adds 60, handled separately.
   if (month < 1 || month > 12) return false
   if (day < 1 || day > 31) return false
   const core = value.replace(/[-+]/g, "").slice(-10)

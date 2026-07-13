@@ -1,7 +1,7 @@
 /**
  * Example: redact before the LLM, restore after.
  *
- * The model never sees real personal data — only stable placeholders it can
+ * The model never sees real personal data, only stable placeholders it can
  * reason about. We map its answer back locally.
  *
  *   pnpm install && pnpm -C packages/core build
@@ -9,6 +9,8 @@
  */
 import { redact } from "@maskera/core"
 
+// The personnummer is one of Skatteverket's officially reserved test numbers
+// (open data), blocked from ever being assigned to a real person.
 const userMessage =
   "Hej, jag heter Anna Karlsson, personnummer 19900101-2385, " +
   "och jag når er på 070-123 45 67 eller anna@example.se."

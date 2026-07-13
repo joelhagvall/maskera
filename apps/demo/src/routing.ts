@@ -1,4 +1,4 @@
-import { type MouseEvent, useEffect, useState, useTransition } from "react"
+import { type MouseEvent, useEffect, useRef, useState, useTransition } from "react"
 
 export type View = "demo" | "transparency" | "dev" | "services"
 
@@ -37,18 +37,28 @@ export function useRoute() {
   // next chunk is ready, so the switch never flashes a blank Suspense fallback,
   // even on the first visit before the idle prefetch has warmed the cache.
   const [pending, startTransition] = useTransition()
+  // Crawlers that execute JS (Google, SEO tools) index whatever document.title
+  // ends up as. On a fresh landing on the home view, keep index.html's
+  // descriptive static title for them; the bare brand title from viewTitles
+  // only takes over once the user actually navigates.
+  const hasNavigated = useRef(false)
 
   useEffect(() => {
-    const onPop = () => startTransition(() => setView(viewFromPath(window.location.pathname)))
+    const onPop = () => {
+      hasNavigated.current = true
+      startTransition(() => setView(viewFromPath(window.location.pathname)))
+    }
     window.addEventListener("popstate", onPop)
     return () => window.removeEventListener("popstate", onPop)
   }, [])
 
   useEffect(() => {
+    if (!hasNavigated.current && view === "demo") return
     document.title = viewTitles[view]
   }, [view])
 
   const navigate = (next: View) => {
+    hasNavigated.current = true
     if (viewFromPath(window.location.pathname) !== next) {
       window.history.pushState(null, "", viewPaths[next])
     }

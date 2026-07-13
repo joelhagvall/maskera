@@ -5,7 +5,7 @@
 Two layers, rules first:
 
 - `@maskera/core` (npm): deterministic, checksum-validated detectors for structured Swedish PII: personnummer, samordningsnummer, organisationsnummer, phone, email, postnummer, bankgiro, plusgiro, IBAN, cards, IP, URL. Zero dependencies, synchronous. Custom patterns join via `regexDetector`.
-- `maskera` (npm): everything in core plus `maskera-sv-ner`, our own Swedish NER model (KB-BERT fine-tuned, distilled to a 40 MB ONNX) that catches free-text names, places, organisations and street addresses, including all-lowercase chat text. On overlap, rules win.
+- `maskera` (npm): everything in core plus `maskera-sv-ner`, our own Swedish NER model (KB-BERT fine-tuned, distilled to a 43 MB ONNX) that catches free-text names, places, organisations and street addresses, including all-lowercase chat text. On overlap, rules win. The hybrid also enables the low-risk free-text rule heuristics (street address, lägenhetsnummer) by default; `regnummer` is opt-in.
 
 Quick start:
 
@@ -14,13 +14,13 @@ import { createNerRecognizer, redactWithNer } from "maskera"
 
 const recognizer = createNerRecognizer()
 const { text, restore } = await redactWithNer(
-  "hej jag heter anna karlsson, personnummer 19900101-0017, och bor i uppsala",
+  "hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala",
   { recognizer },
 )
-// "hej jag heter [PERSON_1], personnummer [PERSONNUMMER_1], och bor i [LOCATION_1]"
+// "hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]"
 ```
 
-Benchmarks (exact-span F1, q4 quantized, measured 2026-07-03): 96.2% on the curated corpus, 90.6% on independent real text; leak rate 1.0% / 3.4%. Canonical table: https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md
+Benchmarks (exact-span F1, q4 quantized, measured 2026-07-11): 98.8% on the curated corpus, 93.1% on independent real text; leak rate 0.5% / 1.7%. Canonical table: https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md
 
 ## Docs
 
@@ -33,7 +33,7 @@ Benchmarks (exact-span F1, q4 quantized, measured 2026-07-03): 96.2% on the cura
 
 - [maskera on npm](https://www.npmjs.com/package/maskera): rules + Swedish NER model, core re-exported
 - [@maskera/core on npm](https://www.npmjs.com/package/@maskera/core): rules only, zero dependencies
-- [maskera-sv-ner on Hugging Face](https://huggingface.co/joelhagvall/maskera-sv-ner): the 40 MB Swedish NER ONNX model, training details
+- [maskera-sv-ner on Hugging Face](https://huggingface.co/joelhagvall/maskera-sv-ner): the 43 MB Swedish NER ONNX model, training details
 
 ## Optional
 

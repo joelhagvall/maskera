@@ -46,7 +46,7 @@ dropped, so the deterministic layer is always authoritative.
 Redact before the LLM call and before anything is persisted:
 
 ```ts
-import { createNerRecognizer, redactWithNer } from "maskera"
+import { createNerRecognizer, hybridDefaultDetectors, redact, redactWithNer } from "maskera"
 
 // Module scope: create ONCE per process, not per request.
 const recognizer = createNerRecognizer({ device: "cpu", dtype: "q8" })
@@ -72,7 +72,9 @@ let result
 try {
   result = await redactWithNer(userInput, { recognizer })
 } catch {
-  result = redact(userInput) // rules always work
+  // rules always work; hybridDefaultDetectors keeps the same rule set
+  // (incl. the address heuristics) the hybrid was running
+  result = redact(userInput, { detectors: hybridDefaultDetectors })
 }
 ```
 

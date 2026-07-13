@@ -197,7 +197,7 @@ text
           <h2>Skicka till AI-tjänsten och återställ svaret</h2>
           <Code lang="ts">
             {`// skicka den maskerade texten till valfri AI
-// (OpenAI, Claude, egen modell ...) — den ser bara platshållarna
+// (OpenAI, Claude, egen modell ...), den ser bara platshållarna
 const svar = await fetch("https://api.example.com/chat", {
   method: "POST",
   body: JSON.stringify({ prompt: text }),

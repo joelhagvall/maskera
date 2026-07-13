@@ -1,5 +1,19 @@
 # maskera
 
+## 0.6.0
+
+### Minor Changes
+
+- `redactWithNer` now defaults to `hybridDefaultDetectors` (new export): all checksum-validated rule detectors plus the free-text heuristics `adress` and `lagenhetsnummer`. Anyone calling the hybrid has free text about people by definition, and the address rule guarantees the house number ends up inside the mask even when the model's span splits it. `regnummer` stays opt-in even in the hybrid (three letters + three digits is also the shape of booking and case codes). The synchronous `redact()` in `@maskera/core` keeps the strictly checksum-validated defaults. Pass `detectors: defaultDetectors` to restore the old hybrid behavior.
+- `defaultLabelMap` is now exported, and the `labelMap` contract is documented: a custom map receives the RAW model group with the BIO prefix stripped ("PER", "LOC", "ORG", "ADR") and replaces the default Swedish rename entirely. Delegate to `defaultLabelMap` to keep the `[NAMN_1]` style placeholders while remapping or dropping a group. `onProgress` is also properly typed via the new `NerProgressEvent` interface (previously `unknown`), with the event stream documented in the README, including the v4 `progress_total` events that carry the aggregate download percentage a loading bar wants.
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @maskera/core@0.4.1
+
 ## 0.5.2
 
 ### Patch Changes

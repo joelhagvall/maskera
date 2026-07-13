@@ -1,7 +1,7 @@
 export interface LabelMeta {
   sv: string
   /**
-   * A distinct, readable hue per PII type — picked far apart so neighbours
+   * A distinct, readable hue per PII type, picked far apart so neighbours
    * never blend, and dark enough for 4.5:1 (WCAG AA) as small text on the
    * tinted token backgrounds.
    */

@@ -2,7 +2,7 @@ import type { ReactElement, ReactNode, SVGProps } from "react"
 
 type IconProps = SVGProps<SVGSVGElement> & { size?: number }
 
-/** Shared wrapper — all icons are 24×24 line drawings using currentColor. */
+/** Shared wrapper: all icons are 24×24 line drawings using currentColor. */
 function Svg({ size = 16, children, ...rest }: IconProps & { children: ReactNode }) {
   return (
     <svg
@@ -25,7 +25,7 @@ function Svg({ size = 16, children, ...rest }: IconProps & { children: ReactNode
 // --- brand mark ---------------------------------------------------------
 
 /**
- * maskera logomark: redacted text (two bars) inside placeholder brackets — the
+ * maskera logomark: redacted text (two bars) inside placeholder brackets, the
  * shape of the product's own output, `[PERSONNUMMER_1]`.
  */
 export function MaskeraMark({ size = 22, ...rest }: IconProps) {
