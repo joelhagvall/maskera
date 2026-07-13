@@ -35,7 +35,7 @@ a checksum exists, so look-alikes (year ranges, reference numbers) don't fire.
 | `SAMORDNINGSNUMMER`    | day + 60 variant                       | date + Luhn           |
 | `ORGANISATIONSNUMMER`  | `556016-0680`                          | Luhn, third digit ≥ 2 |
 | `EPOST`                | `anna@example.se`                      | pattern               |
-| `TELEFON`                | `070-123 45 67`, `+46 8 123 456`       | Swedish mobile + landline |
+| `TELEFON`              | `070-123 45 67`, `+46 8 123 456`       | Swedish mobile + landline |
 | `POSTNUMMER`           | `114 55`; compact `85231` only before a capitalized city or after `SE-` | pattern + context |
 | `BANKGIRO`             | `5050-1055`                            | Luhn check digit      |
 | `PLUSGIRO`             | `90 19 50-6` (spaces tolerated)        | Luhn check digit      |

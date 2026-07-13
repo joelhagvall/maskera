@@ -26,6 +26,10 @@ pnpm release
 
 Gotchas:
 
+- Changesets are written in ENGLISH. They become CHANGELOG entries verbatim
+  and the published changelogs are English; Swedish commit messages and demo
+  copy do not extend to `.changeset/*.md`. Detector names (`postnummer`,
+  `adress`, ...) stay as-is since they are code identifiers.
 - `pnpm release` must run in an interactive terminal: npm 2FA opens a
   browser auth flow on publish. It fails from non-interactive shells,
   so the human runs this step, not the agent.
@@ -40,9 +44,11 @@ Gotchas:
 ## Benchmark numbers
 
 `docs/BENCHMARKS.md` is the single source of truth. Every other file (root
-README, package READMEs, HF model card, whitepaper) carries dated snapshots
-that MUST be synced in the same commit as a BENCHMARKS.md update. They have
-drifted before; grep for the old numbers when updating.
+README, package READMEs, HF model card, whitepaper, and
+`apps/demo/public/llms.txt`) carries dated snapshots that MUST be synced in
+the same commit as a BENCHMARKS.md update. They have drifted before (last
+find: llms.txt sat on 2026-07-03 numbers and the old 40 MB size until
+2026-07-13); grep for the old numbers when updating.
 
 ## Whitepaper
 
@@ -65,6 +71,17 @@ Full model publishes use `scripts/publish-model.sh`.
 
 ## Misc
 
+- `@huggingface/transformers` 4.2.0 is patched via `pnpm patch` (see
+  `patches/`) with TWO fixes. (1) Upstream PR #1664 (duplicate model
+  downloads with a progress callback) - merged upstream, drop this part when
+  a release after 4.2.0 ships. (2) A body-cancel in `_get_file_metadata`'s
+  local-path branch: their metadata probe is a full GET of the 43 MB model
+  that is never read nor canceled, and the race with the real download
+  breaks model loading in fresh/incognito Chrome profiles
+  (net::ERR_CACHE_WRITE_FAILURE). NOT reported/fixed upstream - this part
+  must be carried forward on every transformers bump until it is, and any
+  bump must be smoke-tested in a fresh Chrome context against the deployed
+  site (a normal profile with disk cache hides the bug).
 - LinkedIn drafts (`docs/LINKEDIN_POST*.md`) are gitignored on purpose;
   don't try to commit them.
 - Lint is biome: `pnpm lint`.
