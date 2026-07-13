@@ -1,6 +1,13 @@
 import type { Detection } from "@maskera/core"
 import { describe, expect, it } from "vitest"
-import { type NerRecognizer, isWholeWord, redactWithNer } from "../src/index"
+import {
+  type NerRecognizer,
+  type RawToken,
+  defaultLabelMap,
+  isWholeWord,
+  reconstruct,
+  redactWithNer,
+} from "../src/index"
 
 describe("isWholeWord (drops mid-word model fragments)", () => {
   it("rejects a fragment inside a larger word", () => {
@@ -10,6 +17,36 @@ describe("isWholeWord (drops mid-word model fragments)", () => {
   it("accepts real word-boundary spans", () => {
     expect(isWholeWord("Lars Eriksson", 0, 4)).toBe(true) // "Lars"
     expect(isWholeWord("bor i Stockholm.", 6, 15)).toBe(true) // "Stockholm"
+  })
+})
+
+describe("defaultLabelMap", () => {
+  it("maps maskera-sv-ner's groups to the Swedish rule labels", () => {
+    expect(defaultLabelMap("PER")).toBe("NAMN")
+    expect(defaultLabelMap("B-LOC")).toBe("PLATS")
+    expect(defaultLabelMap("I-ORG")).toBe("ORGANISATION")
+    expect(defaultLabelMap("ADR")).toBe("ADRESS")
+  })
+  it("upper-cases unknown groups so third-party models pass through", () => {
+    expect(defaultLabelMap("misc")).toBe("MISC")
+  })
+})
+
+describe("custom labelMap", () => {
+  it("receives the raw BIO-stripped group, not the Swedish label", () => {
+    const seen: string[] = []
+    const tokens: RawToken[] = [{ entity: "B-PER", score: 0.99, index: 1, word: "Lars" }]
+    const detections = reconstruct(
+      "Lars är här.",
+      tokens,
+      (group) => {
+        seen.push(group)
+        return defaultLabelMap(group)
+      },
+      0.5,
+    )
+    expect(seen).toContain("PER")
+    expect(detections).toEqual([{ start: 0, end: 4, value: "Lars", label: "NAMN" }])
   })
 })
 
@@ -50,6 +87,41 @@ describe("redactWithNer", () => {
     const recognizer = fakeRecognizer(() => [{ start: 0, end: 4, value: "Lars", label: "NAMN" }])
     const { text } = await redactWithNer("Lars är här.", { recognizer, detectors: [] })
     expect(text).toBe("[NAMN_1] är här.")
+  })
+
+  it("hybrid default masks addresses and lägenhetsnummer by rule, even if the model misses", async () => {
+    const recognizer = fakeRecognizer(() => []) // model sees nothing
+    const { text } = await redactWithNer("Leverans till Storgatan 12, lgh 1201 imorgon.", {
+      recognizer,
+    })
+    expect(text).toBe("Leverans till [ADRESS_1], [LAGENHETSNUMMER_1] imorgon.")
+  })
+
+  it("hybrid default does NOT include regnummer (booking-code shape stays opt-in)", async () => {
+    const recognizer = fakeRecognizer(() => [])
+    const { text } = await redactWithNer("Bokningskod ABC123 gäller fortfarande.", { recognizer })
+    expect(text).toBe("Bokningskod ABC123 gäller fortfarande.")
+  })
+
+  it("the address rule guarantees the house number inside the mask when the model splits it", async () => {
+    const input = "Bor på Storgatan 12 i Umeå."
+    // Model tags only the street name, leaving the house number outside.
+    const recognizer = fakeRecognizer((t) => {
+      const start = t.indexOf("Storgatan")
+      return [{ start, end: start + "Storgatan".length, value: "Storgatan", label: "ADRESS" }]
+    })
+    const { text, redactions } = await redactWithNer(input, { recognizer })
+    expect(text).not.toContain("12")
+    expect(redactions.some((r) => r.label === "ADRESS" && r.value === "Storgatan 12")).toBe(true)
+  })
+
+  it("explicit detectors option still overrides the hybrid default entirely", async () => {
+    const recognizer = fakeRecognizer(() => [])
+    const { text } = await redactWithNer("Bor på Storgatan 12.", {
+      recognizer,
+      detectors: [],
+    })
+    expect(text).toBe("Bor på Storgatan 12.")
   })
 
   it("clips a model span that glues a name to the e-mail local-part (name must not leak)", async () => {

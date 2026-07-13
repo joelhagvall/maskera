@@ -1,4 +1,4 @@
-/* Self-hosted variable fonts (OFL) — no external requests, ever. */
+/* Self-hosted variable fonts (OFL): no external requests, ever. */
 @font-face {
   font-family: "Geist";
   font-style: normal;
@@ -514,6 +514,22 @@ body {
   overflow-wrap: anywhere;
 }
 
+/* ---- checksum note (pnr-shaped input that failed validation) ---- */
+.checksum-note {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--gray-100);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.checksum-note .mono {
+  font-family: var(--mono);
+  color: var(--fg);
+}
+
 /* ---- copy button (in the output card head) ---- */
 .copy {
   display: inline-flex;
@@ -554,7 +570,7 @@ body {
   flex: none;
   white-space: nowrap;
 }
-/* process stepper — always visible so the flow reads at a glance */
+/* process stepper: always visible so the flow reads at a glance */
 .flow {
   display: flex;
   flex-wrap: wrap;

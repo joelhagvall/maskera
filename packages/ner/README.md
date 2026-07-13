@@ -48,17 +48,21 @@ Create the recognizer **once** and reuse it: the model loads lazily on first
 use (or when you await `ready`), and each `detect`/`redactWithNer` call after
 that is a few milliseconds of inference.
 
-**Tip:** add core's opt-in heuristics to the hybrid. The model can split a
-street address and leave the house number exposed; the `ADRESS` regex always
-covers the full span, and rules win on overlap (this is what the live demo
-runs):
+The hybrid's default rule set (`hybridDefaultDetectors`) is core's
+checksum-validated defaults **plus** the low-risk free-text heuristics
+`adress` and `lagenhetsnummer`: whoever calls `redactWithNer` has free text
+about people, and the address RULE guarantees the house number always ends up
+inside the mask where the model's span sometimes splits it. `regnummer` stays
+opt-in even here, three letters + three digits is also the shape of booking
+codes and case ids. Add it explicitly if plates matter (this is what the live
+demo runs):
 
 ```ts
-import { defaultDetectors, heuristicDetectors, redactWithNer } from "maskera"
+import { hybridDefaultDetectors, redactWithNer, regnummer } from "maskera"
 
 await redactWithNer(text, {
   recognizer,
-  detectors: [...defaultDetectors, ...heuristicDetectors],
+  detectors: [...hybridDefaultDetectors, regnummer],
 })
 ```
 
@@ -70,8 +74,8 @@ createNerRecognizer({
   dtype: "q4",                 // "q4" (43 MB, default) | "q8" (59 MB) | "fp32" (233 MB)
   device: "auto",              // "wasm" | "webgpu" | "cpu" | "auto"
   minScore: 0.5,               // drop predictions below this confidence
-  labelMap: (group) => group,  // remap or drop entity groups (return null to drop)
-  onProgress: (p) => {},       // model download progress for a loading UI
+  labelMap: defaultLabelMap,   // remap or drop raw model groups (return null to drop)
+  onProgress: (e) => {},       // model download progress for a loading UI
 })
 ```
 
@@ -83,6 +87,35 @@ createNerRecognizer({
 - **`minScore`**: raise it (e.g. `0.7`) to trade recall for precision. For a
   privacy tool the default errs toward recall: a false positive over-masks,
   a false negative leaks.
+- **`labelMap`**: receives the RAW model group with the BIO prefix stripped
+  (`"PER"`, `"LOC"`, `"ORG"`, `"ADR"` for maskera-sv-ner) and replaces the
+  default mapping entirely, so `(group) => group` gives you `[PER_1]`, not
+  `[NAMN_1]`. To keep the Swedish placeholder names while remapping or
+  dropping a group, delegate to the exported `defaultLabelMap`:
+
+  ```ts
+  import { createNerRecognizer, defaultLabelMap } from "maskera"
+
+  createNerRecognizer({
+    // keep the default Swedish labels, but never mask organisations
+    labelMap: (group) => {
+      const label = defaultLabelMap(group)
+      return label === "ORGANISATION" ? null : label
+    },
+  })
+  ```
+
+- **`onProgress`**: receives Transformers.js progress events verbatim (typed
+  as `NerProgressEvent`). Per-file `progress` events carry `file` and a
+  0-100 `progress`; with `@huggingface/transformers` v4+ there are also
+  `progress_total` events whose `progress` is the aggregate percentage across
+  all files, which is the one number a loading bar wants:
+
+  ```ts
+  onProgress: (e) => {
+    if (e.status === "progress_total") setPercent(Math.round(e.progress ?? 0))
+  }
+  ```
 
 ### Self-hosting the model
 

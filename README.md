@@ -66,7 +66,10 @@ model in CI against a gold corpus with an F1 floor and a leak-rate ceiling.
 2. **`maskera`** (the package): everything above plus the Swedish model,
    with core fully re-exported. In the hybrid, rules win on overlap:
    structured PII is always handled deterministically, the model only fills
-   the free-text gap.
+   the free-text gap. Its default rule set also enables the low-risk
+   free-text heuristics (street `adress`, `lagenhetsnummer`), since whoever
+   loads the model has free text by definition; only `regnummer` stays
+   opt-in (plate shape = booking-code shape).
 
 Rules alone when inputs are structured-ish; add the model when users type
 free text. That split is the design: regex for what regex is good at, ML only

@@ -64,7 +64,11 @@ lowercase-encyclopedic trade in [training/README.md](../training/README.md)
 Carried to v14: lowercase declarative-prose name frames (the accepted
 regression), PER-typing of rare names in unseen frames, rotate the
 rare-surname gate eval's frames + re-baseline, short brand names,
-the municipal "-avdelningen" suffix (still not generalising).
+the municipal "-avdelningen" suffix (still not generalising), and
+short-form chat nicknames: "micke o bettan kommer vid åtta" passes both
+through untouched ("pelle" is caught), and lowercase "anna" is the one leak
+in the LinkedIn-register eval (surfaced by the 2026-07-13 pre-launch
+battery; eval corpus: `packages/ner/eval/corpus-linkedin.mjs`, 96.3 F1).
 
 - [x] **Decomposed-surname robustness, the publish blocker.**
   - [x] (1) rare-surname chat-register eval built and baselined:
@@ -128,6 +132,8 @@ the municipal "-avdelningen" suffix (still not generalising).
       pre-anonymized so weak for PER), municipal records.
 - [ ] **A messier eval** to match: tickets, email, chat, OCR noise, lowercase,
       slang, misspellings, so the numbers reflect the target domain, not clean prose.
+      First domain corpus exists: `packages/ner/eval/corpus-linkedin.mjs`
+      (32 docs of recruiter mail / posts / bios, graded via `CORPUS_FILE=`).
 - [ ] **Model-assisted annotation** to make the above affordable: pre-label with
       the current model or an LLM, human-correct (5-10x faster than from scratch).
       `training/convert_klintan.mjs` is the reusable CoNLL-to-BIO ingestion path.

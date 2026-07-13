@@ -7,7 +7,7 @@
     <title>maskera personuppgifter innan AI:n ser dem</title>
     <meta
       name="description"
-      content="maskera hittar och döljer svenska personuppgifter (namn, personnummer, adresser) innan texten når ChatGPT eller andra AI-tjänster. Allt körs i webbläsaren, ingenting skickas någonstans. Öppen källkod och npm-paket för utvecklare."
+      content="maskera hittar och döljer svenska personuppgifter (namn, personnummer, adresser) innan texten når ChatGPT eller andra AI-tjänster. Allt körs i webbläsaren."
     />
     <link rel="canonical" href="https://maskera.dev/" />
     <meta name="theme-color" content="#ffffff" />
@@ -35,19 +35,36 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "maskera",
-        "url": "https://maskera.dev/",
-        "description": "Svensk PII-maskering direkt i webbläsaren. Namn, personnummer och adresser maskeras innan texten når en AI-tjänst. Öppen källkod och npm-paket.",
-        "applicationCategory": "SecurityApplication",
-        "operatingSystem": "Any",
-        "browserRequirements": "Requires JavaScript",
-        "inLanguage": "sv",
-        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "SEK" },
-        "sameAs": [
-          "https://github.com/joelhagvall/maskera",
-          "https://www.npmjs.com/package/maskera",
-          "https://huggingface.co/joelhagvall/maskera-sv-ner"
+        "@graph": [
+          {
+            "@type": "WebApplication",
+            "@id": "https://maskera.dev/#app",
+            "name": "maskera",
+            "url": "https://maskera.dev/",
+            "description": "Svensk PII-maskering direkt i webbläsaren. Namn, personnummer och adresser maskeras innan texten når en AI-tjänst. Öppen källkod och npm-paket.",
+            "applicationCategory": "SecurityApplication",
+            "operatingSystem": "Any",
+            "browserRequirements": "Requires JavaScript",
+            "inLanguage": "sv",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "SEK" },
+            "author": { "@id": "https://maskera.dev/#joel" },
+            "sameAs": [
+              "https://github.com/joelhagvall/maskera",
+              "https://www.npmjs.com/package/maskera",
+              "https://huggingface.co/joelhagvall/maskera-sv-ner"
+            ]
+          },
+          {
+            "@type": "Person",
+            "@id": "https://maskera.dev/#joel",
+            "name": "Joel Hägvall",
+            "url": "https://joelhagvall.com",
+            "sameAs": [
+              "https://www.linkedin.com/in/joel-h%C3%A4gvall-810601147/",
+              "https://github.com/joelhagvall",
+              "https://huggingface.co/joelhagvall"
+            ]
+          }
         ]
       }
     </script>

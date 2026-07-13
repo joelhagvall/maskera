@@ -1,12 +1,13 @@
 {
   "name": "@maskera/demo",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "pnpm --filter @maskera/core --filter maskera build && node scripts/fetch-model.mjs && vite build",
     "preview": "vite preview",
+    "test": "vitest run",
     "audit": "pnpm run audit:lighthouse && pnpm run audit:a11y",
     "audit:lighthouse": "start-server-and-test preview http://127.0.0.1:4173 lighthouse:run",
     "lighthouse:run": "mkdir -p reports && lighthouse http://127.0.0.1:4173 --only-categories=performance,accessibility,best-practices,seo --chrome-flags=\"--headless=new\" --output=html --output=json --output-path=./reports/lighthouse --quiet",
@@ -19,20 +20,24 @@
     "@huggingface/transformers": "^3.3.1",
     "@maskera/core": "workspace:*",
     "@vercel/analytics": "^2.0.1",
+    "maskera": "workspace:*",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "maskera": "workspace:*"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^25.0.1",
     "lighthouse": "^13.4.0",
     "pa11y": "^9.1.1",
     "playwright": "^1.61.1",
     "start-server-and-test": "^3.0.11",
     "tslib": "^2.8.1",
     "typescript": "^5.7.2",
-    "vite": "^6.0.3"
+    "vite": "^6.0.3",
+    "vitest": "^2.1.8"
   }
 }

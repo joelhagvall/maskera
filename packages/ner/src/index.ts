@@ -1,5 +1,5 @@
 import type { Detection, PiiLabel, RedactOptions, RedactResult } from "@maskera/core"
-import { defaultDetectors, redactFromDetections } from "@maskera/core"
+import { adress, defaultDetectors, lagenhetsnummer, redactFromDetections } from "@maskera/core"
 
 // Re-export the whole rule layer so one install + one import is enough:
 // installing maskera pulls in @maskera/core automatically, and
@@ -22,10 +22,12 @@ export const MASKERA_SV_NER_MODEL = "joelhagvall/maskera-sv-ner"
 export const DEFAULT_NER_MODEL = MASKERA_SV_NER_MODEL
 
 /**
- * Map a model entity group (e.g. "PER", "LOC") to a maskera label.
- * Return `null` to drop the entity. The default maps maskera-sv-ner's scheme
- * to readable labels and upper-cases anything else, so third-party models
- * work out of the box too.
+ * Map a raw model entity group to a maskera label; return `null` to drop the
+ * entity. The group arrives as the model emits it minus the BIO prefix
+ * ("PER", "LOC", "ORG", "ADR" for maskera-sv-ner), NOT as the Swedish
+ * placeholder name: that rename is the default map's job, and a custom map
+ * REPLACES it entirely. Compose with {@link defaultLabelMap} to keep the
+ * Swedish names while remapping or dropping a group.
  */
 export type LabelMap = (entityGroup: string) => PiiLabel | null
 
@@ -39,7 +41,22 @@ const DEFAULT_LABEL_MAP: Record<string, PiiLabel> = {
   ADR: "ADRESS",
 }
 
-const defaultLabelMap: LabelMap = (group) => {
+/**
+ * The default {@link LabelMap}: maps maskera-sv-ner's groups to the Swedish
+ * labels the rule detectors use (PER to NAMN, LOC to PLATS, ORG to
+ * ORGANISATION, ADR to ADRESS) and upper-cases anything else, so third-party
+ * models work out of the box. Exported so a custom `labelMap` can delegate to
+ * it instead of re-implementing the rename:
+ *
+ * ```ts
+ * // keep the Swedish placeholder names, but drop organisations
+ * labelMap: (group) => {
+ *   const label = defaultLabelMap(group)
+ *   return label === "ORGANISATION" ? null : label
+ * }
+ * ```
+ */
+export const defaultLabelMap: LabelMap = (group) => {
   const key = group
     .replace(/^[BI]-/, "")
     .replace(/[\s_]/g, "")
@@ -139,6 +156,26 @@ export const DEFAULT_DENYLIST: ReadonlySet<string> = new Set([
   "ip",
 ])
 
+/**
+ * A Transformers.js progress event, forwarded verbatim to `onProgress` while
+ * the model downloads. Events arrive per file: `initiate` / `download` /
+ * `done` mark lifecycle steps, and `progress` events carry `file` plus a
+ * `progress` percentage (0-100) for that file. From `@huggingface/transformers`
+ * v4 there are also `progress_total` events without a `file`, whose `progress`
+ * is the aggregate percentage across all model files: the one number a single
+ * loading bar wants. A final `ready` event fires when the pipeline is usable.
+ */
+export interface NerProgressEvent {
+  status: string
+  name?: string
+  file?: string
+  /** Percentage 0-100 (per file for `progress`, aggregate for `progress_total`). */
+  progress?: number
+  loaded?: number
+  total?: number
+  [key: string]: unknown
+}
+
 export interface NerOptions {
   /** Hugging Face model id. Default: {@link DEFAULT_NER_MODEL}. */
   model?: string
@@ -154,12 +191,15 @@ export interface NerOptions {
    * to extend/replace it, or `null` to disable the filter entirely.
    */
   denylist?: Iterable<string> | null
-  /** Map model entity groups to maskera labels. Default: {@link defaultLabelMap}. */
-  labelMap?: LabelMap
-  /** Progress callback while the model downloads. */
-  onProgress?: (progress: unknown) => void
   /**
-   * Transformers.js `env.localModelPath` — base URL/path for locally hosted
+   * Map raw model entity groups ("PER", "LOC", ...) to maskera labels; see
+   * {@link LabelMap}. Default: {@link defaultLabelMap}.
+   */
+  labelMap?: LabelMap
+  /** Progress callback while the model downloads; see {@link NerProgressEvent}. */
+  onProgress?: (progress: NerProgressEvent) => void
+  /**
+   * Transformers.js `env.localModelPath`: base URL/path for locally hosted
    * models. Set this (plus `model`) to load your own model instead of the Hub.
    */
   localModelPath?: string
@@ -213,7 +253,11 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
           return t.pipeline("token-classification", model, {
             dtype,
             device,
-            progress_callback: onProgress,
+            // Transformers.js types the callback param as `unknown`; the
+            // events are the documented NerProgressEvent shape at runtime.
+            progress_callback: onProgress
+              ? (p: unknown) => onProgress(p as NerProgressEvent)
+              : undefined,
           })
         })
         .catch((err) => {
@@ -525,8 +569,8 @@ function locateGroup(
 /**
  * The model emits subword pieces, so a fragment can land in the middle of an
  * ordinary word (e.g. "par" inside "Motpart") or be pure digits ("14:20"). We
- * only keep spans that sit on word boundaries — the char on each side must not
- * be a letter — which drops both classes of false positive. Numbers are the
+ * only keep spans that sit on word boundaries, the char on each side must not
+ * be a letter, which drops both classes of false positive. Numbers are the
  * rule layer's job anyway.
  */
 export function isWholeWord(text: string, start: number, end: number): boolean {
@@ -535,9 +579,27 @@ export function isWholeWord(text: string, start: number, end: number): boolean {
   return !LETTER.test(before) && !LETTER.test(after)
 }
 
+/**
+ * The hybrid entry point's default rule set. Whoever calls redactWithNer has
+ * free text about people (nobody loads a 43 MB name model for server logs),
+ * so the free-text heuristics `adress` and `lagenhetsnummer` are on by
+ * default here: both are low-risk (street suffix + house number, literal
+ * "lgh" prefix), and the address RULE guarantees the house number is always
+ * inside the mask where the model's ADR span sometimes splits it. `regnummer`
+ * stays opt-in even here: three letters + three digits is also the shape of
+ * booking codes and case ids, exactly what support text is full of. The
+ * synchronous rules-only `redact()` keeps the conservative checksum-validated
+ * defaults.
+ */
+export const hybridDefaultDetectors = [...defaultDetectors, adress, lagenhetsnummer]
+
 export interface RedactWithNerOptions extends Pick<RedactOptions, "placeholder"> {
   recognizer: NerRecognizer
-  /** Rule-based detectors to combine with the model. Default: all built-ins. */
+  /**
+   * Rule-based detectors to combine with the model.
+   * Default: {@link hybridDefaultDetectors} (all checksum-validated built-ins
+   * plus the `adress` and `lagenhetsnummer` heuristics).
+   */
   detectors?: RedactOptions["detectors"]
 }
 
@@ -554,7 +616,7 @@ export async function redactWithNer(
   input: string,
   options: RedactWithNerOptions,
 ): Promise<RedactResult> {
-  const detectors = options.detectors ?? defaultDetectors
+  const detectors = options.detectors ?? hybridDefaultDetectors
 
   const ruleDetections: Detection[] = []
   for (const detector of detectors) {

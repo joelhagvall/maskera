@@ -254,7 +254,7 @@ Competitor rows measured 2026-07-04, the maskera row re-measured 2026-07-11
 [`training/benchmark_competitors.py`](../training/benchmark_competitors.py):
 every model on the same gold sets, overlap matching, labels mapped to
 PER / LOC / ORG (the cross-model comparable types; ADR is excluded here because
-no other model has an address class — it is scored on its own in
+no other model has an address class, it is scored on its own in
 [Address (ADR) eval](#address-adr-eval-the-one-class-the-other-sets-miss)).
 **Redaction recall** is the safety number:
 was the entity flagged at all, under any label. Cross-model *precision* is
