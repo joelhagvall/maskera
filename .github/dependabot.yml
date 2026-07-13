@@ -1,27 +1,30 @@
-# Weekly, grouped dependency PRs. CI (unit tests, pack smoke, model eval)
-# gates every PR, so a green Dependabot PR is safe to merge on sight, and the
-# nightly model canary catches anything that only breaks against the live Hub.
+# Monthly, grouped dependency PRs, minors/patches only. CI (unit tests, pack
+# smoke, model eval) gates every PR, so a green Dependabot PR is safe to merge
+# on sight, and the nightly model canary catches anything that only breaks
+# against the live Hub. Security advisories are not affected by the schedule
+# or the ignore rule below; those PRs still open as soon as they are published.
 version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     groups:
       actions:
         patterns: ["*"]
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     groups:
       dev-dependencies:
         dependency-type: development
       dependencies:
         dependency-type: production
     ignore:
-      # tsup's dts step (rollup-plugin-dts) needs the TS 5 JS compiler API;
-      # TS 7+ is the native rewrite and breaks the build. TS 7 is tracked
-      # separately via the typescript-7 alias for `pnpm typecheck`.
-      - dependency-name: typescript
+      # Majors are deliberate manual upgrades, not automated PRs: tsup requires
+      # TS 5 (TS 7 is the native rewrite, tracked via the typescript-7 alias),
+      # and transformers 4 needed a pnpm patch just to load models. See git
+      # history for both.
+      - dependency-name: "*"
         update-types: ["version-update:semver-major"]
