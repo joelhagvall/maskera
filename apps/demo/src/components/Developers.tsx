@@ -182,7 +182,7 @@ export function Developers({
           <Code lang="ts">
             {`import { createNerRecognizer, redactWithNer } from "maskera"
 
-// maskeras svenska modell, ca 40 MB, körs lokalt
+// maskeras svenska modell, ca 43 MB, körs lokalt
 const recognizer = createNerRecognizer()
 
 const { text, restore } = await redactWithNer(

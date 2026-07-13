@@ -90,7 +90,7 @@ every-other layer (DistilBERT-style) recovers the quality.
 | teacher int8 ONNX                     | 125 MB  | ✅              |
 | distilled student int8 ONNX           | 82 MB   | ✅ (≈ teacher)  |
 | vocab-trimmed student int8 ONNX       | 56 MB   | ✅ (−0.04 F1)   |
-| **vocab-trim + q4-matmul/int8-embed** | **40 MB** | ✅ (−0.06 F1), **shipped** |
+| **vocab-trim + q4-matmul/int8-embed** | **43 MB** | ✅ (−0.06 F1), **shipped** |
 
 **What didn't work:** plain q4 (`quantize_q4.py`) made the model *bigger*
 (183 MB): ONNX 4-bit only quantizes MatMul weights and leaves the embedding
@@ -104,11 +104,11 @@ table fp32, which is ~half the model.
    decomposes) cut **82 → 56 MB** for −0.04 F1.
 2. **Combined quant** (`quantize_combo.py`): once the vocab is small the ~42M
    MatMul params dominate, so q4 on those *plus* int8 on the (now small)
-   embedding table cut **56 → 40 MB** for another ~0.015 F1. (This mixed model
+   embedding table cut **56 → 43 MB** for another ~0.015 F1. (This mixed model
    runs in Transformers.js but not in optimum's Python path; fine, the browser
    is the target.)
 
-Net: **82 → 40 MB at 0.946 overlap F1** (v4 dataset + retrained teacher + precision guard).
+Net: **82 → 43 MB at 0.946 overlap F1** (v4 dataset + retrained teacher + precision guard).
 Going to ~15 MB needs a smaller architecture, where quality starts to cost.
 
 On an M4 Pro (MPS) step 3 takes ~8–9 minutes for 3 epochs over 9k examples.
@@ -148,15 +148,15 @@ type-aware P/R/F1.
 | Model                              | Size   | Overlap F1 |
 | ---------------------------------- | ------ | ---------- |
 | teacher (KB-BERT)                  | 440 MB | 0.899      |
-| **student (trim + q4), shipped**  | 40 MB  | **0.946**  |
+| **student (trim + q4), shipped**  | 43 MB  | **0.946**  |
 
-The shipped 40 MB model nearly matches the 440 MB teacher, and reaches **0.91
+The shipped 43 MB model nearly matches the 440 MB teacher, and reaches **0.91
 redaction recall** (was the PII masked at all, any label, the privacy-relevant
 metric; recall 0.99). Gold-set numbers measured via Transformers.js.
 
 **Data quality, error-driven rounds, the cheapest lever:**
 
-| Dataset round                                              | shipped 40 MB F1 |
+| Dataset round                                              | shipped 43 MB F1 |
 | --------------------------------------------------------- | ---------------- |
 | v1: ≈30 templates, small gazetteers                      | 0.817            |
 | v2: ≈90 templates, large gazetteers, augmentation        | 0.843            |
@@ -329,7 +329,7 @@ round that does ship them will show up in CI.
 
 | Model on gold-real (real text)        | type-aware F1 | redaction recall |
 | ------------------------------------- | ------------- | ---------------- |
-| **maskera (shipped 40 MB pipeline)**  | **0.846**     | 0.84 (**recall 1.00**) |
+| **maskera (shipped 43 MB pipeline)**  | **0.846**     | 0.84 (**recall 1.00**) |
 
 Two honest reads:
 
