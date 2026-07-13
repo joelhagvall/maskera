@@ -2,7 +2,7 @@ import { createReadStream, existsSync } from "node:fs"
 import { basename, extname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import react from "@vitejs/plugin-react"
-import { type Plugin, defineConfig } from "vite"
+import { defineConfig, type Plugin } from "vite"
 
 const ORT_MIME: Record<string, string> = {
   ".mjs": "text/javascript",

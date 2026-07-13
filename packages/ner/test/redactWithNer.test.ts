@@ -1,10 +1,10 @@
 import type { Detection } from "@maskera/core"
 import { describe, expect, it } from "vitest"
 import {
-  type NerRecognizer,
-  type RawToken,
   defaultLabelMap,
   isWholeWord,
+  type NerRecognizer,
+  type RawToken,
   reconstruct,
   redactWithNer,
 } from "../src/index"

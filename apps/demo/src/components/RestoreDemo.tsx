@@ -93,13 +93,7 @@ export function sampleAiReply(map: Record<string, string>, scenarioId?: string):
  * and maskera swaps the originals back in locally, using the key that never
  * left the device. Only rendered when there is something to restore.
  */
-export function RestoreDemo({
-  result,
-  scenarioId,
-}: {
-  result: RedactResult
-  scenarioId?: string
-}) {
+export function RestoreDemo({ result, scenarioId }: { result: RedactResult; scenarioId?: string }) {
   const { map } = result
   const auto = useMemo(() => sampleAiReply(map, scenarioId), [map, scenarioId])
   // null = untouched (mirror the generated sample); a string = the visitor's edit.

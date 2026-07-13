@@ -19,3 +19,9 @@ updates:
         dependency-type: development
       dependencies:
         dependency-type: production
+    ignore:
+      # tsup's dts step (rollup-plugin-dts) needs the TS 5 JS compiler API;
+      # TS 7+ is the native rewrite and breaks the build. TS 7 is tracked
+      # separately via the typescript-7 alias for `pnpm typecheck`.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]

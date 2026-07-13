@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
 import {
-  url,
   adress,
   bankgiro,
   creditCard,
@@ -17,6 +16,7 @@ import {
   postnummer,
   regnummer,
   samordningsnummer,
+  url,
 } from "../src/detectors"
 import type { Detector } from "../src/types"
 
@@ -67,8 +67,7 @@ describe("samordningsnummer detector", () => {
   // Samordningsnummer = personnummer with day + 60. 701063-2391 is day 63 (==03),
   // Luhn-valid synthetic. 640883-3231 is day 83 (==23).
   it.each(["701063-2391", "640883-3231"])("matches a valid samordningsnummer: %s", (s) =>
-    expectHit(samordningsnummer, `Klienten ${s} registrerades.`, s),
-  )
+    expectHit(samordningsnummer, `Klienten ${s} registrerades.`, s))
 
   it("does not match an ordinary personnummer (day < 60)", () => {
     expectMiss(samordningsnummer, "900101-2385")
@@ -142,8 +141,7 @@ describe("phone detector", () => {
 
 describe("postnummer detector", () => {
   it.each(["123 45", "12345", "114 51"])("matches: %s", (s) =>
-    expectHit(postnummer, `Adress ${s} Stockholm.`, s),
-  )
+    expectHit(postnummer, `Adress ${s} Stockholm.`, s))
 
   it("matches the spaced form standing alone", () => {
     expectHit(postnummer, "postnumret är 852 31 enligt registret", "852 31")
@@ -174,8 +172,7 @@ describe("postnummer detector", () => {
 describe("bankgiro detector", () => {
   // All Luhn-valid (real bankgiro carries a mod-10 check digit).
   it.each(["100-0009", "1000-0008", "5050-1055"])("matches valid bankgiro: %s", (s) =>
-    expectHit(bankgiro, `Betala till bankgiro ${s}.`, s),
-  )
+    expectHit(bankgiro, `Betala till bankgiro ${s}.`, s))
 
   it.each([
     ["year range", "2019-2024"],
@@ -186,8 +183,7 @@ describe("bankgiro detector", () => {
 describe("plusgiro detector", () => {
   // All Luhn-valid (real plusgiro carries a mod-10 check digit).
   it.each(["12345-5", "42-2", "1234567-4"])("matches: %s", (s) =>
-    expectHit(plusgiro, `Plusgiro ${s} tack.`, s),
-  )
+    expectHit(plusgiro, `Plusgiro ${s} tack.`, s))
 
   it("matches a space-grouped plusgiro (Radiohjälpen)", () => {
     expectHit(plusgiro, "Swisha eller plusgiro 90 19 50-6 tack.", "90 19 50-6")
@@ -218,10 +214,11 @@ describe("iban detector", () => {
 
 describe("creditCard detector", () => {
   // 4111 1111 1111 1111 is the canonical Luhn-valid Visa test number.
-  it.each(["4111 1111 1111 1111", "4111-1111-1111-1111", "4111111111111111"])(
-    "matches valid Luhn card: %s",
-    (s) => expectHit(creditCard, `Kort ${s} debiterat.`, s),
-  )
+  it.each([
+    "4111 1111 1111 1111",
+    "4111-1111-1111-1111",
+    "4111111111111111",
+  ])("matches valid Luhn card: %s", (s) => expectHit(creditCard, `Kort ${s} debiterat.`, s))
 
   it("rejects a card-shaped number that fails Luhn", () => {
     expectMiss(creditCard, "4111 1111 1111 1112")
@@ -232,8 +229,7 @@ describe("creditCard detector", () => {
 
 describe("ipAddress detector", () => {
   it.each(["192.168.0.1", "8.8.8.8", "255.255.255.0"])("matches: %s", (s) =>
-    expectHit(ipAddress, `Från ${s} loggades in.`, s),
-  )
+    expectHit(ipAddress, `Från ${s} loggades in.`, s))
 
   it.each([
     ["out of range octet", "999.1.1.1"],
@@ -261,8 +257,7 @@ describe("url detector", () => {
     ["ellipsis", "kolla www.example.se...", "www.example.se"],
     ["exclamation", "Besök https://example.se/rea!", "https://example.se/rea"],
   ])("leaves trailing sentence punctuation outside the value: %s", (_label, s, expected) =>
-    expectHit(url, s, expected),
-  )
+    expectHit(url, s, expected))
 
   it("still matches dots and query punctuation inside the path", () =>
     expectHit(
@@ -300,8 +295,7 @@ describe("adress detector (heuristic)", () => {
 
 describe("lagenhetsnummer detector (heuristic)", () => {
   it.each(["lgh 1203", "lägenhet 42", "Lgh 1203"])("matches: %s", (s) =>
-    expectHit(lagenhetsnummer, `Nycklar till ${s} kvitterade.`, s),
-  )
+    expectHit(lagenhetsnummer, `Nycklar till ${s} kvitterade.`, s))
 
   it("rejects the word without a number", () =>
     expectMiss(lagenhetsnummer, "en fin lägenhet i stan"))
@@ -309,8 +303,7 @@ describe("lagenhetsnummer detector (heuristic)", () => {
 
 describe("regnummer detector (heuristic)", () => {
   it.each(["ABC 123", "ABC123", "XYZ 12A"])("matches: %s", (s) =>
-    expectHit(regnummer, `Bilen ${s} stod parkerad.`, s),
-  )
+    expectHit(regnummer, `Bilen ${s} stod parkerad.`, s))
 
   it.each([
     ["currency amount", "priset är SEK 100 per styck"],

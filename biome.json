@@ -1,23 +1,24 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.3/schema.json",
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
-    "ignore": [
-      "dist",
-      "node_modules",
-      "coverage",
-      "training/.venv",
-      "bench/.venv-*",
-      "bench/out",
-      "bench/corpora",
-      "training/model*",
-      "training/onnx-model",
-      "training/student-*",
-      "training/data",
-      "apps/demo/public/models"
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/node_modules",
+      "!**/coverage",
+      "!**/training/.venv",
+      "!**/bench/.venv-*",
+      "!**/bench/out",
+      "!**/bench/corpora",
+      "!**/training/model*",
+      "!**/training/onnx-model",
+      "!**/training/student-*",
+      "!**/training/data",
+      "!**/apps/demo/public/models"
     ]
   },
-  "organizeImports": { "enabled": true },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
@@ -26,14 +27,14 @@
   },
   "linter": {
     "enabled": true,
-    "rules": { "recommended": true }
+    "rules": { "preset": "none" }
   },
   "javascript": {
     "formatter": { "quoteStyle": "double", "semicolons": "asNeeded" }
   },
   "overrides": [
     {
-      "include": ["**/package.json"],
+      "includes": ["**/package.json"],
       "formatter": { "enabled": false }
     }
   ]

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { type RawToken, createNerRecognizer } from "../src/index"
+import { createNerRecognizer, type RawToken } from "../src/index"
 
 // BERT's positional embeddings stop at 512 tokens; unchunked long inputs make
 // the ONNX runtime throw and the whole redaction fail. detect() must split
