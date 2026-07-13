@@ -7,7 +7,7 @@ import { defaultDetectors, redactFromDetections } from "@maskera/core"
 export * from "@maskera/core"
 
 /**
- * Canonical Hugging Face id for maskera's own Swedish PII model: a 40 MB
+ * Canonical Hugging Face id for maskera's own Swedish PII model: a 43 MB
  * (q4) distilled KB-BERT for PER / LOC / ORG / ADR, trained on synthetic +
  * real Swedish with casing augmentation. MIT weights, no attribution needed.
  * Change the owner to your own HF username if you host your own copy.
