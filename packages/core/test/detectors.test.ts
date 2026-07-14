@@ -64,9 +64,9 @@ describe("personnummer detector", () => {
 })
 
 describe("samordningsnummer detector", () => {
-  // Samordningsnummer = personnummer with day + 60. 701063-2391 is day 63 (==03),
-  // Luhn-valid synthetic. 640883-3231 is day 83 (==23).
-  it.each(["701063-2391", "640883-3231"])("matches a valid samordningsnummer: %s", (s) =>
+  // Samordningsnummer = personnummer with day + 60. 700178-2395 is day 78 (==18),
+  // 640372-2397 is day 72 (==12). Both are official Skatteverket test numbers.
+  it.each(["700178-2395", "640372-2397"])("matches a valid samordningsnummer: %s", (s) =>
     expectHit(samordningsnummer, `Klienten ${s} registrerades.`, s))
 
   it("does not match an ordinary personnummer (day < 60)", () => {
@@ -76,7 +76,7 @@ describe("samordningsnummer detector", () => {
 
 describe("organisationsnummer detector", () => {
   it("matches a Luhn-valid orgnr with third digit >= 2", () => {
-    expectHit(organisationsnummer, "Bolaget 556036-0793 är registrerat.", "556036-0793")
+    expectHit(organisationsnummer, "Bolaget 556123-4567 är registrerat.", "556123-4567")
   })
 
   it.each([
@@ -113,12 +113,12 @@ describe("email detector", () => {
 
 describe("phone detector", () => {
   it.each([
-    "070-123 45 67",
+    "070-174 06 58",
     "0701234567",
-    "+46 70 123 45 67",
-    "+46701234567",
+    "+46 70 174 06 58",
+    "+46701740658",
     "08-123 456 78",
-    "031-12 34 56",
+    "031-390 06 12",
     // e-mail-signature style: trunk zero in parentheses after country code
     "+46(0)70-1234567",
     "+46 (0)70-123 45 67",
@@ -171,7 +171,7 @@ describe("postnummer detector", () => {
 
 describe("bankgiro detector", () => {
   // All Luhn-valid (real bankgiro carries a mod-10 check digit).
-  it.each(["100-0009", "1000-0008", "5050-1055"])("matches valid bankgiro: %s", (s) =>
+  it.each(["100-0009", "1000-0008", "5999-8880"])("matches valid bankgiro: %s", (s) =>
     expectHit(bankgiro, `Betala till bankgiro ${s}.`, s))
 
   it.each([

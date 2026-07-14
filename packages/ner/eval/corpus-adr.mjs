@@ -30,7 +30,7 @@
  *     DEFAULT_LABEL_MAP in packages/ner/src/index.ts), so labeled matches line up.
  *   - Every `value` must appear verbatim in `text` or the harness throws on load.
  *   - Address-free sentences (entities: []) and near-miss distractors keep ADR
- *     precision honest: a bare "148", "Box 1203", "112 21", "070-123 45 67" must
+ *     precision honest: a bare "148", "Box 1203", "112 21", "070-174 06 58" must
  *     NOT be flagged ADDRESS.
  *
  * RUN IT (no code change to the harness):
@@ -223,7 +223,7 @@ export const corpus = [
   },
   // Phone number, not an address.
   {
-    text: "ring mig på 070-123 45 67 istället, jag svarar inte på mejl",
+    text: "ring mig på 070-174 06 58 istället, jag svarar inte på mejl",
     entities: [],
     register: "support",
   },

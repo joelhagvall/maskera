@@ -31,7 +31,7 @@ const OUT = resolve(process.env.OUT ?? join(ROOT, "maskera-demo.mp4"))
 // The free-text example that gets typed in. Chosen to trigger every category:
 // name, personnummer, phone, address, location.
 const TYPE =
-  "Kund Anna Karlsson, personnummer 19900101-0017, ringde om sin faktura. Hon når er på 070-123 45 67 och bor på Storgatan 12 i Uppsala. Sammanfatta ärendet."
+  "Kund Anna Karlsson, personnummer 19900101-2385, ringde om sin faktura. Hon når er på 070-174 06 58 och bor på Storgatan 12 i Uppsala. Sammanfatta ärendet."
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 

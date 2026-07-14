@@ -9,9 +9,10 @@ import {
   restore,
 } from "../src/index"
 
-// 900101-2385 and 556036-0793 are Luhn-valid synthetic test identifiers.
+// 900101-2385 is an official Skatteverket test personnummer; 556123-4567 is
+// Bolagsverket's own documentation example orgnr. Both Luhn-valid, neither real.
 const PNR = "19900101-2385"
-const ORGNR = "556036-0793"
+const ORGNR = "556123-4567"
 
 describe("validators", () => {
   it("validates Luhn checksums", () => {
@@ -34,11 +35,11 @@ describe("validators", () => {
 
 describe("redact", () => {
   it("redacts a mix of Swedish PII", () => {
-    const input = `Jag heter Anna och mejlar anna@example.se, ringer 070-123 45 67, personnummer ${PNR}.`
+    const input = `Jag heter Anna och mejlar anna@example.se, ringer 070-174 06 58, personnummer ${PNR}.`
     const { text, redactions } = redact(input)
     expect(text).not.toContain("anna@example.se")
     expect(text).not.toContain(PNR)
-    expect(text).not.toContain("070-123 45 67")
+    expect(text).not.toContain("070-174 06 58")
     const labels = redactions.map((r) => r.label).sort()
     expect(labels).toContain("EPOST")
     expect(labels).toContain("TELEFON")

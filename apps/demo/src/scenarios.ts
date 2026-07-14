@@ -28,7 +28,7 @@ export const scenarios: Scenario[] = [
     id: "juridik",
     name: "Juridik",
     tagline: "Klientärende på advokatbyrå",
-    text: "Klient Johan Andersson (781101-2397) yrkar skadestånd mot Byggfirman AB, org.nr 556677-2348. Motpart företräds av advokat Leila Ahmadi. Betalning sker till bankgiro 5051-6905. Sammanfatta ärendet inför förhandlingen den 12 mars.",
+    text: "Klient Johan Andersson (781101-2397) yrkar skadestånd mot Byggfirman AB, org.nr 556123-4567. Motpart företräds av advokat Leila Ahmadi. Betalning sker till bankgiro 5999-8880. Sammanfatta ärendet inför förhandlingen den 12 mars.",
   },
   {
     id: "kommun",

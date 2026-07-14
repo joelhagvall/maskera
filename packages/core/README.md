@@ -12,7 +12,7 @@ pnpm add @maskera/core
 ```ts
 import { redact } from "@maskera/core"
 
-const { text, restore } = redact("Personnummer 19900101-2385, tel 070-123 45 67.")
+const { text, restore } = redact("Personnummer 19900101-2385, tel 070-174 06 58.")
 text // "Personnummer [PERSONNUMMER_1], tel [TELEFON_1]."
 ```
 
@@ -33,11 +33,11 @@ a checksum exists, so look-alikes (year ranges, reference numbers) don't fire.
 | ---------------------- | -------------------------------------- | --------------------- |
 | `PERSONNUMMER`         | `19900101-2385`, `900101-2385`         | date + Luhn           |
 | `SAMORDNINGSNUMMER`    | day + 60 variant                       | date + Luhn           |
-| `ORGANISATIONSNUMMER`  | `556016-0680`                          | Luhn, third digit ≥ 2 |
+| `ORGANISATIONSNUMMER`  | `556123-4567`                          | Luhn, third digit ≥ 2 |
 | `EPOST`                | `anna@example.se`                      | pattern               |
-| `TELEFON`              | `070-123 45 67`, `+46 8 123 456`       | Swedish mobile + landline |
+| `TELEFON`              | `070-174 06 58`, `+46 8 465 004 12`       | Swedish mobile + landline |
 | `POSTNUMMER`           | `114 55`; compact `85231` only before a capitalized city or after `SE-` | pattern + context |
-| `BANKGIRO`             | `5050-1055`                            | Luhn check digit      |
+| `BANKGIRO`             | `5999-8880`                            | Luhn check digit      |
 | `PLUSGIRO`             | `90 19 50-6` (spaces tolerated)        | Luhn check digit      |
 | `IBAN`                 | `SE45 5000 0000 0583 9825 7466`        | SE pattern            |
 | `KORTNUMMER`          | 13-19 digits, spaces/dashes tolerated  | Luhn                  |

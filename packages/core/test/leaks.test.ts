@@ -29,8 +29,8 @@ interface LeakCase {
 const CASES: LeakCase[] = [
   {
     note: "baseline: classic mixed PII sentence",
-    input: "Anna Berg, 900101-2385, anna@example.se, 070-123 45 67.",
-    mustRedact: ["900101-2385", "anna@example.se", "070-123 45 67"],
+    input: "Anna Berg, 900101-2385, anna@example.se, 070-174 06 58.",
+    mustRedact: ["900101-2385", "anna@example.se", "070-174 06 58"],
   },
   {
     note: "personnummer in 12-digit form must not slip through",

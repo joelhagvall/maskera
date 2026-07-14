@@ -32,14 +32,14 @@ describe("overlap resolution between structured identifiers", () => {
   })
 
   it("an organisationsnummer is preferred over the personnummer pattern when valid", () => {
-    // 556036-0793 is a valid orgnr (third digit >= 2), not a valid personnummer.
-    const labels = labelsOf("Leverantör 556036-0793 fakturerar.")
+    // 556123-4567 is a valid orgnr (third digit >= 2), not a valid personnummer.
+    const labels = labelsOf("Leverantör 556123-4567 fakturerar.")
     expect(labels).toContain("ORGANISATIONSNUMMER")
     expect(labels).not.toContain("PERSONNUMMER")
   })
 
   it("does not double-redact: each character belongs to at most one placeholder", () => {
-    const input = "Anna (900101-2385) bankgiro 5050-1055 mejl anna@x.se ringer 070-123 45 67."
+    const input = "Anna (900101-2385) bankgiro 5999-8880 mejl anna@x.se ringer 070-174 06 58."
     const { redactions } = redact(input)
     // Sort by start and assert no two spans overlap.
     const spans = redactions.map((r) => [r.start, r.end] as const).sort((a, b) => a[0] - b[0])
@@ -57,7 +57,7 @@ describe("overlap resolution between structured identifiers", () => {
 
   it("redacts a dense mix without dropping any of the high-value identifiers", () => {
     const input =
-      "Personnummer 900101-2385, org 556036-0793, IBAN SE4550000000058398257466, kort 4111 1111 1111 1111."
+      "Personnummer 900101-2385, org 556123-4567, IBAN SE4550000000058398257466, kort 4111 1111 1111 1111."
     const labels = new Set(labelsOf(input))
     expect(labels).toContain("PERSONNUMMER")
     expect(labels).toContain("ORGANISATIONSNUMMER")
