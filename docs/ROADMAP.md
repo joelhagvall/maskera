@@ -260,6 +260,18 @@ the table, in priority order; every number is in
       ORG, the v5-era classic), gold-real metonymic "Vita huset", and the
       spot probe "RING LÖFVEN OMGÅENDE" (ALL-CAPS bare surname; every
       release has missed it). None is gated; all are documented.
+- [ ] **Saint-prefixed street names** (found 2026-07-14 via the demo, probed
+      against shipped v14): with sentence context "Sankt Göransgatan 153"
+      is one clean ADR span, but BARE input fragments to [ADR:Sankt]
+      [LOC:Göransgatan] with the house number LEAKING, and the most common
+      written form "S:t Eriksgatan 45" is worst (only [LOC:t Eriksgatan];
+      "S:" and the number leak: the colon breaks the word in
+      tokenization/reconstruct). Zero Sankt/S:t entries exist in the
+      generator's STREET_STEMS. Fix is two-sided: saint-prefixed stems
+      (Sankt/S:t/St. + gata/plan forms) in the address builder, AND check
+      whether reconstruct()'s word-boundary logic can widen over "S:t"
+      (compare the possessive-s widening from v7). Add both casings to the
+      ADR eval so it stays fixed.
 
 ### Unlocked but not started
 
