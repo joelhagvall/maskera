@@ -1,300 +1,300 @@
-# rare-surname chat-register eval (v13 publish gate). GENERATED FILE, do
+# rare-surname chat-register eval (publish gate, v14-rotated frames). GENERATED FILE, do
 # not hand-edit: node training/gen_rare_surname_eval.mjs regenerates it.
 # NEVER add these surnames to any training data or gazetteer; the
 # generator drops any name that appears there, and run_v13.sh re-checks.
 # 98 surnames x 3 templates = 294 sentences.
 
-hej jag heter [PER:tjulander] och min beställning har inte kommit fram
-jag pratade med [PER:tjulander] på supporten i förra veckan
-hej! det är [PER:tjulander] här, jag undrar om min retur
-hej det är [PER:tjernström] igen, jag ringde igår om min faktura
-min handläggare heter [PER:tjernström] men hon svarar inte
-vi väntar fortfarande på svar från [PER:tjernström]
-be [PER:tegmark] återkomma imorgon förmiddag
-ärendet gäller [PER:tegmark] och fakturan från mars
-Hej, jag heter [PER:Tegmark] och vill ändra min leveransadress.
-kan ni be [PER:torekull] ringa upp mig i eftermiddag?
-har ni fått mejlet från [PER:torekull]?
-Kunden [PER:Torekull] vill säga upp sitt avtal.
-mvh [PER:themptander]
-beställningen står på efternamnet [PER:themptander]
-[PER:Themptander] har fortfarande inte fått något svar på sitt ärende.
-hälsningar [PER:thorvaldsson]
-återbetalningen till [PER:thorvaldsson] har inte kommit
-RING [PER:THORVALDSSON] OMGÅENDE
-jag pratade med [PER:uddenberg] på supporten i förra veckan
-hej! det är [PER:uddenberg] här, jag undrar om min retur
-hej jag heter [PER:uddenberg] och min beställning har inte kommit fram
-min handläggare heter [PER:ulvskog] men hon svarar inte
-vi väntar fortfarande på svar från [PER:ulvskog]
-hej det är [PER:ulvskog] igen, jag ringde igår om min faktura
-ärendet gäller [PER:unckel] och fakturan från mars
-Hej, jag heter [PER:Unckel] och vill ändra min leveransadress.
-be [PER:unckel] återkomma imorgon förmiddag
-har ni fått mejlet från [PER:vinterhed]?
-Kunden [PER:Vinterhed] vill säga upp sitt avtal.
-kan ni be [PER:vinterhed] ringa upp mig i eftermiddag?
-beställningen står på efternamnet [PER:wetterstrand]
-[PER:Wetterstrand] har fortfarande inte fått något svar på sitt ärende.
-mvh [PER:wetterstrand]
-återbetalningen till [PER:wijkman] har inte kommit
-RING [PER:WIJKMAN] OMGÅENDE
-hälsningar [PER:wijkman]
-hej! det är [PER:zennström] här, jag undrar om min retur
-hej jag heter [PER:zennström] och min beställning har inte kommit fram
-jag pratade med [PER:zennström] på supporten i förra veckan
-vi väntar fortfarande på svar från [PER:åkerhielm]
-hej det är [PER:åkerhielm] igen, jag ringde igår om min faktura
-min handläggare heter [PER:åkerhielm] men hon svarar inte
-Hej, jag heter [PER:Ängquist] och vill ändra min leveransadress.
-be [PER:ängquist] återkomma imorgon förmiddag
-ärendet gäller [PER:ängquist] och fakturan från mars
-Kunden [PER:Öhrström] vill säga upp sitt avtal.
-kan ni be [PER:öhrström] ringa upp mig i eftermiddag?
-har ni fått mejlet från [PER:öhrström]?
-[PER:Örtendahl] har fortfarande inte fått något svar på sitt ärende.
-mvh [PER:örtendahl]
-beställningen står på efternamnet [PER:örtendahl]
-RING [PER:ALMROTH] OMGÅENDE
-hälsningar [PER:almroth]
-återbetalningen till [PER:almroth] har inte kommit
-hej jag heter [PER:alsterlund] och min beställning har inte kommit fram
-jag pratade med [PER:alsterlund] på supporten i förra veckan
-hej! det är [PER:alsterlund] här, jag undrar om min retur
-hej det är [PER:ankarberg] igen, jag ringde igår om min faktura
-min handläggare heter [PER:ankarberg] men hon svarar inte
-vi väntar fortfarande på svar från [PER:ankarberg]
-be [PER:backelin] återkomma imorgon förmiddag
-ärendet gäller [PER:backelin] och fakturan från mars
-Hej, jag heter [PER:Backelin] och vill ändra min leveransadress.
-kan ni be [PER:bexelius] ringa upp mig i eftermiddag?
-har ni fått mejlet från [PER:bexelius]?
-Kunden [PER:Bexelius] vill säga upp sitt avtal.
-mvh [PER:blidberg]
-beställningen står på efternamnet [PER:blidberg]
-[PER:Blidberg] har fortfarande inte fått något svar på sitt ärende.
-hälsningar [PER:brandell]
-återbetalningen till [PER:brandell] har inte kommit
-RING [PER:BRANDELL] OMGÅENDE
-jag pratade med [PER:brogren] på supporten i förra veckan
-hej! det är [PER:brogren] här, jag undrar om min retur
-hej jag heter [PER:brogren] och min beställning har inte kommit fram
-min handläggare heter [PER:brynolf] men hon svarar inte
-vi väntar fortfarande på svar från [PER:brynolf]
-hej det är [PER:brynolf] igen, jag ringde igår om min faktura
-ärendet gäller [PER:bäckdahl] och fakturan från mars
-Hej, jag heter [PER:Bäckdahl] och vill ändra min leveransadress.
-be [PER:bäckdahl] återkomma imorgon förmiddag
-har ni fått mejlet från [PER:cavallin]?
-Kunden [PER:Cavallin] vill säga upp sitt avtal.
-kan ni be [PER:cavallin] ringa upp mig i eftermiddag?
-beställningen står på efternamnet [PER:cederlöf]
-[PER:Cederlöf] har fortfarande inte fått något svar på sitt ärende.
-mvh [PER:cederlöf]
-återbetalningen till [PER:cedervall] har inte kommit
-RING [PER:CEDERVALL] OMGÅENDE
-hälsningar [PER:cedervall]
-hej! det är [PER:duvander] här, jag undrar om min retur
-hej jag heter [PER:duvander] och min beställning har inte kommit fram
-jag pratade med [PER:duvander] på supporten i förra veckan
-vi väntar fortfarande på svar från [PER:edfeldt]
-hej det är [PER:edfeldt] igen, jag ringde igår om min faktura
-min handläggare heter [PER:edfeldt] men hon svarar inte
-Hej, jag heter [PER:Ekedahl] och vill ändra min leveransadress.
-be [PER:ekedahl] återkomma imorgon förmiddag
-ärendet gäller [PER:ekedahl] och fakturan från mars
-Kunden [PER:Elfstrand] vill säga upp sitt avtal.
-kan ni be [PER:elfstrand] ringa upp mig i eftermiddag?
-har ni fått mejlet från [PER:elfstrand]?
-[PER:Elmlund] har fortfarande inte fått något svar på sitt ärende.
-mvh [PER:elmlund]
-beställningen står på efternamnet [PER:elmlund]
-RING [PER:ENOCKSSON] OMGÅENDE
-hälsningar [PER:enocksson]
-återbetalningen till [PER:enocksson] har inte kommit
-hej jag heter [PER:fagerlind] och min beställning har inte kommit fram
-jag pratade med [PER:fagerlind] på supporten i förra veckan
-hej! det är [PER:fagerlind] här, jag undrar om min retur
-hej det är [PER:fjellman] igen, jag ringde igår om min faktura
-min handläggare heter [PER:fjellman] men hon svarar inte
-vi väntar fortfarande på svar från [PER:fjellman]
-be [PER:flodberg] återkomma imorgon förmiddag
-ärendet gäller [PER:flodberg] och fakturan från mars
-Hej, jag heter [PER:Flodberg] och vill ändra min leveransadress.
-kan ni be [PER:fogelklou] ringa upp mig i eftermiddag?
-har ni fått mejlet från [PER:fogelklou]?
-Kunden [PER:Fogelklou] vill säga upp sitt avtal.
-mvh [PER:forslid]
-beställningen står på efternamnet [PER:forslid]
-[PER:Forslid] har fortfarande inte fått något svar på sitt ärende.
-hälsningar [PER:fägerquist]
-återbetalningen till [PER:fägerquist] har inte kommit
-RING [PER:FÄGERQUIST] OMGÅENDE
-jag pratade med [PER:gadelius] på supporten i förra veckan
-hej! det är [PER:gadelius] här, jag undrar om min retur
-hej jag heter [PER:gadelius] och min beställning har inte kommit fram
-min handläggare heter [PER:granlycke] men hon svarar inte
-vi väntar fortfarande på svar från [PER:granlycke]
-hej det är [PER:granlycke] igen, jag ringde igår om min faktura
-ärendet gäller [PER:grönblad] och fakturan från mars
-Hej, jag heter [PER:Grönblad] och vill ändra min leveransadress.
-be [PER:grönblad] återkomma imorgon förmiddag
-har ni fått mejlet från [PER:gyllenhammar]?
-Kunden [PER:Gyllenhammar] vill säga upp sitt avtal.
-kan ni be [PER:gyllenhammar] ringa upp mig i eftermiddag?
-beställningen står på efternamnet [PER:gyllensten]
-[PER:Gyllensten] har fortfarande inte fått något svar på sitt ärende.
-mvh [PER:gyllensten]
-återbetalningen till [PER:hagströmer] har inte kommit
-RING [PER:HAGSTRÖMER] OMGÅENDE
-hälsningar [PER:hagströmer]
-hej! det är [PER:hallonsten] här, jag undrar om min retur
-hej jag heter [PER:hallonsten] och min beställning har inte kommit fram
-jag pratade med [PER:hallonsten] på supporten i förra veckan
-vi väntar fortfarande på svar från [PER:hasselrot]
-hej det är [PER:hasselrot] igen, jag ringde igår om min faktura
-min handläggare heter [PER:hasselrot] men hon svarar inte
-Hej, jag heter [PER:Hedenblad] och vill ändra min leveransadress.
-be [PER:hedenblad] återkomma imorgon förmiddag
-ärendet gäller [PER:hedenblad] och fakturan från mars
-Kunden [PER:Hellspong] vill säga upp sitt avtal.
-kan ni be [PER:hellspong] ringa upp mig i eftermiddag?
-har ni fått mejlet från [PER:hellspong]?
-[PER:Hildingsson] har fortfarande inte fått något svar på sitt ärende.
-mvh [PER:hildingsson]
-beställningen står på efternamnet [PER:hildingsson]
-RING [PER:HJERTÉN] OMGÅENDE
-hälsningar [PER:hjertén]
-återbetalningen till [PER:hjertén] har inte kommit
-hej jag heter [PER:hultkrantz] och min beställning har inte kommit fram
-jag pratade med [PER:hultkrantz] på supporten i förra veckan
-hej! det är [PER:hultkrantz] här, jag undrar om min retur
-hej det är [PER:husmark] igen, jag ringde igår om min faktura
-min handläggare heter [PER:husmark] men hon svarar inte
-vi väntar fortfarande på svar från [PER:husmark]
-be [PER:hyltenstam] återkomma imorgon förmiddag
-ärendet gäller [PER:hyltenstam] och fakturan från mars
-Hej, jag heter [PER:Hyltenstam] och vill ändra min leveransadress.
-kan ni be [PER:häggroth] ringa upp mig i eftermiddag?
-har ni fått mejlet från [PER:häggroth]?
-Kunden [PER:Häggroth] vill säga upp sitt avtal.
-mvh [PER:högfeldt]
-beställningen står på efternamnet [PER:högfeldt]
-[PER:Högfeldt] har fortfarande inte fått något svar på sitt ärende.
-hälsningar [PER:idermark]
-återbetalningen till [PER:idermark] har inte kommit
-RING [PER:IDERMARK] OMGÅENDE
-jag pratade med [PER:ingelman] på supporten i förra veckan
-hej! det är [PER:ingelman] här, jag undrar om min retur
-hej jag heter [PER:ingelman] och min beställning har inte kommit fram
-min handläggare heter [PER:jerneck] men hon svarar inte
-vi väntar fortfarande på svar från [PER:jerneck]
-hej det är [PER:jerneck] igen, jag ringde igår om min faktura
-ärendet gäller [PER:jonzon] och fakturan från mars
-Hej, jag heter [PER:Jonzon] och vill ändra min leveransadress.
-be [PER:jonzon] återkomma imorgon förmiddag
-har ni fått mejlet från [PER:kindblom]?
-Kunden [PER:Kindblom] vill säga upp sitt avtal.
-kan ni be [PER:kindblom] ringa upp mig i eftermiddag?
-beställningen står på efternamnet [PER:kjellander]
-[PER:Kjellander] har fortfarande inte fått något svar på sitt ärende.
-mvh [PER:kjellander]
-återbetalningen till [PER:klingspor] har inte kommit
-RING [PER:KLINGSPOR] OMGÅENDE
-hälsningar [PER:klingspor]
-hej! det är [PER:kolmodin] här, jag undrar om min retur
-hej jag heter [PER:kolmodin] och min beställning har inte kommit fram
-jag pratade med [PER:kolmodin] på supporten i förra veckan
-vi väntar fortfarande på svar från [PER:kullenberg]
-hej det är [PER:kullenberg] igen, jag ringde igår om min faktura
-min handläggare heter [PER:kullenberg] men hon svarar inte
-Hej, jag heter [PER:Kyhlberg] och vill ändra min leveransadress.
-be [PER:kyhlberg] återkomma imorgon förmiddag
-ärendet gäller [PER:kyhlberg] och fakturan från mars
-Kunden [PER:Leijonborg] vill säga upp sitt avtal.
-kan ni be [PER:leijonborg] ringa upp mig i eftermiddag?
-har ni fått mejlet från [PER:leijonborg]?
-[PER:Lidbeck] har fortfarande inte fått något svar på sitt ärende.
-mvh [PER:lidbeck]
-beställningen står på efternamnet [PER:lidbeck]
-RING [PER:LINDEBLAD] OMGÅENDE
-hälsningar [PER:lindeblad]
-återbetalningen till [PER:lindeblad] har inte kommit
-hej jag heter [PER:månberg] och min beställning har inte kommit fram
-jag pratade med [PER:månberg] på supporten i förra veckan
-hej! det är [PER:månberg] här, jag undrar om min retur
-hej det är [PER:nauclér] igen, jag ringde igår om min faktura
-min handläggare heter [PER:nauclér] men hon svarar inte
-vi väntar fortfarande på svar från [PER:nauclér]
-be [PER:ohlander] återkomma imorgon förmiddag
-ärendet gäller [PER:ohlander] och fakturan från mars
-Hej, jag heter [PER:Ohlander] och vill ändra min leveransadress.
-kan ni be [PER:palmcrantz] ringa upp mig i eftermiddag?
-har ni fått mejlet från [PER:palmcrantz]?
-Kunden [PER:Palmcrantz] vill säga upp sitt avtal.
-mvh [PER:quennerstedt]
-beställningen står på efternamnet [PER:quennerstedt]
-[PER:Quennerstedt] har fortfarande inte fått något svar på sitt ärende.
-hälsningar [PER:reenstierna]
-återbetalningen till [PER:reenstierna] har inte kommit
-RING [PER:REENSTIERNA] OMGÅENDE
-jag pratade med [PER:reuterswärd] på supporten i förra veckan
-hej! det är [PER:reuterswärd] här, jag undrar om min retur
-hej jag heter [PER:reuterswärd] och min beställning har inte kommit fram
-min handläggare heter [PER:ribbing] men hon svarar inte
-vi väntar fortfarande på svar från [PER:ribbing]
-hej det är [PER:ribbing] igen, jag ringde igår om min faktura
-ärendet gäller [PER:rosenblad] och fakturan från mars
-Hej, jag heter [PER:Rosenblad] och vill ändra min leveransadress.
-be [PER:rosenblad] återkomma imorgon förmiddag
-har ni fått mejlet från [PER:rudbeck]?
-Kunden [PER:Rudbeck] vill säga upp sitt avtal.
-kan ni be [PER:rudbeck] ringa upp mig i eftermiddag?
-beställningen står på efternamnet [PER:runefelt]
-[PER:Runefelt] har fortfarande inte fått något svar på sitt ärende.
-mvh [PER:runefelt]
-återbetalningen till [PER:rönnlund] har inte kommit
-RING [PER:RÖNNLUND] OMGÅENDE
-hälsningar [PER:rönnlund]
-hej! det är [PER:segerfeldt] här, jag undrar om min retur
-hej jag heter [PER:segerfeldt] och min beställning har inte kommit fram
-jag pratade med [PER:segerfeldt] på supporten i förra veckan
-vi väntar fortfarande på svar från [PER:sommarström]
-hej det är [PER:sommarström] igen, jag ringde igår om min faktura
-min handläggare heter [PER:sommarström] men hon svarar inte
-Hej, jag heter [PER:Sparrman] och vill ändra min leveransadress.
-be [PER:sparrman] återkomma imorgon förmiddag
-ärendet gäller [PER:sparrman] och fakturan från mars
-Kunden [PER:Stagnelius] vill säga upp sitt avtal.
-kan ni be [PER:stagnelius] ringa upp mig i eftermiddag?
-har ni fått mejlet från [PER:stagnelius]?
-[PER:Stenudd] har fortfarande inte fått något svar på sitt ärende.
-mvh [PER:stenudd]
-beställningen står på efternamnet [PER:stenudd]
-RING [PER:STRANDHÄLL] OMGÅENDE
-hälsningar [PER:strandhäll]
-återbetalningen till [PER:strandhäll] har inte kommit
-hej jag heter [PER:sundelius] och min beställning har inte kommit fram
-jag pratade med [PER:sundelius] på supporten i förra veckan
-hej! det är [PER:sundelius] här, jag undrar om min retur
-hej det är [PER:säfström] igen, jag ringde igår om min faktura
-min handläggare heter [PER:säfström] men hon svarar inte
-vi väntar fortfarande på svar från [PER:säfström]
-be [PER:mannerheim] återkomma imorgon förmiddag
-ärendet gäller [PER:mannerheim] och fakturan från mars
-Hej, jag heter [PER:Mannerheim] och vill ändra min leveransadress.
-kan ni be [PER:melldahl] ringa upp mig i eftermiddag?
-har ni fått mejlet från [PER:melldahl]?
-Kunden [PER:Melldahl] vill säga upp sitt avtal.
-mvh [PER:millgård]
-beställningen står på efternamnet [PER:millgård]
-[PER:Millgård] har fortfarande inte fått något svar på sitt ärende.
-hälsningar [PER:mogensen]
-återbetalningen till [PER:mogensen] har inte kommit
-RING [PER:MOGENSEN] OMGÅENDE
-jag pratade med [PER:hammarlind] på supporten i förra veckan
-hej! det är [PER:hammarlind] här, jag undrar om min retur
-hej jag heter [PER:hammarlind] och min beställning har inte kommit fram
-min handläggare heter [PER:ehrnrooth] men hon svarar inte
-vi väntar fortfarande på svar från [PER:ehrnrooth]
-hej det är [PER:ehrnrooth] igen, jag ringde igår om min faktura
+ok, jag skickar vidare ärendet till [PER:tjulander] på en gång
+[PER:tjulander] ringde in vid niotiden och var ganska upprörd
+ni stavade fel, efternamnet ska vara [PER:tjulander]
+fakturan är märkt med [PER:tjernström] som referens
+svara [PER:tjernström] innan ni stänger ärendet, tack
+returen godkändes av [PER:tjernström] på lagret
+vem är [PER:tegmark]? vi har fått deras post till vår adress
+på fakturan står namnet [PER:tegmark] men adressen är gammal
+Ärendet är överlämnat till [PER:Tegmark] för vidare hantering.
+har lämnat två meddelanden till [PER:torekull] utan att få svar
+garantin är registrerad på [PER:torekull] sedan i våras
+Enligt [PER:Torekull] är paketet redan utlämnat.
+boka om torsdagens möte med [PER:themptander] till nästa vecka
+enligt anteckningarna talade ni med [PER:themptander] i onsdags
+Signerat: [PER:Themptander], den 3 juni.
+leveransen kvitterades av [PER:thorvaldsson] igår kväll
+avtalet förnyades av [PER:thorvaldsson] via mejl
+VIKTIGT MEDDELANDE TILL [PER:THORVALDSSON] OM DIN FAKTURA
+[PER:uddenberg] ringde in vid niotiden och var ganska upprörd
+ni stavade fel, efternamnet ska vara [PER:uddenberg]
+ok, jag skickar vidare ärendet till [PER:uddenberg] på en gång
+svara [PER:ulvskog] innan ni stänger ärendet, tack
+returen godkändes av [PER:ulvskog] på lagret
+fakturan är märkt med [PER:ulvskog] som referens
+på fakturan står namnet [PER:unckel] men adressen är gammal
+Ärendet är överlämnat till [PER:Unckel] för vidare hantering.
+vem är [PER:unckel]? vi har fått deras post till vår adress
+garantin är registrerad på [PER:vinterhed] sedan i våras
+Enligt [PER:Vinterhed] är paketet redan utlämnat.
+har lämnat två meddelanden till [PER:vinterhed] utan att få svar
+enligt anteckningarna talade ni med [PER:wetterstrand] i onsdags
+Signerat: [PER:Wetterstrand], den 3 juni.
+boka om torsdagens möte med [PER:wetterstrand] till nästa vecka
+avtalet förnyades av [PER:wijkman] via mejl
+VIKTIGT MEDDELANDE TILL [PER:WIJKMAN] OM DIN FAKTURA
+leveransen kvitterades av [PER:wijkman] igår kväll
+ni stavade fel, efternamnet ska vara [PER:zennström]
+ok, jag skickar vidare ärendet till [PER:zennström] på en gång
+[PER:zennström] ringde in vid niotiden och var ganska upprörd
+returen godkändes av [PER:åkerhielm] på lagret
+fakturan är märkt med [PER:åkerhielm] som referens
+svara [PER:åkerhielm] innan ni stänger ärendet, tack
+Ärendet är överlämnat till [PER:Ängquist] för vidare hantering.
+vem är [PER:ängquist]? vi har fått deras post till vår adress
+på fakturan står namnet [PER:ängquist] men adressen är gammal
+Enligt [PER:Öhrström] är paketet redan utlämnat.
+har lämnat två meddelanden till [PER:öhrström] utan att få svar
+garantin är registrerad på [PER:öhrström] sedan i våras
+Signerat: [PER:Örtendahl], den 3 juni.
+boka om torsdagens möte med [PER:örtendahl] till nästa vecka
+enligt anteckningarna talade ni med [PER:örtendahl] i onsdags
+VIKTIGT MEDDELANDE TILL [PER:ALMROTH] OM DIN FAKTURA
+leveransen kvitterades av [PER:almroth] igår kväll
+avtalet förnyades av [PER:almroth] via mejl
+ok, jag skickar vidare ärendet till [PER:alsterlund] på en gång
+[PER:alsterlund] ringde in vid niotiden och var ganska upprörd
+ni stavade fel, efternamnet ska vara [PER:alsterlund]
+fakturan är märkt med [PER:ankarberg] som referens
+svara [PER:ankarberg] innan ni stänger ärendet, tack
+returen godkändes av [PER:ankarberg] på lagret
+vem är [PER:backelin]? vi har fått deras post till vår adress
+på fakturan står namnet [PER:backelin] men adressen är gammal
+Ärendet är överlämnat till [PER:Backelin] för vidare hantering.
+har lämnat två meddelanden till [PER:bexelius] utan att få svar
+garantin är registrerad på [PER:bexelius] sedan i våras
+Enligt [PER:Bexelius] är paketet redan utlämnat.
+boka om torsdagens möte med [PER:blidberg] till nästa vecka
+enligt anteckningarna talade ni med [PER:blidberg] i onsdags
+Signerat: [PER:Blidberg], den 3 juni.
+leveransen kvitterades av [PER:brandell] igår kväll
+avtalet förnyades av [PER:brandell] via mejl
+VIKTIGT MEDDELANDE TILL [PER:BRANDELL] OM DIN FAKTURA
+[PER:brogren] ringde in vid niotiden och var ganska upprörd
+ni stavade fel, efternamnet ska vara [PER:brogren]
+ok, jag skickar vidare ärendet till [PER:brogren] på en gång
+svara [PER:brynolf] innan ni stänger ärendet, tack
+returen godkändes av [PER:brynolf] på lagret
+fakturan är märkt med [PER:brynolf] som referens
+på fakturan står namnet [PER:bäckdahl] men adressen är gammal
+Ärendet är överlämnat till [PER:Bäckdahl] för vidare hantering.
+vem är [PER:bäckdahl]? vi har fått deras post till vår adress
+garantin är registrerad på [PER:cavallin] sedan i våras
+Enligt [PER:Cavallin] är paketet redan utlämnat.
+har lämnat två meddelanden till [PER:cavallin] utan att få svar
+enligt anteckningarna talade ni med [PER:cederlöf] i onsdags
+Signerat: [PER:Cederlöf], den 3 juni.
+boka om torsdagens möte med [PER:cederlöf] till nästa vecka
+avtalet förnyades av [PER:cedervall] via mejl
+VIKTIGT MEDDELANDE TILL [PER:CEDERVALL] OM DIN FAKTURA
+leveransen kvitterades av [PER:cedervall] igår kväll
+ni stavade fel, efternamnet ska vara [PER:duvander]
+ok, jag skickar vidare ärendet till [PER:duvander] på en gång
+[PER:duvander] ringde in vid niotiden och var ganska upprörd
+returen godkändes av [PER:edfeldt] på lagret
+fakturan är märkt med [PER:edfeldt] som referens
+svara [PER:edfeldt] innan ni stänger ärendet, tack
+Ärendet är överlämnat till [PER:Ekedahl] för vidare hantering.
+vem är [PER:ekedahl]? vi har fått deras post till vår adress
+på fakturan står namnet [PER:ekedahl] men adressen är gammal
+Enligt [PER:Elfstrand] är paketet redan utlämnat.
+har lämnat två meddelanden till [PER:elfstrand] utan att få svar
+garantin är registrerad på [PER:elfstrand] sedan i våras
+Signerat: [PER:Elmlund], den 3 juni.
+boka om torsdagens möte med [PER:elmlund] till nästa vecka
+enligt anteckningarna talade ni med [PER:elmlund] i onsdags
+VIKTIGT MEDDELANDE TILL [PER:ENOCKSSON] OM DIN FAKTURA
+leveransen kvitterades av [PER:enocksson] igår kväll
+avtalet förnyades av [PER:enocksson] via mejl
+ok, jag skickar vidare ärendet till [PER:fagerlind] på en gång
+[PER:fagerlind] ringde in vid niotiden och var ganska upprörd
+ni stavade fel, efternamnet ska vara [PER:fagerlind]
+fakturan är märkt med [PER:fjellman] som referens
+svara [PER:fjellman] innan ni stänger ärendet, tack
+returen godkändes av [PER:fjellman] på lagret
+vem är [PER:flodberg]? vi har fått deras post till vår adress
+på fakturan står namnet [PER:flodberg] men adressen är gammal
+Ärendet är överlämnat till [PER:Flodberg] för vidare hantering.
+har lämnat två meddelanden till [PER:fogelklou] utan att få svar
+garantin är registrerad på [PER:fogelklou] sedan i våras
+Enligt [PER:Fogelklou] är paketet redan utlämnat.
+boka om torsdagens möte med [PER:forslid] till nästa vecka
+enligt anteckningarna talade ni med [PER:forslid] i onsdags
+Signerat: [PER:Forslid], den 3 juni.
+leveransen kvitterades av [PER:fägerquist] igår kväll
+avtalet förnyades av [PER:fägerquist] via mejl
+VIKTIGT MEDDELANDE TILL [PER:FÄGERQUIST] OM DIN FAKTURA
+[PER:gadelius] ringde in vid niotiden och var ganska upprörd
+ni stavade fel, efternamnet ska vara [PER:gadelius]
+ok, jag skickar vidare ärendet till [PER:gadelius] på en gång
+svara [PER:granlycke] innan ni stänger ärendet, tack
+returen godkändes av [PER:granlycke] på lagret
+fakturan är märkt med [PER:granlycke] som referens
+på fakturan står namnet [PER:grönblad] men adressen är gammal
+Ärendet är överlämnat till [PER:Grönblad] för vidare hantering.
+vem är [PER:grönblad]? vi har fått deras post till vår adress
+garantin är registrerad på [PER:gyllenhammar] sedan i våras
+Enligt [PER:Gyllenhammar] är paketet redan utlämnat.
+har lämnat två meddelanden till [PER:gyllenhammar] utan att få svar
+enligt anteckningarna talade ni med [PER:gyllensten] i onsdags
+Signerat: [PER:Gyllensten], den 3 juni.
+boka om torsdagens möte med [PER:gyllensten] till nästa vecka
+avtalet förnyades av [PER:hagströmer] via mejl
+VIKTIGT MEDDELANDE TILL [PER:HAGSTRÖMER] OM DIN FAKTURA
+leveransen kvitterades av [PER:hagströmer] igår kväll
+ni stavade fel, efternamnet ska vara [PER:hallonsten]
+ok, jag skickar vidare ärendet till [PER:hallonsten] på en gång
+[PER:hallonsten] ringde in vid niotiden och var ganska upprörd
+returen godkändes av [PER:hasselrot] på lagret
+fakturan är märkt med [PER:hasselrot] som referens
+svara [PER:hasselrot] innan ni stänger ärendet, tack
+Ärendet är överlämnat till [PER:Hedenblad] för vidare hantering.
+vem är [PER:hedenblad]? vi har fått deras post till vår adress
+på fakturan står namnet [PER:hedenblad] men adressen är gammal
+Enligt [PER:Hellspong] är paketet redan utlämnat.
+har lämnat två meddelanden till [PER:hellspong] utan att få svar
+garantin är registrerad på [PER:hellspong] sedan i våras
+Signerat: [PER:Hildingsson], den 3 juni.
+boka om torsdagens möte med [PER:hildingsson] till nästa vecka
+enligt anteckningarna talade ni med [PER:hildingsson] i onsdags
+VIKTIGT MEDDELANDE TILL [PER:HJERTÉN] OM DIN FAKTURA
+leveransen kvitterades av [PER:hjertén] igår kväll
+avtalet förnyades av [PER:hjertén] via mejl
+ok, jag skickar vidare ärendet till [PER:hultkrantz] på en gång
+[PER:hultkrantz] ringde in vid niotiden och var ganska upprörd
+ni stavade fel, efternamnet ska vara [PER:hultkrantz]
+fakturan är märkt med [PER:husmark] som referens
+svara [PER:husmark] innan ni stänger ärendet, tack
+returen godkändes av [PER:husmark] på lagret
+vem är [PER:hyltenstam]? vi har fått deras post till vår adress
+på fakturan står namnet [PER:hyltenstam] men adressen är gammal
+Ärendet är överlämnat till [PER:Hyltenstam] för vidare hantering.
+har lämnat två meddelanden till [PER:häggroth] utan att få svar
+garantin är registrerad på [PER:häggroth] sedan i våras
+Enligt [PER:Häggroth] är paketet redan utlämnat.
+boka om torsdagens möte med [PER:högfeldt] till nästa vecka
+enligt anteckningarna talade ni med [PER:högfeldt] i onsdags
+Signerat: [PER:Högfeldt], den 3 juni.
+leveransen kvitterades av [PER:idermark] igår kväll
+avtalet förnyades av [PER:idermark] via mejl
+VIKTIGT MEDDELANDE TILL [PER:IDERMARK] OM DIN FAKTURA
+[PER:ingelman] ringde in vid niotiden och var ganska upprörd
+ni stavade fel, efternamnet ska vara [PER:ingelman]
+ok, jag skickar vidare ärendet till [PER:ingelman] på en gång
+svara [PER:jerneck] innan ni stänger ärendet, tack
+returen godkändes av [PER:jerneck] på lagret
+fakturan är märkt med [PER:jerneck] som referens
+på fakturan står namnet [PER:jonzon] men adressen är gammal
+Ärendet är överlämnat till [PER:Jonzon] för vidare hantering.
+vem är [PER:jonzon]? vi har fått deras post till vår adress
+garantin är registrerad på [PER:kindblom] sedan i våras
+Enligt [PER:Kindblom] är paketet redan utlämnat.
+har lämnat två meddelanden till [PER:kindblom] utan att få svar
+enligt anteckningarna talade ni med [PER:kjellander] i onsdags
+Signerat: [PER:Kjellander], den 3 juni.
+boka om torsdagens möte med [PER:kjellander] till nästa vecka
+avtalet förnyades av [PER:klingspor] via mejl
+VIKTIGT MEDDELANDE TILL [PER:KLINGSPOR] OM DIN FAKTURA
+leveransen kvitterades av [PER:klingspor] igår kväll
+ni stavade fel, efternamnet ska vara [PER:kolmodin]
+ok, jag skickar vidare ärendet till [PER:kolmodin] på en gång
+[PER:kolmodin] ringde in vid niotiden och var ganska upprörd
+returen godkändes av [PER:kullenberg] på lagret
+fakturan är märkt med [PER:kullenberg] som referens
+svara [PER:kullenberg] innan ni stänger ärendet, tack
+Ärendet är överlämnat till [PER:Kyhlberg] för vidare hantering.
+vem är [PER:kyhlberg]? vi har fått deras post till vår adress
+på fakturan står namnet [PER:kyhlberg] men adressen är gammal
+Enligt [PER:Leijonborg] är paketet redan utlämnat.
+har lämnat två meddelanden till [PER:leijonborg] utan att få svar
+garantin är registrerad på [PER:leijonborg] sedan i våras
+Signerat: [PER:Lidbeck], den 3 juni.
+boka om torsdagens möte med [PER:lidbeck] till nästa vecka
+enligt anteckningarna talade ni med [PER:lidbeck] i onsdags
+VIKTIGT MEDDELANDE TILL [PER:LINDEBLAD] OM DIN FAKTURA
+leveransen kvitterades av [PER:lindeblad] igår kväll
+avtalet förnyades av [PER:lindeblad] via mejl
+ok, jag skickar vidare ärendet till [PER:månberg] på en gång
+[PER:månberg] ringde in vid niotiden och var ganska upprörd
+ni stavade fel, efternamnet ska vara [PER:månberg]
+fakturan är märkt med [PER:nauclér] som referens
+svara [PER:nauclér] innan ni stänger ärendet, tack
+returen godkändes av [PER:nauclér] på lagret
+vem är [PER:ohlander]? vi har fått deras post till vår adress
+på fakturan står namnet [PER:ohlander] men adressen är gammal
+Ärendet är överlämnat till [PER:Ohlander] för vidare hantering.
+har lämnat två meddelanden till [PER:palmcrantz] utan att få svar
+garantin är registrerad på [PER:palmcrantz] sedan i våras
+Enligt [PER:Palmcrantz] är paketet redan utlämnat.
+boka om torsdagens möte med [PER:quennerstedt] till nästa vecka
+enligt anteckningarna talade ni med [PER:quennerstedt] i onsdags
+Signerat: [PER:Quennerstedt], den 3 juni.
+leveransen kvitterades av [PER:reenstierna] igår kväll
+avtalet förnyades av [PER:reenstierna] via mejl
+VIKTIGT MEDDELANDE TILL [PER:REENSTIERNA] OM DIN FAKTURA
+[PER:reuterswärd] ringde in vid niotiden och var ganska upprörd
+ni stavade fel, efternamnet ska vara [PER:reuterswärd]
+ok, jag skickar vidare ärendet till [PER:reuterswärd] på en gång
+svara [PER:ribbing] innan ni stänger ärendet, tack
+returen godkändes av [PER:ribbing] på lagret
+fakturan är märkt med [PER:ribbing] som referens
+på fakturan står namnet [PER:rosenblad] men adressen är gammal
+Ärendet är överlämnat till [PER:Rosenblad] för vidare hantering.
+vem är [PER:rosenblad]? vi har fått deras post till vår adress
+garantin är registrerad på [PER:rudbeck] sedan i våras
+Enligt [PER:Rudbeck] är paketet redan utlämnat.
+har lämnat två meddelanden till [PER:rudbeck] utan att få svar
+enligt anteckningarna talade ni med [PER:runefelt] i onsdags
+Signerat: [PER:Runefelt], den 3 juni.
+boka om torsdagens möte med [PER:runefelt] till nästa vecka
+avtalet förnyades av [PER:rönnlund] via mejl
+VIKTIGT MEDDELANDE TILL [PER:RÖNNLUND] OM DIN FAKTURA
+leveransen kvitterades av [PER:rönnlund] igår kväll
+ni stavade fel, efternamnet ska vara [PER:segerfeldt]
+ok, jag skickar vidare ärendet till [PER:segerfeldt] på en gång
+[PER:segerfeldt] ringde in vid niotiden och var ganska upprörd
+returen godkändes av [PER:sommarström] på lagret
+fakturan är märkt med [PER:sommarström] som referens
+svara [PER:sommarström] innan ni stänger ärendet, tack
+Ärendet är överlämnat till [PER:Sparrman] för vidare hantering.
+vem är [PER:sparrman]? vi har fått deras post till vår adress
+på fakturan står namnet [PER:sparrman] men adressen är gammal
+Enligt [PER:Stagnelius] är paketet redan utlämnat.
+har lämnat två meddelanden till [PER:stagnelius] utan att få svar
+garantin är registrerad på [PER:stagnelius] sedan i våras
+Signerat: [PER:Stenudd], den 3 juni.
+boka om torsdagens möte med [PER:stenudd] till nästa vecka
+enligt anteckningarna talade ni med [PER:stenudd] i onsdags
+VIKTIGT MEDDELANDE TILL [PER:STRANDHÄLL] OM DIN FAKTURA
+leveransen kvitterades av [PER:strandhäll] igår kväll
+avtalet förnyades av [PER:strandhäll] via mejl
+ok, jag skickar vidare ärendet till [PER:sundelius] på en gång
+[PER:sundelius] ringde in vid niotiden och var ganska upprörd
+ni stavade fel, efternamnet ska vara [PER:sundelius]
+fakturan är märkt med [PER:säfström] som referens
+svara [PER:säfström] innan ni stänger ärendet, tack
+returen godkändes av [PER:säfström] på lagret
+vem är [PER:mannerheim]? vi har fått deras post till vår adress
+på fakturan står namnet [PER:mannerheim] men adressen är gammal
+Ärendet är överlämnat till [PER:Mannerheim] för vidare hantering.
+har lämnat två meddelanden till [PER:melldahl] utan att få svar
+garantin är registrerad på [PER:melldahl] sedan i våras
+Enligt [PER:Melldahl] är paketet redan utlämnat.
+boka om torsdagens möte med [PER:millgård] till nästa vecka
+enligt anteckningarna talade ni med [PER:millgård] i onsdags
+Signerat: [PER:Millgård], den 3 juni.
+leveransen kvitterades av [PER:mogensen] igår kväll
+avtalet förnyades av [PER:mogensen] via mejl
+VIKTIGT MEDDELANDE TILL [PER:MOGENSEN] OM DIN FAKTURA
+[PER:hammarlind] ringde in vid niotiden och var ganska upprörd
+ni stavade fel, efternamnet ska vara [PER:hammarlind]
+ok, jag skickar vidare ärendet till [PER:hammarlind] på en gång
+svara [PER:ehrnrooth] innan ni stänger ärendet, tack
+returen godkändes av [PER:ehrnrooth] på lagret
+fakturan är märkt med [PER:ehrnrooth] som referens

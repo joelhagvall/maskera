@@ -1,0 +1,300 @@
+# rare-surname chat-register eval (LEGACY v13 frames, secondary). GENERATED FILE, do
+# not hand-edit: node training/gen_rare_surname_eval.mjs --legacy regenerates it.
+# NEVER add these surnames to any training data or gazetteer; the
+# generator drops any name that appears there, and run_v13.sh re-checks.
+# 98 surnames x 3 templates = 294 sentences.
+
+hej jag heter [PER:tjulander] och min beställning har inte kommit fram
+jag pratade med [PER:tjulander] på supporten i förra veckan
+hej! det är [PER:tjulander] här, jag undrar om min retur
+hej det är [PER:tjernström] igen, jag ringde igår om min faktura
+min handläggare heter [PER:tjernström] men hon svarar inte
+vi väntar fortfarande på svar från [PER:tjernström]
+be [PER:tegmark] återkomma imorgon förmiddag
+ärendet gäller [PER:tegmark] och fakturan från mars
+Hej, jag heter [PER:Tegmark] och vill ändra min leveransadress.
+kan ni be [PER:torekull] ringa upp mig i eftermiddag?
+har ni fått mejlet från [PER:torekull]?
+Kunden [PER:Torekull] vill säga upp sitt avtal.
+mvh [PER:themptander]
+beställningen står på efternamnet [PER:themptander]
+[PER:Themptander] har fortfarande inte fått något svar på sitt ärende.
+hälsningar [PER:thorvaldsson]
+återbetalningen till [PER:thorvaldsson] har inte kommit
+RING [PER:THORVALDSSON] OMGÅENDE
+jag pratade med [PER:uddenberg] på supporten i förra veckan
+hej! det är [PER:uddenberg] här, jag undrar om min retur
+hej jag heter [PER:uddenberg] och min beställning har inte kommit fram
+min handläggare heter [PER:ulvskog] men hon svarar inte
+vi väntar fortfarande på svar från [PER:ulvskog]
+hej det är [PER:ulvskog] igen, jag ringde igår om min faktura
+ärendet gäller [PER:unckel] och fakturan från mars
+Hej, jag heter [PER:Unckel] och vill ändra min leveransadress.
+be [PER:unckel] återkomma imorgon förmiddag
+har ni fått mejlet från [PER:vinterhed]?
+Kunden [PER:Vinterhed] vill säga upp sitt avtal.
+kan ni be [PER:vinterhed] ringa upp mig i eftermiddag?
+beställningen står på efternamnet [PER:wetterstrand]
+[PER:Wetterstrand] har fortfarande inte fått något svar på sitt ärende.
+mvh [PER:wetterstrand]
+återbetalningen till [PER:wijkman] har inte kommit
+RING [PER:WIJKMAN] OMGÅENDE
+hälsningar [PER:wijkman]
+hej! det är [PER:zennström] här, jag undrar om min retur
+hej jag heter [PER:zennström] och min beställning har inte kommit fram
+jag pratade med [PER:zennström] på supporten i förra veckan
+vi väntar fortfarande på svar från [PER:åkerhielm]
+hej det är [PER:åkerhielm] igen, jag ringde igår om min faktura
+min handläggare heter [PER:åkerhielm] men hon svarar inte
+Hej, jag heter [PER:Ängquist] och vill ändra min leveransadress.
+be [PER:ängquist] återkomma imorgon förmiddag
+ärendet gäller [PER:ängquist] och fakturan från mars
+Kunden [PER:Öhrström] vill säga upp sitt avtal.
+kan ni be [PER:öhrström] ringa upp mig i eftermiddag?
+har ni fått mejlet från [PER:öhrström]?
+[PER:Örtendahl] har fortfarande inte fått något svar på sitt ärende.
+mvh [PER:örtendahl]
+beställningen står på efternamnet [PER:örtendahl]
+RING [PER:ALMROTH] OMGÅENDE
+hälsningar [PER:almroth]
+återbetalningen till [PER:almroth] har inte kommit
+hej jag heter [PER:alsterlund] och min beställning har inte kommit fram
+jag pratade med [PER:alsterlund] på supporten i förra veckan
+hej! det är [PER:alsterlund] här, jag undrar om min retur
+hej det är [PER:ankarberg] igen, jag ringde igår om min faktura
+min handläggare heter [PER:ankarberg] men hon svarar inte
+vi väntar fortfarande på svar från [PER:ankarberg]
+be [PER:backelin] återkomma imorgon förmiddag
+ärendet gäller [PER:backelin] och fakturan från mars
+Hej, jag heter [PER:Backelin] och vill ändra min leveransadress.
+kan ni be [PER:bexelius] ringa upp mig i eftermiddag?
+har ni fått mejlet från [PER:bexelius]?
+Kunden [PER:Bexelius] vill säga upp sitt avtal.
+mvh [PER:blidberg]
+beställningen står på efternamnet [PER:blidberg]
+[PER:Blidberg] har fortfarande inte fått något svar på sitt ärende.
+hälsningar [PER:brandell]
+återbetalningen till [PER:brandell] har inte kommit
+RING [PER:BRANDELL] OMGÅENDE
+jag pratade med [PER:brogren] på supporten i förra veckan
+hej! det är [PER:brogren] här, jag undrar om min retur
+hej jag heter [PER:brogren] och min beställning har inte kommit fram
+min handläggare heter [PER:brynolf] men hon svarar inte
+vi väntar fortfarande på svar från [PER:brynolf]
+hej det är [PER:brynolf] igen, jag ringde igår om min faktura
+ärendet gäller [PER:bäckdahl] och fakturan från mars
+Hej, jag heter [PER:Bäckdahl] och vill ändra min leveransadress.
+be [PER:bäckdahl] återkomma imorgon förmiddag
+har ni fått mejlet från [PER:cavallin]?
+Kunden [PER:Cavallin] vill säga upp sitt avtal.
+kan ni be [PER:cavallin] ringa upp mig i eftermiddag?
+beställningen står på efternamnet [PER:cederlöf]
+[PER:Cederlöf] har fortfarande inte fått något svar på sitt ärende.
+mvh [PER:cederlöf]
+återbetalningen till [PER:cedervall] har inte kommit
+RING [PER:CEDERVALL] OMGÅENDE
+hälsningar [PER:cedervall]
+hej! det är [PER:duvander] här, jag undrar om min retur
+hej jag heter [PER:duvander] och min beställning har inte kommit fram
+jag pratade med [PER:duvander] på supporten i förra veckan
+vi väntar fortfarande på svar från [PER:edfeldt]
+hej det är [PER:edfeldt] igen, jag ringde igår om min faktura
+min handläggare heter [PER:edfeldt] men hon svarar inte
+Hej, jag heter [PER:Ekedahl] och vill ändra min leveransadress.
+be [PER:ekedahl] återkomma imorgon förmiddag
+ärendet gäller [PER:ekedahl] och fakturan från mars
+Kunden [PER:Elfstrand] vill säga upp sitt avtal.
+kan ni be [PER:elfstrand] ringa upp mig i eftermiddag?
+har ni fått mejlet från [PER:elfstrand]?
+[PER:Elmlund] har fortfarande inte fått något svar på sitt ärende.
+mvh [PER:elmlund]
+beställningen står på efternamnet [PER:elmlund]
+RING [PER:ENOCKSSON] OMGÅENDE
+hälsningar [PER:enocksson]
+återbetalningen till [PER:enocksson] har inte kommit
+hej jag heter [PER:fagerlind] och min beställning har inte kommit fram
+jag pratade med [PER:fagerlind] på supporten i förra veckan
+hej! det är [PER:fagerlind] här, jag undrar om min retur
+hej det är [PER:fjellman] igen, jag ringde igår om min faktura
+min handläggare heter [PER:fjellman] men hon svarar inte
+vi väntar fortfarande på svar från [PER:fjellman]
+be [PER:flodberg] återkomma imorgon förmiddag
+ärendet gäller [PER:flodberg] och fakturan från mars
+Hej, jag heter [PER:Flodberg] och vill ändra min leveransadress.
+kan ni be [PER:fogelklou] ringa upp mig i eftermiddag?
+har ni fått mejlet från [PER:fogelklou]?
+Kunden [PER:Fogelklou] vill säga upp sitt avtal.
+mvh [PER:forslid]
+beställningen står på efternamnet [PER:forslid]
+[PER:Forslid] har fortfarande inte fått något svar på sitt ärende.
+hälsningar [PER:fägerquist]
+återbetalningen till [PER:fägerquist] har inte kommit
+RING [PER:FÄGERQUIST] OMGÅENDE
+jag pratade med [PER:gadelius] på supporten i förra veckan
+hej! det är [PER:gadelius] här, jag undrar om min retur
+hej jag heter [PER:gadelius] och min beställning har inte kommit fram
+min handläggare heter [PER:granlycke] men hon svarar inte
+vi väntar fortfarande på svar från [PER:granlycke]
+hej det är [PER:granlycke] igen, jag ringde igår om min faktura
+ärendet gäller [PER:grönblad] och fakturan från mars
+Hej, jag heter [PER:Grönblad] och vill ändra min leveransadress.
+be [PER:grönblad] återkomma imorgon förmiddag
+har ni fått mejlet från [PER:gyllenhammar]?
+Kunden [PER:Gyllenhammar] vill säga upp sitt avtal.
+kan ni be [PER:gyllenhammar] ringa upp mig i eftermiddag?
+beställningen står på efternamnet [PER:gyllensten]
+[PER:Gyllensten] har fortfarande inte fått något svar på sitt ärende.
+mvh [PER:gyllensten]
+återbetalningen till [PER:hagströmer] har inte kommit
+RING [PER:HAGSTRÖMER] OMGÅENDE
+hälsningar [PER:hagströmer]
+hej! det är [PER:hallonsten] här, jag undrar om min retur
+hej jag heter [PER:hallonsten] och min beställning har inte kommit fram
+jag pratade med [PER:hallonsten] på supporten i förra veckan
+vi väntar fortfarande på svar från [PER:hasselrot]
+hej det är [PER:hasselrot] igen, jag ringde igår om min faktura
+min handläggare heter [PER:hasselrot] men hon svarar inte
+Hej, jag heter [PER:Hedenblad] och vill ändra min leveransadress.
+be [PER:hedenblad] återkomma imorgon förmiddag
+ärendet gäller [PER:hedenblad] och fakturan från mars
+Kunden [PER:Hellspong] vill säga upp sitt avtal.
+kan ni be [PER:hellspong] ringa upp mig i eftermiddag?
+har ni fått mejlet från [PER:hellspong]?
+[PER:Hildingsson] har fortfarande inte fått något svar på sitt ärende.
+mvh [PER:hildingsson]
+beställningen står på efternamnet [PER:hildingsson]
+RING [PER:HJERTÉN] OMGÅENDE
+hälsningar [PER:hjertén]
+återbetalningen till [PER:hjertén] har inte kommit
+hej jag heter [PER:hultkrantz] och min beställning har inte kommit fram
+jag pratade med [PER:hultkrantz] på supporten i förra veckan
+hej! det är [PER:hultkrantz] här, jag undrar om min retur
+hej det är [PER:husmark] igen, jag ringde igår om min faktura
+min handläggare heter [PER:husmark] men hon svarar inte
+vi väntar fortfarande på svar från [PER:husmark]
+be [PER:hyltenstam] återkomma imorgon förmiddag
+ärendet gäller [PER:hyltenstam] och fakturan från mars
+Hej, jag heter [PER:Hyltenstam] och vill ändra min leveransadress.
+kan ni be [PER:häggroth] ringa upp mig i eftermiddag?
+har ni fått mejlet från [PER:häggroth]?
+Kunden [PER:Häggroth] vill säga upp sitt avtal.
+mvh [PER:högfeldt]
+beställningen står på efternamnet [PER:högfeldt]
+[PER:Högfeldt] har fortfarande inte fått något svar på sitt ärende.
+hälsningar [PER:idermark]
+återbetalningen till [PER:idermark] har inte kommit
+RING [PER:IDERMARK] OMGÅENDE
+jag pratade med [PER:ingelman] på supporten i förra veckan
+hej! det är [PER:ingelman] här, jag undrar om min retur
+hej jag heter [PER:ingelman] och min beställning har inte kommit fram
+min handläggare heter [PER:jerneck] men hon svarar inte
+vi väntar fortfarande på svar från [PER:jerneck]
+hej det är [PER:jerneck] igen, jag ringde igår om min faktura
+ärendet gäller [PER:jonzon] och fakturan från mars
+Hej, jag heter [PER:Jonzon] och vill ändra min leveransadress.
+be [PER:jonzon] återkomma imorgon förmiddag
+har ni fått mejlet från [PER:kindblom]?
+Kunden [PER:Kindblom] vill säga upp sitt avtal.
+kan ni be [PER:kindblom] ringa upp mig i eftermiddag?
+beställningen står på efternamnet [PER:kjellander]
+[PER:Kjellander] har fortfarande inte fått något svar på sitt ärende.
+mvh [PER:kjellander]
+återbetalningen till [PER:klingspor] har inte kommit
+RING [PER:KLINGSPOR] OMGÅENDE
+hälsningar [PER:klingspor]
+hej! det är [PER:kolmodin] här, jag undrar om min retur
+hej jag heter [PER:kolmodin] och min beställning har inte kommit fram
+jag pratade med [PER:kolmodin] på supporten i förra veckan
+vi väntar fortfarande på svar från [PER:kullenberg]
+hej det är [PER:kullenberg] igen, jag ringde igår om min faktura
+min handläggare heter [PER:kullenberg] men hon svarar inte
+Hej, jag heter [PER:Kyhlberg] och vill ändra min leveransadress.
+be [PER:kyhlberg] återkomma imorgon förmiddag
+ärendet gäller [PER:kyhlberg] och fakturan från mars
+Kunden [PER:Leijonborg] vill säga upp sitt avtal.
+kan ni be [PER:leijonborg] ringa upp mig i eftermiddag?
+har ni fått mejlet från [PER:leijonborg]?
+[PER:Lidbeck] har fortfarande inte fått något svar på sitt ärende.
+mvh [PER:lidbeck]
+beställningen står på efternamnet [PER:lidbeck]
+RING [PER:LINDEBLAD] OMGÅENDE
+hälsningar [PER:lindeblad]
+återbetalningen till [PER:lindeblad] har inte kommit
+hej jag heter [PER:månberg] och min beställning har inte kommit fram
+jag pratade med [PER:månberg] på supporten i förra veckan
+hej! det är [PER:månberg] här, jag undrar om min retur
+hej det är [PER:nauclér] igen, jag ringde igår om min faktura
+min handläggare heter [PER:nauclér] men hon svarar inte
+vi väntar fortfarande på svar från [PER:nauclér]
+be [PER:ohlander] återkomma imorgon förmiddag
+ärendet gäller [PER:ohlander] och fakturan från mars
+Hej, jag heter [PER:Ohlander] och vill ändra min leveransadress.
+kan ni be [PER:palmcrantz] ringa upp mig i eftermiddag?
+har ni fått mejlet från [PER:palmcrantz]?
+Kunden [PER:Palmcrantz] vill säga upp sitt avtal.
+mvh [PER:quennerstedt]
+beställningen står på efternamnet [PER:quennerstedt]
+[PER:Quennerstedt] har fortfarande inte fått något svar på sitt ärende.
+hälsningar [PER:reenstierna]
+återbetalningen till [PER:reenstierna] har inte kommit
+RING [PER:REENSTIERNA] OMGÅENDE
+jag pratade med [PER:reuterswärd] på supporten i förra veckan
+hej! det är [PER:reuterswärd] här, jag undrar om min retur
+hej jag heter [PER:reuterswärd] och min beställning har inte kommit fram
+min handläggare heter [PER:ribbing] men hon svarar inte
+vi väntar fortfarande på svar från [PER:ribbing]
+hej det är [PER:ribbing] igen, jag ringde igår om min faktura
+ärendet gäller [PER:rosenblad] och fakturan från mars
+Hej, jag heter [PER:Rosenblad] och vill ändra min leveransadress.
+be [PER:rosenblad] återkomma imorgon förmiddag
+har ni fått mejlet från [PER:rudbeck]?
+Kunden [PER:Rudbeck] vill säga upp sitt avtal.
+kan ni be [PER:rudbeck] ringa upp mig i eftermiddag?
+beställningen står på efternamnet [PER:runefelt]
+[PER:Runefelt] har fortfarande inte fått något svar på sitt ärende.
+mvh [PER:runefelt]
+återbetalningen till [PER:rönnlund] har inte kommit
+RING [PER:RÖNNLUND] OMGÅENDE
+hälsningar [PER:rönnlund]
+hej! det är [PER:segerfeldt] här, jag undrar om min retur
+hej jag heter [PER:segerfeldt] och min beställning har inte kommit fram
+jag pratade med [PER:segerfeldt] på supporten i förra veckan
+vi väntar fortfarande på svar från [PER:sommarström]
+hej det är [PER:sommarström] igen, jag ringde igår om min faktura
+min handläggare heter [PER:sommarström] men hon svarar inte
+Hej, jag heter [PER:Sparrman] och vill ändra min leveransadress.
+be [PER:sparrman] återkomma imorgon förmiddag
+ärendet gäller [PER:sparrman] och fakturan från mars
+Kunden [PER:Stagnelius] vill säga upp sitt avtal.
+kan ni be [PER:stagnelius] ringa upp mig i eftermiddag?
+har ni fått mejlet från [PER:stagnelius]?
+[PER:Stenudd] har fortfarande inte fått något svar på sitt ärende.
+mvh [PER:stenudd]
+beställningen står på efternamnet [PER:stenudd]
+RING [PER:STRANDHÄLL] OMGÅENDE
+hälsningar [PER:strandhäll]
+återbetalningen till [PER:strandhäll] har inte kommit
+hej jag heter [PER:sundelius] och min beställning har inte kommit fram
+jag pratade med [PER:sundelius] på supporten i förra veckan
+hej! det är [PER:sundelius] här, jag undrar om min retur
+hej det är [PER:säfström] igen, jag ringde igår om min faktura
+min handläggare heter [PER:säfström] men hon svarar inte
+vi väntar fortfarande på svar från [PER:säfström]
+be [PER:mannerheim] återkomma imorgon förmiddag
+ärendet gäller [PER:mannerheim] och fakturan från mars
+Hej, jag heter [PER:Mannerheim] och vill ändra min leveransadress.
+kan ni be [PER:melldahl] ringa upp mig i eftermiddag?
+har ni fått mejlet från [PER:melldahl]?
+Kunden [PER:Melldahl] vill säga upp sitt avtal.
+mvh [PER:millgård]
+beställningen står på efternamnet [PER:millgård]
+[PER:Millgård] har fortfarande inte fått något svar på sitt ärende.
+hälsningar [PER:mogensen]
+återbetalningen till [PER:mogensen] har inte kommit
+RING [PER:MOGENSEN] OMGÅENDE
+jag pratade med [PER:hammarlind] på supporten i förra veckan
+hej! det är [PER:hammarlind] här, jag undrar om min retur
+hej jag heter [PER:hammarlind] och min beställning har inte kommit fram
+min handläggare heter [PER:ehrnrooth] men hon svarar inte
+vi väntar fortfarande på svar från [PER:ehrnrooth]
+hej det är [PER:ehrnrooth] igen, jag ringde igår om min faktura

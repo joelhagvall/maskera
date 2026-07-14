@@ -749,13 +749,46 @@ const hyphenFirst = () =>
 // LOC misses from "till {bare surname}" shapes) without fixing bare "Löfven".
 // The mismatch is fixed in trim_vocab TARGET instead (16k -> 20k keeps the
 // name tail); do not reintroduce bare-surname slots without a sweep.
+// v14: short-form chat nicknames, a tracked leak class ("micke o bettan
+// kommer vid åtta" passes both names untouched; lowercase "anna" is the one
+// LinkedIn-register leak). Category instances only: "Micke" and "Bettan"
+// themselves are spot-probe names and stay EXCLUDED so the probe keeps
+// measuring category generalisation, not gazetteer memory.
+const NICKNAMES = [
+  "Janne",
+  "Lasse",
+  "Nisse",
+  "Bosse",
+  "Tobbe",
+  "Robban",
+  "Krille",
+  "Kenta",
+  "Berra",
+  "Olle",
+  "Kalle",
+  "Putte",
+  "Lotta",
+  "Maggan",
+  "Kicki",
+  "Gittan",
+  "Ullis",
+  "Nettan",
+  "Titti",
+  "Sussi",
+  "Bibbi",
+  "Madde",
+  "Sanna",
+  "Peppe",
+]
 const person = () => {
   const r = rand()
-  if (r < 0.12) return pick(FIRST)
-  if (r < 0.22) return `${hyphenFirst()} ${pick(LAST)}`
-  if (r < 0.3) return `${pick(FIRST)} ${pick(LAST)}-${pick(LAST)}`
+  if (r < 0.07) return pick(NICKNAMES)
+  if (r < 0.15) return pick(FIRST)
+  if (r < 0.24) return `${hyphenFirst()} ${pick(LAST)}`
+  if (r < 0.31) return `${pick(FIRST)} ${pick(LAST)}-${pick(LAST)}`
   return `${pick(FIRST)} ${pick(LAST)}`
 }
+const nickname = () => pick(NICKNAMES)
 const FOREIGN = [
   "Oslo",
   "Köpenhamn",
@@ -867,6 +900,60 @@ const AUTHORITIES = [
   "Personalavdelningen",
   "VA-avdelningen",
   "Kultur- och fritidsavdelningen",
+  // v14: the -avdelningen category did not generalise from 10 instances
+  // (the lowercase "bygglovsavdelningen i kommunen" probe still missed after
+  // v13), so per docs/ROADMAP.md the municipal families go to 50+ instances
+  // across all four suffixes (-avdelningen, -förvaltningen, -nämnden,
+  // -kontoret) before concluding the suffix needs a rules-layer assist.
+  // Bygglovsavdelningen itself stays excluded (eval entity), and so are
+  // Trafikkontoret and Överförmyndarnämnden (graded ORG entities in
+  // eval/gold.txt); the category learns from siblings.
+  "Trafikavdelningen",
+  "Upphandlingsavdelningen",
+  "Kommunikationsavdelningen",
+  "IT-avdelningen",
+  "Löneavdelningen",
+  "Kansliavdelningen",
+  "Driftavdelningen",
+  "Utredningsavdelningen",
+  "Bemanningsavdelningen",
+  "Tillståndsavdelningen",
+  "Stadsbyggnadsförvaltningen",
+  "Tekniska förvaltningen",
+  "Fritidsförvaltningen",
+  "Arbetsmarknadsförvaltningen",
+  "Äldreförvaltningen",
+  "Fastighetsförvaltningen",
+  "Serviceförvaltningen",
+  "Vård- och omsorgsförvaltningen",
+  "Barn- och ungdomsförvaltningen",
+  "Samhällsbyggnadsförvaltningen",
+  "Överförmyndarförvaltningen",
+  "Miljö- och byggförvaltningen",
+  "Servicenämnden",
+  "Kulturnämnden",
+  "Fritidsnämnden",
+  "Utbildningsnämnden",
+  "Vård- och omsorgsnämnden",
+  "Arbetsmarknadsnämnden",
+  "Fastighetsnämnden",
+  "Trafiknämnden",
+  "Valnämnden",
+  "Krisledningsnämnden",
+  "Gymnasienämnden",
+  "Miljö- och byggnadsnämnden",
+  "Kommunkontoret",
+  "Tekniska kontoret",
+  "Miljökontoret",
+  "Idrottskontoret",
+  "Exploateringskontoret",
+  "Kommunledningskontoret",
+  "Näringslivskontoret",
+  "Överförmyndarkontoret",
+  "Samhällsbyggnadskontoret",
+  "Kulturkontoret",
+  "Servicekontoret",
+  "Utbildningskontoret",
 ]
 // County boards are productive too: "Länsstyrelsen i X län".
 const LAN = [
@@ -957,9 +1044,10 @@ const SLOTS = {
   ADR: address,
   PERG: personGenitive,
   ORGG: orgGenitive,
+  NICK: nickname,
 }
 // Slot name -> BIO tag type, for slots that are surface variants of a base type.
-const SLOT_TAG = { PERG: "PER", ORGG: "ORG" }
+const SLOT_TAG = { PERG: "PER", ORGG: "ORG", NICK: "PER" }
 const TEMPLATES = [
   "Patient {PER} inkom akut med bröstsmärta.",
   "Remiss för {PER} skickas till {ORG} i {LOC}.",
@@ -1157,6 +1245,32 @@ const TEMPLATES = [
   "jag pratade med {PER} på supporten igår om mitt ärende.",
   "hej! det är {PER} här, ringer om min faktura.",
   "återbetalningen till {PER} dröjer visst igen.",
+  // v14: short-form nickname chat, the tracked "micke o bettan" leak class.
+  // Coordinated pairs and casual plans; "o"/"å" as och-contractions are the
+  // shapes the templates never taught. {NICK} guarantees the nickname
+  // register (person() also mixes nicknames into every other frame).
+  "{NICK} o {NICK} dyker upp runt sju",
+  "kommer {NICK} o {NICK} på middagen imorgon?",
+  "jag å {NICK} tar bilen dit direkt efter jobbet",
+  "hälsa {NICK} att vi ses vid halv sex",
+  "{NICK} sa att grillen redan är tänd",
+  "fråga {NICK} om han hinner förbi ikväll",
+  "{NICK} och {NICK} kör gemensam present i år",
+  // v14: declarative/encyclopedic name frames, the accepted v13 regression
+  // (gold-real forced lowercase: "löfven har varit engagerad i ..." leaks
+  // while chat phrasings of the same names are caught). Declarative prose
+  // shapes so LC_AUG produces the lowercase variant; full/first names only
+  // (bare-surname slots stay banned, the v12c poison).
+  "{PER} har varit engagerad i föreningslivet i många år.",
+  "{PER} växte upp i {LOC} och flyttade som ung till {LOC}.",
+  "{PER} var under flera år ordförande i {ORG}.",
+  "{PER} arbetade som lärare innan hon gick i pension.",
+  "{PER} efterträdde {PER} som partiledare.",
+  "{PER} ledde {ORG} mellan 2004 och 2012.",
+  "under sin tid vid {ORG} ansvarade {PER} för ekonomifrågor.",
+  "{PER} har skrivit flera böcker om svensk arbetarrörelse.",
+  "{PERG} politiska karriär började i {LOC}.",
+  "{PER} är uppvuxen strax utanför {LOC}.",
 ]
 
 function tokenizeFiller(str) {

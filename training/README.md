@@ -835,6 +835,126 @@ Publish is a human decision; the battery gives it a clean basis.
   `data/` holds the take-4 build (deterministic; converter re-runs
   reproduce it).
 
+### v14 informal-register round (2026-07-14): the pseudo-label round
+
+The round docs/ROADMAP.md planned on 2026-07-13: masking leads, typing and
+the informal register lag. Ruler first, then one data-side candidate; the
+distillation mechanics are identical to the v13 take-4 recipe on purpose
+(one mechanics change per round; the ROADMAP's "weight PER consistency
+during distillation" idea stays queued rather than riding an untested loss
+change on the same candidate as the data levers).
+
+**Ruler fixes, done before any candidate (all three ROADMAP items):**
+
+- **Frame rotation.** The 18 fresh frames are now the PRIMARY rare-surname
+  gate (`eval/rare-surnames.txt`); the v13 frames became `--legacy`
+  (secondary). Byte-identical promotion, same 98 surnames. Shipped-v13
+  re-baseline on the rotated primary: **94.9% masked / 15 leaks / 68.7%
+  PER-typed** (legacy: 96.6% / 10 / 92.5%). The v14 bar: beat 94.9%.
+  `gen_rare_surname_eval.mjs` now defaults its decomposition filter to the
+  shipped artifact's 20k vocab (verified to keep the identical 98 names;
+  `student-v12-trimmed` no longer exists on disk).
+- **Public-term retention** (`packages/ner/eval/benchmark-retention.mjs`):
+  over-redaction on the 1,524 entity-free klintan test sentences. v13:
+  99.95% token retention cased, 99.93% lowercase. In BENCHMARKS.md.
+- **Rampart row** (the 14.7 MB size-class competitor): gold-real redaction
+  recall 0.34, typed F1 0.42, ORG recall 0% (no org label exists in its
+  scheme), rare-surname eval 45.2% masked. In BENCHMARKS.md.
+
+**New infrastructure (reusable, the "build once use twice" corpus):**
+
+- `extract_informal.py`: streams Språkbanken .xml.bz2 exports (Flashback /
+  Familjeliv, CC BY 4.0) without the multi-GB archives touching disk.
+  v14 pool: 100k sentences each from flashback-dator, flashback-ekonomi,
+  familjeliv-allmanna-ekonomi, familjeliv-kansliga (400k kept of ~460k
+  streamed; quality filters only, register sampling happens later).
+- `pseudo_label.py`: labels every sentence with TWO voters and emits both
+  views raw (teacher tags + per-word confidence, sbx PI-detection-general
+  mapped to PER/LOC/ORG), so filter policy is a cheap converter decision,
+  not an hour of re-inference. Teacher for this round: `model-v13d2` (the
+  completed seed-2024 replicate of the take-4 recipe; the 1337 teacher was
+  no longer on disk).
+- `convert_pseudo.mjs`: policy + stratified sampling into the mix. The
+  ROADMAP's "keep high-agreement sentences only" did not survive
+  measurement: sbx confirms only 25/205 teacher PER spans and 0/179 ORG
+  spans on a 5k probe (the same scheme mismatch BENCHMARKS.md documents),
+  so exact agreement keeps ~0.2% entity rows and vetoes exactly the
+  register signal the round is for. Shipped policy: a teacher span stands
+  alone at conf >= 0.97 (probe eyeball: 80/81 real names or forum handles),
+  sbx same-label overlap lowers the bar to 0.85, sbx-only entities drop the
+  row (v11a slot-poison shape), teacher-ADR rows drop, and rows containing
+  any gate-eval surname drop (the --check substring rule, pre-applied).
+  Strata (register gaps first): lowercase-PER 560 rows, PER 2,710,
+  ORG/LOC 12,060 sampled of a large pool, empty hard negatives capped at
+  30%. Appended: 18,043 train + 1,957 val of a 368k-row filtered pool.
+- `generate_data.mjs` v14 additions: 24-name nickname gazetteer + 7
+  nickname chat frames ("{NICK} o {NICK} dyker upp runt sju"; the spot-probe
+  names micke/bettan deliberately excluded), 10 lowercase-declarative /
+  encyclopedic PER frames (the accepted v13 regression), municipal
+  AUTHORITIES grown to 50+ instances across all four suffix families
+  (Trafikkontoret and Överförmyndarnämnden excluded: graded gold.txt
+  entities).
+
+Mix: ~76k train rows (24k synthetic + 8.5k klintan + 14.6k SUCX + 1.1k SIC2
++ 4.9k MASSIVE + 4.9k MultiCoNER + 18k pseudo), audit-clean.
+
+**Take 1 (`run_v14.sh`, LC_AUG 0.35): four of five gates pass; G2 one
+sentence short.** q4 artifact `student-v14-onnx` (~43 MB, 20k trim, distill
+val F1 0.956):
+
+| Gate (q4 artifact) | bar | v14 take 1 | verdict |
+| ------------------ | --- | ---------- | ------- |
+| G1 rotated rare-surname masked | > 94.9% (v13 re-baseline) | **98.3% (5 leaks)** | ✅ by 3.4pp |
+| G2 gold-real forced-lowercase coverage | >= 51/58 | 50/58 (v13: 48) | ❌ by ONE |
+| G3 klintan leaks cased / lower | <= 8.7% / 15.5% | **7.0% / 15.2%** | ✅ both |
+| G4 ADR strict | clean sweep | 100.0 F1, 0 leaks | ✅ |
+| G5 curated strict | F1 >= 0.90, leaks <= 0.08 | **99.5 F1, 1 leak** (Klarna, the classic) | ✅ |
+
+Alongside: gold-real 97.4 typed F1 (P 0.98 / R 0.97), klintan cased span F1
+89.8/94.3 P with **cased ORG recall 77.3%** (v13: 72.5, the ROADMAP
+aspiration met), lowercase span F1 86.6, legacy rare-surname set 98.6% / 4
+leaks with PER-typed 93.9%, LinkedIn corpus 98.1 F1 / 0 leaks (the "anna"
+leak fixed), retention 99.93% cased / 99.90% lowercase (16 / 23 flags vs
+v13's 11 / 17: a small over-flag cost, "hr" as ORG among them). Every v14
+spot probe passes at the weight level: "micke o bettan" both PER (names
+excluded from the gazetteer, so this is category generalisation),
+"löfven har varit engagerad ..." PER, lowercase "anna" PER, and
+"bygglovsavdelningen i kommunen" finally ORG (the 50+-instance suffix
+families generalised where 10 instances did not). "RING LÖFVEN OMGÅENDE"
+still missed (v11/v13 miss it too).
+
+Honest reads on the two soft spots: (1) the 8 remaining G2 leaks are 3x
+bare lowercase "löfven" in declarative prose plus rare LOC/ORG (aspudden,
+metall, vita huset, usa, vänsterpartiets): the full-name declarative frames
+fixed the PROBE shape but do not transfer fully to bare surnames, and
+bare-surname slots stay banned (v12c). (2) PER-typing on the rotated
+primary is 66.3% vs v13's 68.7% (masked-at-all is far ahead; typing still
+lags off-frame, queued for the distill-side lever next round).
+
+**Take 2 (`run_v14b.sh`, LC_AUG 0.35 -> 0.40, only change): G2 does NOT
+move (50/58, same bare-löfven core, Ådalen swaps in for Aspudden), so the
+residue is not lowercase-augmentation-limited.** What the bump does buy is
+the lowercase register broadly: klintan lowercase leaks 15.2 -> **13.9%**
+(span F1 87.4) and rotated-primary PER-typing 66.3 -> **74.5%** (above
+v13!), at the cost of the safety metrics that matter more: rare-surname
+masked 98.3 -> 98.0% (5 -> 6 leaks), klintan cased leaks 7.0 -> 7.3%,
+cased ORG 77.3 -> 76.0%, and the ADR clean sweep breaks (one spurious
+span, precision 97.8%, still 0 leaks). Cased precision held (the v10
+worry), so 0.40 is not "too high", just a different trade.
+
+**Round verdict: take 1 (`student-v14-onnx`) is the candidate.** It wins
+every safety-side gate (best rare-surname masked, best cased leaks,
+perfect ADR) and G1/G3/G4/G5 all pass with release-bests; G2 misses the
+v11 bar by ONE sentence (50/58; v13 shipped at 48). Both takes agree the
+remaining class (bare lowercase surnames in declarative encyclopedic
+prose) needs a lever this round does not have: candidates for next round
+are the queued distill-side PER-consistency weighting, or a narrow
+bare-surname slot confined to sentence-initial declarative frames behind
+a proper sweep (v12c poisoned via prepositional frames; the shape here is
+different, but it MUST be swept, not assumed). Publish is a human
+decision: the options are ship v14a accepting 50/58 (documented, still +2
+over the shipped v13), or hold for a take 3 with a new lever.
+
 ## Publish to Hugging Face (single hosted source)
 
 Hosting the model once means the demo and every future `@maskera` package point at

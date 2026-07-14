@@ -1,20 +1,30 @@
 #!/usr/bin/env node
 /**
- * v13 publish-gate eval: rare surnames in the chat/support register.
+ * Rare-surname publish-gate eval: rare surnames in the chat/support register.
  *
  * Why it exists: the v12 publish hold. v12 leaks rare DECOMPOSED surnames in
  * the target register ("hej jag heter tjulander..." unmasked) where v11 masks
  * them; that robustness was luck-of-the-mix, never designed or measured. This
- * eval makes it a designed, gated property (see docs/ROADMAP.md v13).
+ * eval makes it a designed, gated property (see docs/ROADMAP.md v13/v14).
+ *
+ * FRAME ROTATION (v14): v13 take 4 trained on frames near the ORIGINAL
+ * templates, partially burning them as a gate. Per docs/ROADMAP.md the 18
+ * fresh frames from the v13 fresh-frame check are now the PRIMARY gate
+ * (eval/rare-surnames.txt); the original v13 frames are kept as a SECONDARY
+ * set (--legacy -> eval/rare-surnames-legacy.txt). The held-out property is
+ * the 98 SURNAMES (identical across both sets and across the rotation, so
+ * numbers remain comparable); v14 candidates must not train on frames near
+ * the NEW primary either, or the rotation repeats next round.
  *
  * What it generates: a few hundred chat-register sentences, each with ONE bare
- * rare surname, written to eval/rare-surnames.txt in the same [PER:...] gold
- * format as eval/gold.txt. Surname candidates are filtered so that every kept
- * name:
+ * rare surname, written in the same [PER:...] gold format as eval/gold.txt.
+ * Surname candidates are filtered so that every kept name:
  *   1. DECOMPOSES under the trimmed inference vocab (>= 2 wordpieces, no
  *      [UNK]) in BOTH cased and lowercase form. The trimmed vocab is what the
  *      shipped artifact tokenizes with, so this is the failure surface.
- *      Default vocab: student-v12-trimmed/vocab.txt (20k), env TRIM_VOCAB.
+ *      Default vocab: the shipped v13 artifact's 20k vocab.txt (verified to
+ *      keep the same 98 surnames as the v13-round v12-trim vocab), env
+ *      TRIM_VOCAB overrides.
  *   2. Does NOT appear (case-insensitive) in the training data
  *      (data/train.jsonl, data/val.jsonl), the data generator's gazetteers
  *      (generate_data.mjs), or the existing gold sets. These names must never
@@ -30,14 +40,13 @@ import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
 const HERE = dirname(fileURLToPath(import.meta.url))
-const TRIM_VOCAB = process.env.TRIM_VOCAB ?? resolve(HERE, "student-v12-trimmed/vocab.txt")
+const TRIM_VOCAB =
+  process.env.TRIM_VOCAB ?? resolve(HERE, "../apps/demo/public/models/maskera-sv-ner-v13/vocab.txt")
 const CHECK_ONLY = process.argv.includes("--check")
-// --fresh: same held-out surnames, a DISJOINT template set, separate file.
-// Exists because v13 take 4 taught frames near the original eval's; this
-// variant re-verifies frame generalisation (see README v13). Written to not
-// mirror the training templates OR the original eval templates.
-const FRESH = process.argv.includes("--fresh")
-const OUT = resolve(HERE, FRESH ? "eval/rare-surnames-fresh.txt" : "eval/rare-surnames.txt")
+// --legacy: same held-out surnames, the pre-rotation v13 template set (see
+// FRAME ROTATION above). Secondary signal only; the gate runs on the primary.
+const LEGACY = process.argv.includes("--legacy")
+const OUT = resolve(HERE, LEGACY ? "eval/rare-surnames-legacy.txt" : "eval/rare-surnames.txt")
 
 // Real, rare Swedish surnames (soldier names, nature compounds, noble names,
 // -ander/-elius latinisations). Over-inclusive on purpose: the decomposition
@@ -182,7 +191,9 @@ const CANDIDATES = [
 
 // Chat/support-register templates, one {s}=lowercase / {S}=cased / {U}=CAPS
 // slot each. Mostly lowercase: that is the target register and the leak class.
-const TEMPLATES = [
+// LEGACY_TEMPLATES was the v13 primary; v13 take 4 trained eval-near frames
+// against it, so it is secondary from v14 on (see FRAME ROTATION above).
+const LEGACY_TEMPLATES = [
   { t: "hej jag heter {s} och min beställning har inte kommit fram", c: "lower" },
   { t: "hej det är {s} igen, jag ringde igår om min faktura", c: "lower" },
   { t: "be {s} återkomma imorgon förmiddag", c: "lower" },
@@ -202,7 +213,10 @@ const TEMPLATES = [
   { t: "{S} har fortfarande inte fått något svar på sitt ärende.", c: "cased" },
   { t: "RING {U} OMGÅENDE", c: "caps" },
 ]
-const FRESH_TEMPLATES = [
+// The v14 PRIMARY gate frames (the v13 round's "fresh" set: observed in the
+// v13 fresh-frame check but never trained on). Disjoint from LEGACY_TEMPLATES
+// and from the training templates. Do NOT add training frames near these.
+const TEMPLATES = [
   { t: "ok, jag skickar vidare ärendet till {s} på en gång", c: "lower" },
   { t: "fakturan är märkt med {s} som referens", c: "lower" },
   { t: "vem är {s}? vi har fått deras post till vår adress", c: "lower" },
@@ -303,10 +317,10 @@ if (CHECK_ONLY) {
 }
 
 // --- generate ---------------------------------------------------------------
-const ACTIVE = FRESH ? FRESH_TEMPLATES : TEMPLATES
+const ACTIVE = LEGACY ? LEGACY_TEMPLATES : TEMPLATES
 const lines = [
-  `# rare-surname chat-register eval${FRESH ? " (FRESH frames variant)" : " (v13 publish gate)"}. GENERATED FILE, do`,
-  `# not hand-edit: node training/gen_rare_surname_eval.mjs${FRESH ? " --fresh" : ""} regenerates it.`,
+  `# rare-surname chat-register eval${LEGACY ? " (LEGACY v13 frames, secondary)" : " (publish gate, v14-rotated frames)"}. GENERATED FILE, do`,
+  `# not hand-edit: node training/gen_rare_surname_eval.mjs${LEGACY ? " --legacy" : ""} regenerates it.`,
   "# NEVER add these surnames to any training data or gazetteer; the",
   "# generator drops any name that appears there, and run_v13.sh re-checks.",
   `# ${kept.length} surnames x ${PER_NAME} templates = ${kept.length * PER_NAME} sentences.`,

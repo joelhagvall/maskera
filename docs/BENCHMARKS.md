@@ -118,6 +118,36 @@ CORPUS_FILE="./corpus-adr.mjs" \
 leaks. `analyze-adr.mjs` remains the per-metric breakdown and prints every gold
 vs predicted span.)
 
+## Public-term retention (over-redaction on PII-free text)
+
+- **Measured:** 2026-07-14, same q4 artifact, `packages/ner/eval/benchmark-retention.mjs`.
+
+Recall numbers need a paired utility number: a filter that masks everything
+has perfect recall. This benchmark runs the model over the 1,524 sentences of
+the Swedish NER Corpus test split whose gold tags are all `O` (real news
+prose with no entities) and counts everything it flags as an over-redaction.
+Rampart publishes the equivalent metric at 91.69% (term retention); maskera's
+v13 artifact measures:
+
+| mode | token retention | clean sentences | false-flag spans |
+| ---- | --------------- | --------------- | ---------------- |
+| cased | **99.95%** | 99.3% | 11 |
+| forced lowercase | **99.93%** | 98.9% | 17 |
+
+Both numbers are lower bounds: several of the "false flags" are gold
+annotation gaps rather than model errors (the cased list includes *Washington
+Post*, *Globen* and the surname *Hirvonen*, all unannotated in the corpus).
+Method caveat: only the NER model is graded, not the rules layer, because the
+corpus does not annotate structured PII, so a rules hit on e.g. a phone-like
+number could be a genuine detection.
+
+Reproduce (fetch the corpus per the file header, then):
+
+```bash
+MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v13 \
+  node packages/ner/eval/benchmark-retention.mjs
+```
+
 ## Swedish NER Corpus test split (large held-out, in-distribution)
 
 - **Measured:** 2026-07-11, same q4 artifact as above.
@@ -239,13 +269,22 @@ holds and even grows off-frame. Caveat recorded: PER-typing on the fresh
 frames is 68.7% vs the previous 74.5% (caught-but-mislabeled rare names);
 masking, not typing, is the safety property, and typing is on the v14 list.
 
+**Frame rotation (2026-07-14, the v14 ruler fix):** v13 take 4 trained on
+frames near the original templates, partially burning them as a gate. The 18
+fresh frames above are now the PRIMARY gate file (`eval/rare-surnames.txt`,
+same 98 surnames), and the original v13 frames are kept as a secondary set
+(`eval/rare-surnames-legacy.txt`). Re-baselines of the shipped v13 artifact
+on the rotated ruler: **primary 94.9% masked / 15 leaks / PER-typed 68.7%;
+legacy 96.6% / 10 leaks / 92.5%**. A v14 candidate must beat the primary
+94.9%.
+
 Reproduce:
 
 ```bash
 pnpm install && pnpm -C packages/ner build
 MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v13 \
   node packages/ner/eval/benchmark-rare-surnames.mjs
-BENCHMARK_FILE=training/eval/rare-surnames-fresh.txt \
+BENCHMARK_FILE=training/eval/rare-surnames-legacy.txt \
   MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v13 \
   node packages/ner/eval/benchmark-rare-surnames.mjs
 ```
@@ -277,6 +316,7 @@ untrimmed student here, which flattered the row.
 | KBLab reallysimple-ner | ~475 MB | 0.98 | 0.89 | 0.93 | 0.91 |
 | RecordedFuture Swedish-NER | ~500 MB | 1.00 | 0.79 | 0.98 | 0.88 |
 | sbx PII general / detailed | ~475 MB | 0.05 / 0.10 | 1.00 | 0.05 / 0.10 | 0.10 / 0.19 |
+| Rampart (nationaldesignstudio) | 14.7 MB (q4, in-browser) | 0.34 | 0.88 | 0.28 | 0.42 |
 
 **gold-real LOWERCASED (encyclopedic prose forced lowercase, no casing cues):**
 
@@ -314,6 +354,17 @@ Takeaways:
   scheme (they barely flag plain names / places / orgs), so their low numbers
   here reflect scheme mismatch, not general quality. They are not a drop-in
   alternative for this task.
+- **Rampart** (measured 2026-07-14, q4 via Transformers.js, the published
+  quantization) is the only size-class-comparable competitor: a 14.7 MB
+  MiniLM PII model for the browser. On Swedish it is not competitive: 0.34
+  redaction recall on gold-real and 45.2% masked on the rare-surname chat
+  eval (maskera: 96.6%). Two structural reasons, not tuning: it has **no
+  organization label at all** (27 of gold-real's 58 entities are ORG, per-type
+  ORG recall 0%), and it is uncased with NFKD accent stripping, so å/ä/ö
+  collapse (every å/ä/ö-bearing surname tested leaked). Its card lists
+  en/es/fr/de/it/pt/nl; Swedish is not a supported language. This is the
+  strongest measured argument for a Swedish-specific model in this size
+  class.
 - None of the alternatives detects street addresses (ADR), handles the
   four-type scheme maskera's placeholder layer expects, or fits a browser
   bundle, so each would still need maskera's distillation pipeline to be

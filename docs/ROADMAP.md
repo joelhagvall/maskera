@@ -96,32 +96,37 @@ are in the [training journal](../training/README.md).
 
 ### First, fix the ruler (before any candidate is trained)
 
-- [ ] **Rotate the rare-surname gate eval's frames and re-baseline.** v13
-      take 4 trained on eval-near frames, so the primary gate is partially
-      burned. Promote the 18 fresh frames (or author new ones) to primary,
-      keep the old set as secondary, and re-baseline v13 on the rotated set.
-      No v14 candidate is graded before this exists.
-- [ ] **Add a public-term retention metric** (over-redaction on PII-free
-      text). Rampart publishes private-term recall paired with public-term
-      retention (91.69%); we track precision and ADR distractors but have no
-      named utility number. Cheap to add: run the shipped pipeline over
-      PII-free sentences, count false flags, one row per eval table.
-- [ ] **Add a Rampart row to the competitor table**
-      ([HF](https://huggingface.co/nationaldesignstudio/rampart), 14.7 MB,
-      q4 ONNX via transformers.js). The only size-class-comparable
-      competitor, and Swedish is not in its language list (uncased + NFKD
-      combining-mark stripping collapses å/ä/ö). Whatever it scores on
-      gold-real belongs in the table; it is also the strongest
-      "why Swedish-specific" argument available.
+- [x] **Rotate the rare-surname gate eval's frames and re-baseline.** Done
+      2026-07-14: the 18 fresh frames are the primary gate
+      (`eval/rare-surnames.txt`), the v13 frames live on as secondary
+      (`--legacy` -> `eval/rare-surnames-legacy.txt`), same 98 surnames
+      (byte-identical promotion, so numbers stay comparable). Shipped-v13
+      re-baseline on the rotated primary: 94.9% masked / 15 leaks /
+      PER-typed 68.7% (legacy: 96.6% / 10 / 92.5%). The v14 bar is >94.9%.
+- [x] **Add a public-term retention metric** (over-redaction on PII-free
+      text). Done 2026-07-14: `packages/ner/eval/benchmark-retention.mjs`
+      grades the 1,524 entity-free klintan test sentences; v13 measures
+      99.95% token retention cased / 99.93% lowercase (11 / 17 false-flag
+      spans, several of them gold annotation gaps). Row in BENCHMARKS.md.
+- [x] **Add a Rampart row to the competitor table.** Done 2026-07-14 (q4 via
+      transformers.js): gold-real redaction recall 0.34, typed F1 0.42,
+      ORG recall 0% (it has NO organization label); rare-surname eval 45.2%
+      masked (all å/ä/ö surnames leak, NFKD stripping). In BENCHMARKS.md
+      with the "why Swedish-specific" read.
 
 ### The main bet: pseudo-labeled informal Swedish at scale
 
-- [ ] **Flashback/Familjeliv pseudo-labeling** (Språkbanken, CC BY 4.0):
-      hundreds of millions of informal tokens; label with the v13 teacher +
-      the sbx PI-detection models (GPL-3.0) as an ensemble, keep
-      high-agreement sentences only, and sample toward the known register
-      gaps (lowercase declarative name frames, nickname chat). Already
-      flagged as the biggest lever; the stronger v13 teacher makes it viable.
+- [x] **Flashback/Familjeliv pseudo-labeling** (Språkbanken, CC BY 4.0).
+      Done 2026-07-14: 400k sentences streamed from four sections
+      (`training/extract_informal.py`), double-labeled with the v13-recipe
+      teacher + sbx PI-detection (`pseudo_label.py`, both views stored raw
+      in `.benchmark/pseudo-labeled.jsonl`: build once, use twice), sampled
+      via `convert_pseudo.mjs` (18k train rows, register-gap strata first).
+      Measured deviation from this plan: "high-agreement only" does not
+      survive contact with sbx (it confirms 12% of teacher PER spans, 0% of
+      ORG on a 5k probe), so the policy is teacher-solo at conf >= 0.97 or
+      sbx-confirmed at >= 0.85, sbx-only entities drop the row. Details in
+      the training journal (v14 section).
 - Rampart datapoint that raises the stakes: its 18.5M-param student reports
   98.4% in-distribution recall trained on ~1.65M rows, while our
   from-scratch small student memorised on 24k synthetic rows. A large
@@ -136,41 +141,50 @@ are in the [training journal](../training/README.md).
 
 ### Targeted weight-level fixes (each needs data in the training mix)
 
-- [ ] **Lowercase declarative-prose name frames**, the accepted v13
-      regression: "löfven har varit engagerad i ..." leaks while chat
-      phrasings of the same names are caught (gold-real forced-lowercase
-      coverage 48/58 vs v11's 51/58). Add declarative/encyclopedic lowercase
-      frames to the template generator; the pseudo-label corpus should also
-      carry this shape naturally.
-- [ ] **Short-form chat nicknames**: "micke o bettan kommer vid åtta" passes
-      both names untouched ("pelle" is caught), and lowercase "anna" is the
-      one leak in the LinkedIn-register eval (surfaced by the 2026-07-13
-      pre-launch battery; corpus: `packages/ner/eval/corpus-linkedin.mjs`,
-      96.3 F1). Nickname gazetteer + chat frames.
-- [ ] **PER-typing of rare names in unseen frames**: v13 masks more but
-      types worse off-frame (68.7% typed vs v11's 74.5% on fresh frames).
-      Masking is the safety property, but typing feeds the placeholder
-      layer; weight B-PER/I-PER consistency on decomposed names during
-      distillation.
-- [ ] **Cased-news ORG**, still the weakest type (72.5% cased / 56.9%
-      lowercased) despite release bests: sweep `SUCX_SHARE` 0.35 for more
-      cased ORG signal, and attack the two known subclasses separately.
-      Short brand names (Voi, Northmill, Knowit) are a LENGTH problem more
-      gazetteer entries will not fix; candidate ideas are context weighting
-      or a rules-layer assist in `@maskera/core`. The municipal
-      "-avdelningen" suffix did not generalise from 10 gazetteer instances;
-      try 50+ across suffix families (-avdelningen, -förvaltningen,
-      -nämnden, -kontoret) before concluding it needs rules.
+- [x] **Lowercase declarative-prose name frames** (partial). 10
+      declarative/encyclopedic frames added to the generator; the probe
+      shape is fixed at the weight level ("löfven har varit engagerad ..."
+      tags PER) and gold-real forced-lowercase coverage moved 48 -> 50/58,
+      but the FULL fix (>= 51) did not land: both v14 takes leak the same
+      bare-lowercase-surname declarative core, and an LC_AUG 0.40 take
+      proved the residue is not augmentation-limited. Next lever is either
+      distill-side PER weighting or a bare-surname slot CONFINED to
+      sentence-initial declarative frames behind a sweep (v12c poisoned
+      via prepositional frames; do not skip the sweep).
+- [x] **Short-form chat nicknames**: done 2026-07-14. 24-nickname
+      gazetteer (micke/bettan themselves excluded so the probe measures
+      category generalisation) + 7 chat frames; "micke o bettan kommer vid
+      åtta" now tags both PER, lowercase "anna" fixed, LinkedIn corpus
+      96.3 -> 98.1 F1 with 0 leaks.
+- [ ] **PER-typing of rare names in unseen frames**: NOT attempted at the
+      weight level this round (one mechanics change per round; the v14
+      candidate is data-only). Where it moved anyway: rotated-primary
+      typing v14a 66.3% (still lagging), and the LC_AUG 0.40 take showed
+      74.5% is reachable but traded masked recall for it. The distill-side
+      B-PER/I-PER consistency weighting stays queued.
+- [x] **Cased-news ORG** (met without the SUCX sweep): v14a cased ORG
+      recall 77.3% (v13: 72.5%) and cased leaks 7.0% (best ever), with the
+      municipal suffix families grown to 50+ instances; the
+      "bygglovsavdelningen i kommunen" probe finally tags ORG, so the
+      category generalises at 50+ where 10 failed. Short brand names (Voi,
+      Northmill, Knowit) remain the open subclass; `SUCX_SHARE` 0.35 was
+      not needed this round and stays available.
 
 ### Publish gates (all vs the shipped v13 artifact, q4, full pipeline)
 
-1. Rotated rare-surname gate: masked-at-all must BEAT the re-baselined v13,
-   not tie it (the old primary set no longer counts).
-2. gold-real forced-lowercase coverage back to >= 51/58 (the v11 level)
-   without giving back the chat-register wins.
-3. klintan leaks: cased <= 8.7%, lowercase <= 15.5% (no new slide).
-4. ADR eval stays a clean sweep (21/21 exact, 0 false flags).
-5. Standing CI gates (curated span-F1 >= 0.90, leak ceiling 0.08).
+Status 2026-07-14, candidate `training/student-v14-onnx` (take 1; the
+LC_AUG-0.40 take 2 is graded in the journal and not selected):
+
+1. [x] Rotated rare-surname gate: masked-at-all must BEAT the re-baselined
+   v13, not tie it. **PASS: 98.3% / 5 leaks vs 94.9% / 15.**
+2. [ ] gold-real forced-lowercase coverage back to >= 51/58 (the v11 level)
+   without giving back the chat-register wins. **FAIL by one: 50/58**
+   (v13 shipped at 48; the chat wins all held). The open publish question:
+   accept 50 documented, or hold for a take 3 with a new lever.
+3. [x] klintan leaks: cased <= 8.7%, lowercase <= 15.5%. **PASS: 7.0% /
+   15.2%, cased is a release best.**
+4. [x] ADR eval stays a clean sweep. **PASS: 100.0 F1, 0 leaks, 0 flags.**
+5. [x] Standing CI gates. **PASS: curated 99.5 span F1, 1 leak (Klarna).**
 
 ### Explicitly NOT this round
 
