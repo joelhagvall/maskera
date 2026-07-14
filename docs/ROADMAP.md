@@ -87,12 +87,17 @@ Everything carried out of this round is consolidated in
         PRIMARY gate eval's frames, and fix PER-TYPING of rare names in
         unseen frames (v13d 68.7% vs v11 74.5% fresh-frame typed; masking
         is ahead, labeling lags).
-## Next: v14, the informal-register round (planned)
+## v14, the informal-register round (SHIPPED 2026-07-14)
 
-Written 2026-07-13, before any v14 training. The through-line from the v13
-ledger: **masking leads; typing and the informal register lag.** Every number
-referenced lives in [BENCHMARKS.md](BENCHMARKS.md); the accepted v13 trades
-are in the [training journal](../training/README.md).
+Written 2026-07-13 before any v14 training; checkboxes updated with outcomes
+after the round. Shipped as take 1 (`student-v14-onnx`, q4 sha256 f4745c72)
+with one documented gate exception (G2, see the gate status below and the
+[training journal](../training/README.md) v14 section). Everything carried
+out of this round is consolidated in [Next: v15](#next-v15-planned) below.
+
+The through-line from the v13 ledger held: **masking leads; typing and the
+informal register lag.** Every number referenced lives in
+[BENCHMARKS.md](BENCHMARKS.md).
 
 ### First, fix the ruler (before any candidate is trained)
 
@@ -195,6 +200,74 @@ LC_AUG-0.40 take 2 is graded in the journal and not selected):
   placeholder layer and every eval are built around. Structured types keep
   living in the rules layer, where checksums beat any model (Rampart's own
   ML-side government-ID recall is ~68%; validated rules are the right tool).
+
+## Next: v15 (planned)
+
+Written 2026-07-14, right after the v14 publish. What v14 measurably left on
+the table, in priority order; every number is in
+[BENCHMARKS.md](BENCHMARKS.md) or the [training journal](../training/README.md).
+
+### The headline target: bare lowercase surnames in declarative prose
+
+- [ ] **The G2 residue, shipped as a documented exception** (gold-real
+      forced-lowercase 50/58 vs the 51/58 bar; v11 had 51, v13 shipped 48).
+      The remaining leaks are 3x bare "löfven" in declarative shapes
+      ("löfven har varit engagerad i ...") plus rare LOC/ORG. v14
+      established two facts the next attempt must respect: full-name
+      declarative frames fix the PROBE shape but do not transfer to bare
+      surnames, and the residue is NOT augmentation-limited (take 2 at
+      LC_AUG 0.40 moved nothing on G2). Two candidate levers, each its own
+      run: (a) distill-side B-PER/I-PER consistency weighting on
+      decomposed names (also the typing lever below); (b) a bare-surname
+      slot CONFINED to sentence-initial declarative frames, behind a
+      proper sweep: v12c poisoned via prepositional "till {bare}" shapes,
+      and the sweep must show gold-real recall and curated precision hold.
+- [ ] **PER-typing of rare names in unseen frames**, still lagging: v14a
+      types 66.3% on the rotated primary vs v13's 68.7% (masking, the
+      safety metric, is far ahead at 98.3%). The v14b datapoint to reuse:
+      74.5% typed is REACHABLE (above v13) but that take traded masked
+      recall (98.3 -> 98.0) and cased ORG for it. The distill-side
+      weighting is the untried mechanics lever; it has waited two rounds
+      for a round of its own (one mechanics change per round).
+
+### Ruler upkeep (cheap, do first again)
+
+- [ ] **Rotate the rare-surname gate frames AGAIN if v15 trains eval-near
+      frames** (the v14 primary was never trained on, so it is still clean
+      today; verify that stays true before grading).
+- [ ] **Seed replicate of the v14 recipe** (consciously skipped at publish,
+      documented in the journal): one MASKERA_SEED=2024 run of run_v14.sh
+      answers whether the take-1 recipe is robust or a lucky draw before
+      v15 builds on it. ~3h unattended on the M4 Pro.
+- [ ] **Watch the retention drift**: v14 costs a few more false flags than
+      v13 (cased 11 -> 16, "hr" tagged ORG among them; 99.95% -> 99.93%
+      token retention). Not a problem yet; add the register-targeted rows
+      carefully if v15 grows the pseudo sample.
+
+### Standing weaknesses (unchanged by v14, keep on the list)
+
+- [ ] **Lowercase still trails cased** on the big held-out set (leaks 15.2%
+      vs 7.0%; lowercase ORG 62.6%). v14's pseudo corpus barely moved the
+      klintan-lowercase needle (15.5 -> 15.2): the 18k sample is small
+      against 58k gold rows. Options: grow the sample (the labeled pool
+      holds ~350k more rows), or accept that real annotated
+      support/chat text is the lever (see data section below).
+- [ ] **Short brand names** (Voi, Northmill, Knowit): the one ORG subclass
+      the v12-v14 gazetteer arc did not dent; a LENGTH problem. Candidate
+      ideas unchanged: context weighting or a rules-layer assist in
+      `@maskera/core`.
+- [ ] **The published known misses**: curated "Klarna" (sentence-initial
+      ORG, the v5-era classic), gold-real metonymic "Vita huset", and the
+      spot probe "RING LÖFVEN OMGÅENDE" (ALL-CAPS bare surname; every
+      release has missed it). None is gated; all are documented.
+
+### Unlocked but not started
+
+- [ ] **The ~15 MB student**: the v14 pseudo-label pool
+      (`training/.benchmark/pseudo-labeled.jsonl`, 400k double-labeled
+      rows, only ~18k consumed) was built as its prerequisite. Still
+      waiting on a use case that demands the size (per "Explicitly NOT
+      this round", which stands).
 
 ## Next: data beyond v12 (the real lever)
 
