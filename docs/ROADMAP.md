@@ -260,18 +260,32 @@ the table, in priority order; every number is in
       ORG, the v5-era classic), gold-real metonymic "Vita huset", and the
       spot probe "RING LÖFVEN OMGÅENDE" (ALL-CAPS bare surname; every
       release has missed it). None is gated; all are documented.
-- [ ] **Saint-prefixed street names** (found 2026-07-14 via the demo, probed
-      against shipped v14): with sentence context "Sankt Göransgatan 153"
-      is one clean ADR span, but BARE input fragments to [ADR:Sankt]
-      [LOC:Göransgatan] with the house number LEAKING, and the most common
-      written form "S:t Eriksgatan 45" is worst (only [LOC:t Eriksgatan];
-      "S:" and the number leak: the colon breaks the word in
-      tokenization/reconstruct). Zero Sankt/S:t entries exist in the
-      generator's STREET_STEMS. Fix is two-sided: saint-prefixed stems
-      (Sankt/S:t/St. + gata/plan forms) in the address builder, AND check
-      whether reconstruct()'s word-boundary logic can widen over "S:t"
-      (compare the possessive-s widening from v7). Add both casings to the
-      ADR eval so it stays fixed.
+- [ ] **Swedish address robustness** (found 2026-07-14 via the demo, then a
+      38-case sweep against shipped v14: 13 leak fully or partially).
+      ROBUST already: directional/size prefixes (Östra/Gamla/Stora, both
+      casings), genitive person streets ("Olof Palmes gata 5", "Gustav
+      Adolfs torg 1"), letter/range numbers (7A, 12-14), c/o, lgh/tr
+      tails, most suffix families. BROKEN, by category:
+      (1) saint prefixes: bare "Sankt Göransgatan 153" fragments with the
+      number leaking, "S:t Eriksgatan 45" barely detects (the colon breaks
+      the word), "SANKT" leaks in ALL CAPS; zero Sankt/S:t stems in the
+      generator. Same colon class: "Karl XII:s gata 3".
+      (2) streets ending in a FREE word: "Lilla Torg 4", "Norr Mälarstrand
+      24", "kungsholms strand 12", "Anna Lindhs plats 1": street part read
+      as LOC/PER, house number leaks.
+      (3) rural/farm addresses: "Näsby Gård 2" detects NOTHING, "Berga 12,
+      Vreta Kloster" leaks the number, "Sörgården Ekeby 3" half-covers.
+      Entirely absent from training.
+      (4) abbreviations: "Storg. 5" total miss ("Sveav. 44" happens to
+      work), "Storgatan nr 5" leaks "nr 5".
+      (5) one suffix gap: "-kajen" ("Skeppsbrokajen 8" total miss).
+      Fix is data-side in the address builder (saint stems, free-word
+      endings, farm/village shapes, abbreviated stems, nr-form, -kajen)
+      plus a reconstruct() widening check for the colon forms (compare the
+      v7 possessive-s widening), and every category goes into the ADR eval
+      (corpus-adr.mjs) so it stays fixed. Note: several leaks are
+      number-only (street covered), but a bare house number next to a
+      masked street still narrows the address materially.
 
 ### Unlocked but not started
 
