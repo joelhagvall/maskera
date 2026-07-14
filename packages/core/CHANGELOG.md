@@ -1,5 +1,11 @@
 # @maskera/core
 
+## 0.4.2
+
+### Patch Changes
+
+- Docs: replace real-world identifiers in the README examples with officially reserved test numbers. The organisationsnummer examples (which belonged to real companies) are now Bolagsverket's documentation example 556123-4567, the bankgiro example is a number verified unassigned in Bankgirot's official lookup, and the phone examples use PTS fictional-use ranges. No code changes.
+
 ## 0.4.1
 
 ### Patch Changes
