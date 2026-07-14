@@ -951,9 +951,19 @@ prose) needs a lever this round does not have: candidates for next round
 are the queued distill-side PER-consistency weighting, or a narrow
 bare-surname slot confined to sentence-initial declarative frames behind
 a proper sweep (v12c poisoned via prepositional frames; the shape here is
-different, but it MUST be swept, not assumed). Publish is a human
-decision: the options are ship v14a accepting 50/58 (documented, still +2
-over the shipped v13), or hold for a take 3 with a new lever.
+different, but it MUST be swept, not assumed).
+
+**Publish decision (2026-07-14, human, informed): SHIPPED, take 1, with a
+documented G2 exception.** Rationale: v14a dominates the live v13 artifact
+on every measured axis including G2's own metric (50/58 vs the live 48/58;
+the 51 bar references v11, which is not what users run), the residual class
+is lowercase encyclopedic prose at the edge of the tool's chat/support
+target, and both remaining levers are their own round (mechanics change or
+a mandatory sweep). The seed-stability replicate was consciously skipped.
+Artifact: `student-v14-onnx`, q4 42,705,681 bytes, sha256 f4745c72. Demo
+folder `maskera-sv-ner-v14`, hashes pinned in
+`apps/demo/scripts/fetch-model.mjs`. Bare-lowercase-surname declarative
+prose is v15's headline target.
 
 ## Publish to Hugging Face (single hosted source)
 

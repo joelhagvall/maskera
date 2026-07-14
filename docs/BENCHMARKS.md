@@ -5,18 +5,18 @@ Every other document (README, Hugging Face model card, transparency page,
 training notes) links here instead of copying tables. If a number elsewhere
 disagrees with this file, this file wins and the other document has drifted.
 
-- **Measured:** 2026-07-11
+- **Measured:** 2026-07-14
 - **Artifact:** [`joelhagvall/maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner),
   `onnx/model_q4.onnx` (`dtype: "q4"`, the default and what the demo ships),
-  sha256 `7505b72d18705cffa73e965b23d913e516dece57aa5afe618fb801f54cfd9ee1`
-  (**new weights: the v13 decomposed-surname round**, see
-  [training/README.md](../training/README.md); 42,705,681 bytes, +3.1 MB over
-  the previous artifact from the 20k vocabulary trim, same architecture)
+  sha256 `f4745c72f1ced657eb01d98966fcbefd70a3c4cb45b5cac35381cd3d0509c2a0`
+  (**new weights: the v14 informal-register round**, see
+  [training/README.md](../training/README.md); 42,705,681 bytes, same size
+  and architecture as v13. Published with one documented gate exception:
+  gold-real forced-lowercase coverage is 50/58 against the round's 51/58
+  bar, still +2 over the previous artifact's 48; see
+  [Known gaps](#known-gaps))
 - **Pipeline:** the shipped `maskera` path (model + `reconstruct()`
-  post-processing), measured on `maskera@0.5.1` and re-verified unchanged on
-  `maskera@0.6.0` (2026-07-13: curated, gold-real and ADR all reproduce to
-  the digit; 0.6.0's behavior change was `redactWithNer`'s default rule
-  detectors, a layer this harness does not grade), graded by
+  post-processing), measured on `maskera@0.6.0`, graded by
   [`packages/ner/eval/run-eval.mjs`](../packages/ner/eval/run-eval.mjs)
 - **Matching:** exact character span. This is the strict harness CI gates on;
   see [method notes](#method-notes) for why older overlap-based numbers read higher.
@@ -32,10 +32,10 @@ so read it as an **upper bound and regression tracker**, not a universal score.
 
 | metric     | score | meaning                                        |
 | ---------- | ----- | ---------------------------------------------- |
-| precision  | 99.0% | of predictions, how many were correct          |
-| recall     | 98.5% | of real entities, how many were found          |
-| span F1    | 98.8% | harmonic mean, label-agnostic                  |
-| labeled F1 | 98.8% | same, but the label must also be right         |
+| precision  | 99.5% | of predictions, how many were correct          |
+| recall     | 99.5% | of real entities, how many were found          |
+| span F1    | 99.5% | harmonic mean, label-agnostic                  |
+| labeled F1 | 99.5% | same, but the label must also be right         |
 | leaks      | 0.5%  | entities missed entirely, 1 of 204 (the safety number) |
 
 Reproduce (downloads the published model from the Hub):
@@ -54,17 +54,15 @@ than the support/healthcare/legal text maskera targets, so read it as a
 
 | metric     | score | meaning                                        |
 | ---------- | ----- | ---------------------------------------------- |
-| precision  | 93.1% | of predictions, how many were correct          |
-| recall     | 93.1% | of real entities, how many were found          |
-| span F1    | 93.1% | harmonic mean, label-agnostic                  |
-| labeled F1 | 93.1% | same, but the label must also be right         |
+| precision  | 96.5% | of predictions, how many were correct          |
+| recall     | 94.8% | of real entities, how many were found          |
+| span F1    | 95.7% | harmonic mean, label-agnostic                  |
+| labeled F1 | 95.7% | same, but the label must also be right         |
 | leaks      | 1.7%  | entities missed entirely, 1 of 58              |
 
-The v13 round recovered the ~3pp exact-span F1 that v11 had traded here and
-more (86.4 -> 93.1 labeled, the best this set has measured), with leaks still
-at 1 of 58. The single miss changed identity: bare "Löfven" (the previous
-known miss) is now caught, while metonymic "Vita huset" regressed back to a
-miss; see [Known misses](#known-misses-published-on-purpose).
+The v14 round pushed this set to its best measured numbers again (93.1 ->
+95.7 labeled F1), and the single miss is UNCHANGED from v13: metonymic
+"Vita huset"; see [Known misses](#known-misses-published-on-purpose).
 
 Reproduce:
 
@@ -77,7 +75,7 @@ CORPUS_FILE=<printed path> MASKERA_REMOTE=1 MASKERA_F1_FLOOR=0 MASKERA_LEAK_CEIL
 
 ## Address (ADR) eval (the one class the other sets miss)
 
-- **Measured:** 2026-07-11, same q4 artifact as everywhere else.
+- **Measured:** 2026-07-14, same q4 artifact as everywhere else.
 
 The shipped model has four classes (PER / LOC / ORG / **ADR**), but every set
 above covers only the first three: the Swedish NER Corpus has no address class,
@@ -100,7 +98,7 @@ number) measure whether the model over-flags addresses.
 | exact-span recall | **100%** (21/21) | street *and* house number both inside the span |
 
 A clean sweep: every address detected, correctly typed, with the full span
-including the house number, and no false flags. The v13 weights keep the
+including the house number, and no false flags. The v14 weights keep the
 clean sweep the v11 round established (this eval started 2026-07-07 at 4/21
 exact spans; `reconstruct()`'s house-number widening and the v11 weights
 closed it).
@@ -110,11 +108,11 @@ Reproduce (needs the model locally; corpus is committed, no download):
 ```bash
 pnpm install && pnpm -C packages/ner build
 CORPUS_FILE="./corpus-adr.mjs" \
-  MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v13 \
+  MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v14 \
   node packages/ner/eval/analyze-adr.mjs   # ADR-only breakdown + every gold vs predicted span
 ```
 
-(`run-eval.mjs` on the same corpus now agrees: aggregate span-F1 98.9%, zero
+(`run-eval.mjs` on the same corpus now agrees: aggregate span-F1 100.0%, zero
 leaks. `analyze-adr.mjs` remains the per-metric breakdown and prints every gold
 vs predicted span.)
 
@@ -126,17 +124,19 @@ Recall numbers need a paired utility number: a filter that masks everything
 has perfect recall. This benchmark runs the model over the 1,524 sentences of
 the Swedish NER Corpus test split whose gold tags are all `O` (real news
 prose with no entities) and counts everything it flags as an over-redaction.
-Rampart publishes the equivalent metric at 91.69% (term retention); maskera's
-v13 artifact measures:
+Rampart publishes the equivalent metric at 91.69% (term retention); maskera
+measures:
 
 | mode | token retention | clean sentences | false-flag spans |
 | ---- | --------------- | --------------- | ---------------- |
-| cased | **99.95%** | 99.3% | 11 |
-| forced lowercase | **99.93%** | 98.9% | 17 |
+| cased | **99.93%** | 99.0% | 16 |
+| forced lowercase | **99.90%** | 98.4% | 23 |
 
-Both numbers are lower bounds: several of the "false flags" are gold
-annotation gaps rather than model errors (the cased list includes *Washington
-Post*, *Globen* and the surname *Hirvonen*, all unannotated in the corpus).
+(The previous artifact measured 99.95% / 99.93% with 11 / 17 flags: a small,
+tracked over-flag cost of the v14 register gains.) Both numbers are lower
+bounds: several of the "false flags" are gold annotation gaps rather than
+model errors (the cased list includes *Fjällräddningen*, *polisen* and the
+surname *Hirvonen*, all unannotated in the corpus).
 Method caveat: only the NER model is graded, not the rules layer, because the
 corpus does not annotate structured PII, so a rules hit on e.g. a phone-like
 number could be a genuine detection.
@@ -144,13 +144,13 @@ number could be a genuine detection.
 Reproduce (fetch the corpus per the file header, then):
 
 ```bash
-MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v13 \
+MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v14 \
   node packages/ner/eval/benchmark-retention.mjs
 ```
 
 ## Swedish NER Corpus test split (large held-out, in-distribution)
 
-- **Measured:** 2026-07-11, same q4 artifact as above.
+- **Measured:** 2026-07-14, same q4 artifact as above.
 
 2453 sentences, 1280 PER/LOC/ORG entities, from the public Swedish NER Corpus
 (klintan / Webbnyheter 2012) **test** split. Authored and labeled by others, so
@@ -165,21 +165,19 @@ out-of-domain measure. It is the most reliable per-type breakdown we have.
 | metric     | score | meaning                                        |
 | ---------- | ----- | ---------------------------------------------- |
 | precision  | 94.3% | of predictions, how many were correct          |
-| recall     | 88.3% | of real entities, how many were found          |
-| span F1    | 91.2% | harmonic mean, label-agnostic                  |
-| labeled F1 | 89.0% | same, but the label must also be right         |
-| leaks      | 8.7%  | 111 of 1280 missed entirely (just above the 8% CI ceiling; this is the harder set) |
+| recall     | 89.8% | of real entities, how many were found          |
+| span F1    | 92.0% | harmonic mean, label-agnostic                  |
+| labeled F1 | 89.1% | same, but the label must also be right         |
+| leaks      | 7.0%  | 90 of 1280 missed entirely (first release under the 8% CI ceiling on this, the harder set) |
 
-Recall by type (exact span): **PERSON 94.8%** (580/612), **LOCATION 91.0%**
-(323/355), **ORGANIZATION 72.5%** (227/313). ORG is the weakest type here, as it
+Recall by type (exact span): **PERSON 95.4%** (584/612), **LOCATION 91.3%**
+(324/355), **ORGANIZATION 77.3%** (242/313). ORG is the weakest type here, as it
 is across every round of the [training journal](../training/README.md); the
 address (ADR) class has no counterpart in this corpus and is scored separately
 in [Address (ADR) eval](#address-adr-eval-the-one-class-the-other-sets-miss).
-Versus the previous artifact this is +4.6 span F1 with every column improved,
-and it breaks the leak slide of the previous three releases
-(8.4% -> 11.3% in v11, back to 8.7% here at a much higher F1): the v13 round's
-denser supervision (continuation labels + subword replacement, see the
-training journal) lifted the cased register it never targeted.
+Versus the previous artifact this is +0.8 span F1 with ORG recall up 4.8pp
+(72.5% -> 77.3%, the round's targeted 50+-instance authority-suffix
+gazetteer) and the leak rate at a release best (8.7% -> 7.0%).
 
 Reproduce (needs the model locally; downloads the test split, gitignored):
 
@@ -187,7 +185,7 @@ Reproduce (needs the model locally; downloads the test split, gitignored):
 pnpm install && pnpm -C packages/ner build
 curl -fsSL https://raw.githubusercontent.com/klintan/swedish-ner-corpus/master/test_corpus.txt \
   -o training/.benchmark/test_corpus.txt
-MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v13 \
+MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v14 \
   node packages/ner/eval/benchmark-swedish-ner.mjs
 ```
 
@@ -200,55 +198,58 @@ multiword institutions, not just acronyms) and, above all, **lowercase text**
 (real target-register data: SUCX 3.0, MASSIVE sv-SE, SIC2; see
 [training/README.md](../training/README.md)) was aimed at the lowercase gap.
 
-### Lowercase after the v13 round (measured 2026-07-11)
+### Lowercase after the v14 round (measured 2026-07-14)
 
 Same corpus, forced lowercase (a proxy for the chat/support register maskera
 targets), cased vs lowercased:
 
 | metric | cased | lowercased | delta | prev. artifact lowercased |
 | ------ | ----- | ---------- | ----- | ------------------------- |
-| span precision | 94.3% | 92.4% | −1.9pp | 83.6% |
-| span recall | 88.3% | 81.0% | −7.3pp | 74.6% |
-| span F1 | 91.2% | 86.3% | −4.9pp | 78.9% |
-| labeled F1 | 89.0% | 83.1% | −5.9pp | 75.1% |
-| **leak rate** | 8.7% | **15.5%** | +6.8pp | **20.5%** |
-| PERSON recall | 94.8% | 90.8% | −4.0pp | 84.6% |
-| LOCATION recall | 91.0% | 85.4% | −5.6pp | 74.9% |
-| ORGANIZATION recall | 72.5% | 56.9% | −15.6pp | 54.6% |
+| span precision | 94.3% | 92.6% | −1.7pp | 92.4% |
+| span recall | 89.8% | 81.3% | −8.5pp | 81.0% |
+| span F1 | 92.0% | 86.6% | −5.4pp | 86.3% |
+| labeled F1 | 89.1% | 83.3% | −5.8pp | 83.1% |
+| **leak rate** | 7.0% | **15.2%** | +8.2pp | **15.5%** |
+| PERSON recall | 95.4% | 89.1% | −6.3pp | 90.8% |
+| LOCATION recall | 91.3% | 84.5% | −6.8pp | 85.4% |
+| ORGANIZATION recall | 77.3% | 62.6% | −14.7pp | 56.9% |
 
-Second release in a row that moves every lowercase number the right way
-(span F1 +7.4, leak rate −5.0pp) and the cased-to-lowercased F1 penalty
-shrinks again (−7.7pp to −4.9pp). Lowercase is still the weaker register
-(about 1 in 6 entities leaks there) and remains a tracked gap.
+Third release in a row that moves the lowercase headline numbers the right
+way (span F1 +0.3, leak rate −0.3pp, ORG recall +5.7pp), this time while the
+cased register improved MORE (the v11-v13 trades went the other way).
+Lowercase is still the weaker register (about 1 in 6.5 entities leaks there)
+and remains a tracked gap.
 
 **One honest counter-signal in a different lowercase register:** on the
 22-sentence independent gold set forced lowercase (encyclopedic prose, 58
-entities), the shipped artifact covers 48 of 58 (redaction recall 0.83)
-versus 51 of 58 (0.88) for the previous artifact: bare lowercase surnames in
-declarative prose ("löfven har varit engagerad i ...") leak where the chat
-phrasings of the same names are caught, while several of the previous
-artifact's multiword-ORG leaks there are fixed. Small n, artificial register
-(nobody types encyclopedic prose in lowercase), but recorded, not hidden;
-lowercase declarative-prose name frames are on the v14 list.
+entities), the shipped artifact covers 50 of 58 (redaction recall 0.86)
+versus 51 of 58 (0.88) for the v11 artifact, and 48 of 58 for the previous
+(v13) release. The v14 round's declarative frames recovered two of v13's
+three lost sentences; the remaining leaks are bare lowercase surnames in
+declarative prose ("löfven har varit engagerad i ...", a shape both v14
+takes agree is not augmentation-limited) plus a handful of rare LOC/ORG.
+Small n, artificial register (nobody types encyclopedic prose in lowercase),
+but recorded, not hidden. This is the one v14 publish gate accepted below
+its bar (50 vs 51); the class is v15's headline target.
 
-### ORG is still the top weakness (both registers)
+### ORG is still the weakest type (both registers), but the gap narrowed
 
-ORG recall is 72.5% cased / 56.9% lowercased, the weakest type in both, though
-both are release bests. The v12/v13 category-level gazetteer work fixed the
-multiword-institution class at the weight level (lowercase "inspektionen för
-strategiska produkter", "länsstyrelsen i örebro län" and the previous
-release's authority leaks are all caught now); what remains is **short
+ORG recall is 77.3% cased / 62.6% lowercased, the weakest type in both,
+though both are release bests (was 72.5% / 56.9%). The v12-v14
+category-level gazetteer work fixed the multiword-institution class at the
+weight level, and v14's 50+-instance municipal suffix families finally made
+the "-avdelningen" category generalise ("bygglovsavdelningen i kommunen" is
+caught; ten instances had not been enough). What remains is **short
 startup/brand names** (Voi, Northmill, Knowit): a length problem more
-gazetteer entries do not fix, and the municipal "-avdelningen" suffix, which
-did not generalise from ten gazetteer instances. Both are on the roadmap.
+gazetteer entries do not fix; still on the roadmap.
 
 Reproduce: the analysis script is not committed; regenerate both tables by
 running the model over the test split cased and `text.toLowerCase()`, scoring
 each with [`score.mjs`](../packages/ner/eval/score.mjs).
 
-## Rare-surname chat register (the v13 publish gate)
+## Rare-surname chat register (the standing publish gate)
 
-- **Measured:** 2026-07-11, q4 artifact via the shipped pipeline.
+- **Measured:** 2026-07-14, q4 artifact via the shipped pipeline.
 
 Born from the v12 publish hold ("hej jag heter tjulander ..." went unmasked).
 294 generated chat/support sentences, 98 rare Swedish surnames verified to
@@ -257,42 +258,42 @@ every training source (`training/gen_rare_surname_eval.mjs`); a release must
 BEAT the previous artifact here, not tie it. **Masked-at-all** (was the name
 covered by any label) is the safety metric.
 
-| artifact | masked at all | masked as PER | leaks |
-| -------- | ------------- | ------------- | ----- |
-| **this release (v13)** | **96.6%** | 92.5% | **10/294** |
-| previous (v11) | 94.9% | 93.2% | 15/294 |
-
-A second variant with 18 FRESH frames (disjoint from both training and the
-gate eval, same surnames) guards against frame overfitting: this release
-masks 94.9% (15 leaks) vs the previous artifact's 92.2% (23), so the margin
-holds and even grows off-frame. Caveat recorded: PER-typing on the fresh
-frames is 68.7% vs the previous 74.5% (caught-but-mislabeled rare names);
-masking, not typing, is the safety property, and typing is on the v14 list.
-
 **Frame rotation (2026-07-14, the v14 ruler fix):** v13 take 4 trained on
-frames near the original templates, partially burning them as a gate. The 18
-fresh frames above are now the PRIMARY gate file (`eval/rare-surnames.txt`,
-same 98 surnames), and the original v13 frames are kept as a secondary set
-(`eval/rare-surnames-legacy.txt`). Re-baselines of the shipped v13 artifact
-on the rotated ruler: **primary 94.9% masked / 15 leaks / PER-typed 68.7%;
-legacy 96.6% / 10 leaks / 92.5%**. A v14 candidate must beat the primary
-94.9%.
+frames near the original eval's templates, partially burning them as a gate.
+The 18 fresh frames from the v13 round's off-frame check (never trained on)
+are now the PRIMARY gate file (`eval/rare-surnames.txt`, same 98 surnames),
+and the original v13 frames are kept as a secondary set
+(`eval/rare-surnames-legacy.txt`). The v13 row below is its re-baseline on
+the rotated ruler.
+
+| artifact (rotated primary) | masked at all | masked as PER | leaks |
+| -------------------------- | ------------- | ------------- | ----- |
+| **this release (v14)** | **98.3%** | 66.3% | **5/294** |
+| previous (v13) | 94.9% | 68.7% | 15/294 |
+
+On the legacy (secondary) set this release masks 98.6% (4 leaks, PER-typed
+93.9%) vs the previous artifact's 96.6% (10, 92.5%): the margin holds on
+both frame sets. Caveat recorded: PER-typing on the primary is 66.3% vs the
+previous 68.7% (caught-but-mislabeled rare names in novel frames); masking,
+not typing, is the safety property, and off-frame typing remains a tracked
+item (the v14 round measured 74.5% is reachable but traded masked recall
+for it; see the training journal's take 2).
 
 Reproduce:
 
 ```bash
 pnpm install && pnpm -C packages/ner build
-MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v13 \
+MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v14 \
   node packages/ner/eval/benchmark-rare-surnames.mjs
 BENCHMARK_FILE=training/eval/rare-surnames-legacy.txt \
-  MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v13 \
+  MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v14 \
   node packages/ner/eval/benchmark-rare-surnames.mjs
 ```
 
 ## How maskera compares to other Swedish NER models
 
-Competitor rows measured 2026-07-04, the maskera row re-measured 2026-07-11
-(v13 student; competitor weights are unchanged) with
+Competitor rows measured 2026-07-04 (Rampart 2026-07-14), the maskera row
+re-measured 2026-07-14 (v14 student; competitor weights are unchanged) with
 [`training/benchmark_competitors.py`](../training/benchmark_competitors.py):
 every model on the same gold sets, overlap matching, labels mapped to
 PER / LOC / ORG (the cross-model comparable types; ADR is excluded here because
@@ -323,7 +324,7 @@ untrimmed student here, which flattered the row.
 | Model | Redaction recall | Typed F1 |
 | ----- | ---------------- | -------- |
 | KBLab lowermix reallysimple-ner | **0.97** | **0.90** |
-| **maskera student** | 0.88 | 0.90 |
+| **maskera student** | 0.90 | 0.88 |
 | RecordedFuture Swedish-NER | 0.83 | 0.82 |
 | nbailab scandi-ner | 0.69 | 0.77 |
 | KB-NER | 0.28 | 0.35 |
@@ -342,14 +343,14 @@ Takeaways:
   already is, including in a browser tab.
 - On lowercase text the honest picture is register-dependent. In the
   chat/support register maskera targets, this release is the strongest we
-  have measured (rare-surname eval 96.6% masked, klintan-lowercase leaks
-  15.5%, both release bests). On lowercased *encyclopedic prose* (the small
-  table above) KBLab's lowermix leads: maskera's raw-student redaction recall
-  is 0.88 and the shipped q4 pipeline measures 0.83 on that set, down from
-  the previous release: bare surnames in lowercase declarative prose leak
-  where chat phrasings are caught. Recorded as a known gap; the previous
-  release's published 0.97 on this table was also the untrimmed student,
-  which overstated its shipped artifact (0.88 measured the same way).
+  have measured (rare-surname eval 98.3% masked on the rotated frames,
+  klintan-lowercase leaks 15.2%, both release bests). On lowercased
+  *encyclopedic prose* (the small table above) KBLab's lowermix still
+  leads: maskera's raw-student redaction recall is 0.90 (was 0.88) and the
+  shipped q4 pipeline covers 50 of 58 on that set (was 48; v11 measured
+  51): bare surnames in lowercase declarative prose leak where chat
+  phrasings are caught. Recorded as a known gap and this release's one
+  accepted below-bar gate; see [Known gaps](#known-gaps).
 - The sbx models are branded for PI detection but target a different label
   scheme (they barely flag plain names / places / orgs), so their low numbers
   here reflect scheme mismatch, not general quality. They are not a drop-in
@@ -358,7 +359,7 @@ Takeaways:
   quantization) is the only size-class-comparable competitor: a 14.7 MB
   MiniLM PII model for the browser. On Swedish it is not competitive: 0.34
   redaction recall on gold-real and 45.2% masked on the rare-surname chat
-  eval (maskera: 96.6%). Two structural reasons, not tuning: it has **no
+  eval (maskera: 98.3%). Two structural reasons, not tuning: it has **no
   organization label at all** (27 of gold-real's 58 entities are ORG, per-type
   ORG recall 0%), and it is uncased with NFKD accent stripping, so å/ä/ö
   collapse (every å/ä/ö-bearing surname tested leaked). Its card lists
@@ -376,7 +377,9 @@ Takeaways:
 
 Measured 2026-07-13 on an Apple M4 Pro (24 GB), Node v25.8.2, Google Chrome
 148, against the curated corpus (148 sentences, average 46 chars), after the
-Transformers.js 4.2 / onnxruntime-web 1.26 upgrade. That runtime costs ~20%
+Transformers.js 4.2 / onnxruntime-web 1.26 upgrade. (Measured on the v13
+artifact; v14 has the identical size, architecture and quantization, so the
+rows carry over. Re-measure on the next runtime change.) That runtime costs ~20%
 on the single-threaded browser WASM path versus Transformers.js 3.8 (warm
 median 50 -> 60 ms; same model artifact, and the WebGPU, Node and rules rows
 are unchanged or slightly faster). Warm
@@ -444,12 +447,13 @@ persons appear here.
 | curated | "Klarna rekryterade Daniel från Spotify i fjol." | `Klarna` ORGANIZATION | known miss (sentence-initial org reads as a name-like subject; `Daniel` and `Spotify` are caught) |
 | gold-real | "Den 6 mars 2018 besökte Löfven Vita huset och hade sitt första officiella möte med …" | `Vita huset` LOCATION | known miss (metonymic building-as-institution; `Löfven` and the rest are caught) |
 
-Fixed by the v13 round and moved out of this table: bare `Löfven` (the
-long-standing bare-surname miss, in this exact sentence) and the ALL CAPS
-"VIKTIGT: RING LARS NORDSTRÖM OMGÅENDE IDAG." Regressed back INTO the table
-by the same round: metonymic `Vita huset`, which the v11 weights caught. The
+Both misses are UNCHANGED from the previous release (the v14 round moved
+neither; `Klarna` has been the curated classic since v5). Historical: bare
+`Löfven` and the ALL CAPS "RING LARS NORDSTRÖM" were fixed by v13;
+metonymic `Vita huset` regressed into the table in v13 and stays. The
 lowercase-encyclopedic register gap described in the error analysis is also
-a known, published limitation of this release.
+a known, published limitation of this release (its one accepted below-bar
+publish gate).
 
 ## Metric definitions
 
@@ -480,7 +484,7 @@ Two things make numbers in older documents read higher than this file:
   no real personal data; from v13 the distillation also trains the student on
   the trimmed inference vocabulary's subword decompositions with continuation
   labels, so rare names that decompose after vocabulary trimming are learned
-  rather than lucked into), plus five public, openly licensed real corpora
+  rather than lucked into), plus six public, openly licensed real corpora
   (all CC BY 4.0; nothing was scraped or collected for this project, and no
   user data is involved):
 - the **Swedish NER Corpus** train split, ~8.6k real news sentences (incl.
@@ -495,6 +499,13 @@ Two things make numbers in older documents read higher than this file:
 - a class-audited 50% sample of **MultiCoNER v2 sv** (SemEval-2023), ~4.9k
   all-lowercase wiki sentences; org-name-polluted classes dropped wholesale
   (see `training/convert_multiconer.mjs`).
+- from v14: an ~18k-row register-targeted sample of **Flashback / Familjeliv**
+  forum sentences (Språkbanken exports), pseudo-labeled by a two-model
+  ensemble with a measured confidence/agreement policy and hard filters
+  (rows containing gate-eval surnames dropped; see
+  `training/convert_pseudo.mjs` and the training journal). Pseudo-labels,
+  not gold: they amplify the informal register, and every number in this
+  file is still measured on human-labeled sets.
 
 ## Continuous gates
 
@@ -518,20 +529,22 @@ Two things make numbers in older documents read higher than this file:
   text); the true target-domain number is unknown until real annotated text
   from those domains exists. That is exactly what GOLD_SET_PLAN.md stage 2
   (donated support/chat text) is designed to produce.
-- **ORG recall is the biggest quality gap** (72.5% cased / 56.9% lowercased on
-  the 2453-sentence set). Multiword authorities are fixed at the weight level
-  by the v12/v13 gazetteer work; what leaks now is short brand names (Voi,
-  Northmill, Knowit), a length problem that needs its own idea (see
+- **ORG recall is the biggest quality gap** (77.3% cased / 62.6% lowercased on
+  the 2453-sentence set, both release bests). Multiword authorities and the
+  municipal suffix families are fixed at the weight level by the v12-v14
+  gazetteer work; what leaks now is short brand names (Voi, Northmill,
+  Knowit), a length problem that needs its own idea (see
   [ROADMAP.md](ROADMAP.md)).
-- **Lowercase still trails cased text** (leak rate 15.5% vs 8.7%), though two
-  releases in a row have narrowed it; real annotated support/chat text
-  remains the lever that closes it.
-- **Lowercased declarative prose regressed** in this release (gold-real forced
-  lowercase: 48/58 covered vs the previous 51/58): bare lowercase surnames in
-  sentence shapes like "löfven har varit engagerad i ..." leak while the chat
-  phrasings of the same names are caught. Small artificial probe, but tracked;
-  lowercase prose name-frames are queued for v14, alongside PER-typing of
-  rare names in unseen frames (masking leads, labeling lags).
+- **Lowercase still trails cased text** (leak rate 15.2% vs 7.0%); real
+  annotated support/chat text remains the lever that closes it.
+- **Lowercased declarative prose is this release's accepted below-bar gate**
+  (gold-real forced lowercase: 50/58 covered vs the round's 51/58 bar;
+  the previous release shipped at 48): bare lowercase surnames in sentence
+  shapes like "löfven har varit engagerad i ..." leak while the chat
+  phrasings of the same names are caught, and the v14 round measured that
+  the residue is not augmentation-limited. Small artificial probe, but
+  tracked; it is v15's headline target alongside PER-typing of rare names
+  in unseen frames (masking leads, labeling lags).
 
 ## Updating this file
 

@@ -37,16 +37,16 @@ places, organisations and street addresses, including all-lowercase chat text
 ("hej jag heter anna karlsson"), ALL CAPS and genitive forms, because that is
 how people actually type.
 
-> **Benchmarks:** span F1 **98.8%** on the curated corpus, **93.1%** on
+> **Benchmarks:** span F1 **99.5%** on the curated corpus, **95.7%** on
 > independent real text, leak rate 0.5% / 1.7% (exact-span, q4, measured
-> 2026-07-11). One canonical, dated, reproducible table:
+> 2026-07-14). One canonical, dated, reproducible table:
 > **[docs/BENCHMARKS.md](docs/BENCHMARKS.md)**; every other number in this
 > repo defers to it.
 
 Measured against every public Swedish NER alternative on the same gold sets,
 it now leads the best ~500 MB models on independent text (typed F1 0.97 vs
 0.94) at a tenth of their size, and in the lowercase chat/support register it
-targets it masks 96.6% of rare out-of-training surnames (previous release:
+targets it masks 98.3% of rare out-of-training surnames (previous release:
 94.9%); on lowercased encyclopedic prose the case-robust KBLab lowermix still
 leads, documented honestly. Tables, method and
 caveats: [docs/BENCHMARKS.md](docs/BENCHMARKS.md). The training pipeline and

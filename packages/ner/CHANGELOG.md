@@ -1,5 +1,13 @@
 # maskera
 
+## 0.6.1
+
+### Patch Changes
+
+- Refresh the README benchmark snapshot for the v14 model release (curated
+  99.5% span F1, independent 95.7%, measured 2026-07-14). Weights ship via the
+  Hugging Face Hub, so this is a docs-only bump to update npmjs.com.
+
 ## 0.6.0
 
 ### Minor Changes

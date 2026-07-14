@@ -21,18 +21,18 @@ import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
 const HUB = "https://huggingface.co/joelhagvall/maskera-sv-ner/resolve/main"
-const DEST = resolve(dirname(fileURLToPath(import.meta.url)), "../public/models/maskera-sv-ner-v13")
+const DEST = resolve(dirname(fileURLToPath(import.meta.url)), "../public/models/maskera-sv-ner-v14")
 
 // Pinned sha256 per file, so a compromised Hub account can't silently swap
 // the weights into a build. When the model is intentionally updated, refresh
 // these with: shasum -a 256 <file>
 const FILES = {
   "config.json": "9a4345c97bba5b637fbb07779d56d45b0bac707bc413b623c99caa51bde125cc",
-  "tokenizer.json": "74284592b0aec4bf2a29b52ae373262235e9fdf671a78e927529f03ab579e962",
+  "tokenizer.json": "3df1a0dc46adbbfbc97c76e79f9085d6aa86b6984dd50f1e9188fe4df356bd9e",
   "tokenizer_config.json": "3cf57fee187ab68479948ee43ecdb9054869fa9c232783f4f32d00a01669db4a",
   "special_tokens_map.json": "5d5b662e421ea9fac075174bb0688ee0d9431699900b90662acd44b2a350503a",
-  "vocab.txt": "6d4377291b61a6caa6589f486db46ffa4112ae0105e83d0d57ec2eec092b62ef",
-  "onnx/model_q4.onnx": "7505b72d18705cffa73e965b23d913e516dece57aa5afe618fb801f54cfd9ee1",
+  "vocab.txt": "16d817599cc42c30cd3b63afb5e2ffa87bde2d2ed3f40eaaef58ab5c29c0191a",
+  "onnx/model_q4.onnx": "f4745c72f1ced657eb01d98966fcbefd70a3c4cb45b5cac35381cd3d0509c2a0",
 }
 
 const sha256 = (buf) => createHash("sha256").update(buf).digest("hex")

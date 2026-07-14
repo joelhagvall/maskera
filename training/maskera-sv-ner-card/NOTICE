@@ -29,3 +29,8 @@ corpora, all released under CC BY 4.0 (attribution given here):
 
   MultiCoNER v2, Swedish subset (SemEval-2023 shared task)
   https://huggingface.co/datasets/MultiCoNER/multiconer_v2
+
+  Flashback and Familjeliv forum corpora (Språkbanken Text exports;
+  pseudo-labeled register sample, v14 round)
+  https://spraakbanken.gu.se/en/resources/flashback-dator
+  https://spraakbanken.gu.se/en/resources/familjeliv-allmanna-ekonomi

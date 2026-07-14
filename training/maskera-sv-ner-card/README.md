@@ -63,7 +63,7 @@ redacted output: `PER` → `NAMN`, `LOC` → `PLATS`, `ORG` → `ORGANISATION`,`
 
 Note: the PER / LOC / ORG benchmark sets below contain no street addresses, so
 `ADR` is measured on its own set (27 sentences, 21 address spans, held out of
-training). Measured 2026-07-11 on the shipped q4 artifact: **redaction recall
+training). Measured 2026-07-14 on the shipped q4 artifact: **redaction recall
 100%**, **0% leaks**, **ADDRESS precision 100%**, **exact-span recall 100%**,
 house numbers included (`Sveavägen 44`, not just `Sveavägen`). Full breakdown:
 [BENCHMARKS.md → Address (ADR) eval](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md#address-adr-eval-the-one-class-the-other-sets-miss).
@@ -126,7 +126,7 @@ const out = await ner("Anna Lindqvist bor i Göteborg.")
 
 The canonical, dated benchmark tables live in the maskera repo:
 [`docs/BENCHMARKS.md`](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md).
-Numbers below are copied from there (measured 2026-07-11, `dtype="q4"`,
+Numbers below are copied from there (measured 2026-07-14, `dtype="q4"`,
 **exact-span matching**, via the shipped `maskera` pipeline); when they
 disagree, BENCHMARKS.md wins.
 
@@ -138,9 +138,9 @@ treat it as an upper bound and regression tracker:
 
 | metric    | score | meaning                                  |
 | --------- | ----- | ---------------------------------------- |
-| precision | 99.0% | of predictions, how many were correct    |
-| recall    | 98.5% | of real entities, how many were found    |
-| span F1   | 98.8% | harmonic mean, label-agnostic            |
+| precision | 99.5% | of predictions, how many were correct    |
+| recall    | 99.5% | of real entities, how many were found    |
+| span F1   | 99.5% | harmonic mean, label-agnostic            |
 | leaks     | 0.5%  | entities missed entirely (the safety number) |
 
 Independent gold set (22 sentences of real Swedish Wikipedia prose,
@@ -149,9 +149,9 @@ directional independent floor:
 
 | metric    | score | meaning                                  |
 | --------- | ----- | ---------------------------------------- |
-| precision | 93.1% | of predictions, how many were correct    |
-| recall    | 93.1% | of real entities, how many were found    |
-| span F1   | 93.1% | harmonic mean, label-agnostic            |
+| precision | 96.5% | of predictions, how many were correct    |
+| recall    | 94.8% | of real entities, how many were found    |
+| span F1   | 95.7% | harmonic mean, label-agnostic            |
 | leaks     | 1.7%  | entities missed entirely, 1 of 58        |
 
 The model is trained on synthetic Swedish (with whole-sentence lowercase,
@@ -164,7 +164,10 @@ of **SUCX 3.0 NER** (KBLab, balanced genres, the data behind KBLab's
 case-robust lowermix recipe), **MASSIVE sv-SE** (Amazon, lowercase
 chat-register utterances), **SIC2** (Språkbanken, informal blog text) and a
 class-audited sample of **MultiCoNER v2 sv** (SemEval-2023, lowercase wiki
-sentences). That also means the Swedish NER Corpus
+sentences); from the v14 round also a register-targeted, ensemble
+pseudo-labeled sample of **Flashback / Familjeliv** forum text (Språkbanken;
+pseudo-labels amplify the informal register, every published number is still
+measured on human-labeled sets). That also means the Swedish NER Corpus
 test split is in-distribution and is NOT used as the independent measure. A
 larger independent gold set is the top data TODO. Harnesses live in the
 [maskera repo](https://github.com/joelhagvall/maskera) (`packages/ner/eval`
@@ -173,7 +176,8 @@ and `training/`); run them yourself before relying on the numbers.
 ## How it compares
 
 Every public Swedish NER alternative, measured on the same gold sets
-(competitors 2026-07-04, the maskera row 2026-07-11; overlap matching,
+(competitors 2026-07-04, Rampart 2026-07-14, the maskera row 2026-07-14;
+overlap matching,
 PER / LOC / ORG; full method, all three test sets and honest caveats in
 [docs/BENCHMARKS.md](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md),
 which wins on any disagreement):
@@ -186,6 +190,7 @@ which wins on any disagreement):
 | KB/bert-base-swedish-cased-ner                      | ~475 MB | 0.92     |
 | KBLab bert-base-swedish-cased-reallysimple-ner      | ~475 MB | 0.91     |
 | RecordedFuture/Swedish-NER                          | ~500 MB | 0.88     |
+| Rampart (browser PII, no ORG class, no Swedish)     | ~15 MB  | 0.42     |
 | sbx KB-bert PI-detection (general / detailed)       | ~475 MB | 0.10 / 0.19 |
 
 The alternatives run fine on a local machine too; the practical difference is
@@ -196,14 +201,16 @@ text already is.
 On **lowercase text** (no capitalisation cues) the cased-only models collapse
 (KB-NER falls to 0.35 typed F1 on lowercased gold-real). maskera-sv-ner's
 lowercase strength is the register it targets: on a 294-sentence chat/support
-eval of rare decomposing surnames held out of training, it masks 96.6%
-(previous release: 94.9%), and on the lowercased 2453-sentence news test
-split its leak rate is 15.5% (previous release: 20.5%). On lowercased
-*encyclopedic* prose (gold-real forced lowercase, 58 entities) KBLab's
-lowermix still leads (redaction recall 0.97 vs 0.88 for the fp32 student /
-0.83 for the shipped q4 artifact): a real, documented gap in that register.
-None of the alternatives detects street addresses (`ADR`) or fits in a
-browser tab.
+eval of rare decomposing surnames held out of training, it masks 98.3%
+(previous release: 94.9% on the same rotated frames), and on the lowercased
+2453-sentence news test split its leak rate is 15.2% (previous release:
+15.5%). On lowercased *encyclopedic* prose (gold-real forced lowercase, 58
+entities) KBLab's lowermix still leads (redaction recall 0.97 vs 0.90 for
+the fp32 student; the shipped q4 artifact covers 50 of 58 there, up from the
+previous release's 48): a real, documented gap in that register. None of the
+alternatives detects street addresses (`ADR`) or fits in a browser tab; the
+one size-class peer (Rampart, 14.7 MB) has no organization class at all and
+strips å/ä/ö, and masks 45% on the rare-surname eval.
 
 The maskera row is the fp32 student graded by the same Python harness as the
 others (from this release the vocabulary-trimmed student, which is what
@@ -218,8 +225,9 @@ mismatch on PER/LOC/ORG rather than general quality.
   National Library of Sweden (Kungliga biblioteket). No obligations attach, but
   we acknowledge it gratefully; see `NOTICE`.
 - **Training data:** includes the Swedish NER Corpus, SUCX 3.0 NER
-  (KBLab/Språkbanken Text), MASSIVE sv-SE (Amazon Science) and SIC2
-  (Språkbanken Text), all CC BY 4.0; full attributions in `NOTICE`.
+  (KBLab/Språkbanken Text), MASSIVE sv-SE (Amazon Science), SIC2, MultiCoNER
+  v2 sv and pseudo-labeled Flashback/Familjeliv forum text (Språkbanken
+  Text), all CC BY 4.0; full attributions in `NOTICE`.
 
 ## Citation
 
