@@ -504,7 +504,7 @@ export const corpus = [
     entities: [],
   },
   {
-    text: "Betalning sker till bankgiro 5999-8880 senast den 12 mars.",
+    text: "Betalning sker till bankgiro 991-2346 senast den 12 mars.",
     entities: [],
   },
 

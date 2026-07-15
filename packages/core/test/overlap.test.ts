@@ -17,7 +17,7 @@ function labelsOf(input: string): string[] {
 
 describe("overlap resolution between structured identifiers", () => {
   it("a full IBAN wins over the postnummer hiding inside it", () => {
-    const { text, redactions } = redact("Betala till SE45 5000 0000 0583 9825 7466 idag.")
+    const { text, redactions } = redact("Betala till SE42 8000 0890 1191 4616 8423 idag.")
     expect(text).toContain("[IBAN_1]")
     expect(text).not.toContain("[POSTNUMMER")
     expect(redactions).toHaveLength(1)
@@ -32,14 +32,14 @@ describe("overlap resolution between structured identifiers", () => {
   })
 
   it("an organisationsnummer is preferred over the personnummer pattern when valid", () => {
-    // 556123-4567 is a valid orgnr (third digit >= 2), not a valid personnummer.
-    const labels = labelsOf("Leverantör 556123-4567 fakturerar.")
+    // 202100-4748 is Skatteverket's Navet test orgnr, not a valid personnummer.
+    const labels = labelsOf("Kommun A 202100-4748 fakturerar.")
     expect(labels).toContain("ORGANISATIONSNUMMER")
     expect(labels).not.toContain("PERSONNUMMER")
   })
 
   it("does not double-redact: each character belongs to at most one placeholder", () => {
-    const input = "Anna (900101-2385) bankgiro 5999-8880 mejl anna@x.se ringer 070-174 06 58."
+    const input = "Anna (900101-2385) bankgiro 991-2346 mejl anna@example.com ringer 070-174 06 58."
     const { redactions } = redact(input)
     // Sort by start and assert no two spans overlap.
     const spans = redactions.map((r) => [r.start, r.end] as const).sort((a, b) => a[0] - b[0])
@@ -51,13 +51,13 @@ describe("overlap resolution between structured identifiers", () => {
   })
 
   it("a postnummer is still caught when standing alone (no longer match steals it)", () => {
-    const labels = labelsOf("Skicka till 114 51 Stockholm.")
+    const labels = labelsOf("Skicka till 123 45 Staden.")
     expect(labels).toContain("POSTNUMMER")
   })
 
   it("redacts a dense mix without dropping any of the high-value identifiers", () => {
     const input =
-      "Personnummer 900101-2385, org 556123-4567, IBAN SE4550000000058398257466, kort 4111 1111 1111 1111."
+      "Personnummer 900101-2385, org 202100-4748, IBAN SE4280000890119146168423, kort 4242 4242 4242 4242."
     const labels = new Set(labelsOf(input))
     expect(labels).toContain("PERSONNUMMER")
     expect(labels).toContain("ORGANISATIONSNUMMER")

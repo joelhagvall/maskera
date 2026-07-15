@@ -60,7 +60,7 @@ function fakeRecognizer(detections: (text: string) => Detection[]): NerRecognize
 
 describe("redactWithNer", () => {
   it("merges NER detections with rule detectors", async () => {
-    const input = "Min granne Lars mejlar lars@example.se."
+    const input = "Min granne Lars mejlar lars@example.com."
     const recognizer = fakeRecognizer((t) => {
       const start = t.indexOf("Lars")
       return [{ start, end: start + 4, value: "Lars", label: "NAMN" }]
@@ -71,7 +71,7 @@ describe("redactWithNer", () => {
   })
 
   it("lets rule detections win on overlap (earliest+longest)", async () => {
-    const input = "Maila lars@example.se nu."
+    const input = "Maila lars@example.com nu."
     // NER wrongly flags just the local-part "lars" inside the email.
     const recognizer = fakeRecognizer((t) => {
       const start = t.indexOf("lars")
@@ -91,7 +91,7 @@ describe("redactWithNer", () => {
 
   it("hybrid default masks addresses and lägenhetsnummer by rule, even if the model misses", async () => {
     const recognizer = fakeRecognizer(() => []) // model sees nothing
-    const { text } = await redactWithNer("Leverans till Storgatan 12, lgh 1201 imorgon.", {
+    const { text } = await redactWithNer("Leverans till Påhittsgatan 12, lgh 1201 imorgon.", {
       recognizer,
     })
     expect(text).toBe("Leverans till [ADRESS_1], [LAGENHETSNUMMER_1] imorgon.")
@@ -104,28 +104,28 @@ describe("redactWithNer", () => {
   })
 
   it("the address rule guarantees the house number inside the mask when the model splits it", async () => {
-    const input = "Bor på Storgatan 12 i Umeå."
+    const input = "Bor på Påhittsgatan 12 i Umeå."
     // Model tags only the street name, leaving the house number outside.
     const recognizer = fakeRecognizer((t) => {
-      const start = t.indexOf("Storgatan")
-      return [{ start, end: start + "Storgatan".length, value: "Storgatan", label: "ADRESS" }]
+      const start = t.indexOf("Påhittsgatan")
+      return [{ start, end: start + "Påhittsgatan".length, value: "Påhittsgatan", label: "ADRESS" }]
     })
     const { text, redactions } = await redactWithNer(input, { recognizer })
     expect(text).not.toContain("12")
-    expect(redactions.some((r) => r.label === "ADRESS" && r.value === "Storgatan 12")).toBe(true)
+    expect(redactions.some((r) => r.label === "ADRESS" && r.value === "Påhittsgatan 12")).toBe(true)
   })
 
   it("explicit detectors option still overrides the hybrid default entirely", async () => {
     const recognizer = fakeRecognizer(() => [])
-    const { text } = await redactWithNer("Bor på Storgatan 12.", {
+    const { text } = await redactWithNer("Bor på Påhittsgatan 12.", {
       recognizer,
       detectors: [],
     })
-    expect(text).toBe("Bor på Storgatan 12.")
+    expect(text).toBe("Bor på Påhittsgatan 12.")
   })
 
   it("clips a model span that glues a name to the e-mail local-part (name must not leak)", async () => {
-    const input = "Kontakt: Anna Karlsson anna.karlsson@example.se snarast"
+    const input = "Kontakt: Anna Karlsson anna.karlsson@example.com snarast"
     const nameStart = input.indexOf("Anna")
     const spanEnd = input.indexOf("@") // model span swallows the local-part
     const recognizer = fakeRecognizer(() => [
@@ -150,13 +150,13 @@ describe("redactWithNer", () => {
   })
 
   it("drops model fragments that overlap a structured rule (IBAN not shredded)", async () => {
-    const input = "Konto IBAN SE4550000000058398257466 men ring Lars."
+    const input = "Konto IBAN SE4280000890119146168423 men ring Lars."
     // The model wrongly tags digit chunks of the IBAN as addresses, and a name.
     const recognizer = fakeRecognizer((t) => {
-      const i = t.indexOf("SE45")
+      const i = t.indexOf("SE42")
       const lars = t.indexOf("Lars")
       return [
-        { start: t.indexOf("IBAN"), end: i + 4, value: "IBAN SE45", label: "ADR" },
+        { start: t.indexOf("IBAN"), end: i + 4, value: "IBAN SE42", label: "ADR" },
         { start: i + 6, end: i + 12, value: "000000", label: "ADR" },
         { start: lars, end: lars + 4, value: "Lars", label: "PER" },
       ]

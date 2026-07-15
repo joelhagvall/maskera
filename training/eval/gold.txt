@@ -21,7 +21,7 @@ hör av dig till [PER:Majlis Eldh] på avdelningen så ordnar hon det.
 familjen [PER:Okonkwo] flyttade från [LOC:Tensta] till [ADR:Lärkstigen 4].
 Mötet hålls på [ORG:Karolinska] klockan nio, kontakta [PER:Dagny Forsell] vid frågor.
 Klienten [PER:Sixten Ångström] driver firman [ORG:Smögen Marin AB] i [LOC:Smögen].
-Hennes personnummer är 850623-1235 och hon nås på 070-123 45 67.
+Hennes personnummer är 850623-2381 och hon nås på 070-174 06 58.
 Skicka beslutet till [PER:Priya Nair] som flyttat till [LOC:Lidingö].
 ring [PER:Knut Bjørnstad] innan fredag, han sitter på kontoret i [LOC:Kungälv].
 [ORG:Region Skåne] anlitade konsulten [PER:Mateusz Nowicki] för uppdraget.
@@ -33,7 +33,7 @@ besöket ägde rum i [LOC:Hjärnarp] i januari, inte i februari som angavs.
 Företaget [ORG:Paradox Interactive] har sitt kontor i [LOC:Stockholm].
 Sökanden [PER:Ottilia Cervin] bor på [ADR:Bagaregatan 3] i [LOC:Trosa].
 [PER:Dimitrios Papadopoulos] arbetar deltid på [ORG:Willys] i [LOC:Partille].
-Maila [PER:Vidar Holmlund] på vidar.holmlund@exempel.se så återkommer han.
+Maila [PER:Vidar Holmlund] på vidar.holmlund@example.com så återkommer han.
 Handlingen diariefördes av [ORG:Lantmäteriet] efter samtal med [PER:Birgit Sahlin].
 de bor inte längre i [LOC:Rosengård] utan har flyttat till [LOC:Hökarängen].
 Kontrollen utfördes av inspektör [PER:Helmer Ndlovu] från [ORG:Arbetsmiljöverket].
@@ -114,7 +114,7 @@ Vd:n [PER:Gabriel Mwangi] presenterade siffrorna för styrelsen i fredags.
 nästa anhörig är dottern [PER:Rebecka Sahlström-Nyqvist], nås kvällstid.
 Frakten hanteras av [ORG:DB Schenker] från terminalen i [LOC:Jönköping].
 [PER:Henning Aalto] och hans sambo [PER:Ritva Mäkinen] köpte huset i [LOC:Haparanda].
-Anmälan avser personnummer 19720304-5678 men namnet saknas i systemet.
+Anmälan avser personnummer 19900101-2385 men namnet saknas i systemet.
 Konsultbolaget [ORG:Knowit] vann uppdraget åt [ORG:Försvarets materielverk].
 mottagningen på [ORG:Husläkarna] i [LOC:Kungsbacka] har lång väntetid.
 [PER:Ulla-Britt Cervin-Ek] överklagade [ORG:Skatteverkets] beslut.
@@ -133,4 +133,3 @@ beslutet expedierades till [PER:Krister Bäckström] samt ombudet [PER:Leyla Kar
 [ORG:Spotify] flyttade delar av teamet från [LOC:Stockholm] till [LOC:Göteborg].
 Den gripne uppgav namnet [PER:Nikola Đorđević] men kunde inte styrka det.
 Hyresgästföreningen i [LOC:Husby] företräds av [PER:Veronika Adamczyk].
-

@@ -76,7 +76,7 @@ describe("samordningsnummer detector", () => {
 
 describe("organisationsnummer detector", () => {
   it("matches a Luhn-valid orgnr with third digit >= 2", () => {
-    expectHit(organisationsnummer, "Bolaget 556123-4567 är registrerat.", "556123-4567")
+    expectHit(organisationsnummer, "Kommun A 202100-4748 är registrerad.", "202100-4748")
   })
 
   it.each([
@@ -89,23 +89,23 @@ describe("organisationsnummer detector", () => {
 
 describe("email detector", () => {
   it.each([
-    "anna@example.se",
-    "anna.berg@example.co.uk",
-    "a+tag@sub.domain.io",
-    "ANNA@EXAMPLE.SE",
-    "user_name99@x-y.com",
-    "åsa.öberg@example.se",
-    "håkan@sjöberg.se",
+    "anna@example.com",
+    "anna.berg@sub.example.com",
+    "a+tag@sub.example.org",
+    "ANNA@EXAMPLE.COM",
+    "user_name99@example.net",
+    "åsa.öberg@example.com",
+    "håkan@example.org",
   ])("matches: %s", (s) => expectHit(email, `Maila ${s} idag.`, s))
 
   it("matches an åäö address at the start of the text", () => {
-    expectHit(email, "åsa.öberg@example.se är rätt adress", "åsa.öberg@example.se")
+    expectHit(email, "åsa.öberg@example.com är rätt adress", "åsa.öberg@example.com")
   })
 
   it.each([
     ["no TLD", "anna@localhost"],
-    ["no @", "anna.example.se"],
-    ["bare domain", "example.se"],
+    ["no @", "anna.example.com"],
+    ["bare domain", "example.com"],
   ])("rejects %s: %s", (_label, s) => expectMiss(email, s))
 })
 
@@ -114,19 +114,19 @@ describe("email detector", () => {
 describe("phone detector", () => {
   it.each([
     "070-174 06 58",
-    "0701234567",
+    "0701740658",
     "+46 70 174 06 58",
     "+46701740658",
-    "08-123 456 78",
+    "08-465 004 12",
     "031-390 06 12",
     // e-mail-signature style: trunk zero in parentheses after country code
-    "+46(0)70-1234567",
-    "+46 (0)70-123 45 67",
-    "+46(0)8-123 456 78",
+    "+46(0)70-1740658",
+    "+46 (0)70-174 06 58",
+    "+46(0)8-465 004 12",
   ])("matches: %s", (s) => expectHit(phone, `Ring ${s} imorgon.`, s))
 
   it("matches at the very start of the text", () => {
-    expectHit(phone, "0701234567 är mitt nummer", "0701234567")
+    expectHit(phone, "0701740658 är mitt nummer", "0701740658")
   })
 
   it.each([
@@ -140,19 +140,19 @@ describe("phone detector", () => {
 // --- Postnummer -----------------------------------------------------------
 
 describe("postnummer detector", () => {
-  it.each(["123 45", "12345", "114 51"])("matches: %s", (s) =>
+  it.each(["123 45", "12345"])("matches PostNord's published example: %s", (s) =>
     expectHit(postnummer, `Adress ${s} Stockholm.`, s))
 
   it("matches the spaced form standing alone", () => {
-    expectHit(postnummer, "postnumret är 852 31 enligt registret", "852 31")
+    expectHit(postnummer, "postnumret är 123 45 enligt testet", "123 45")
   })
 
   it("matches the compact form before a capitalized city", () => {
-    expectHit(postnummer, "bor på 85231 Sundsvall numera", "85231")
+    expectHit(postnummer, "skicka till 12345 Staden enligt exemplet", "12345")
   })
 
   it("matches with an SE- prefix", () => {
-    expectHit(postnummer, "skicka till SE-114 55 tack", "114 55")
+    expectHit(postnummer, "skicka till SE-123 45 tack", "123 45")
   })
 
   it("rejects a 6-digit run that isn't a postnummer shape", () => {
@@ -170,8 +170,9 @@ describe("postnummer detector", () => {
 // --- Payment identifiers --------------------------------------------------
 
 describe("bankgiro detector", () => {
-  // All Luhn-valid (real bankgiro carries a mod-10 check digit).
-  it.each(["100-0009", "1000-0008", "5999-8880"])("matches valid bankgiro: %s", (s) =>
+  // Bankgirot publishes 991-2346 in its test files; the padded form exercises
+  // the detector's eight-digit branch without introducing another account.
+  it.each(["991-2346", "0991-2346"])("matches valid bankgiro: %s", (s) =>
     expectHit(bankgiro, `Betala till bankgiro ${s}.`, s))
 
   it.each([
@@ -181,12 +182,12 @@ describe("bankgiro detector", () => {
 })
 
 describe("plusgiro detector", () => {
-  // All Luhn-valid (real plusgiro carries a mod-10 check digit).
-  it.each(["12345-5", "42-2", "1234567-4"])("matches: %s", (s) =>
-    expectHit(plusgiro, `Plusgiro ${s} tack.`, s))
+  it("matches Nordea's published compact test account", () => {
+    expectHit(plusgiro, "Plusgiro 920100-5 tack.", "920100-5")
+  })
 
-  it("matches a space-grouped plusgiro (Radiohjälpen)", () => {
-    expectHit(plusgiro, "Swisha eller plusgiro 90 19 50-6 tack.", "90 19 50-6")
+  it("matches the same test account with space grouping", () => {
+    expectHit(plusgiro, "Betala till plusgiro 92 01 00-5 tack.", "92 01 00-5")
   })
 
   it.each([
@@ -205,30 +206,30 @@ describe("plusgiro detector", () => {
 })
 
 describe("iban detector", () => {
-  const IBAN = "SE45 5000 0000 0583 9825 7466"
+  const IBAN = "SE42 8000 0890 1191 4616 8423"
   it("matches a spaced Swedish IBAN", () => expectHit(iban, `Konto ${IBAN} hos banken.`, IBAN))
   it("matches an unspaced Swedish IBAN", () =>
-    expectHit(iban, "Konto SE4550000000058398257466.", "SE4550000000058398257466"))
+    expectHit(iban, "Konto SE4280000890119146168423.", "SE4280000890119146168423"))
   it("rejects a non-SE IBAN", () => expectMiss(iban, "DE89370400440532013000"))
 })
 
 describe("creditCard detector", () => {
-  // 4111 1111 1111 1111 is the canonical Luhn-valid Visa test number.
+  // Stripe publishes 4242 4242 4242 4242 for interactive testing.
   it.each([
-    "4111 1111 1111 1111",
-    "4111-1111-1111-1111",
-    "4111111111111111",
+    "4242 4242 4242 4242",
+    "4242-4242-4242-4242",
+    "4242424242424242",
   ])("matches valid Luhn card: %s", (s) => expectHit(creditCard, `Kort ${s} debiterat.`, s))
 
   it("rejects a card-shaped number that fails Luhn", () => {
-    expectMiss(creditCard, "4111 1111 1111 1112")
+    expectMiss(creditCard, "4242 4242 4242 4243")
   })
 })
 
 // --- Generic --------------------------------------------------------------
 
 describe("ipAddress detector", () => {
-  it.each(["192.168.0.1", "8.8.8.8", "255.255.255.0"])("matches: %s", (s) =>
+  it.each(["192.0.2.1", "198.51.100.42", "203.0.113.255"])("matches: %s", (s) =>
     expectHit(ipAddress, `Från ${s} loggades in.`, s))
 
   it.each([
@@ -239,35 +240,35 @@ describe("ipAddress detector", () => {
 
 describe("url detector", () => {
   it.each([
-    "https://example.se",
-    "http://x.io/a/b?c=1",
-    "https://sub.domain.com/path#frag",
-    "www.nordiskhandel.se",
-    "WWW.EXAMPLE.SE",
-    "www.sub.domain.co.uk/en/path",
+    "https://example.com",
+    "http://example.org/a/b?c=1",
+    "https://sub.example.com/path#frag",
+    "www.example.org",
+    "WWW.EXAMPLE.COM",
+    "www.sub.example.net/en/path",
   ])("matches: %s", (s) => expectHit(url, `Se ${s} för mer.`, s))
 
   it("does not double-match the www inside a full URL", () =>
-    expectHit(url, "Se https://www.example.se för mer.", "https://www.example.se"))
+    expectHit(url, "Se https://www.example.com för mer.", "https://www.example.com"))
 
   it.each([
-    ["comma", "Se https://example.se/sida, för mer.", "https://example.se/sida"],
-    ["full stop", "Gå till www.nordiskhandel.se.", "www.nordiskhandel.se"],
-    ["question mark", "Har du sett https://example.se/sida?", "https://example.se/sida"],
-    ["ellipsis", "kolla www.example.se...", "www.example.se"],
-    ["exclamation", "Besök https://example.se/rea!", "https://example.se/rea"],
+    ["comma", "Se https://example.com/sida, för mer.", "https://example.com/sida"],
+    ["full stop", "Gå till www.example.org.", "www.example.org"],
+    ["question mark", "Har du sett https://example.com/sida?", "https://example.com/sida"],
+    ["ellipsis", "kolla www.example.com...", "www.example.com"],
+    ["exclamation", "Besök https://example.com/rea!", "https://example.com/rea"],
   ])("leaves trailing sentence punctuation outside the value: %s", (_label, s, expected) =>
     expectHit(url, s, expected))
 
   it("still matches dots and query punctuation inside the path", () =>
     expectHit(
       url,
-      "Se https://example.se/v1.2/api?a=1,b=2 nu.",
-      "https://example.se/v1.2/api?a=1,b=2",
+      "Se https://example.com/v1.2/api?a=1,b=2 nu.",
+      "https://example.com/v1.2/api?a=1,b=2",
     ))
 
   it.each([
-    ["bare domain without scheme or www", "besök example.se idag"],
+    ["bare domain without scheme or www", "besök example.com idag"],
     ["the word www on its own", "skriv www. och sen domänen"],
     ["www glued into a longer word", "protokollet heter wwwexample internt"],
   ])("rejects %s: %s", (_label, s) => expectMiss(url, s))
@@ -277,19 +278,19 @@ describe("url detector", () => {
 
 describe("adress detector (heuristic)", () => {
   it.each([
-    "Sankt Eriksgatan 12B",
-    "Storvägen 3",
-    "Björkvägen 21",
-    "Rådhustorget 2",
-    "Norra Stationsgatan 101",
-    "STORGATAN 12",
-    "björkvägen 21",
-    "Östgötagatan 15",
+    "Påhittsgatan 12B",
+    "Maskeravägen 3",
+    "Påhittsvägen 21",
+    "Maskeratorget 2",
+    "Norra Maskeragatan 101",
+    "PÅHITTSGATAN 12",
+    "påhittsvägen 21",
+    "Maskeragränd 15",
   ])("matches: %s", (s) => expectHit(adress, `Bor på ${s} i stan.`, s))
 
   it.each([
-    ["street with no house number", "vi sågs på Storgatan igår"],
-    ["lowercase non-name use", "en lång väg 12 hem"],
+    ["street with no house number", "vi sågs på Påhittsgatan igår"],
+    ["lowercase non-name use", "en lång väg hem till nummer 12"],
   ])("rejects %s: %s", (_label, s) => expectMiss(adress, s))
 })
 

@@ -64,13 +64,13 @@ export const organisationsnummer = regexDetector(
 
 // --- Contact details ------------------------------------------------------
 
-// åäö in both parts: addresses like "åsa.öberg@example.se" exist in the wild,
+// åäö in both parts: addresses like "åsa.öberg@example.com" exist in the wild,
 // and a leading \b would never match before "å" (JS \b is ASCII-only).
 export const email = regexDetector("EPOST", /[A-ZÅÄÖ0-9._%+-]+@[A-ZÅÄÖ0-9.-]+\.[A-Z]{2,}\b/gi)
 
 /**
  * Swedish phone numbers: +46 / 0 prefix, mobile and landline, including the
- * e-mail-signature style "+46(0)70-123 45 67" where the trunk zero rides
+ * e-mail-signature style "+46(0)70-174 06 58" where the trunk zero rides
  * along in parentheses. The consumed left guard (capture group carries the
  * value) stops the match from starting inside a longer digit run like
  * "kundnummer 100200-3000".
@@ -83,7 +83,7 @@ export const phone = regexDetector(
 /**
  * Postnummer: NNN NN. The spaced form is distinctive enough to match on its
  * own. The compact 5-digit form only matches with context: followed by a
- * capitalized word ("85231 Sundsvall") or preceded by an SE- prefix, because
+ * capitalized word ("12345 Staden") or preceded by an SE- prefix, because
  * a bare digit run is far more often an order id, case number or price than a
  * postal code, and masking those as POSTNUMMER over-redacts everyday text.
  * Swedish postal codes never start with 0.
@@ -106,7 +106,7 @@ export const bankgiro = regexDetector("BANKGIRO", /\b\d{3,4}-\d{4}\b/g, (v) =>
 
 /**
  * Plusgiro: 2-7 digits, dash, single check digit, commonly written with
- * space groups ("90 19 50-6"). The whole number carries a mod-10 (Luhn)
+ * space groups ("92 01 00-5"). The whole number carries a mod-10 (Luhn)
  * check digit, which filters out look-alikes like list numbering ("punkt 1-2").
  * A single-digit body is deliberately NOT matched: ~1 in 9 digit-dash-digit
  * pairs in running text is Luhn-valid by chance ("3-4", "6-7", match scores,
@@ -136,7 +136,7 @@ export const ipAddress = regexDetector(
 
 // Scheme-less `www.` hosts are matched too: they are everywhere in email
 // signatures ("www.foretaget.se") and leak the organisation if left in place.
-// Bare domains without either signal ("example.se") are deliberately NOT
+// Bare domains without either signal ("example.com") are deliberately NOT
 // guessed at: that would over-mask ordinary filenames and abbreviations.
 // The final character class refuses sentence punctuation, so "se www.x.se."
 // keeps its full stop outside the mask (mid-URL dots still match; only a
@@ -152,13 +152,13 @@ export const url = regexDetector("URL", /\b(?:https?:\/\/|www\.)[^\s<>")]*[^\s<>
 // the occasional over-redaction.
 
 /**
- * Swedish street address: "Sankt Eriksgatan 12B", "Storvägen 3". Three case
- * shapes on purpose: chat text writes "björkvägen 21" and forms write
- * "STORGATAN 12", and an NER model that only catches the street name would
+ * Swedish street address: "Påhittsgatan 12B", "Maskeravägen 3". Three case
+ * shapes on purpose: chat text writes "påhittsvägen 21" and forms write
+ * "PÅHITTSGATAN 12", and an NER model that only catches the street name would
  * leave the house number exposed. The two-word prefix ("Sankt", "Norra")
  * requires a capital so it never swallows a preceding "på"/"till". The
  * consumed left guard replaces \b, which never matches before Å/Ä/Ö (JS \b
- * is ASCII-only), so "Östgötagatan 15" works too.
+ * is ASCII-only), so "Maskeragränd 15" works too.
  */
 export const adress = regexDetector(
   "ADRESS",

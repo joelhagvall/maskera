@@ -14,7 +14,9 @@
     "audit:a11y": "start-server-and-test preview http://127.0.0.1:4173 a11y:run",
     "a11y:run": "pa11y --config .pa11yrc.json --include-warnings http://127.0.0.1:4173",
     "record:demo": "node scripts/record-demo.mjs",
-    "record:linkedin": "node scripts/record-linkedin-demo.mjs"
+    "record:demo:1x1": "node scripts/record-demo-1x1.mjs",
+    "record:linkedin": "node scripts/record-linkedin-demo.mjs",
+    "record:linkedin:1x1": "node scripts/record-linkedin-demo-1x1.mjs"
   },
   "dependencies": {
     "@huggingface/transformers": "^4.2.0",

@@ -97,7 +97,7 @@ export const demoDetectors: Detector[] = [namn, ...heuristicDetectors, ...defaul
  * at anything with a fixed shape: personnummer/org-nr/phone/IBAN
  * (regex+checksum) and street addresses with house numbers, where the model
  * can split the span and leave the number exposed. Rules win on overlap, so
- * the regex address always covers the full "Storgatan 12".
+ * the regex address always covers the full "Påhittsgatan 12".
  * This is the hybrid: rules for structured shapes, model for free text.
  */
 export const ruleDetectors: Detector[] = [...heuristicDetectors, ...defaultDetectors]

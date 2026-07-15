@@ -13,7 +13,7 @@ import { redact } from "@maskera/core"
 // (open data), blocked from ever being assigned to a real person.
 const userMessage =
   "Hej, jag heter Anna Karlsson, personnummer 19900101-2385, " +
-  "och jag når er på 070-123 45 67 eller anna@example.se."
+  "och jag når er på 070-174 06 58 eller anna@example.com."
 
 const { text, map, restore } = redact(userMessage)
 
@@ -25,6 +25,6 @@ console.log("Sent to LLM:\n", text)
 const fakeLlmAnswer = "Tack! Jag har noterat [TELEFON_1] som kontaktnummer och mejlar [EPOST_1]."
 
 console.log("\nRestored locally:\n", restore(fakeLlmAnswer))
-// Tack! Jag har noterat 070-123 45 67 som kontaktnummer och mejlar anna@example.se.
+// Tack! Jag har noterat 070-174 06 58 som kontaktnummer och mejlar anna@example.com.
 
 console.log("\nRestore map:", map)

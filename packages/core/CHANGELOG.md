@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- Docs: replace real-world identifiers in the README examples with officially reserved test numbers. The organisationsnummer examples (which belonged to real companies) are now Bolagsverket's documentation example 556123-4567, the bankgiro example is a number verified unassigned in Bankgirot's official lookup, and the phone examples use PTS fictional-use ranges. No code changes.
+- Docs: replace identifier examples with source-backed test values published by Skatteverket, PTS, Bankgirot, Nordea and Swedbank. No runtime code changes.
 
 ## 0.4.1
 
@@ -56,7 +56,7 @@
 
 ### Patch Changes
 
-- The phone detector matches the e-mail-signature style `+46(0)70-123 45 67`
+- The phone detector matches the e-mail-signature style `+46(0)70-174 06 58`
   (parenthesized trunk zero after the country code), found leaking in an
   npm-user-input stress test. Negative guards unchanged: years, reference
   numbers and longer digit runs are still rejected.
@@ -65,11 +65,11 @@
 
 ### Minor Changes
 
-- 42577d2: New opt-in Swedish heuristic detectors: `adress` (street addresses like "Sankt Eriksgatan 12B"), `lagenhetsnummer` ("lgh 1203") and `regnummer` (registration plates, with currency amounts like "SEK 100" excluded). Exported individually and as the `heuristicDetectors` bundle. They are format-based with no checksum, so `defaultDetectors` is unchanged; enable them with `detectors: [...defaultDetectors, ...heuristicDetectors]`. Previously these lived only in the demo app.
+- 42577d2: New opt-in Swedish heuristic detectors: `adress` (street addresses like "Påhittsgatan 12B"), `lagenhetsnummer` ("lgh 1203") and `regnummer` (registration plates, with currency amounts like "SEK 100" excluded). Exported individually and as the `heuristicDetectors` bundle. They are format-based with no checksum, so `defaultDetectors` is unchanged; enable them with `detectors: [...defaultDetectors, ...heuristicDetectors]`. Previously these lived only in the demo app.
 
 ### Patch Changes
 
-- 42577d2: Three detector fixes found by stress-testing with real user input: the `EMAIL` regex now matches addresses with å/ä/ö ("åsa.öberg@example.se" was previously split and partially leaked), the `PHONE` regex no longer starts matching inside a longer digit run ("kundnummer 100200-3000" fired a false phone match), and the `ADRESS` heuristic covers all-caps and all-lowercase addresses ("STORGATAN 12", "björkvägen 21") so the house number is no longer left exposed when the NER model only catches the street name.
+- 42577d2: Three detector fixes found by stress-testing with real user input: the `EMAIL` regex now matches addresses with å/ä/ö ("åsa.öberg@example.com" was previously split and partially leaked), the `PHONE` regex no longer starts matching inside a longer digit run ("kundnummer 100200-3000" fired a false phone match), and the `ADRESS` heuristic covers all-caps and all-lowercase addresses ("PÅHITTSGATAN 12", "påhittsvägen 21") so the house number is no longer left exposed when the NER model only catches the street name.
 
 ## 0.2.1
 
@@ -98,5 +98,5 @@
   ("H&M") and title-attached subwords ("dr Svensson").
 
   `@maskera/core`: the plusgiro detector now tolerates space-grouped numbers
-  ("90 19 50-6") and validates the mod-10 check digit, so partial matches no
+  ("92 01 00-5") and validates the mod-10 check digit, so partial matches no
   longer leak and look-alikes no longer fire.

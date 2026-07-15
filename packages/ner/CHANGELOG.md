@@ -131,11 +131,11 @@
 
 ### Minor Changes
 
-- 42577d2: New opt-in Swedish heuristic detectors: `adress` (street addresses like "Sankt Eriksgatan 12B"), `lagenhetsnummer` ("lgh 1203") and `regnummer` (registration plates, with currency amounts like "SEK 100" excluded). Exported individually and as the `heuristicDetectors` bundle. They are format-based with no checksum, so `defaultDetectors` is unchanged; enable them with `detectors: [...defaultDetectors, ...heuristicDetectors]`. Previously these lived only in the demo app.
+- 42577d2: New opt-in Swedish heuristic detectors: `adress` (street addresses like "Påhittsgatan 12B"), `lagenhetsnummer` ("lgh 1203") and `regnummer` (registration plates, with currency amounts like "SEK 100" excluded). Exported individually and as the `heuristicDetectors` bundle. They are format-based with no checksum, so `defaultDetectors` is unchanged; enable them with `detectors: [...defaultDetectors, ...heuristicDetectors]`. Previously these lived only in the demo app.
 
 ### Patch Changes
 
-- 42577d2: Three detector fixes found by stress-testing with real user input: the `EMAIL` regex now matches addresses with å/ä/ö ("åsa.öberg@example.se" was previously split and partially leaked), the `PHONE` regex no longer starts matching inside a longer digit run ("kundnummer 100200-3000" fired a false phone match), and the `ADRESS` heuristic covers all-caps and all-lowercase addresses ("STORGATAN 12", "björkvägen 21") so the house number is no longer left exposed when the NER model only catches the street name.
+- 42577d2: Three detector fixes found by stress-testing with real user input: the `EMAIL` regex now matches addresses with å/ä/ö ("åsa.öberg@example.com" was previously split and partially leaked), the `PHONE` regex no longer starts matching inside a longer digit run ("kundnummer 100200-3000" fired a false phone match), and the `ADRESS` heuristic covers all-caps and all-lowercase addresses ("PÅHITTSGATAN 12", "påhittsvägen 21") so the house number is no longer left exposed when the NER model only catches the street name.
 - Updated dependencies [42577d2]
 - Updated dependencies [42577d2]
   - @maskera/core@0.3.0
@@ -182,7 +182,7 @@
   ("H&M") and title-attached subwords ("dr Svensson").
 
   `@maskera/core`: the plusgiro detector now tolerates space-grouped numbers
-  ("90 19 50-6") and validates the mod-10 check digit, so partial matches no
+  ("92 01 00-5") and validates the mod-10 check digit, so partial matches no
   longer leak and look-alikes no longer fire.
 
 ### Patch Changes

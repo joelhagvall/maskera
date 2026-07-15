@@ -33,13 +33,13 @@ a checksum exists, so look-alikes (year ranges, reference numbers) don't fire.
 | ---------------------- | -------------------------------------- | --------------------- |
 | `PERSONNUMMER`         | `19900101-2385`, `900101-2385`         | date + Luhn           |
 | `SAMORDNINGSNUMMER`    | day + 60 variant                       | date + Luhn           |
-| `ORGANISATIONSNUMMER`  | `556123-4567`                          | Luhn, third digit ≥ 2 |
-| `EPOST`                | `anna@example.se`                      | pattern               |
+| `ORGANISATIONSNUMMER`  | `202100-4748`                          | Luhn, third digit ≥ 2 |
+| `EPOST`                | `anna@example.com`                     | pattern               |
 | `TELEFON`              | `070-174 06 58`, `+46 8 465 004 12`       | Swedish mobile + landline |
-| `POSTNUMMER`           | `114 55`; compact `85231` only before a capitalized city or after `SE-` | pattern + context |
-| `BANKGIRO`             | `5999-8880`                            | Luhn check digit      |
-| `PLUSGIRO`             | `90 19 50-6` (spaces tolerated)        | Luhn check digit      |
-| `IBAN`                 | `SE45 5000 0000 0583 9825 7466`        | SE pattern            |
+| `POSTNUMMER`           | `123 45`; compact `12345` only before a capitalized city or after `SE-` | pattern + context |
+| `BANKGIRO`             | `991-2346`                             | Luhn check digit      |
+| `PLUSGIRO`             | `92 01 00-5` (spaces tolerated)        | Luhn check digit      |
+| `IBAN`                 | `SE42 8000 0890 1191 4616 8423`        | SE pattern            |
 | `KORTNUMMER`          | 13-19 digits, spaces/dashes tolerated  | Luhn                  |
 | `IP_ADRESS` / `URL`     | IPv4 / http(s) and `www.`-hosts        | pattern               |
 
@@ -49,7 +49,7 @@ Add your own with `regexDetector` (below); mix and match via
 ### Opt-in heuristics
 
 Three more Swedish detectors ship as `heuristicDetectors` (also exported
-individually): `ADRESS` (`Sankt Eriksgatan 12B`), `LAGENHETSNUMMER`
+individually): `ADRESS` (`Påhittsgatan 12B`), `LAGENHETSNUMMER`
 (`lgh 1203`) and `REGNUMMER` (`ABC 123`, currency amounts like `SEK 100`
 excluded). They are format-based with no checksum to validate against, so
 they stay out of `defaultDetectors`; enable them when free-text addresses and

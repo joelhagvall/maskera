@@ -29,8 +29,8 @@ interface LeakCase {
 const CASES: LeakCase[] = [
   {
     note: "baseline: classic mixed PII sentence",
-    input: "Anna Berg, 900101-2385, anna@example.se, 070-174 06 58.",
-    mustRedact: ["900101-2385", "anna@example.se", "070-174 06 58"],
+    input: "Anna Berg, 900101-2385, anna@example.com, 070-174 06 58.",
+    mustRedact: ["900101-2385", "anna@example.com", "070-174 06 58"],
   },
   {
     note: "personnummer in 12-digit form must not slip through",
@@ -39,13 +39,13 @@ const CASES: LeakCase[] = [
   },
   {
     note: "IBAN with spaces, the whole account, not just chunks",
-    input: "Lön till SE45 5000 0000 0583 9825 7466 den 25:e.",
-    mustRedact: ["SE45 5000 0000 0583 9825 7466"],
+    input: "Lön till SE42 8000 0890 1191 4616 8423 den 25:e.",
+    mustRedact: ["SE42 8000 0890 1191 4616 8423"],
   },
   {
     note: "email embedded in punctuation (parentheses) still detected",
-    input: "Kontakt (lars.svensson@firma.se) gäller.",
-    mustRedact: ["lars.svensson@firma.se"],
+    input: "Kontakt (lars.svensson@example.org) gäller.",
+    mustRedact: ["lars.svensson@example.org"],
   },
   {
     note: "false-positive guard: a plain year range is not a phone/PII number",

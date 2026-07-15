@@ -1136,7 +1136,7 @@ const TEMPLATES = [
   "En björn sågs i skogen utanför byn i tisdags.",
   // number distractors — digit groups are NOT addresses/entities
   "Beloppet 12 345 kr betalades i tid.",
-  "Ring 070-123 45 67 vid frågor.",
+  "Ring 070-174 06 58 vid frågor.",
   "Referensnummer 2024-1187 noterades i akten.",
   "Summan 1 299 kronor drogs felaktigt.",
   "Fakturanummer 5567 och 8890 är betalda.",
@@ -1183,7 +1183,7 @@ const TEMPLATES = [
   "Sätt in provsvaren i journalen och maila sammanfattningen.",
   "Kan du maila {PER} på {ORG} om mötet?",
   "Glöm inte att mejla protokollet till styrelsen.",
-  "Betalning sker till bankgiro 5051-6905 senast förfallodagen.",
+  "Betalning sker till bankgiro 991-2346 senast förfallodagen.",
   "Ange bankgiro eller plusgiro på fakturan.",
   "Beloppet dras från ditt konto den 25:e varje månad.",
   // v9: casing/chat round. Stress testing v5 found: capitalized full-name

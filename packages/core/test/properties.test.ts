@@ -16,13 +16,13 @@ import { redact } from "../src/index"
 // A pool of valid, synthetic PII values (Luhn-checked where relevant).
 const PII_POOL = [
   "900101-2385", // personnummer
-  "556123-4567", // organisationsnummer
-  "anna@example.se", // email
+  "202100-4748", // organisationsnummer
+  "anna@example.com", // email
   "070-174 06 58", // phone
-  "SE4550000000058398257466", // IBAN
-  "4111 1111 1111 1111", // credit card (valid Luhn)
-  "192.168.0.1", // IP
-  "https://example.se/path", // URL
+  "SE4280000890119146168423", // IBAN
+  "4242 4242 4242 4242", // credit card (Stripe test value)
+  "192.0.2.1", // IP (IANA TEST-NET-1)
+  "https://example.com/path", // URL
 ]
 
 // Filler made only of letters and spaces, never produces brackets or digits,

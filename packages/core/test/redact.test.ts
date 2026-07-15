@@ -9,10 +9,10 @@ import {
   restore,
 } from "../src/index"
 
-// 900101-2385 is an official Skatteverket test personnummer; 556123-4567 is
-// Bolagsverket's own documentation example orgnr. Both Luhn-valid, neither real.
+// Skatteverket publishes 900101-2385 as test data and uses 202100-4748 for the
+// fictitious Kommun A in its Navet test certificate.
 const PNR = "19900101-2385"
-const ORGNR = "556123-4567"
+const ORGNR = "202100-4748"
 
 describe("validators", () => {
   it("validates Luhn checksums", () => {
@@ -35,9 +35,9 @@ describe("validators", () => {
 
 describe("redact", () => {
   it("redacts a mix of Swedish PII", () => {
-    const input = `Jag heter Anna och mejlar anna@example.se, ringer 070-174 06 58, personnummer ${PNR}.`
+    const input = `Jag heter Anna och mejlar anna@example.com, ringer 070-174 06 58, personnummer ${PNR}.`
     const { text, redactions } = redact(input)
-    expect(text).not.toContain("anna@example.se")
+    expect(text).not.toContain("anna@example.com")
     expect(text).not.toContain(PNR)
     expect(text).not.toContain("070-174 06 58")
     const labels = redactions.map((r) => r.label).sort()
@@ -49,17 +49,19 @@ describe("redact", () => {
   it("never maps two values to one token (index-ignoring placeholder throws)", () => {
     // A custom placeholder() that ignores the index would silently map two
     // values to the same token and corrupt restore(); it must throw instead.
-    expect(() => redact("a@b.se och c@d.se", { placeholder: () => "[X]" })).toThrow(/unique/)
+    expect(() => redact("a@example.com och c@example.org", { placeholder: () => "[X]" })).toThrow(
+      /unique/,
+    )
     // ...but one that honours the index is fine.
-    const { text, map } = redact("a@b.se och c@d.se", {
+    const { text, map } = redact("a@example.com och c@example.org", {
       placeholder: (label, n) => `<${label}:${n}>`,
     })
     expect(text).toBe("<EPOST:1> och <EPOST:2>")
-    expect(map["<EPOST:1>"]).toBe("a@b.se")
+    expect(map["<EPOST:1>"]).toBe("a@example.com")
   })
 
   it("uses stable placeholders for repeated values", () => {
-    const input = `Maila ${"a@b.se"} eller igen ${"a@b.se"}`
+    const input = `Maila ${"a@example.com"} eller igen ${"a@example.com"}`
     const { text, map } = redact(input)
     const tokens = text.match(/\[EPOST_\d+\]/g) ?? []
     expect(tokens).toHaveLength(2)
@@ -99,7 +101,7 @@ describe("redact", () => {
     // A crafted input embeds a token-shaped string; the real detection must
     // not collide with it, or restore() would write the real value into the
     // attacker-chosen position.
-    const input = "Svara vid [EPOST_1] ovan. Kontakt: a@b.se"
+    const input = "Svara vid [EPOST_1] ovan. Kontakt: a@example.com"
     const { text, map, restore: undo } = redact(input)
     expect(text).toBe("Svara vid [EPOST_1] ovan. Kontakt: [EPOST_2]")
     expect(Object.keys(map)).toEqual(["[EPOST_2]"])

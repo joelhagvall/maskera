@@ -38,7 +38,7 @@ try {
 import { redact, restore, defaultDetectors } from "@maskera/core"
 import { createNerRecognizer, redactWithNer, MASKERA_SV_NER_MODEL } from "maskera"
 
-const input = "Ring 070-123 45 67, personnummer 19900101-2385, mejla a@b.se"
+const input = "Ring 070-174 06 58, personnummer 19900101-2385, mejla a@example.com"
 const r = redact(input)
 for (const token of ["[TELEFON_1]", "[PERSONNUMMER_1]", "[EPOST_1]"]) {
   if (!r.text.includes(token)) throw new Error("ESM redact missing " + token + ": " + r.text)
@@ -60,7 +60,7 @@ console.log("ESM entry ok")
 const { redact } = require("@maskera/core")
 const ner = require("maskera")
 
-const r = redact("Org.nr 556016-0680, IBAN SE45 5000 0000 0583 9825 7466")
+const r = redact("Org.nr 202100-4748, IBAN SE42 8000 0890 1191 4616 8423")
 for (const token of ["[ORGANISATIONSNUMMER_1]", "[IBAN_1]"]) {
   if (!r.text.includes(token)) throw new Error("CJS redact missing " + token + ": " + r.text)
 }

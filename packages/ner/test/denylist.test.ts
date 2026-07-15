@@ -44,7 +44,7 @@ describe("createNerRecognizer denylist", () => {
 
   it('drops "bankgiro" tagged as an organisation', async () => {
     rawTokens = [tok("B-ORG", "bank", 1), tok("I-ORG", "##gi", 2), tok("I-ORG", "##ro", 3)]
-    const out = await createNerRecognizer().detect("Betalning sker till bankgiro 5999-8880.")
+    const out = await createNerRecognizer().detect("Betalning sker till bankgiro 991-2346.")
     expect(out).toEqual([])
   })
 

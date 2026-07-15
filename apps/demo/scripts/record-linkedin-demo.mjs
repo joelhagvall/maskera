@@ -24,7 +24,7 @@ const OUT = resolve(process.env.OUT ?? join(ROOT, "maskera-demo-5.6.mp4"))
 const VERSION = process.env.DEMO_VERSION ?? "demo 5.6"
 const TYPE =
   process.env.DEMO_TEXT ??
-  "Kund Anna Karlsson, personnummer 19900101-2385, ringde om sin faktura. Hon nås på 070-174 06 58 och bor på Storgatan 12 i Uppsala. Sammanfatta ärendet."
+  "Kund Anna Karlsson, personnummer 19900101-2385, ringde om sin faktura. Hon nås på 070-174 06 58 och bor på Påhittsgatan 12 i Uppsala. Sammanfatta ärendet."
 const INTRO_TITLE = process.env.DEMO_INTRO_TITLE ?? "Personuppgifter in.\nPlatshållare ut."
 const INTRO_SUBTITLE =
   process.env.DEMO_INTRO_SUBTITLE ?? "Maskera känslig data lokalt innan texten når AI:n."

@@ -111,6 +111,14 @@ const normalizeBio = (tags) => {
   })
 }
 
+// SUCX contains a few real editorial/contact addresses in otherwise public
+// prose. They are irrelevant to NER supervision (tagged O), so replace every
+// email surface before it enters generated train/dev files.
+const sanitizeContactTokens = (tokens) =>
+  tokens.map((token) =>
+    token.replace(/[A-ZÅÄÖ0-9._%+-]+@[A-ZÅÄÖ0-9.-]+\.[A-Z]{2,}/gi, "kontakt@example.com"),
+  )
+
 const readRows = (path) =>
   readFileSync(path, "utf8")
     .split(/\r?\n/)
@@ -135,10 +143,11 @@ for (const row of readRows(SRC_TRAIN)) {
   // sentences are selected at a given share regardless of file order.
   if (hash01(`sucx${row.id}`) >= SHARE) continue
   const tags = normalizeBio(remap(row.ner_tags))
-  trainOut.push(JSON.stringify({ tokens: row.tokens, tags }))
+  const tokens = sanitizeContactTokens(row.tokens)
+  trainOut.push(JSON.stringify({ tokens, tags }))
   if (rand() < LC_AUG) {
-    const lower = row.tokens.map((token) => token.toLowerCase())
-    if (lower.some((token, i) => token !== row.tokens[i])) {
+    const lower = tokens.map((token) => token.toLowerCase())
+    if (lower.some((token, i) => token !== tokens[i])) {
       trainOut.push(JSON.stringify({ tokens: lower, tags }))
     }
   }
@@ -148,9 +157,10 @@ const valOut = []
 for (const row of readRows(SRC_DEV)) {
   if (hash01(`sucx-dev${row.id}`) >= DEV_SHARE) continue
   const tags = normalizeBio(remap(row.ner_tags))
-  valOut.push(JSON.stringify({ tokens: row.tokens, tags }))
-  const lower = row.tokens.map((token) => token.toLowerCase())
-  if (lower.some((token, i) => token !== row.tokens[i])) {
+  const tokens = sanitizeContactTokens(row.tokens)
+  valOut.push(JSON.stringify({ tokens, tags }))
+  const lower = tokens.map((token) => token.toLowerCase())
+  if (lower.some((token, i) => token !== tokens[i])) {
     valOut.push(JSON.stringify({ tokens: lower, tags }))
   }
 }

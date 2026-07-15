@@ -4,9 +4,9 @@ import { invalidPersonnummer } from "../src/hints"
 
 /**
  * Table-driven tests for the demo's checksum hint. The fixtures were derived
- * by running the core validators, not by hand: 19900101-2385 is one of
- * Skatteverkets reserved test numbers (valid), 900161-0006 is a checksum-valid
- * samordningsnummer, 556016-0680 / 212000-1355 are real organisationsnummer.
+ * by running the core validators, not by hand: 19900101-2385 and 700178-2395
+ * are official Skatteverket test identifiers, and 202100-4748 is the
+ * organisationsnummer from Skatteverket's Navet test certificate.
  * The hint must fire ONLY for pnr-shaped strings that no validator accepts and
  * no other detector already masks.
  */
@@ -17,10 +17,9 @@ describe("invalidPersonnummer: valid identifiers are never hinted", () => {
   const valid = [
     ["12-digit personnummer", "pnr 19900101-2385 finns"],
     ["10-digit personnummer", "pnr 900101-2385 finns"],
-    ["plus separator (100+ years)", "född 19000101+2384"],
-    ["samordningsnummer (day+60)", "sam 900161-0006 ok"],
-    ["organisationsnummer (aktiebolag)", "bolag 556016-0680 ab"],
-    ["organisationsnummer (kommun)", "kommunen 212000-1355 äger"],
+    ["plus separator (100+ years)", "född 19000101+9801"],
+    ["samordningsnummer (day+60)", "sam 700178-2395 ok"],
+    ["organisationsnummer (Navet test)", "kommunen 202100-4748 äger"],
   ] as const
 
   for (const [name, text] of valid) {
@@ -91,24 +90,24 @@ describe("invalidPersonnummer: suppression when another detector already masked 
   }
 
   it("fully covered span is suppressed", () => {
-    const text = "ring 070123-4567 nu"
-    expect(invalidPersonnummer(text, [span(text, "070123-4567")])).toEqual([])
+    const text = "ring 070174-0658 nu"
+    expect(invalidPersonnummer(text, [span(text, "070174-0658")])).toEqual([])
   })
 
   it("partially overlapping redaction also suppresses", () => {
-    const text = "ring 070123-4567 nu"
-    const partial = { ...span(text, "070123-4567"), end: text.indexOf("070123-4567") + 6 }
+    const text = "ring 070174-0658 nu"
+    const partial = { ...span(text, "070174-0658"), end: text.indexOf("070174-0658") + 6 }
     expect(invalidPersonnummer(text, [partial])).toEqual([])
   })
 
   it("redaction elsewhere in the text does not suppress", () => {
-    const text = "mejl a@b.se och 19900101-2384 kvar"
-    const start = text.indexOf("a@b.se")
+    const text = "mejl a@example.com och 19900101-2384 kvar"
+    const start = text.indexOf("a@example.com")
     const email: Redaction = {
       label: "EPOST",
-      value: "a@b.se",
+      value: "a@example.com",
       start,
-      end: start + 6,
+      end: start + "a@example.com".length,
       replacement: "[EPOST_1]",
     }
     expect(invalidPersonnummer(text, [email])).toEqual(["19900101-2384"])
@@ -125,7 +124,7 @@ describe("invalidPersonnummer: against the real redact() pipeline", () => {
   })
 
   it("pnr-shaped phone number is masked as TELEFON and not hinted", () => {
-    const text = "ring 070123-4567 nu"
+    const text = "ring 070174-0658 nu"
     const result = redact(text)
     expect(result.redactions.map((r) => r.label)).toEqual(["TELEFON"])
     expect(invalidPersonnummer(text, result.redactions)).toEqual([])

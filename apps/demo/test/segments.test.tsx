@@ -64,11 +64,14 @@ describe("HighlightedText", () => {
   }
 
   it("marks each redacted range and keeps the full text plus trailing newline", () => {
-    const text = "Anna bor på Storgatan 12"
-    const redactions = [redaction(text, "Anna", "NAMN"), redaction(text, "Storgatan 12", "ADRESS")]
+    const text = "Anna bor på Påhittsgatan 12"
+    const redactions = [
+      redaction(text, "Anna", "NAMN"),
+      redaction(text, "Påhittsgatan 12", "ADRESS"),
+    ]
     const { container } = render(<HighlightedText text={text} redactions={redactions} />)
     expect(container.textContent).toBe(`${text}\n`)
-    expect(spanTexts(container, "mark.hl")).toEqual(["Anna", "Storgatan 12"])
+    expect(spanTexts(container, "mark.hl")).toEqual(["Anna", "Påhittsgatan 12"])
   })
 
   it("no redactions renders the text unmarked", () => {
@@ -91,10 +94,10 @@ describe("HighlightedText", () => {
 describe("RestoredText", () => {
   it("swaps known tokens back to their original values", () => {
     const text = "Hej [NAMN_1], vi ses på [ADRESS_1]!"
-    const map = { "[NAMN_1]": "Anna", "[ADRESS_1]": "Storgatan 12" }
+    const map = { "[NAMN_1]": "Anna", "[ADRESS_1]": "Påhittsgatan 12" }
     const { container } = render(<RestoredText text={text} map={map} />)
-    expect(container.textContent).toBe("Hej Anna, vi ses på Storgatan 12!")
-    expect(spanTexts(container, "mark.hl")).toEqual(["Anna", "Storgatan 12"])
+    expect(container.textContent).toBe("Hej Anna, vi ses på Påhittsgatan 12!")
+    expect(spanTexts(container, "mark.hl")).toEqual(["Anna", "Påhittsgatan 12"])
   })
 
   it("unknown tokens are left as literal text", () => {

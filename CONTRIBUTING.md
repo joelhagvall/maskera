@@ -36,6 +36,9 @@ pnpm eval          # grade the published model against the gold corpus
   written in **English**; they become CHANGELOG entries verbatim.
 - New detectors need tests, including negative cases (look-alikes that must
   NOT fire); checksum-validate where a checksum exists.
+- Follow the [safe test-data policy](docs/TEST_DATA.md). Positive identifier
+  fixtures must come from an authority-published test or fictional-use set;
+  `pnpm check:fixtures` enforces the approved values.
 - `docs/BENCHMARKS.md` is the single source of truth for numbers. If your
   change touches benchmark results, sync every dated snapshot (root README,
   package READMEs, HF model card, whitepaper, `apps/demo/public/llms.txt`)

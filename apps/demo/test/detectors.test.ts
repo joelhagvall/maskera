@@ -61,14 +61,14 @@ describe("detector sets", () => {
   })
 
   it("redact with demoDetectors masks name, address and personnummer together", () => {
-    const text = "Anna Karlsson, Storgatan 12, pnr 19900101-2385"
+    const text = "Anna Karlsson, Påhittsgatan 12, pnr 19900101-2385"
     const result = redact(text, { detectors: demoDetectors })
     const labels = result.redactions.map((r) => r.label)
     expect(labels).toContain("NAMN")
     expect(labels).toContain("ADRESS")
     expect(labels).toContain("PERSONNUMMER")
     expect(result.text).not.toContain("Anna")
-    expect(result.text).not.toContain("Storgatan")
+    expect(result.text).not.toContain("Påhittsgatan")
     expect(result.text).not.toContain("2385")
   })
 
