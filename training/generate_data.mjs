@@ -15,7 +15,7 @@
  *
  * Usage: node generate_data.mjs [trainCount] [valCount]
  */
-import { writeFileSync } from "node:fs"
+import { appendFileSync, writeFileSync } from "node:fs"
 
 let seed = Number(process.env.DATA_SEED ?? 1337) >>> 0
 if (!Number.isInteger(Number(process.env.DATA_SEED ?? 1337))) {
@@ -45,6 +45,18 @@ const chance = (p) => rand() < p
 // the success gate is "lowercase leak drops AND cased span-F1 holds".
 const LC_AUG = Number(process.env.LC_AUG ?? 0.35) // whole-sentence lowercase
 const UC_AUG = Number(process.env.UC_AUG ?? 0.05) // whole-sentence ALL CAPS
+// v15: opt-in rows from the narrowly confined sentence-initial bare-surname
+// declarative family below. Exact row counts append to (rather than replace)
+// the historical v14 set, so a zero-row run stays byte-identical and a sweep
+// changes only the rows named by these controls.
+const BARE_DECLARATIVE_TRAIN_ROWS = Number(process.env.BARE_DECLARATIVE_TRAIN_ROWS ?? 0)
+const BARE_DECLARATIVE_VAL_ROWS = Number(process.env.BARE_DECLARATIVE_VAL_ROWS ?? 0)
+// v15: balanced class replay. Counts are TOTAL rows across the dose cycle
+// (PER 2, LOC 3, ORG 2, ADR 2, common-word negative 3 = 12 slots) and must be
+// divisible by twelve so the dose stays balanced. Appended after the base +
+// bare rows, so a zero-row run stays byte-identical to v14.
+const BALANCED_REPLAY_TRAIN_ROWS = Number(process.env.BALANCED_REPLAY_TRAIN_ROWS ?? 0)
+const BALANCED_REPLAY_VAL_ROWS = Number(process.env.BALANCED_REPLAY_VAL_ROWS ?? 0)
 
 for (const [name, value] of [
   ["LC_AUG", LC_AUG],
@@ -56,6 +68,26 @@ for (const [name, value] of [
 }
 if (LC_AUG + UC_AUG >= 1) {
   throw new Error(`LC_AUG + UC_AUG must be below 1; got ${LC_AUG + UC_AUG}`)
+}
+for (const [name, value] of [
+  ["BARE_DECLARATIVE_TRAIN_ROWS", BARE_DECLARATIVE_TRAIN_ROWS],
+  ["BARE_DECLARATIVE_VAL_ROWS", BARE_DECLARATIVE_VAL_ROWS],
+  ["BALANCED_REPLAY_TRAIN_ROWS", BALANCED_REPLAY_TRAIN_ROWS],
+  ["BALANCED_REPLAY_VAL_ROWS", BALANCED_REPLAY_VAL_ROWS],
+]) {
+  if (!Number.isInteger(value) || value < 0) {
+    throw new Error(`${name} must be a non-negative integer; got ${value}`)
+  }
+}
+for (const [name, value] of [
+  ["BALANCED_REPLAY_TRAIN_ROWS", BALANCED_REPLAY_TRAIN_ROWS],
+  ["BALANCED_REPLAY_VAL_ROWS", BALANCED_REPLAY_VAL_ROWS],
+]) {
+  // Must divide evenly across the balanced-dose cycle (see BALANCED_SUBFAMILIES
+  // below: PER 2, LOC 3, ORG 2, ADR 2, negative 3 = 12 slots).
+  if (value % 12 !== 0) {
+    throw new Error(`${name} must be divisible by 12 (one row per dose slot); got ${value}`)
+  }
 }
 
 // --- gazetteers ---------------------------------------------------------
@@ -788,6 +820,50 @@ const person = () => {
   if (r < 0.31) return `${pick(FIRST)} ${pick(LAST)}-${pick(LAST)}`
   return `${pick(FIRST)} ${pick(LAST)}`
 }
+const bareSurname = () => pick(LAST)
+// v15 balanced replay: LOC/ORG subjects reuse the existing builders so the
+// positives stay in-distribution; COMMON is an ordinary word tagged O.
+// v4: common-noun-SHAPED place names (definite form), the class the negatives
+// suppress by accident. v3's 33% negatives dropped "Centralstationen"[LOC]
+// because the LOC positives only used proper city names, giving no counter-
+// signal that a common-noun-looking word can be a place. These are generic and
+// compositional; the eval span "Centralstationen" itself is deliberately absent
+// so the gate still measures generalisation, and none overlaps COMMON_WORDS.
+const COMMON_PLACES = [
+  "Stationen",
+  "Busstationen",
+  "Järnvägsstationen",
+  "Stortorget",
+  "Salutorget",
+  "Hamntorget",
+  "Fisktorget",
+  "Hamnen",
+  "Fiskehamnen",
+  "Gästhamnen",
+  "Stadsparken",
+  "Folkparken",
+  "Idrottsplatsen",
+  "Torget",
+  "Hamnplan",
+  "Kyrkbacken",
+  "Strandpromenaden",
+  "Badstranden",
+  "Torgplatsen",
+  "Marknadsplatsen",
+]
+// LOC positives mix proper city names with the common-noun places above, so the
+// model learns both are locations and the negatives cannot claim the whole
+// common-noun-definite shape.
+const bareLoc = () => (chance(0.35) ? pick(COMMON_PLACES) : place())
+const bareOrg = () => org()
+const commonWord = () => pick(COMMON_WORDS)
+// v15 balanced replay v2: ADR reinforcement. v15-balanced (PER/LOC/ORG/O only)
+// fixed G2 but truncated one street span ("Hamngatan 10" -> "Hamngatan"): the
+// dose starved ADR of its share, so street+number cohesion drifted. This keeps
+// the full "street number" as one span, sentence-initial like the other
+// positives. address() avoids the ADR eval's street stems, so it stays
+// out-of-distribution from the gate.
+const bareAddress = () => address()
 const nickname = () => pick(NICKNAMES)
 const FOREIGN = [
   "Oslo",
@@ -1045,9 +1121,25 @@ const SLOTS = {
   PERG: personGenitive,
   ORGG: orgGenitive,
   NICK: nickname,
+  BAREPER: bareSurname,
+  BARELOC: bareLoc,
+  BAREORG: bareOrg,
+  BAREADR: bareAddress,
+  COMMON: commonWord,
 }
 // Slot name -> BIO tag type, for slots that are surface variants of a base type.
-const SLOT_TAG = { PERG: "PER", ORGG: "ORG", NICK: "PER" }
+// COMMON maps to "O": the balanced-replay negative is a capitalised ordinary
+// word, tagged as non-entity so the model learns to reject it.
+const SLOT_TAG = {
+  PERG: "PER",
+  ORGG: "ORG",
+  NICK: "PER",
+  BAREPER: "PER",
+  BARELOC: "LOC",
+  BAREORG: "ORG",
+  BAREADR: "ADR",
+  COMMON: "O",
+}
 const TEMPLATES = [
   "Patient {PER} inkom akut med bröstsmärta.",
   "Remiss för {PER} skickas till {ORG} i {LOC}.",
@@ -1273,6 +1365,171 @@ const TEMPLATES = [
   "{PER} är uppvuxen strax utanför {LOC}.",
 ]
 
+// v15: the remaining G2 class is a bare lowercase surname at the START of
+// declarative prose. v12c put bare surnames into the global person() builder,
+// which taught unsafe "till {surname}" prepositional shapes. Keep this family
+// structurally separate: exactly one surname, always the first token, never a
+// preposition, and tails that do not copy the gold-real sentences verbatim.
+const BARE_DECLARATIVE_TEMPLATES = [
+  "{BAREPER} började sin yrkesbana inom den kommunala verksamheten.",
+  "{BAREPER} har länge varit engagerad i det lokala föreningslivet.",
+  "{BAREPER} valdes senare till ordförande efter en lång medlemsomröstning.",
+  "{BAREPER} beskrev uppväxten som avgörande för sitt fortsatta arbete.",
+  "{BAREPER} fick sitt genombrott under början av tvåtusentalet.",
+  "{BAREPER} fortsatte därefter arbetet med frågor om utbildning och omsorg.",
+  "{BAREPER} återvände senare till hemorten och tog nya lokala uppdrag.",
+  "{BAREPER} lämnade posten efter flera år och gick vidare till andra uppdrag.",
+]
+if (BARE_DECLARATIVE_TEMPLATES.some((template) => !template.startsWith("{BAREPER} "))) {
+  throw new Error("Every bare-declarative template must start with {BAREPER}")
+}
+
+// v15 balanced class replay. The isolated bare-surname dose (v15 data round)
+// recovered one lowercase "Löfven" span but pushed the sentence-initial
+// boundary off LOC ("Vita huset"), ORG ("socialdemokraterna") and ordinary
+// capitalised words ("Festen" -> PER). That was class competition, not a
+// shortage of PER examples: all the new evidence lived in one class and one
+// position. This family pairs every bare-PER positive with a LOC positive, an
+// ORG positive and a capitalised-common-word NEGATIVE in the SAME
+// sentence-initial declarative syntax, so "first lowercase token of a
+// declarative sentence" stops predicting PER on its own and the model has to
+// read the word. Constraints kept from the bare family: subject is always the
+// first token, never after a preposition, and tails never copy the gold-real /
+// strict-corpus sentences verbatim. Held out on purpose: G2's own "Löfven",
+// "Festen" and "Klarna" (they are the probes that measure this), so the screen
+// still tests generalisation, not memorisation.
+const BALANCED_LOC_TEMPLATES = [
+  "{BARELOC} ligger en bit från de större tätorterna.",
+  "{BARELOC} har vuxit stadigt under de senaste årtiondena.",
+  "{BARELOC} lockar många besökare under sommarhalvåret.",
+  "{BARELOC} nämns ofta när regionens historia kommer på tal.",
+  "{BARELOC} fick sitt namn långt före den moderna stadsplanen.",
+  "{BARELOC} förändrades kraftigt när industrin flyttade dit.",
+]
+const BALANCED_ORG_TEMPLATES = [
+  "{BAREORG} redovisade ett stabilt resultat för verksamhetsåret.",
+  "{BAREORG} inledde samarbetet efter en längre upphandling.",
+  "{BAREORG} ansvarar för flera uppdrag inom sektorn.",
+  "{BAREORG} presenterade sin nya plan vid det senaste mötet.",
+  "{BAREORG} anställde ett tiotal medarbetare under våren.",
+  "{BAREORG} kritiserades av flera remissinstanser i frågan.",
+]
+// Neuter/common-gender event and object nouns in the definite form, so they
+// look like a sentence-initial capitalised token but are ordinary words.
+// Verbs are past tense and gender-neutral, so any noun fits and nothing needs
+// adjective agreement. "Festen" and "Klarna" are deliberately absent.
+const COMMON_WORDS = [
+  "Mötet",
+  "Beslutet",
+  "Rapporten",
+  "Utredningen",
+  "Projektet",
+  "Konserten",
+  "Matchen",
+  "Resan",
+  "Kursen",
+  "Middagen",
+  "Diskussionen",
+  "Förslaget",
+  "Avtalet",
+  "Uppdraget",
+  "Seminariet",
+  "Invigningen",
+  "Utställningen",
+  "Föreläsningen",
+  "Debatten",
+  "Ceremonin",
+  "Kampanjen",
+  "Renoveringen",
+  "Insamlingen",
+  "Turnén",
+  // v3: more event/celebration nouns, the class that leaks in person contexts
+  // ("Festen är hemma hos Oskar ..." -> Festen mistagged PER).
+  "Festmiddagen",
+  "Mottagningen",
+  "Premiären",
+  "Föreställningen",
+  "Konferensen",
+  "Utflykten",
+  "Tävlingen",
+  "Träningen",
+  "Repetitionen",
+  "Auktionen",
+  "Marknaden",
+  "Festivalen",
+  "Kalaset",
+  "Bröllopet",
+  "Begravningen",
+  "Jubileet",
+  "Avslutningen",
+  "Presentationen",
+  "Lanseringen",
+  "Stämman",
+  "Årsmötet",
+  "Sammanträdet",
+  "Genomgången",
+  "Uppföljningen",
+]
+const BALANCED_NEG_TEMPLATES = [
+  "{COMMON} väckte stor uppmärksamhet i lokala medier.",
+  "{COMMON} pågick under hela eftermiddagen.",
+  "{COMMON} avslutades tidigare än många hade väntat.",
+  "{COMMON} diskuterades i flera veckor efteråt.",
+  "{COMMON} fortsatte långt in på kvällen.",
+  "{COMMON} drog ut på tiden av flera skäl.",
+  // v3: copula and person-context frames, so a sentence-initial common word
+  // followed by "är"/"hölls hemma hos ..." still reads as a non-entity.
+  "{COMMON} är slut för i år.",
+  "{COMMON} var över för den här gången.",
+  "{COMMON} hölls hemma hos släkten i somras.",
+  "{COMMON} ägde rum tidigare under våren.",
+  "{COMMON} ordnades av den lokala föreningen.",
+  "{COMMON} startade en timme senare än planerat.",
+  "{COMMON} samlade folk från hela trakten.",
+  "{COMMON} blev en riktig höjdpunkt för många.",
+  "{COMMON} ställdes in i sista stund.",
+]
+// ADR positives keep the full "street number" together as one sentence-initial
+// span, the cohesion the PER/LOC/ORG-only dose eroded.
+const BALANCED_ADR_TEMPLATES = [
+  "{BAREADR} ligger mitt i den gamla stadskärnan.",
+  "{BAREADR} är adressen dit posten ska skickas.",
+  "{BAREADR} ligger bara ett kvarter från stationen.",
+  "{BAREADR} renoverades senast för några år sedan.",
+  "{BAREADR} rymmer numera flera mindre verksamheter.",
+  "{BAREADR} har fått en ny fasad sedan i våras.",
+]
+// The dose cycles through this 12-slot list. The shares reproduce v1's working
+// balance (LOC 25%, negatives 25%) while keeping the ADR subfamily v2 added:
+// PER 2, LOC 3, ORG 2, ADR 2, NEG 3 -> in a 1440 dose that is
+// 240 / 360 / 240 / 240 / 360. v2 (neg 20%) leaked `Festen`; v3 (neg 33%,
+// LOC 17%) suppressed `Centralstationen`; both were fine at v1's 25/25, so this
+// restores that ratio and adds the common-noun LOC places above.
+const BALANCED_SUBFAMILIES = [
+  BARE_DECLARATIVE_TEMPLATES,
+  BARE_DECLARATIVE_TEMPLATES,
+  BALANCED_LOC_TEMPLATES,
+  BALANCED_LOC_TEMPLATES,
+  BALANCED_LOC_TEMPLATES,
+  BALANCED_ORG_TEMPLATES,
+  BALANCED_ORG_TEMPLATES,
+  BALANCED_ADR_TEMPLATES,
+  BALANCED_ADR_TEMPLATES,
+  BALANCED_NEG_TEMPLATES,
+  BALANCED_NEG_TEMPLATES,
+  BALANCED_NEG_TEMPLATES,
+]
+for (const [templates, slot] of [
+  [BALANCED_LOC_TEMPLATES, "{BARELOC} "],
+  [BALANCED_ORG_TEMPLATES, "{BAREORG} "],
+  [BALANCED_ADR_TEMPLATES, "{BAREADR} "],
+  [BALANCED_NEG_TEMPLATES, "{COMMON} "],
+]) {
+  if (templates.some((template) => !template.startsWith(slot))) {
+    throw new Error(`Every balanced-replay template in this group must start with ${slot.trim()}`)
+  }
+}
+
 function tokenizeFiller(str) {
   const out = []
   for (const raw of str.trim().split(/\s+/)) {
@@ -1286,8 +1543,8 @@ function tokenizeFiller(str) {
   return out
 }
 
-function buildExample() {
-  const template = pick(TEMPLATES)
+function buildExample(templates = TEMPLATES) {
+  const template = pick(templates)
   const tokens = []
   const tags = []
   for (const part of template.split(/(\{[A-Z]+\})/)) {
@@ -1299,7 +1556,9 @@ function buildExample() {
         .split(/\s+/)
         .forEach((w, idx) => {
           tokens.push(w)
-          tags.push(`${idx === 0 ? "B" : "I"}-${type}`)
+          // type "O" is a deliberate non-entity filler (balanced-replay
+          // negative); every other slot carries a BIO entity tag.
+          tags.push(type === "O" ? "O" : `${idx === 0 ? "B" : "I"}-${type}`)
         })
     } else if (part) {
       for (const t of tokenizeFiller(part)) {
@@ -1353,14 +1612,69 @@ function writeSet(path, n) {
   return attempts - n
 }
 
+function appendBareSet(path, n) {
+  const lines = []
+  let attempts = 0
+  while (lines.length < n) {
+    const line = JSON.stringify(buildExample(BARE_DECLARATIVE_TEMPLATES))
+    attempts++
+    if (usedExamples.has(line)) continue
+    usedExamples.add(line)
+    lines.push(line)
+    if (attempts > n * 100) {
+      throw new Error(
+        `Could not generate ${n} unique bare-declarative examples after ${attempts} attempts`,
+      )
+    }
+  }
+  if (lines.length) appendFileSync(path, `${lines.join("\n")}\n`)
+  return attempts - n
+}
+
+// v15 balanced replay: n rows round-robined across the four subfamilies, so a
+// count divisible by four is exactly n/4 per class. Appended after the base +
+// bare rows; shares usedExamples so nothing duplicates earlier rows.
+function appendBalancedSet(path, n) {
+  const lines = []
+  let attempts = 0
+  while (lines.length < n) {
+    const templates = BALANCED_SUBFAMILIES[lines.length % BALANCED_SUBFAMILIES.length]
+    const line = JSON.stringify(buildExample(templates))
+    attempts++
+    if (usedExamples.has(line)) continue
+    usedExamples.add(line)
+    lines.push(line)
+    if (attempts > n * 100) {
+      throw new Error(
+        `Could not generate ${n} unique balanced-replay examples after ${attempts} attempts`,
+      )
+    }
+  }
+  if (lines.length) appendFileSync(path, `${lines.join("\n")}\n`)
+  return attempts - n
+}
+
 const dir = new URL("./data/", import.meta.url)
-const trainDuplicates = writeSet(new URL("train.jsonl", dir), trainCount)
-const valDuplicates = writeSet(new URL("val.jsonl", dir), valCount)
+const trainPath = new URL("train.jsonl", dir)
+const valPath = new URL("val.jsonl", dir)
+const trainDuplicates = writeSet(trainPath, trainCount)
+const valDuplicates = writeSet(valPath, valCount)
+const bareTrainDuplicates = appendBareSet(trainPath, BARE_DECLARATIVE_TRAIN_ROWS)
+const bareValDuplicates = appendBareSet(valPath, BARE_DECLARATIVE_VAL_ROWS)
+const balancedTrainDuplicates = appendBalancedSet(trainPath, BALANCED_REPLAY_TRAIN_ROWS)
+const balancedValDuplicates = appendBalancedSet(valPath, BALANCED_REPLAY_VAL_ROWS)
 
 const sample = buildExample()
-console.log(`Wrote ${trainCount} train + ${valCount} val examples`)
 console.log(
-  `Uniqueness: skipped ${trainDuplicates} duplicate train + ${valDuplicates} duplicate/overlapping val rows`,
+  `Wrote ${trainCount} base + ${BARE_DECLARATIVE_TRAIN_ROWS} bare-declarative + ` +
+    `${BALANCED_REPLAY_TRAIN_ROWS} balanced-replay train; ` +
+    `${valCount} base + ${BARE_DECLARATIVE_VAL_ROWS} bare-declarative + ` +
+    `${BALANCED_REPLAY_VAL_ROWS} balanced-replay val examples`,
+)
+console.log(
+  `Uniqueness: skipped ${trainDuplicates} duplicate train + ${valDuplicates} duplicate/overlapping val + ` +
+    `${bareTrainDuplicates} duplicate bare train + ${bareValDuplicates} duplicate/overlapping bare val + ` +
+    `${balancedTrainDuplicates} duplicate balanced train + ${balancedValDuplicates} duplicate/overlapping balanced val rows`,
 )
 console.log(
   `Gazetteers: ${FIRST.length} first, ${LAST.length} last, ${CITIES.length} cities, ${ORGS.length} orgs, ${TEMPLATES.length} templates`,

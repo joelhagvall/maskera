@@ -201,15 +201,42 @@ LC_AUG-0.40 take 2 is graded in the journal and not selected):
   living in the rules layer, where checksums beat any model (Rampart's own
   ML-side government-ID recall is ~68%; validated rules are the right tool).
 
-## Next: v15 (planned)
+## Done: v15, the balanced-replay round (PUBLISHED 2026-07-16)
 
 Written 2026-07-14, right after the v14 publish. What v14 measurably left on
 the table, in priority order; every number is in
 [BENCHMARKS.md](BENCHMARKS.md) or the [training journal](../training/README.md).
 
+Status update 2026-07-15: the seed replicate and both isolated v15 levers are
+complete. Decomposed-PER weights 1.5 and 2.0 move G2 from 50/58 to 51/58 but
+add the same `Festen` -> PERSON false positive; 1.5 also misses
+`Centralstationen`. The confined 240/20 bare-surname data candidate raises
+student validation F1 from 0.9563 to 0.9573 but moves G2 backward to 49/58,
+raises rotated rare-name leaks from 4 to 6, and breaks the ADR clean sweep with
+the same `Festen` false positive. A 120/10 half-dose was stopped after its
+teacher underperformed the seed baseline. Neither lever ships; v14 remains
+live. Detailed tables and the stop rationale are in the training journal.
+
+Final status 2026-07-16 (balanced class replay, SHIPPED as v2 of four doses):
+the balanced replay fixed the headline target. Four dose variants were trained
+and graded (full battery tables in the training journal); each moved exactly
+one borderline sentence-initial span at the cost of another, establishing that
+the sentence-initial boundary is **zero-sum across classes**. The shipped
+candidate `student-v15-balanced2-onnx` (5-way dose: bare-PER / LOC / ORG /
+ADR / common-word negative, 240 each) delivers **G2 = 51/58** (the v11 level,
+retiring v14's documented exception), best-ever rare-surname masking (99.3% /
+2 leaks) WITH best-ever PER-typing (71.4%), the first zero-leak curated run
+(sentence-initial "Klarna" fixed after ten releases), and klintan-lowercase
+leaks at 13.8% (best ever). Its one documented exception: the ordinary word
+`Festen` is tagged PERSON in one ADR-corpus distractor sentence, a harmless
+over-redaction (0 leaks; every address metric stays a 100% clean sweep). The
+queued v5 experiment (v2's dose + common-noun LOC places only) targets that
+exception; see the journal.
+
 ### The headline target: bare lowercase surnames in declarative prose
 
-- [ ] **The G2 residue, shipped as a documented exception** (gold-real
+- [x] **The G2 residue, shipped as a documented exception, has now had both
+      isolated v15 levers tested and rejected** (gold-real
       forced-lowercase 50/58 vs the 51/58 bar; v11 had 51, v13 shipped 48).
       The remaining leaks are 3x bare "löfven" in declarative shapes
       ("löfven har varit engagerad i ...") plus rare LOC/ORG. v14
@@ -218,31 +245,56 @@ the table, in priority order; every number is in
       surnames, and the residue is NOT augmentation-limited (take 2 at
       LC_AUG 0.40 moved nothing on G2). Two candidate levers, each its own
       run: (a) distill-side B-PER/I-PER consistency weighting on
-      decomposed names (also the typing lever below); (b) a bare-surname
-      slot CONFINED to sentence-initial declarative frames, behind a
+      decomposed names (also the typing lever below) -- tested at 1.5 and 2.0;
+      both reach 51/58 but fail the clean-sweep precision gate, so this lever
+      stays off; (b) a bare-surname slot CONFINED to sentence-initial
+      declarative frames, behind a
       proper sweep: v12c poisoned via prepositional "till {bare}" shapes,
-      and the sweep must show gold-real recall and curated precision hold.
+      and the sweep must show gold-real recall and curated precision hold --
+      tested at 240/20; it recovers one `Löfven` span but loses `Vita huset`
+      and `socialdemokraterna`, so G2 falls to 49/58 and precision also
+      regresses. Do not continue either one-sided PER lever.
 - [ ] **PER-typing of rare names in unseen frames**, still lagging: v14a
       types 66.3% on the rotated primary vs v13's 68.7% (masking, the
       safety metric, is far ahead at 98.3%). The v14b datapoint to reuse:
       74.5% typed is REACHABLE (above v13) but that take traded masked
-      recall (98.3 -> 98.0) and cased ORG for it. The distill-side
-      weighting is the untried mechanics lever; it has waited two rounds
-      for a round of its own (one mechanics change per round).
+      recall (98.3 -> 98.0) and cased ORG for it. The distill-side weighting
+      has now had its isolated mechanics round: weight 2.0 moves
+      rotated-primary PER typing only 63.3% -> 66.0% on the same seed, while
+      adding the `Festen` false positive. That trade is rejected.
 
 ### Ruler upkeep (cheap, do first again)
 
-- [ ] **Rotate the rare-surname gate frames AGAIN if v15 trains eval-near
-      frames** (the v14 primary was never trained on, so it is still clean
-      today; verify that stays true before grading).
-- [ ] **Seed replicate of the v14 recipe** (consciously skipped at publish,
-      documented in the journal): one MASKERA_SEED=2024 run of run_v14.sh
-      answers whether the take-1 recipe is robust or a lucky draw before
-      v15 builds on it. ~3h unattended on the M4 Pro.
-- [ ] **Watch the retention drift**: v14 costs a few more false flags than
+- [x] **Rotate the rare-surname gate frames AGAIN if v15 trains eval-near
+      frames.** Not required for this mechanics-only sweep: no data changed,
+      both runner audits confirmed the held-out surnames remain absent, and
+      the v14 primary frames remain clean.
+- [x] **Seed replicate of the v14 recipe** (consciously skipped at publish,
+      documented in the journal): completed with `MASKERA_SEED=2024` before
+      the v15 sweep. The q4 result holds all safety gates and reproduces G2 at
+      50/58, so v15 is not building on a lucky seed.
+- [x] **Watch the retention drift**: v14 costs a few more false flags than
       v13 (cased 11 -> 16, "hr" tagged ORG among them; 99.95% -> 99.93%
-      token retention). Not a problem yet; add the register-targeted rows
-      carefully if v15 grows the pseudo sample.
+      token retention). Checked across the seed and weight sweep: cased false
+      spans are 18 / 16 / 16 and lowercase 21 / 22 / 21 for weights
+      1.0 / 1.5 / 2.0. The 240/20 data candidate gives 14 / 22: cased improves
+      slightly and lowercase is flat. Retention is not the reason for its
+      rejection; G2, rare-name safety, and the clean-sweep precision gate are.
+
+### Next research direction: balanced class replay
+
+- [ ] **Test a cheap teacher-only dose screen before another full student
+      run.** Pair each new bare-PER declarative positive with LOC and ORG
+      positives in analogous syntax plus capitalized common-word negatives.
+      The goal is to preserve the local `Löfven` gain without shifting the
+      boundary away from `Vita huset`, organizations, or ordinary words such
+      as `Festen`.
+- [ ] **Keep the experiment independent of the rulers.** Do not train exact
+      G2 names, `Festen`, `Klarna`, or strict-corpus sentences; use category
+      analogues and reserve new held-out frames before generation.
+- [ ] **Only distill a student if a small dose clears the teacher screen.**
+      Require no loss on per-class validation F1 and no new false positives on
+      the strict corpora before spending the extra hour on distillation and q4.
 
 ### Standing weaknesses (unchanged by v14, keep on the list)
 

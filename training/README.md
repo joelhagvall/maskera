@@ -965,6 +965,204 @@ folder `maskera-sv-ner-v14`, hashes pinned in
 `apps/demo/scripts/fetch-model.mjs`. Bare-lowercase-surname declarative
 prose is v15's headline target.
 
+### v15 mechanics round (2026-07-14): decomposed-PER weighting does not ship
+
+This round tested the first of v15's two queued levers without changing the
+data mix. First, a full seed-2024 replicate of `run_v14.sh` established that
+the recipe is robust rather than a lucky seed: its q4 student kept gold-real
+at 97.4 F1, rotated rare-surname safety at 98.6% (4 leaks), both Klintan leak
+ceilings, and the ADR clean sweep. G2 remained 50/58, so the residue reproduced.
+
+`distill.py` now has an opt-in `MASKERA_PER_CONSISTENCY_WEIGHT` lever. It
+upweights hard B-PER/I-PER supervision on every piece of a PER word only when
+the 20k inference tokenizer decomposes that word differently from the full
+teacher tokenizer. The mask reaches 2,574 PER words / 7,311 pieces, just 0.562%
+of the 1,300,274 labeled training pieces. Weight 1.0 deliberately takes the
+historical `outputs.loss` branch exactly. `run_v14.sh` was parameterized so the
+1.5 and 2.0 students could reuse the identical seed-2024 teacher and trimmed
+tokenizer; this isolates the loss weight from teacher, data, and seed changes.
+
+| q4 metric | seed replicate, 1.0 | PER weight 1.5 | PER weight 2.0 |
+| --------- | -------------------: | -------------: | -------------: |
+| best student val F1 | **0.9563** | 0.9550 | 0.9552 |
+| G2 forced-lowercase coverage | 50/58 | **51/58** | **51/58** |
+| rotated rare masked / leaks | **98.6% / 4** | 98.3% / 5 | **98.6% / 4** |
+| rotated rare PER-typed | 63.3% | 63.9% | **66.0%** |
+| Klintan leaks, cased / lower | 7.0% / 13.7% | 7.3% / 13.4% | **7.0% / 13.3%** |
+| ADR-corpus span F1 / leaks | **100.0% / 0** | 97.7% / 1 | 98.9% / 0 |
+| retention false spans, cased / lower | 18 / **21** | **16** / 22 | **16** / **21** |
+
+Both weights therefore reach the G2 bar, and weight 2.0 gives a real but small
++2.7pp rare-name typing gain. Neither is a release candidate. Both newly tag
+the ordinary word `Festen` as PERSON in the ADR distractor corpus. Weight 1.5
+also misses the gold LOCATION `Centralstationen`; its address-specific result
+is still 21/21 exact with zero false ADDRESS flags, but the round's clean-sweep
+gate covers the full distractor harness. Weight 2.0 avoids that leak but still
+loses the clean sweep through `Festen`. The other safety results hold: curated
+strict stays at 99.5–99.8 F1 with zero leaks, all Klintan ceilings pass, and
+retention is effectively flat.
+
+**Round verdict: HOLD v14; do not publish either weighted artifact.** A blanket
+decomposed-PER weight can buy the one G2 sentence, but it does not solve rare
+PER typing strongly enough to justify a new common-word false positive. Leave
+the default at 1.0. The next isolated v15 experiment is the ROADMAP's remaining
+data-side lever: a narrowly confined sentence-initial bare-surname declarative
+slot, swept against the same seed-2024 baseline and every precision gate.
+
+### v15 data round (2026-07-15): confined bare-surname rows do not ship
+
+The second queued lever was tested against the same seed-2024 baseline.
+`generate_data.mjs` now accepts opt-in `BARE_DECLARATIVE_TRAIN_ROWS` and
+`BARE_DECLARATIVE_VAL_ROWS` counts, both zero by default. The added examples
+are appended after the historical base data, use eight declarative templates,
+and contain exactly one sentence-initial surname labeled PER. There are no
+prepositional frames of the kind that poisoned v12c. With both controls at
+zero, the base train and validation files remain byte-identical to v14.
+
+The full candidate added 240 train and 20 validation rows. The resulting
+76,260 / 7,846-row mix passed `audit_data.mjs`, and all 98 held-out evaluation
+surnames remained absent. The q4 comparison was:
+
+| q4 metric | seed replicate | bare 240/20 |
+| --------- | -------------: | ----------: |
+| best teacher val F1 | 0.9696 | **0.9701** |
+| best student val F1 | 0.9563 | **0.9573** |
+| synthetic gold / gold-real F1 | 0.964 / **0.974** | **0.973** / **0.974** |
+| G2 forced-lowercase coverage | **50/58** | 49/58 |
+| rotated rare masked / leaks | **98.6% / 4** | 98.0% / 6 |
+| rotated rare PER-typed | 63.3% | 63.3% |
+| Klintan leaks, cased / lower | **7.0% / 13.7%** | 7.8% / 14.2% |
+| curated strict F1 / leaks | **99.8% / 0** | 99.5% / 1 |
+| ADR-corpus F1 / leaks | **100.0% / 0** | 98.9% / 0 |
+| LinkedIn F1 / leaks | 96.3% / 1 | **97.2%** / 1 |
+| retention false spans, cased / lower | 18 / **21** | **14** / 22 |
+
+The higher validation scores therefore do not represent a safer release.
+Detailed G2 comparison shows the intended local transfer: one lowercase
+`Löfven` sentence that the baseline missed is recovered. But the candidate
+newly misses the LOCATION `Vita huset` and ORGANIZATION `socialdemokraterna`,
+for a net loss of one span. On the clean corpora it also tags the ordinary word
+`Festen` as PERSON and leaks `Klarna`. This is class competition, not a simple
+shortage of bare-surname examples: concentrating more PER evidence moves the
+boundary locally while taking evidence away from LOC/ORG and common words.
+
+A planned 120/10 half-dose was stopped intentionally after its teacher reached
+0.9685 best validation F1 (below the seed baseline's 0.9696) and the student
+had completed about 5% of its first run. The complete 240/20 result had already
+failed G2, rare-surname safety, and the ADR clean sweep, so another hour of the
+same one-sided intervention had low expected value. This was an
+opportunity-cost stop, not a technical failure.
+
+**Round verdict: HOLD v14; publish nothing from v15.** Both proposed v15
+directions are now closed: neither a scalar PER loss weight nor more isolated
+bare-PER rows improves the release frontier. A worthwhile next experiment must
+address the observed class trade directly. The leading data hypothesis is a
+small balanced replay curriculum in which each new bare-PER positive is paired
+with analogous LOC and ORG positives plus capitalized common-word negatives.
+Its training names and frames must remain separate from G2 and the strict
+corpora, and it should start with a cheap teacher-only dose screen before any
+full student run.
+
+### v15 balanced-replay round (2026-07-15/16): four doses, v2 PUBLISHED
+
+The balanced class replay from the previous verdict, built and half-run. The
+family lives in `generate_data.mjs` behind `BALANCED_REPLAY_TRAIN_ROWS` /
+`BALANCED_REPLAY_VAL_ROWS` (byte-identical at 0): each dose row is one
+sentence-initial subject, cycled evenly across subfamilies. v1 used four
+(bare-PER, LOC, ORG, capitalised common-word negative tagged O); v2 adds a
+fifth (ADR, keeping "street number" cohesive). `Festen`, `Klarna` and G2's own
+`Löfven` are held out so the screen measures generalisation. A probe screen
+(`screen_balanced.py`) checks the intended gain and the exact bare240
+regressions at the teacher level before the expensive distill.
+
+**Teacher-only screen (v1 dose) PASSED cleanly**, the first v15 lever to do so:
+balanced teacher val F1 0.9706 vs seed-2024 baseline 0.9696 (no loss), probe
+screen 11/13 with ZERO regression (lofven -> PER, Klarna / socialdemokraterna
+-> ORG, Festen / Motet / Beslutet stay non-entity; the 2 misses are the
+pre-existing Vita huset metonym, not new). Note the teacher already saturates
+the lofven gain, so the screen is a cheap pre-filter, not the decision: the
+bare240 regressions only surfaced at the q4 student.
+
+**v1 full q4 battery (`student-v15-balanced-onnx`), student val F1 0.9578
+(best of v15):**
+
+| Gate | bar | v15-balanced v1 | shipped v14 | verdict |
+| --- | --- | ---: | ---: | --- |
+| G1 rotated rare masked | > v13 94.9% | 98.98% / 3 leaks | 98.3% / 5 | PASS (best ever) |
+| G2 gold-real forced-LC | >= 51/58 | **51/58** | 50 (exception) | **PASS, v11 level** |
+| G3 klintan leaks | cased<=8.7 low<=15.5 | 7.1% / 14.7% | 7.0% / 15.2% | PASS |
+| G4 ADR clean sweep | 100% / 0 | 97.7% / **0 leaks** | 100% / 0 | **FAIL** |
+| G5 curated | F1>=0.90 | 99.5% / 1 (Klarna) | 99.5% / 1 | PASS |
+
+The first v15 candidate to hit G2 = 51/58 (the entire headline target) with
+best-ever rare-surname masking. bare240 failed G2 + rare-surname safety + ADR;
+this fails ONLY G4, and on ONE span: `Hamngatan 10` -> `Hamngatan` (drops the
+house number; 0 leaks, street still masked). Confirmed regression, v14 and the
+seed baseline both tag `Hamngatan 10` fully. Root cause: the v1 dose balanced
+PER against LOC/ORG and negatives but starved ADR of its share, so street+number
+cohesion drifted.
+
+**v2 (`student-v15-balanced2-onnx`): the ADR subfamily fixes recall, the
+diluted negatives leak `Festen`.** A fifth subfamily (ADR, keeping "street
+number" cohesive) makes the dose 5-way balanced at 1200 rows (240 each,
+77,220 train rows, audit passed, 98 held-out surnames absent, val
+byte-identical). ADR recall goes back to 100% (`Hamngatan 10` fixed) and the
+curated "Klarna" classic is fixed for the first time since v5 (99.8 F1, 0
+leaks), but the negative share fell 25% -> 20% and the ordinary word `Festen`
+is tagged PERSON in one ADR-corpus distractor sentence (aggregate 98.9%
+there, 0 leaks; ADDRESS precision itself stays 100%). v14 and v1 leave
+`Festen` clean: a real, single, harmless over-redaction.
+
+**v3: negatives 2x (33%) kill the `Festen` FP but suppress a common-noun
+LOC.** COMMON_WORDS grown 24 -> 48 with copula/"hemma hos" frames, negatives
+weighted twice (1440-row dose). `Festen` is clean again and klintan-lowercase
+hits a best (13.1% leaks), but `Centralstationen` (a common-noun-SHAPED
+location, correctly tagged by v14/v1/v2) is now suppressed to non-entity: 1
+REAL leak on the ADR corpus. The negatives teach "definite common noun -> O"
+and the LOC positives (all proper names) provide no counter-signal.
+
+**v4: the broad counter-move regresses G2; the boundary is zero-sum.** LOC
+share raised to 25% via a 12-slot cycle plus a 20-word common-noun place
+gazetteer (`Stationen`, `Stortorget`, ... `Centralstationen` itself held
+out). Result: G2 falls BELOW the bar for the first time in the round (50/58),
+G1 drops to 97.96%/6 leaks, klintan leaks near-ceiling (8.5%/15.4%), and G4
+still fails. Strictly worse than v1-v3; rejected. **The round's core
+finding:** the sentence-initial boundary is zero-sum across classes. Four
+doses each moved one borderline span at the cost of another
+(`Hamngatan 10` / `Festen` / `Centralstationen` / `löfven`), and no ratio
+satisfies all of them at once with this technique.
+
+**Round verdict: PUBLISH v2 with one documented exception.** Final battery
+(all vs shipped v14): G1 99.3% masked / 2 leaks with PER-typing 71.4%
+(v14: 98.3%/5, 66.3%; both best ever, and typing improved WITHOUT the
+masked-recall trade v14b measured), G2 **51/58** (retires v14's exception),
+G3 7.2%/13.8% (lowercase best ever), G5 curated 99.8 F1 / 0 leaks (first
+zero-leak release; "Klarna" fixed), G4 98.9% aggregate on the ADR corpus
+with 0 leaks: every address metric is still a 100% clean sweep, and the sole
+failure is the `Festen` over-redaction. The exception was accepted because
+it is the only harmless flaw among the four candidates (over-redaction, not
+a leak) and it replaces a worse one: v14's G2 exception leaked real bare
+surnames. gold-real exact-span F1 reads 93.9 vs v14's 95.7 (boundary slips
+on the 58-entity directional set; same single `Vita huset` leak) and
+retention costs a few more flags (20/33 vs 16/23): both documented in
+BENCHMARKS.md. Artifact: `student-v15-balanced2-onnx`, q4 42,705,681 bytes,
+sha256 ca6b4a66. Demo folder `maskera-sv-ner-v15`.
+
+Infra added this round, kept regardless: `distill.py`
+`MASKERA_DISTILL_BATCH` / `MASKERA_GRAD_ACCUM` (batch-32 distill was OOM-killed
+twice under memory pressure; 16 / accum-2 is the same effective batch at half
+the activation memory) and `MASKERA_RESUME=1`; `run_v14.sh` `SKIP_DISTILL=1` to
+resume the fast trim/onnx/q4/gate tail without re-distilling. Reproducibility
+note: v2's data was built before the fixture-identifier commit (4e27289)
+swapped two hardcoded distractor numbers in `generate_data.mjs`, so a rebuild
+today differs in 11 O-tagged distractor rows; every entity row is identical.
+
+**Queued next (v5, not started): the surgical version of v4.** Keep v2's
+exact 5-way dose and ratios, change ONLY the LOC builder to mix in the
+common-noun place gazetteer. That isolates the one lever v4 confounded with
+its ratio shift, aiming to clear the `Festen` exception without touching
+G2; if it sweeps 5/5 clean, it replaces the v15 artifact in a patch release.
+
 ## Publish to Hugging Face (single hosted source)
 
 Hosting the model once means the demo and every future `@maskera` package point at
