@@ -29,11 +29,11 @@ so one import covers rules and model alike. Rules only, zero dependencies:
 
 ## How it works
 
-The whole idea in one picture (in Swedish, like the product): what your text
-contains, what maskera does on your device, and what the receiving side
-actually sees.
+The whole idea in one picture: what your text contains, what maskera does on
+your device, and what the receiving side actually sees. (Swedish edition:
+[docs/oversikt.svg](docs/oversikt.svg).)
 
-<img src="docs/oversikt.svg" alt="Översikt i tre steg: din text innehåller känsliga uppgifter som namn, personnummer och telefonnummer; maskera byter ut dem på din enhet med regler och en AI-modell, inget lämnar datorn; mottagaren ser bara platshållare som [NAMN]. Svaret får de riktiga uppgifterna tillbaka hos dig." width="100%">
+<img src="docs/overview.svg" alt="Three-step overview: your text contains sensitive details such as a name, personnummer and phone number; maskera replaces them on your device with rules and an AI model, nothing leaves it; the receiver only sees placeholders like [NAMN]. The reply gets the real details back on your side." width="100%">
 
 ## The model is the point
 
