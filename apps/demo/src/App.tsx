@@ -53,60 +53,58 @@ export function App() {
 
   return (
     <div className="app">
-      {view === "demo" && (
-        <>
-          <Header onDev={() => navigate("dev")} onServices={() => navigate("services")} />
-          <main>
-            <Controls
-              activeId={active.id}
-              onPick={pick}
-              status={ner.status}
-              progress={ner.progress}
-              analyzing={ner.analyzing}
-            />
-            <div className="grid">
-              <InputCard
-                tagline={active.tagline}
-                text={text}
-                redactions={ner.result.redactions}
-                onChange={setText}
-              />
-              {/* key resets the card's local protect/showMap state per scenario */}
-              <OutputCard
-                key={active.id}
-                result={ner.result}
+      {/* One persistent Suspense boundary around the whole view switch. React
+          only keeps the current page on screen during a suspended transition
+          for boundaries that already exist — a per-view boundary is brand new
+          on every navigation, so its null fallback would commit immediately
+          and blank-flash the page while a sub-page chunk loads (first visit,
+          fresh cache). */}
+      <Suspense fallback={null}>
+        {view === "demo" && (
+          <>
+            <Header onDev={() => navigate("dev")} onServices={() => navigate("services")} />
+            <main>
+              <Controls
+                activeId={active.id}
+                onPick={pick}
+                status={ner.status}
+                progress={ner.progress}
                 analyzing={ner.analyzing}
-                invalidPnrs={invalidPnrs}
               />
-            </div>
-            {/* Step three: paste the AI's answer back and un-mask it locally.
-                Only shown once there is something to restore. key resets the
-                edited draft when the scenario changes. */}
-            {Object.keys(ner.result.map).length > 0 && (
-              <RestoreDemo key={active.id} result={ner.result} scenarioId={active.id} />
-            )}
-          </main>
-        </>
-      )}
-      {view === "dev" && (
-        <Suspense fallback={null}>
-          <Developers onBack={goDemo} onServices={() => navigate("services")} />
-        </Suspense>
-      )}
-      {view === "transparency" && (
-        <Suspense fallback={null}>
+              <div className="grid">
+                <InputCard
+                  tagline={active.tagline}
+                  text={text}
+                  redactions={ner.result.redactions}
+                  onChange={setText}
+                />
+                {/* key resets the card's local protect/showMap state per scenario */}
+                <OutputCard
+                  key={active.id}
+                  result={ner.result}
+                  analyzing={ner.analyzing}
+                  invalidPnrs={invalidPnrs}
+                />
+              </div>
+              {/* Step three: paste the AI's answer back and un-mask it locally.
+                  Only shown once there is something to restore. key resets the
+                  edited draft when the scenario changes. */}
+              {Object.keys(ner.result.map).length > 0 && (
+                <RestoreDemo key={active.id} result={ner.result} scenarioId={active.id} />
+              )}
+            </main>
+          </>
+        )}
+        {view === "dev" && <Developers onBack={goDemo} onServices={() => navigate("services")} />}
+        {view === "transparency" && (
           <Transparency
             onBack={goDemo}
             onDev={() => navigate("dev")}
             onServices={() => navigate("services")}
           />
-        </Suspense>
-      )}
-      {view === "services" && (
-        <Suspense fallback={null}>
-          <Services onBack={goDemo} onDev={() => navigate("dev")} />
-        </Suspense>
-      )}
+        )}
+        {view === "services" && <Services onBack={goDemo} onDev={() => navigate("dev")} />}
+      </Suspense>
       <Footer
         onTransparency={() => navigate("transparency")}
         onPolicy={goPolicy}
