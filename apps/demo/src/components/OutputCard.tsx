@@ -53,7 +53,6 @@ function Stats({ result }: { result: RedactResult }) {
               className="tag"
               style={{ color: m.color, background: `${m.color}1a`, borderColor: `${m.color}73` }}
             >
-              <span className="tag-dot" style={{ background: m.color }} />
               {m.sv}
               <span className="tag-n">{n}</span>
             </span>
