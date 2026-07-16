@@ -124,7 +124,8 @@ perfect. The canonical numbers and their caveats live in
 where: 100% on-device, the only network calls are one-time fetches of the
 model and the WASM runtime (never your text), self-hostable, trained without
 collecting anyone's data
-(synthetic sentences plus one public, openly licensed news dataset).
+(synthetic sentences plus six public, openly licensed corpora of
+already-published text).
 
 For DPOs, security teams and legal reviewers there is a whitepaper covering
 architecture, privacy model, training data, measured quality and GDPR

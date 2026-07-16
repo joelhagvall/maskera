@@ -25,10 +25,20 @@ are.
 
 - **No collected personal data in training.** The Swedish NER model was trained
   on template-generated synthetic sentences (`training/generate_data.mjs`) plus
-  one public, openly licensed dataset (the Swedish NER Corpus, news text):
-  **no user data, nothing scraped by us, nothing collected for this project.**
-  The news corpus contains real published sentences about public figures; the
-  synthetic generator is in the repo, so you can read exactly what it produces.
+  six public, openly licensed (CC BY 4.0) corpora of already-published text:
+  the [Swedish NER Corpus](https://github.com/klintan/swedish-ner-corpus)
+  (news), [SUCX 3.0 NER](https://huggingface.co/datasets/KBLab/sucx3_ner)
+  (balanced genres),
+  [MASSIVE sv-SE](https://huggingface.co/datasets/AmazonScience/massive)
+  (chat-register utterances),
+  [SIC2](https://spraakbanken.gu.se/resurser/sic2) (informal blog text),
+  [MultiCoNER v2 sv](https://huggingface.co/datasets/MultiCoNER/multiconer_v2)
+  (lowercase wiki sentences) and a pseudo-labeled sample of Flashback /
+  Familjeliv forum text ([Språkbanken](https://spraakbanken.gu.se/resurser)
+  research corpora): **no user data, nothing scraped by us, nothing collected
+  for this project.** All corpus text was previously published under an open
+  license; the synthetic generator is in the repo, so you can read exactly
+  what it produces.
 - **Base model:** `KBLab/bert-base-swedish-cased` (National Library of Sweden),
   public domain (CC0). Fine-tuned, then distilled to a smaller student.
 - **The whole pipeline is reproducible**: data → train → distill → ONNX → eval are
@@ -53,9 +63,12 @@ No. Redaction is local. Only model weights/runtime are fetched (once), never you
 content.
 
 **What was the model trained on?**
-Template-generated synthetic sentences (`training/generate_data.mjs`) plus one
-public, openly licensed news dataset containing already-published text about
-public figures. No user data, nothing collected for this project.
+Template-generated synthetic sentences (`training/generate_data.mjs`) plus six
+public, openly licensed (CC BY 4.0) corpora of already-published text: news,
+balanced genres, chat-register utterances, blog and forum text (see the full
+sourced list above and on the
+[model card](https://huggingface.co/joelhagvall/maskera-sv-ner)). No user
+data, nothing collected for this project.
 
 **Is this GDPR-compliant?**
 maskera is a **data-minimisation tool** that helps you avoid sending PII to third

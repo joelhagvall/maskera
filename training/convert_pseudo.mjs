@@ -38,6 +38,14 @@
  * are DROPPED (substring, case-insensitive: the same rule that
  * gen_rare_surname_eval.mjs --check enforces on the built data).
  *
+ * Identifier scrub: forum posts occasionally include the author's own
+ * contact or account details (a real-looking Swedbank IBAN + SWIFT row
+ * surfaced in the v14 pool, found 2026-07-16). Structured identifiers carry
+ * no PER/LOC/ORG training signal, so any row with an IBAN/BIC-shaped token,
+ * an email address, a personnummer-shaped number, a phone-shaped number
+ * (2-4 digits, dash, 5+ digits) or a 7+ digit run is dropped wholesale.
+ * Year and amount ranges (four digits, dash, four digits) deliberately stay.
+ *
  * Usage: node convert_pseudo.mjs [srcJsonl] [trainJsonl] [valJsonl]
  * Knobs: PSEUDO_TOTAL (default 20000), PSEUDO_EMPTY_SHARE (0.3),
  *        PSEUDO_MIN_CONF (0.85), PSEUDO_SOLO_CONF (0.97),
@@ -105,9 +113,14 @@ const EVAL_SURNAMES = [
   ),
 ]
 
+// See "Identifier scrub" in the header. Alternatives: IBAN/BIC-shaped token,
+// email, personnummer shape, phone shape (2-4 digits dash 5+), 7+ digit run.
+const IDENTIFIER_TOKEN =
+  /\b[a-z]{2}\d{2}[a-z0-9]{10,}\b|@[a-z0-9åäö.-]+\.[a-z]{2,}|\b\d{6}[-+]?\d{4}\b|\b\d{2,4}-\d{5,}\b|\d{7,}/i
+
 const rows = []
 const seen = new Set()
-const stats = { pool: 0, adr: 0, unconfirmed: 0, sbxOnly: 0, surname: 0, dup: 0 }
+const stats = { pool: 0, adr: 0, unconfirmed: 0, sbxOnly: 0, surname: 0, identifier: 0, dup: 0 }
 for (const line of readFileSync(SRC, "utf-8").split("\n")) {
   if (!line.trim()) continue
   const r = JSON.parse(line)
@@ -134,6 +147,10 @@ for (const line of readFileSync(SRC, "utf-8").split("\n")) {
   const joined = r.tokens.join(" ").toLowerCase()
   if (EVAL_SURNAMES.some((s) => joined.includes(s))) {
     stats.surname++
+    continue
+  }
+  if (IDENTIFIER_TOKEN.test(joined)) {
+    stats.identifier++
     continue
   }
   const key = r.tokens.join(" ")
@@ -200,7 +217,7 @@ appendFileSync(TRAIN_DEST, `${trainOut.join("\n")}\n`)
 appendFileSync(VAL_DEST, `${valOut.join("\n")}\n`)
 
 console.log(
-  `pseudo pool: ${stats.pool} rows (dropped: ${stats.adr} adr, ${stats.unconfirmed} unconfirmed, ${stats.sbxOnly} sbx-only-entity, ${stats.surname} eval-surname, ${stats.dup} dup)`,
+  `pseudo pool: ${stats.pool} rows (dropped: ${stats.adr} adr, ${stats.unconfirmed} unconfirmed, ${stats.sbxOnly} sbx-only-entity, ${stats.surname} eval-surname, ${stats.identifier} identifier, ${stats.dup} dup)`,
 )
 console.log(
   `strata: lowerPer ${strata.lowerPer.length}, per ${strata.per.length}, orgLoc ${strata.orgLoc.length}, empty ${strata.empty.length}`,

@@ -203,15 +203,20 @@ both answers are public.
         the National Library of Sweden's BERT, released under CC0. It was
         fine-tuned for entity recognition, then distilled into a smaller
         student model quantised to a 43\,MB ONNX artifact.
-  \item \textbf{Training data:} approximately 24{,}000 synthetic,
+  \item \textbf{Training data:} approximately 25{,}000 synthetic,
         template-generated Swedish sentences (the generator is public in the
-        repository and contains no real personal data), plus four public,
-        openly licensed (CC~BY~4.0) corpora of already-published text:
-        approximately 6{,}900 real news sentences from the Swedish NER
-        Corpus, a weighted sample of SUCX~3.0 (Spr\aa kbanken/KBLab,
-        balanced genres), the Swedish subset of Amazon's MASSIVE corpus
-        (lowercase chat-register utterances, professionally localised), and
-        SIC2 (Spr\aa kbanken, informal blog text).
+        repository and contains no real personal data), plus six public,
+        openly licensed (CC~BY~4.0) corpora of already-published text
+        (approximately 52{,}000 sentences in total): real news sentences
+        from the Swedish NER Corpus, a weighted sample of SUCX~3.0
+        (Spr\aa kbanken/KBLab, balanced genres), the Swedish subset of
+        Amazon's MASSIVE corpus (lowercase chat-register utterances,
+        professionally localised), SIC2 (Spr\aa kbanken, informal blog
+        text), a class-audited sample of MultiCoNER~v2 Swedish (lowercase
+        encyclopedic sentences), and an ensemble pseudo-labelled sample of
+        Flashback/Familjeliv forum text (Spr\aa kbanken research corpora;
+        pseudo-labels broaden the informal register, while every published
+        quality number is measured on human-labelled sets).
   \item \textbf{No user data:} nothing was scraped or collected for this
         project, and no data from people who use maskera enters training (no
         such collection exists).

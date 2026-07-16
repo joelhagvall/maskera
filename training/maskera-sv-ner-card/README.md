@@ -162,15 +162,23 @@ ALL CAPS and genitive augmentation, since chat users type lowercase; the
 current round also trains the student on the trimmed inference vocabulary's
 subword decompositions, so rare surnames like "tjulander" stay caught in the
 chat register) plus five public, openly licensed real corpora (all
-CC BY 4.0): the **Swedish NER Corpus** (news) train split, a weighted sample
-of **SUCX 3.0 NER** (KBLab, balanced genres, the data behind KBLab's
-case-robust lowermix recipe), **MASSIVE sv-SE** (Amazon, lowercase
-chat-register utterances), **SIC2** (Språkbanken, informal blog text) and a
-class-audited sample of **MultiCoNER v2 sv** (SemEval-2023, lowercase wiki
-sentences); from the v14 round also a register-targeted, ensemble
-pseudo-labeled sample of **Flashback / Familjeliv** forum text (Språkbanken;
-pseudo-labels amplify the informal register, every published number is still
-measured on human-labeled sets). The v15 round adds a synthetic balanced
+CC BY 4.0): the
+[**Swedish NER Corpus**](https://github.com/klintan/swedish-ner-corpus)
+(news) train split, a weighted sample of
+[**SUCX 3.0 NER**](https://huggingface.co/datasets/KBLab/sucx3_ner)
+(KBLab, balanced genres, the data behind KBLab's case-robust lowermix
+recipe),
+[**MASSIVE sv-SE**](https://huggingface.co/datasets/AmazonScience/massive)
+(Amazon, lowercase chat-register utterances),
+[**SIC2**](https://spraakbanken.gu.se/resurser/sic2) (Språkbanken, informal
+blog text) and a class-audited sample of
+[**MultiCoNER v2 sv**](https://huggingface.co/datasets/MultiCoNER/multiconer_v2)
+(SemEval-2023, lowercase wiki sentences); from the v14 round also a
+register-targeted, ensemble pseudo-labeled sample of
+**Flashback / Familjeliv** forum text
+([Språkbanken](https://spraakbanken.gu.se/resurser); pseudo-labels amplify
+the informal register, every published number is still measured on
+human-labeled sets). The v15 round adds a synthetic balanced
 class-replay dose (sentence-initial bare-surname declaratives paired with
 LOC / ORG / ADR positives and capitalised common-word negatives), which fixed
 the bare-lowercase-surname declarative gap and the "Klarna" miss. That also means the Swedish NER Corpus

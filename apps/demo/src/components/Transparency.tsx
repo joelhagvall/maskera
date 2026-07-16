@@ -102,10 +102,66 @@ export function Transparency({
           <ul>
             <li>
               <strong>Inga insamlade personuppgifter i träningen.</strong> Modellen tränades på
-              maskingenererade meningar plus ett publikt, öppet licensierat nyhetsdataset:{" "}
-              <strong>inga användardata, ingenting insamlat för det här projektet</strong>.
-              Nyhetstexterna innehåller redan publicerade meningar om offentliga personer.
-              Generatorn ligger öppen på GitHub.
+              maskingenererade meningar plus sex publika, öppet licensierade korpusar (CC BY 4.0)
+              med redan publicerad text:{" "}
+              <a
+                href="https://github.com/klintan/swedish-ner-corpus"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Swedish NER Corpus
+              </a>{" "}
+              (nyheter),{" "}
+              <a
+                href="https://huggingface.co/datasets/KBLab/sucx3_ner"
+                target="_blank"
+                rel="noreferrer"
+              >
+                SUCX 3.0
+              </a>{" "}
+              (blandade genrer, KBLab),{" "}
+              <a
+                href="https://huggingface.co/datasets/AmazonScience/massive"
+                target="_blank"
+                rel="noreferrer"
+              >
+                MASSIVE
+              </a>{" "}
+              (chattmeningar),{" "}
+              <a href="https://spraakbanken.gu.se/resurser/sic2" target="_blank" rel="noreferrer">
+                SIC2
+              </a>{" "}
+              (bloggtext),{" "}
+              <a
+                href="https://huggingface.co/datasets/MultiCoNER/multiconer_v2"
+                target="_blank"
+                rel="noreferrer"
+              >
+                MultiCoNER v2
+              </a>{" "}
+              (uppslagstext) samt foruminlägg ur Språkbankens{" "}
+              <a
+                href="https://spraakbanken.gu.se/resurser/flashback"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Flashback
+              </a>
+              - och{" "}
+              <a
+                href="https://spraakbanken.gu.se/resurser/familjeliv"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Familjeliv
+              </a>
+              -korpusar.{" "}
+              <strong>Inga användardata, ingenting insamlat för det här projektet.</strong> Exakta
+              urval och andelar finns på{" "}
+              <a href={HF_MODEL} target="_blank" rel="noreferrer">
+                modellkortet
+              </a>
+              , och generatorn ligger öppen på GitHub.
             </li>
             <li>
               <strong>Basmodell:</strong> KB-BERT från Kungliga biblioteket, fri att använda (CC0).
