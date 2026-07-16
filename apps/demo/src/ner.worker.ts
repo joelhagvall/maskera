@@ -1,6 +1,7 @@
 import type { Redaction } from "@maskera/core"
 import { createNerRecognizer, redactWithNer } from "maskera"
 import { ruleDetectors } from "./detectors"
+import modelMeta from "./model-meta.json"
 
 /** Messages from the worker to the main thread. */
 export type NerWorkerMsg =
@@ -39,11 +40,23 @@ const recognizerPromise = (async () => {
     dtype: "q4",
     device: "wasm",
     onProgress: (p) => {
-      const prog = p as { status?: string; progress?: number }
-      if (prog?.status === "progress" && typeof prog.progress === "number") {
+      const prog = p as { status?: string; file?: string; loaded?: number }
+      // Track the onnx weights only (41 of 41.6 MB): their bytes ARE the
+      // download for any bar purpose. Compute the percentage ourselves from
+      // `loaded` against the known file size: the event's own `progress` (and
+      // the aggregate progress_total) is pinned at 100 whenever the server
+      // omits content-length, which Vercel does for this file (brotli,
+      // chunked) - the very bug where the bar sat frozen at 100%.
+      if (
+        prog?.status === "progress" &&
+        typeof prog.loaded === "number" &&
+        prog.file?.endsWith(".onnx")
+      ) {
         postMessage({
           type: "progress",
-          progress: Math.round(prog.progress),
+          // floor + cap: 100 must mean the download actually finished, since
+          // the UI switches to the "starting up" phase at 100.
+          progress: Math.min(100, Math.floor((prog.loaded / modelMeta.onnxBytes) * 100)),
         } satisfies NerWorkerMsg)
       }
     },

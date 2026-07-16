@@ -12,15 +12,26 @@ function ModelStatus({
   analyzing: boolean
 }) {
   if (status === "loading") {
+    // Past 100% the download is done but the WASM runtime is still starting
+    // up, a phase with no progress events until "ready". Name that phase
+    // instead of sitting on a frozen "100%".
+    const starting = progress >= 100
     return (
       <div className="status">
         {/* Decorative: the sibling text carries the same progress information. */}
         <span className="bar" aria-hidden="true">
-          <span className="bar-fill" style={{ width: `${Math.max(progress, 3)}%` }} />
+          <span
+            className={`bar-fill${starting ? " starting" : ""}`}
+            style={{ width: `${Math.max(progress, 3)}%` }}
+          />
         </span>
-        <span>
-          Laddar maskeras AI-modell… <span className="pct">{progress}%</span>
-        </span>
+        {starting ? (
+          <span>Startar AI-modellen…</span>
+        ) : (
+          <span>
+            Laddar maskeras AI-modell… <span className="pct">{progress}%</span>
+          </span>
+        )}
       </div>
     )
   }

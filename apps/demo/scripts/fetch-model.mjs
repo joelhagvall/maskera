@@ -14,6 +14,7 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  statSync,
   writeFileSync,
 } from "node:fs"
 import { createRequire } from "node:module"
@@ -58,6 +59,20 @@ for (const [file, expected] of Object.entries(FILES)) {
   writeFileSync(target, buf)
 }
 console.log(`model verified in ${DEST}`)
+
+// The loading bar computes its percentage from src/model-meta.json (Vercel
+// serves the weights brotli'd without content-length, so the byte size can't
+// come from the response). Fail the build if it drifts from the real file,
+// e.g. after a model bump that forgot to update it.
+const statSize = statSync(join(DEST, "onnx/model_q4.onnx")).size
+const metaPath = resolve(dirname(fileURLToPath(import.meta.url)), "../src/model-meta.json")
+const meta = JSON.parse(readFileSync(metaPath, "utf8"))
+if (meta.onnxBytes !== statSize) {
+  console.error(
+    `src/model-meta.json onnxBytes (${meta.onnxBytes}) != actual model size (${statSize}). Update it.`,
+  )
+  process.exit(1)
+}
 
 // Also copy the ONNX WASM runtime into public/ort/, so the demo self-hosts
 // it instead of pulling it from jsDelivr (zero external requests). Since
