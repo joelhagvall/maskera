@@ -17,8 +17,10 @@ export function App() {
   const [anchor, setAnchor] = useState<string | null>(null)
   // "Se hela flödet" expanded state lives here, NOT in RestoreDemo: that
   // component is keyed per scenario (to reset the edited draft), and a local
-  // open state would collapse the flow on every scenario switch.
+  // open state would collapse the flow on every scenario switch. Same story
+  // for the output card's "Visa återställningsnyckel" toggle.
   const [flowOpen, setFlowOpen] = useState(false)
+  const [mapOpen, setMapOpen] = useState(false)
   const { view, navigate } = useRoute()
   const ner = useSwedishNer(text)
   const invalidPnrs = useMemo(
@@ -86,12 +88,14 @@ export function App() {
                   redactions={ner.result.redactions}
                   onChange={setText}
                 />
-                {/* key resets the card's local protect/showMap state per scenario */}
+                {/* The restore-key toggle state lives in App (like flowOpen):
+                    it survives scenario switches instead of collapsing. */}
                 <OutputCard
-                  key={active.id}
                   result={ner.result}
                   analyzing={ner.analyzing}
                   invalidPnrs={invalidPnrs}
+                  showMap={mapOpen}
+                  onToggleMap={() => setMapOpen((v) => !v)}
                 />
               </div>
               {/* Right under the cards, and only for the preset examples: the

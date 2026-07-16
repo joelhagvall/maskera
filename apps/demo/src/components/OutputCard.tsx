@@ -84,12 +84,16 @@ export function OutputCard({
   result,
   analyzing,
   invalidPnrs,
+  showMap,
+  onToggleMap,
 }: {
   result: RedactResult
   analyzing: boolean
   invalidPnrs: string[]
+  /** Owned by App so the toggle survives scenario switches. */
+  showMap: boolean
+  onToggleMap: () => void
 }) {
-  const [showMap, setShowMap] = useState(false)
   const unique = Object.keys(result.map).length
 
   return (
@@ -124,7 +128,7 @@ export function OutputCard({
 
       {unique > 0 && (
         <>
-          <button type="button" className="link" onClick={() => setShowMap((v) => !v)}>
+          <button type="button" className="link" onClick={onToggleMap}>
             {showMap ? "Dölj" : "Visa"} återställningsnyckel ({unique})
           </button>
           {showMap && <RestoreMap map={result.map} />}
