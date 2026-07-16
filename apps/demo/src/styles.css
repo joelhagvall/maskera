@@ -266,6 +266,18 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
+
+/* Footnote right under the cards: the example identifiers are reserved test
+   values. Hugs the grid so it reads as a caption for the example text. */
+.exnote {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.exnote a {
+  color: inherit;
+  text-decoration: underline;
+}
 @media (max-width: 820px) {
   .grid {
     grid-template-columns: 1fr;

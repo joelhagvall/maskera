@@ -7,7 +7,7 @@ import { OutputCard } from "./components/OutputCard"
 import { RestoreDemo } from "./components/RestoreDemo"
 import { invalidPersonnummer } from "./hints"
 import { Developers, prefetchPagesWhenIdle, Services, Transparency } from "./pages"
-import { useRoute } from "./routing"
+import { navClick, useRoute, viewPaths } from "./routing"
 import { type Scenario, scenarios } from "./scenarios"
 import { useSwedishNer } from "./useSwedishNer"
 
@@ -50,6 +50,10 @@ export function App() {
     setAnchor("integritetspolicy")
     navigate("transparency")
   }
+  const goTestdata = () => {
+    setAnchor("testdata")
+    navigate("transparency")
+  }
 
   return (
     <div className="app">
@@ -86,6 +90,19 @@ export function App() {
                   invalidPnrs={invalidPnrs}
                 />
               </div>
+              {/* Right under the cards, and only for the preset examples: the
+                  raw-looking values in "Din text" are the reason the note
+                  exists, and it has nothing to say about the user's own text. */}
+              {active.id !== "fritext" && (
+                <p className="exnote">
+                  Personerna i exemplen är påhittade. Personnummer, telefonnummer och kontouppgifter
+                  är officiellt reserverade testvärden, aldrig en verklig persons uppgifter.{" "}
+                  <a href={viewPaths.transparency} onClick={navClick(goTestdata)}>
+                    Läs mer om testdatan
+                  </a>
+                  .
+                </p>
+              )}
               {/* Step three: paste the AI's answer back and un-mask it locally.
                   Only shown once there is something to restore. key resets the
                   edited draft when the scenario changes. */}

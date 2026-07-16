@@ -63,7 +63,7 @@ const TEST_PLUSGIRO = new Set(["9201005"]) // Nordea Total IN test file
 const TEST_CARDS = new Set(["4242424242424242"]) // Stripe test card
 
 // PostNord uses 123 45 Staden in its public addressing guide.
-// https://www.postnord.se/siteassets/pdf/ovrigt/portoguide-1-januari-2024.pdf
+// https://www.postnord.se/siteassets/-pdf/ovrigt/skicka-ratt-med-postnord-20260126.pdf
 const TEST_POSTNUMMER = new Set(["12345"])
 
 // Real operational contact details are allowed explicitly. Every other email

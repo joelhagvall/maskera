@@ -8,9 +8,9 @@ published for testing or fictional use by the responsible authority.
 ## Approved sources
 
 - Personnummer and samordningsnummer: [Skatteverket's open test-person datasets](https://www.skatteverket.se/omoss/digitalasamarbeten/omvaraoppnadata/testpersonnummersomoppendata.4.5b35a6251761e6914202df9.html).
-- Organisationsnummer: the `Kommun A` test certificate in [Skatteverket's Navet test documentation](https://www.skatteverket.se/download/18.262c54c219391f2e9638/1733323191133/Navet-Teknisk-handledning-Test-Folkbokforingsuppgifter-for-offentliga-aktorer-SOAP.pdf).
+- Organisationsnummer: the `Kommun A` test certificate in [Skatteverket's Navet test documentation](https://www7.skatteverket.se/portal-wapi/open/apier-och-oppna-data/utvecklarportalen/v1/getFile/tjanstebeskrivning-folkbokforingsuppgifter-for-offentliga-aktorer-v3/pdf/1.0.3/tjanstebeskrivning-folkbokforingsuppgift-offentliga-aktorer-v3.pdf).
 - Swedish phone numbers: [PTS ranges reserved for books and films](https://pts.se/internet-och-telefoni/telefonnummer-och-adressering/telefonnummer-till-bocker-och-filmer/).
-- Postnummer: PostNord's published addressing example `123 45 Staden` in its [postage guide](https://www.postnord.se/siteassets/pdf/ovrigt/portoguide-1-januari-2024.pdf).
+- Postnummer: PostNord's published addressing example `123 45 Staden` in its [addressing guide](https://www.postnord.se/siteassets/-pdf/ovrigt/skicka-ratt-med-postnord-20260126.pdf).
 - Bankgiro: Bankgirot's [Bankgiro Link test files](https://www.bankgirot.se/kundservice/exempelfiler/), which state that their bankgiro and account numbers are test data, not authentic accounts.
 - PlusGiro: Nordea's [Total IN example files](https://www.nordea.se/foretag/produkter/betala/total-in-bas.html).
 - Swedish IBAN: [Swedbank Validex test accounts](https://www.swedbank.se/foretag/betala-och-ta-betalt/betala/fakturahantering/betala-via-fil/mig.html).
