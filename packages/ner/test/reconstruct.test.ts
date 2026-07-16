@@ -246,4 +246,80 @@ describe("reconstruct", () => {
     const out = reconstruct(text, [tok("B-PER", "Anna", 2, 0.3)], labelMap, 0.5)
     expect(out).toEqual([])
   })
+
+  it("trims a swallowed 'org' label word from an ORG span (org.nr frame)", () => {
+    // The demo Juridik example: the model tagged "Kommun A, org" as one ORG
+    // group, leaving "[ORGANISATION].nr" in the redacted output.
+    const text = "yrkar skadestånd mot Kommun A, org.nr 202100-4748."
+    const out = reconstruct(
+      text,
+      [
+        tok("B-ORG", "Kommun", 3),
+        tok("I-ORG", "A", 4),
+        tok("I-ORG", ",", 5),
+        tok("I-ORG", "org", 6),
+      ],
+      labelMap,
+      0.5,
+    )
+    expect(out).toEqual([{ start: 21, end: 29, value: "Kommun A", label: "ORGANIZATION" }])
+  })
+
+  it("trims a swallowed 'pnr' label word from a PER span", () => {
+    const text = "Klient Eva Lind, pnr 850601-2387, kallas."
+    const out = reconstruct(
+      text,
+      [
+        tok("B-PER", "Eva", 1),
+        tok("I-PER", "Lind", 2),
+        tok("I-PER", ",", 3),
+        tok("I-PER", "pnr", 4),
+      ],
+      labelMap,
+      0.5,
+    )
+    expect(out).toEqual([{ start: 7, end: 15, value: "Eva Lind", label: "PERSON" }])
+  })
+
+  it("keeps the 'nr' inside an ADR span that ends with the house number", () => {
+    const text = "Hyresgästen på Storgatan nr 5 har sagt upp avtalet."
+    const out = reconstruct(
+      text,
+      [tok("B-ADR", "Storgatan", 3), tok("I-ADR", "nr", 4), tok("I-ADR", "5", 5)],
+      labelMap,
+      0.5,
+    )
+    expect(out).toEqual([{ start: 15, end: 29, value: "Storgatan nr 5", label: "ADR" }])
+  })
+
+  it("keeps an entity that IS a label-like word intact (no separator, no trim)", () => {
+    const text = "Han jobbar på Org i stan."
+    const out = reconstruct(text, [tok("B-ORG", "Org", 3)], labelMap, 0.5)
+    expect(out).toEqual([{ start: 14, end: 17, value: "Org", label: "ORGANIZATION" }])
+  })
+
+  it("widens an ADR span that stopped before the house number", () => {
+    // "Anna Lindhs plats 1": the model tagged the street words but left the
+    // house number outside the span, materially narrowing the address.
+    const text = "Konferensen hålls på Lindhs plats 1 imorgon."
+    const out = reconstruct(
+      text,
+      [tok("B-ADR", "Lindhs", 4), tok("I-ADR", "plats", 5)],
+      labelMap,
+      0.5,
+    )
+    expect(out).toEqual([{ start: 21, end: 35, value: "Lindhs plats 1", label: "ADR" }])
+  })
+
+  it("widens across the 'nr' form and a detached letter", () => {
+    const text = "Returen går till Hamngatan nr 5 b enligt avtalet."
+    const out = reconstruct(text, [tok("B-ADR", "Hamngatan", 4)], labelMap, 0.5)
+    expect(out).toEqual([{ start: 17, end: 33, value: "Hamngatan nr 5 b", label: "ADR" }])
+  })
+
+  it("does not widen an ADR span across ordinary following words", () => {
+    const text = "Vi ses på Storgatan klockan sex."
+    const out = reconstruct(text, [tok("B-ADR", "Storgatan", 3)], labelMap, 0.5)
+    expect(out).toEqual([{ start: 10, end: 19, value: "Storgatan", label: "ADR" }])
+  })
 })

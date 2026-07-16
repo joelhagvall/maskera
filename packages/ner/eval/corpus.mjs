@@ -793,4 +793,12 @@ export const corpus = [
       { value: "Norrköping", label: "LOCATION" },
     ],
   },
+  // v16: the "org.nr" frame. The model's ORG span must stop at the name and
+  // not swallow the identifier-label word ("Kommun A, org" leaving ".nr"
+  // dangling was a real demo find, fixed in reconstruct()). The org-nr value
+  // itself is the rules layer's job and is Skatteverket's Navet test number.
+  {
+    text: "Skadeståndskravet riktas mot Bergakommunen, org.nr 202100-4748, i sin helhet.",
+    entities: [{ value: "Bergakommunen", label: "ORGANIZATION" }],
+  },
 ]

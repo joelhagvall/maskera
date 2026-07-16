@@ -470,6 +470,34 @@ export function reconstruct(
           const suffixText = suffix?.[1]
           if (suffixText) end += suffixText.length
         }
+        // The complement: an ADR span that stops at the street words can leave
+        // the house number exposed ("Anna Lindhs plats" tagged, the "1"
+        // leaked; the 2026-07-14 sweep found the same on saint-prefixed
+        // streets). A bare number right after a street span narrows the
+        // address materially, so widen to include it (and any detached A-D
+        // letter after it). Ordinary following words are untouched: the
+        // extension requires digits immediately after the span.
+        if (base === "ADR" && LETTER.test(text[end - 1] ?? "")) {
+          const houseNumber = text
+            .slice(end)
+            .match(/^(\s+(?:nr\s+)?\d{1,4}(?:\s?[A-Da-d])?)(?=$|[^\p{L}\p{N}])/u)
+          const houseText = houseNumber?.[1]
+          if (houseText) end += houseText.length
+        }
+        // Identifier-label words: in "Kommun A, org.nr 202100-4748" the model's
+        // ORG span can swallow the "org" of the following "org.nr", leaving a
+        // dangling ".nr" outside the placeholder. The label word introduces the
+        // structured identifier (the rules layer's span), it is never part of
+        // the name, so trim it plus the separators before it. Requiring a
+        // separator keeps entities that ARE such a word ("Org" as a name)
+        // intact, and spans ending in a digit ("Storgatan nr 5") never match.
+        for (;;) {
+          const labelWord = text
+            .slice(start, end)
+            .match(/[\s,;:(]+(?:org|orgnr|pnr|personnr|nr)\.?$/iu)
+          if (!labelWord) break
+          end -= labelWord[0].length
+        }
         const soloFragment = group.length === 1 && (group[0]?.word.startsWith("##") ?? false)
         if (!soloFragment && isWholeWord(text, start, end)) {
           const label = labelMap(base)

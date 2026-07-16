@@ -1157,11 +1157,55 @@ note: v2's data was built before the fixture-identifier commit (4e27289)
 swapped two hardcoded distractor numbers in `generate_data.mjs`, so a rebuild
 today differs in 11 O-tagged distractor rows; every entity row is identical.
 
-**Queued next (v5, not started): the surgical version of v4.** Keep v2's
-exact 5-way dose and ratios, change ONLY the LOC builder to mix in the
-common-noun place gazetteer. That isolates the one lever v4 confounded with
-its ratio shift, aiming to clear the `Festen` exception without touching
-G2; if it sweeps 5/5 clean, it replaces the v15 artifact in a patch release.
+### v16 address round (2026-07-16): targets hit, safety tax too high, HOLD
+
+Joel's demo find opened the round: the model's ORG span swallowed ", org" out
+of "Kommun A, org.nr 202100-4748", leaving "[ORGANISATION].nr" in the output.
+Fixed at three levels: (1) `reconstruct()` now trims trailing
+identifier-label words (org/orgnr/pnr/personnr/nr) plus their separators,
+with unit tests, verified end-to-end against shipped v15; (2) a curated
+gate sentence (Bergakommunen, org.nr); (3) three org.nr TEMPLATES frames.
+The ADR eval also grew by the 38-case sweep's five broken categories (14
+gold sentences: saint/S:t + colon forms, free-word endings, farm/rural,
+abbreviations + nr-form, -kajen). **Ruler surprise: shipped v15 already
+passes 33/35 with 0 leaks** (the sweep ran against v14; the v15 ADR replay
+fixed most of it as a side effect). Open cases: SANKT mistyped ORG in ALL
+CAPS, and "Anna Lindhs plats 1" leaving the house number uncovered.
+
+The v16 candidate (address categories at ~26% of the address builder +
+org.nr frames + the shipped balanced dose) hit the round's targets at q4:
+all 14 new address cases pass, curated 100.0 F1 (first ever, org.nr gate
+included), PER-typing 72.4% (best ever). But the safety tax was too high:
+G1 masked fell 99.3% -> 97.6% (2 -> 7 leaks), G2 back to 50/58, and two new
+ADR precision faults ("nummer 148" over-flagged as ADDRESS, "Vreta Kloster"
+split into LOC + a spurious ADDRESS). The zero-sum boundary again, this
+time between address surface variety and the PER margins.
+
+**Round verdict: HOLD v16; v15 stays live.** Kept regardless (model-
+independent): the reconstruct() label-word trim + tests, the extended ADR
+eval, the curated org.nr gate, the generator categories (for a future round
+at a smaller share), and a reconstruct() ADR house-number widening that
+fixes the one material residue against shipped v15 without any training
+("Anna Lindhs plats 1" -> the number is covered; verified 35/35 masked,
+0 leaks, retention and curated unchanged). Next weight-level attempt should
+dose the address categories at a fraction of this round's ~26% share.
+
+**v5 (2026-07-16, post-publish): REJECTED at the teacher screen.** The
+share analysis sharpened the queued idea: negatives back at the
+`Festen`-proven 25% funded from ADR alone (20-slot cycle, 240/240/240/180/
+300, PER/LOC/ORG keeping v2's exact 20% since G2 fell when PER's share did),
+keeping the copula negative frames (v2's `Festen` FP sits in the exact
+"X är ..." shape its ADR subfamily introduced with no negative counterpart)
+and the common-place LOC mix at unchanged share. The teacher measured val F1
+**0.9657**, below the seed baseline (0.9696) and every prior dose
+(0.9692-0.9713), with ORG down to 0.93 and visibly eroded ORG probe
+confidences (socialdemokraterna 0.68-0.72 vs v3's 0.84+). Per the
+teacher-screen rule (no loss on per-class val F1 before spending the
+distill hour) and the 120/10 precedent, the run stopped there. Extra
+datapoint for the zero-sum finding: the v1 share equivalence does not
+transfer once the pool and frames change; the dose-ratio game is played
+out. The shipped v15 artifact and its documented `Festen` exception stand;
+the next attempt at that class needs a different idea than dose ratios.
 
 ## Publish to Hugging Face (single hosted source)
 

@@ -51,10 +51,10 @@ const UC_AUG = Number(process.env.UC_AUG ?? 0.05) // whole-sentence ALL CAPS
 // changes only the rows named by these controls.
 const BARE_DECLARATIVE_TRAIN_ROWS = Number(process.env.BARE_DECLARATIVE_TRAIN_ROWS ?? 0)
 const BARE_DECLARATIVE_VAL_ROWS = Number(process.env.BARE_DECLARATIVE_VAL_ROWS ?? 0)
-// v15: balanced class replay. Counts are TOTAL rows across the dose cycle
-// (PER 2, LOC 3, ORG 2, ADR 2, common-word negative 3 = 12 slots) and must be
-// divisible by twelve so the dose stays balanced. Appended after the base +
-// bare rows, so a zero-row run stays byte-identical to v14.
+// v15: balanced class replay. Counts are TOTAL rows across the five
+// subfamilies (bare-PER, LOC, ORG, ADR, common-word negative) and must be
+// divisible by five so the dose stays balanced. Appended after the base + bare
+// rows, so a zero-row run stays byte-identical to v14.
 const BALANCED_REPLAY_TRAIN_ROWS = Number(process.env.BALANCED_REPLAY_TRAIN_ROWS ?? 0)
 const BALANCED_REPLAY_VAL_ROWS = Number(process.env.BALANCED_REPLAY_VAL_ROWS ?? 0)
 
@@ -83,10 +83,10 @@ for (const [name, value] of [
   ["BALANCED_REPLAY_TRAIN_ROWS", BALANCED_REPLAY_TRAIN_ROWS],
   ["BALANCED_REPLAY_VAL_ROWS", BALANCED_REPLAY_VAL_ROWS],
 ]) {
-  // Must divide evenly across the balanced-dose cycle (see BALANCED_SUBFAMILIES
-  // below: PER 2, LOC 3, ORG 2, ADR 2, negative 3 = 12 slots).
-  if (value % 12 !== 0) {
-    throw new Error(`${name} must be divisible by 12 (one row per dose slot); got ${value}`)
+  // Must divide evenly across the balanced subfamilies (see
+  // BALANCED_SUBFAMILIES below: bare-PER, LOC, ORG, ADR, common-word negative).
+  if (value % 5 !== 0) {
+    throw new Error(`${name} must be divisible by 5 (one row per subfamily); got ${value}`)
   }
 }
 
@@ -485,7 +485,29 @@ const STREET_SUFFIX = [
   "allén",
   "plan",
   "gränden",
+  // v16: the quay family ("Skeppsbrokajen 8" was a total miss in the
+  // 2026-07-14 address sweep).
+  "kajen",
 ]
+// v16 address categories, from the 38-case sweep (ROADMAP "Swedish address
+// robustness"). Category-level surfaces only: the ADR eval's own streets
+// (Sankt Göransgatan, S:t Eriksgatan, Sankt Paulsgatan, Anna Lindhs plats,
+// Näsby Gård, Berga/Vreta Kloster, Sörgården Ekeby) are deliberately absent
+// so the eval keeps measuring generalisation.
+const SAINT_NAMES = ["Olof", "Per", "Lars", "Måns", "Hans", "Johannes", "Botvid", "Sigfrid"]
+const FARM_NAMES = [
+  "Norrgården",
+  "Västergården",
+  "Östergården",
+  "Solbacka",
+  "Ekbacka",
+  "Björklunda",
+  "Hagalund",
+  "Fridhem",
+  "Rosenlund",
+  "Lugnet",
+]
+const VILLAGES = ["Hulta", "Tuna", "Vallby", "Åkarp", "Stensjö", "Locknevi", "Skärlöv", "Härad"]
 const ORGS = [
   "Volvo",
   "Ericsson",
@@ -823,38 +845,11 @@ const person = () => {
 const bareSurname = () => pick(LAST)
 // v15 balanced replay: LOC/ORG subjects reuse the existing builders so the
 // positives stay in-distribution; COMMON is an ordinary word tagged O.
-// v4: common-noun-SHAPED place names (definite form), the class the negatives
-// suppress by accident. v3's 33% negatives dropped "Centralstationen"[LOC]
-// because the LOC positives only used proper city names, giving no counter-
-// signal that a common-noun-looking word can be a place. These are generic and
-// compositional; the eval span "Centralstationen" itself is deliberately absent
-// so the gate still measures generalisation, and none overlaps COMMON_WORDS.
-const COMMON_PLACES = [
-  "Stationen",
-  "Busstationen",
-  "Järnvägsstationen",
-  "Stortorget",
-  "Salutorget",
-  "Hamntorget",
-  "Fisktorget",
-  "Hamnen",
-  "Fiskehamnen",
-  "Gästhamnen",
-  "Stadsparken",
-  "Folkparken",
-  "Idrottsplatsen",
-  "Torget",
-  "Hamnplan",
-  "Kyrkbacken",
-  "Strandpromenaden",
-  "Badstranden",
-  "Torgplatsen",
-  "Marknadsplatsen",
-]
-// LOC positives mix proper city names with the common-noun places above, so the
-// model learns both are locations and the negatives cannot claim the whole
-// common-noun-definite shape.
-const bareLoc = () => (chance(0.35) ? pick(COMMON_PLACES) : place())
+// This file carries the SHIPPED v15 dose recipe (v2 of the sweep). The
+// rejected variants (v3 copula negatives at 2x, v4 common-noun LOC places at
+// a 25% LOC share, v5 negatives-at-25% funded from ADR) live in git history
+// and the training journal; re-derive them from there, not from memory.
+const bareLoc = () => place()
 const bareOrg = () => org()
 const commonWord = () => pick(COMMON_WORDS)
 // v15 balanced replay v2: ADR reinforcement. v15-balanced (PER/LOC/ORG/O only)
@@ -881,8 +876,29 @@ const place = () => {
   if (r < 0.8) return pick(DISTRICTS)
   return pick(FOREIGN)
 }
-const address = () =>
-  `${pick(STREET_STEMS)}${pick(STREET_SUFFIX)} ${1 + Math.floor(rand() * 119)}${chance(0.25) ? pick(["A", "B", "C", "D"]) : ""}`
+// v16: ~a quarter of addresses come from the sweep's five broken categories
+// (saint prefixes, genitive-person and free-word endings, farm/village
+// shapes, abbreviated stems, the "nr" form); the rest keep the classic
+// stem+suffix shape. Note genitive() below handles the possessive s.
+const address = () => {
+  const n = 1 + Math.floor(rand() * 119)
+  const r = rand()
+  if (r < 0.05) {
+    // Genitive compound: "Sankt Olofsgatan"; names already ending in s
+    // ("Hans") take no extra s ("Sankt Hansgatan").
+    const saint = pick(SAINT_NAMES)
+    return `${pick(["Sankt", "S:t"])} ${saint}${/s$/i.test(saint) ? "" : "s"}gatan ${n}`
+  }
+  if (r < 0.1)
+    return `${genitive(`${pick(FIRST)} ${pick(LAST)}`)} ${pick(["plats", "torg", "gata"])} ${n}`
+  if (r < 0.14)
+    return `${pick(["Stora", "Lilla", "Gamla", "Norra", "Södra"])} ${pick(["Torg", "Strand", "Plan"])} ${n}`
+  if (r < 0.18)
+    return chance(0.5) ? `${pick(FARM_NAMES)} ${pick(VILLAGES)} ${n}` : `${pick(VILLAGES)} ${n}`
+  if (r < 0.22) return `${pick(STREET_STEMS)}${pick(["g.", "v."])} ${n}`
+  if (r < 0.26) return `${pick(STREET_STEMS)}${pick(STREET_SUFFIX)} nr ${n}`
+  return `${pick(STREET_STEMS)}${pick(STREET_SUFFIX)} ${n}${chance(0.25) ? pick(["A", "B", "C", "D"]) : ""}`
+}
 // v10: multiword institutions the error analysis flagged as ORG misses
 // (courts especially). Distinctive names, low over-fire risk.
 const COURTS = [
@@ -1230,6 +1246,13 @@ const TEMPLATES = [
   "Beloppet 12 345 kr betalades i tid.",
   "Ring 070-174 06 58 vid frågor.",
   "Referensnummer 2024-1187 noterades i akten.",
+  // v16: the "org.nr" frame. The ORG span must stop at the name; the label
+  // word and the identifier stay O (the rules layer owns the number, which is
+  // Skatteverket's Navet test organisationsnummer). Found live in the demo:
+  // an ORG span swallowed ", org" out of "org.nr".
+  "Avtalet tecknades med {ORG}, org.nr 202100-4748, i december.",
+  "Motparten {ORG} (org.nr 202100-4748) bestrider kravet i sin helhet.",
+  "Fakturan ställs till {ORG}, org.nr 202100-4748.",
   "Summan 1 299 kronor drogs felaktigt.",
   "Fakturanummer 5567 och 8890 är betalda.",
   "Klockan 14 30 öppnar receptionen.",
@@ -1443,32 +1466,6 @@ const COMMON_WORDS = [
   "Renoveringen",
   "Insamlingen",
   "Turnén",
-  // v3: more event/celebration nouns, the class that leaks in person contexts
-  // ("Festen är hemma hos Oskar ..." -> Festen mistagged PER).
-  "Festmiddagen",
-  "Mottagningen",
-  "Premiären",
-  "Föreställningen",
-  "Konferensen",
-  "Utflykten",
-  "Tävlingen",
-  "Träningen",
-  "Repetitionen",
-  "Auktionen",
-  "Marknaden",
-  "Festivalen",
-  "Kalaset",
-  "Bröllopet",
-  "Begravningen",
-  "Jubileet",
-  "Avslutningen",
-  "Presentationen",
-  "Lanseringen",
-  "Stämman",
-  "Årsmötet",
-  "Sammanträdet",
-  "Genomgången",
-  "Uppföljningen",
 ]
 const BALANCED_NEG_TEMPLATES = [
   "{COMMON} väckte stor uppmärksamhet i lokala medier.",
@@ -1477,17 +1474,6 @@ const BALANCED_NEG_TEMPLATES = [
   "{COMMON} diskuterades i flera veckor efteråt.",
   "{COMMON} fortsatte långt in på kvällen.",
   "{COMMON} drog ut på tiden av flera skäl.",
-  // v3: copula and person-context frames, so a sentence-initial common word
-  // followed by "är"/"hölls hemma hos ..." still reads as a non-entity.
-  "{COMMON} är slut för i år.",
-  "{COMMON} var över för den här gången.",
-  "{COMMON} hölls hemma hos släkten i somras.",
-  "{COMMON} ägde rum tidigare under våren.",
-  "{COMMON} ordnades av den lokala föreningen.",
-  "{COMMON} startade en timme senare än planerat.",
-  "{COMMON} samlade folk från hela trakten.",
-  "{COMMON} blev en riktig höjdpunkt för många.",
-  "{COMMON} ställdes in i sista stund.",
 ]
 // ADR positives keep the full "street number" together as one sentence-initial
 // span, the cohesion the PER/LOC/ORG-only dose eroded.
@@ -1499,24 +1485,14 @@ const BALANCED_ADR_TEMPLATES = [
   "{BAREADR} rymmer numera flera mindre verksamheter.",
   "{BAREADR} har fått en ny fasad sedan i våras.",
 ]
-// The dose cycles through this 12-slot list. The shares reproduce v1's working
-// balance (LOC 25%, negatives 25%) while keeping the ADR subfamily v2 added:
-// PER 2, LOC 3, ORG 2, ADR 2, NEG 3 -> in a 1440 dose that is
-// 240 / 360 / 240 / 240 / 360. v2 (neg 20%) leaked `Festen`; v3 (neg 33%,
-// LOC 17%) suppressed `Centralstationen`; both were fine at v1's 25/25, so this
-// restores that ratio and adds the common-noun LOC places above.
+// Each subfamily is an equal share of a balanced dose, in this fixed order.
+// This is the SHIPPED v15 recipe (dose v2): 5-way equal, 240 each in a
+// 1200-row dose.
 const BALANCED_SUBFAMILIES = [
   BARE_DECLARATIVE_TEMPLATES,
-  BARE_DECLARATIVE_TEMPLATES,
-  BALANCED_LOC_TEMPLATES,
-  BALANCED_LOC_TEMPLATES,
   BALANCED_LOC_TEMPLATES,
   BALANCED_ORG_TEMPLATES,
-  BALANCED_ORG_TEMPLATES,
   BALANCED_ADR_TEMPLATES,
-  BALANCED_ADR_TEMPLATES,
-  BALANCED_NEG_TEMPLATES,
-  BALANCED_NEG_TEMPLATES,
   BALANCED_NEG_TEMPLATES,
 ]
 for (const [templates, slot] of [

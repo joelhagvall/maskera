@@ -248,4 +248,94 @@ export const corpus = [
     entities: [{ value: "Jönköping", label: "LOCATION" }],
     register: "everyday",
   },
+  // --- v16 additions: the five categories the 2026-07-14 38-case sweep found
+  // broken against shipped v14 (see ROADMAP "Swedish address robustness").
+  // Real Swedish street SHAPES that the training generator could not produce
+  // at the time of authoring (saint prefixes, free-word endings, farm/village
+  // forms, abbreviations, the "nr" form, -kajen); the generator's v16 category
+  // fixes use DIFFERENT surface forms so this stays a generalisation measure.
+  // Baseline 2026-07-16 against shipped v15: 33/35 exact, 0 leaks; the two
+  // open cases are "SANKT PAULSGATAN 8" (SANKT mistyped ORG) and
+  // "Anna Lindhs plats 1" (the house number is left uncovered).
+  // (1) Saint prefixes and colon forms.
+  {
+    text: "Paketet levererades till Sankt Göransgatan 153 under förmiddagen.",
+    entities: [{ value: "Sankt Göransgatan 153", label: "ADDRESS" }],
+    register: "authority",
+  },
+  {
+    text: "Mottagningen har flyttat till S:t Eriksgatan 45 på Kungsholmen.",
+    entities: [
+      { value: "S:t Eriksgatan 45", label: "ADDRESS" },
+      { value: "Kungsholmen", label: "LOCATION" },
+    ],
+    register: "authority",
+  },
+  {
+    text: "SKICKA FAKTURAN TILL SANKT PAULSGATAN 8 OMGÅENDE.",
+    entities: [{ value: "SANKT PAULSGATAN 8", label: "ADDRESS" }],
+    register: "support",
+  },
+  {
+    text: "Kontoret ligger på Karl XII:s gata 3, mitt emot hamnen.",
+    entities: [{ value: "Karl XII:s gata 3", label: "ADDRESS" }],
+    register: "everyday",
+  },
+  // (2) Streets ending in a free word.
+  {
+    text: "Butiken på Lilla Torg 4 håller stängt under renoveringen.",
+    entities: [{ value: "Lilla Torg 4", label: "ADDRESS" }],
+    register: "everyday",
+  },
+  {
+    text: "Vittnet uppgav adressen Norr Mälarstrand 24 vid förhöret.",
+    entities: [{ value: "Norr Mälarstrand 24", label: "ADDRESS" }],
+    register: "authority",
+  },
+  {
+    text: "hej, flytta prenumerationen till kungsholms strand 12 tack",
+    entities: [{ value: "kungsholms strand 12", label: "ADDRESS" }],
+    register: "support",
+  },
+  {
+    text: "Konferensen hålls hos byrån på Anna Lindhs plats 1.",
+    entities: [{ value: "Anna Lindhs plats 1", label: "ADDRESS" }],
+    register: "everyday",
+  },
+  // (3) Rural and farm addresses.
+  {
+    text: "Familjen är folkbokförd på Näsby Gård 2 sedan i fjol.",
+    entities: [{ value: "Näsby Gård 2", label: "ADDRESS" }],
+    register: "authority",
+  },
+  {
+    text: "Leveransen går till Berga 12, Vreta Kloster, i slutet av veckan.",
+    entities: [
+      { value: "Berga 12", label: "ADDRESS" },
+      { value: "Vreta Kloster", label: "LOCATION" },
+    ],
+    register: "everyday",
+  },
+  {
+    text: "Han bor kvar på Sörgården Ekeby 3 tillsammans med sin bror.",
+    entities: [{ value: "Sörgården Ekeby 3", label: "ADDRESS" }],
+    register: "everyday",
+  },
+  // (4) Abbreviated stems and the "nr" form.
+  {
+    text: "Returen skickas till Storg. 5 enligt fraktsedeln.",
+    entities: [{ value: "Storg. 5", label: "ADDRESS" }],
+    register: "support",
+  },
+  {
+    text: "Hyresgästen på Storgatan nr 5 har sagt upp avtalet.",
+    entities: [{ value: "Storgatan nr 5", label: "ADDRESS" }],
+    register: "authority",
+  },
+  // (5) The -kajen suffix family.
+  {
+    text: "Fartyget lastas vid kontoret på Skeppsbrokajen 8 i eftermiddag.",
+    entities: [{ value: "Skeppsbrokajen 8", label: "ADDRESS" }],
+    register: "everyday",
+  },
 ]

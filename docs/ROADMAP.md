@@ -229,9 +229,11 @@ retiring v14's documented exception), best-ever rare-surname masking (99.3% /
 (sentence-initial "Klarna" fixed after ten releases), and klintan-lowercase
 leaks at 13.8% (best ever). Its one documented exception: the ordinary word
 `Festen` is tagged PERSON in one ADR-corpus distractor sentence, a harmless
-over-redaction (0 leaks; every address metric stays a 100% clean sweep). The
-queued v5 experiment (v2's dose + common-noun LOC places only) targets that
-exception; see the journal.
+over-redaction (0 leaks; every address metric stays a 100% clean sweep). A
+post-publish v5 dose (negatives restored to 25%, funded from ADR) was
+rejected at the teacher screen (val F1 0.9657 vs baseline 0.9696, ORG
+eroded): the dose-ratio game is played out, and clearing the `Festen`
+exception needs a different idea; see the journal.
 
 ### The headline target: bare lowercase surnames in declarative prose
 
@@ -312,8 +314,16 @@ exception; see the journal.
       ORG, the v5-era classic), gold-real metonymic "Vita huset", and the
       spot probe "RING LÖFVEN OMGÅENDE" (ALL-CAPS bare surname; every
       release has missed it). None is gated; all are documented.
-- [ ] **Swedish address robustness** (found 2026-07-14 via the demo, then a
-      38-case sweep against shipped v14: 13 leak fully or partially).
+- [x] **Swedish address robustness: RESOLVED at the pipeline level 2026-07-16**
+      (the v16 round). The five broken categories are now 14 gold sentences in
+      the ADR eval; shipped v15 passes 33/35 exact with 0 leaks (the v15 ADR
+      replay had fixed most of the sweep as a side effect), and a
+      reconstruct() house-number widening covers the one material residue
+      ("Anna Lindhs plats 1" leaving the number exposed). The v16
+      weight-level candidate hit every address target but taxed G1/G2 and
+      was HELD (journal); the generator categories stay for a future round
+      at a smaller share. Remaining cosmetic residue: ALL-CAPS "SANKT"
+      typed ORG in a split span (fully masked). Original sweep detail:
       ROBUST already: directional/size prefixes (Östra/Gamla/Stora, both
       casings), genitive person streets ("Olof Palmes gata 5", "Gustav
       Adolfs torg 1"), letter/range numbers (7A, 12-14), c/o, lgh/tr
