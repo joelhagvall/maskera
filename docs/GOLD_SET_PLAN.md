@@ -43,8 +43,8 @@ person) and can't be scraped legally. Two channels:
   realistic support/chat messages with invented but plausible PII (invented
   names, real street names with invented numbers, valid-checksum test
   personnummer). The invented names must span many name origins, not only
-  Swedish ones: the "fatima" known miss (BENCHMARKS.md) shows lowercase
-  text interacts with name rarity, so name-origin robustness is exactly
+  Swedish ones: the rare-surname chat gate (BENCHMARKS.md) exists because
+  lowercase text interacts with name rarity, so name-origin robustness is exactly
   what this register has to measure. They must never see the training
   generator's templates; give them scenario prompts only ("write an angry
   delivery complaint", "reschedule a medical appointment").

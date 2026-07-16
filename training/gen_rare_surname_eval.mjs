@@ -41,7 +41,7 @@ import { fileURLToPath } from "node:url"
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const TRIM_VOCAB =
-  process.env.TRIM_VOCAB ?? resolve(HERE, "../apps/demo/public/models/maskera-sv-ner-v13/vocab.txt")
+  process.env.TRIM_VOCAB ?? resolve(HERE, "../apps/demo/public/models/maskera-sv-ner-v15/vocab.txt")
 const CHECK_ONLY = process.argv.includes("--check")
 // --legacy: same held-out surnames, the pre-rotation v13 template set (see
 // FRAME ROTATION above). Secondary signal only; the gate runs on the primary.

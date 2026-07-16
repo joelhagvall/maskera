@@ -540,7 +540,7 @@ Everything claimed in this document can be checked without asking us:
 The evaluation harness prints every leak verbatim and nothing is filtered.
 As of the artifact above, one gold entity has no overlapping detection (a
 genuine miss) and one ordinary word is over-redacted; both are published
-here deliberately, and in each sentence every real entity is caught.
+here deliberately, and in each sentence every other real entity is caught.
 Provenance: the gold-real sentence is verbatim, already-published
 Wikipedia prose about public figures; the over-redacted sentence is a
 hand-authored test case with invented names. No user data and no real
@@ -569,7 +569,7 @@ the round's fixes. Historically: bare ``L\"ofven'' and the all-caps
 ``VIKTIGT: RING LARS NORDSTR\"OM OMG\AA ENDE IDAG.'' were fixed by v13;
 the sentence-initial ``Klarna'' (the curated classic since v5) and the
 lowercase-encyclopedic register gap carried by v14 (independent corpus
-forced lowercase, now 51 of 58 covered, the project's best level) were both
+forced lowercase, now 51 of 58 covered, back at the v11 level) were both
 fixed by v15's balanced class replay; see \pkg{BENCHMARKS.md}. These misses
 are why leakage, not $F_1$, is the gated metric: every failure mode is
 visible and tracked in the public regression corpus.

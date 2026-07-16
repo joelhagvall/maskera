@@ -8,7 +8,7 @@
  *
  *   CORPUS_FILE="./corpus-linkedin.mjs" \
  *   MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" \
- *   MASKERA_MODEL=maskera-sv-ner-v13 \
+ *   MASKERA_MODEL=maskera-sv-ner-v15 \
  *   node packages/ner/eval/run-eval.mjs
  *
  * Deliberately hard cases: informal lowercase names, org names that are

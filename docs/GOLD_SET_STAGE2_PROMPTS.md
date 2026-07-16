@@ -25,7 +25,7 @@ invented, not scraped.
 3. Grade with the existing harness, no code change:
    ```bash
    CORPUS_FILE="./corpus-stage2.mjs" \
-   MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v11 \
+   MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v15 \
    MASKERA_F1_FLOOR=0 MASKERA_LEAK_CEIL=1 \
    node packages/ner/eval/run-eval.mjs
    ```

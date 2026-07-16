@@ -46,7 +46,7 @@ how people actually type.
 Measured against every public Swedish NER alternative on the same gold sets,
 it now leads the best ~500 MB models on independent text (typed F1 0.97 vs
 0.94) at a tenth of their size, and in the lowercase chat/support register it
-targets it masks 99.3% of rare out-of-training surnames (previous release:
+targets, it masks 99.3% of rare out-of-training surnames (previous release:
 98.3%); on lowercased encyclopedic prose the case-robust KBLab lowermix still
 leads on raw redaction recall, documented honestly. Tables, method and
 caveats: [docs/BENCHMARKS.md](docs/BENCHMARKS.md). The training pipeline and

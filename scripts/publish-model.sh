@@ -20,7 +20,12 @@ set -euo pipefail
 
 REPO_ID="${REPO_ID:-joelhagvall/maskera-sv-ner}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SRC="$ROOT/training/${MODEL_SRC:-student-v5-onnx}"  # complete export: config, tokenizer, all onnx
+if [ -z "${MODEL_SRC:-}" ]; then
+  echo "MODEL_SRC must name the training export to publish (e.g. MODEL_SRC=student-v15-balanced2-onnx)." >&2
+  echo "No default on purpose: a stale default here would overwrite the live Hub model." >&2
+  exit 1
+fi
+SRC="$ROOT/training/$MODEL_SRC"  # complete export: config, tokenizer, all onnx
 CARD="$ROOT/training/maskera-sv-ner-card"  # README.md + NOTICE
 STAGE="$ROOT/training/.publish-maskera-sv-ner"
 
