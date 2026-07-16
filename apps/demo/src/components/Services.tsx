@@ -107,16 +107,6 @@ export function Services({ onBack, onDev }: { onBack: () => void; onDev: () => v
             och tränat den svenska modellen.
           </p>
 
-          <figure className="oversikt">
-            <img
-              src={oversiktUrl}
-              alt="Översikt i tre steg: din text innehåller känsliga uppgifter som namn, personnummer och telefonnummer; maskera byter ut dem på din enhet med regler och en AI-modell, inget lämnar datorn; mottagaren ser bara platshållare som [NAMN]. Svaret får de riktiga uppgifterna tillbaka hos dig."
-              width="1200"
-              height="690"
-              loading="lazy"
-            />
-          </figure>
-
           <div className="pkgs">
             {PACKAGES.map((p) => (
               <section key={p.name} className={`pkg${p.featured ? " featured" : ""}`}>
@@ -135,6 +125,18 @@ export function Services({ onBack, onDev }: { onBack: () => void; onDev: () => v
               </section>
             ))}
           </div>
+
+          {/* After the offers, deliberately: the page's job is the packages;
+              the figure is the evidence for whoever scrolls on to evaluate. */}
+          <figure className="oversikt">
+            <img
+              src={oversiktUrl}
+              alt="Översikt i tre steg: din text innehåller känsliga uppgifter som namn, personnummer och telefonnummer; maskera byter ut dem på din enhet med regler och en AI-modell, inget lämnar datorn; mottagaren ser bara platshållare som [NAMN]. Svaret får de riktiga uppgifterna tillbaka hos dig."
+              width="1200"
+              height="690"
+              loading="lazy"
+            />
+          </figure>
 
           <h2>Så går det till</h2>
           <ol className="how">
