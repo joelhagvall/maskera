@@ -190,7 +190,8 @@ and `training/`); run them yourself before relying on the numbers.
 ## How it compares
 
 Every public Swedish NER alternative, measured on the same gold sets
-(competitors 2026-07-04, Rampart 2026-07-14, the maskera row 2026-07-16;
+(competitors 2026-07-04, Rampart 2026-07-14, swedish-pii and Desert Ant
+redact 2026-07-16, the maskera row 2026-07-16;
 overlap matching,
 PER / LOC / ORG; full method, all three test sets and honest caveats in
 [docs/BENCHMARKS.md](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md),
@@ -204,6 +205,8 @@ which wins on any disagreement):
 | KB/bert-base-swedish-cased-ner                      | ~475 MB | 0.92     |
 | KBLab bert-base-swedish-cased-reallysimple-ner      | ~475 MB | 0.91     |
 | RecordedFuture/Swedish-NER                          | ~500 MB | 0.88     |
+| Desert Ant redact (multilingual on-device)          | ~13 MB  | 0.53     |
+| swedish-pii (regex + name lists, 0.00 on lowercase) | 2.5 MB  | 0.52     |
 | Rampart (browser PII, no ORG class, no Swedish)     | ~15 MB  | 0.42     |
 | sbx KB-bert PI-detection (general / detailed)       | ~475 MB | 0.10 / 0.19 |
 

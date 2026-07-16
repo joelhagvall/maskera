@@ -25,7 +25,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{July 5, 2026 \quad\textperiodcentered\quad Whitepaper v1.8}
+\date{July 16, 2026 \quad\textperiodcentered\quad Whitepaper v1.9}
 
 \begin{document}
 \maketitle
@@ -233,7 +233,7 @@ not determine which obligations apply.
 \section{Measured quality}
 
 All numbers below were measured on \textbf{2026-07-16} against the published
-artifact (\pkg{maskera@0.6.1}, q4 quantisation, the v15 training round) using
+artifact (\pkg{maskera@0.6.2}, q4 quantisation, the v15 training round) using
 \textbf{exact character spans}, the strict criterion under which both start
 and end offsets must match. The canonical, always-current document is \pkg{docs/BENCHMARKS.md} in
 the repository; this section is a dated snapshot, and where the two disagree,
@@ -525,7 +525,7 @@ Everything claimed in this document can be checked without asking us:
   \item \textbf{The model:} published openly on Hugging Face
         (\pkg{joelhagvall/maskera-sv-ner}) with a model card. The shipped
         artifact is \pkg{onnx/model\_q4.onnx}, SHA-256\\
-        {\footnotesize\texttt{f34aa2d9e2272aa8cadded3ff819827d858cb5ab07c9b40f2bc4d1d147dd5625}};\\
+        {\footnotesize\texttt{ca6b4a66d199b0edfb397c39e7ffd25a55320dd4148bb9aed8f1f16ab007c727}};\\
         the current hash always lives in \pkg{docs/BENCHMARKS.md}.
   \item \textbf{The numbers:} canonical in \pkg{docs/BENCHMARKS.md},
         dated and reproducible.
@@ -579,8 +579,8 @@ visible failure modes.
 
 \vfill
 \noindent\rule{\textwidth}{0.4pt}\par\smallskip
-{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.8
-\textperiodcentered{} July 5, 2026 \textperiodcentered{} Joel H\"agvall
+{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.9
+\textperiodcentered{} July 16, 2026 \textperiodcentered{} Joel H\"agvall
 \textperiodcentered{} maskera.dev. Current numbers live in
 \pkg{docs/BENCHMARKS.md}; where this document disagrees, that file wins.
 Not legal advice.\par}

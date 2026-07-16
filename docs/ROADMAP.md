@@ -300,20 +300,33 @@ exception needs a different idea; see the journal.
 
 ### Standing weaknesses (unchanged by v14, keep on the list)
 
-- [ ] **Lowercase still trails cased** on the big held-out set (leaks 15.2%
-      vs 7.0%; lowercase ORG 62.6%). v14's pseudo corpus barely moved the
-      klintan-lowercase needle (15.5 -> 15.2): the 18k sample is small
-      against 58k gold rows. Options: grow the sample (the labeled pool
-      holds ~350k more rows), or accept that real annotated
+- [ ] **Lowercase still trails cased** on the big held-out set (leaks 13.8%
+      vs 7.2%; lowercase ORG 62.0%, v15 numbers, the narrowest gap
+      measured). v14's pseudo corpus barely moved the klintan-lowercase
+      needle (15.5 -> 15.2, the 18k sample is small against 58k gold rows);
+      v15's balanced replay took it to 13.8. Options: grow the sample (the
+      labeled pool holds ~350k more rows), or accept that real annotated
       support/chat text is the lever (see data section below).
 - [ ] **Short brand names** (Voi, Northmill, Knowit): the one ORG subclass
       the v12-v14 gazetteer arc did not dent; a LENGTH problem. Candidate
       ideas unchanged: context weighting or a rules-layer assist in
       `@maskera/core`.
-- [ ] **The published known misses**: curated "Klarna" (sentence-initial
-      ORG, the v5-era classic), gold-real metonymic "Vita huset", and the
-      spot probe "RING LÖFVEN OMGÅENDE" (ALL-CAPS bare surname; every
-      release has missed it). None is gated; all are documented.
+- [ ] **The published known misses**: gold-real metonymic "Vita huset" and
+      v15's documented exception, the ordinary word "Festen" tagged PERSON
+      in one ADR-corpus distractor sentence (an over-redaction, not a
+      leak). Two long-standing entries are FIXED by v15's balanced replay:
+      the curated sentence-initial "Klarna" classic (first zero-leak
+      curated run) and the ALL-CAPS spot probe "RING LÖFVEN OMGÅENDE"
+      (verified caught against the v15 weights 2026-07-16). Nothing here
+      is gated; all are documented in BENCHMARKS.md.
+- [ ] **Lowercase nicknames mid-sentence are context-dependent** (found by
+      the 2026-07-16 free-text probe sweep): "micke på ekonomiavdelningen"
+      is caught, "bråket mellan mig och micke i grannsamfälligheten" leaks.
+      Both tracked in `corpus-freetext.mjs`; the concrete bar for the next
+      informal-register round. Same sweep's precision inventory (87.7% on
+      freetext; sentence-initial verbs, "Pat"/"pat", product names,
+      "regionchef Syd", departments as ORG) is the negative-frame dose
+      candidate list; full findings in training/README.md.
 - [x] **Swedish address robustness: RESOLVED at the pipeline level 2026-07-16**
       (the v16 round). The five broken categories are now 14 gold sentences in
       the ADR eval; shipped v15 passes 33/35 exact with 0 leaks (the v15 ADR
@@ -374,8 +387,12 @@ exception needs a different idea; see the journal.
       pre-anonymized so weak for PER), municipal records.
 - [ ] **A messier eval** to match: tickets, email, chat, OCR noise, lowercase,
       slang, misspellings, so the numbers reflect the target domain, not clean prose.
-      First domain corpus exists: `packages/ner/eval/corpus-linkedin.mjs`
-      (32 docs of recruiter mail / posts / bios, graded via `CORPUS_FILE=`).
+      Two domain corpora exist: `packages/ner/eval/corpus-linkedin.mjs`
+      (32 docs of recruiter mail / posts / bios) and, since 2026-07-16,
+      `packages/ner/eval/corpus-freetext.mjs` (29 PII-dense docs in the
+      demo's industry registers: HR, kundtjänst, vård, juridik, kommun,
+      bank; v15 baseline 91.2 span F1 / 1 leak). Both graded via
+      `CORPUS_FILE=`. Remaining: OCR noise and misspellings.
 - [ ] **Model-assisted annotation** to make the above affordable: pre-label with
       the current model or an LLM, human-correct (5-10x faster than from scratch).
       `training/convert_klintan.mjs` is the reusable CoNLL-to-BIO ingestion path.

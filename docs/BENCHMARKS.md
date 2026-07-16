@@ -18,7 +18,8 @@ disagrees with this file, this file wins and the other document has drifted.
   distractor set ("Festen" tagged PERSON, nothing leaks); see
   [Known gaps](#known-gaps))
 - **Pipeline:** the shipped `maskera` path (model + `reconstruct()`
-  post-processing), measured on `maskera@0.6.1`, graded by
+  post-processing), measured on `maskera@0.6.1` (the current npm release
+  0.6.2 is a docs-only patch with identical pipeline code), graded by
   [`packages/ner/eval/run-eval.mjs`](../packages/ner/eval/run-eval.mjs)
 - **Matching:** exact character span. This is the strict harness CI gates on;
   see [method notes](#method-notes) for why older overlap-based numbers read higher.
@@ -310,8 +311,9 @@ BENCHMARK_FILE=training/eval/rare-surnames-legacy.txt \
 
 ## How maskera compares to other Swedish NER models
 
-Competitor rows measured 2026-07-04 (Rampart 2026-07-14), the maskera row
-re-measured 2026-07-16 (v15 student; competitor weights are unchanged) with
+Competitor rows measured 2026-07-04 (Rampart 2026-07-14; swedish-pii and
+Desert Ant redact 2026-07-16), the maskera row re-measured 2026-07-16 (v15
+student; competitor weights are unchanged) with
 [`training/benchmark_competitors.py`](../training/benchmark_competitors.py):
 every model on the same gold sets, overlap matching, labels mapped to
 PER / LOC / ORG (the cross-model comparable types; ADR is excluded here because
@@ -336,6 +338,8 @@ untrimmed student here, which flattered the row.
 | RecordedFuture Swedish-NER | ~500 MB | 1.00 | 0.79 | 0.98 | 0.88 |
 | sbx PII general / detailed | ~475 MB | 0.05 / 0.10 | 1.00 | 0.05 / 0.10 | 0.10 / 0.19 |
 | Rampart (nationaldesignstudio) | 14.7 MB (q4, in-browser) | 0.34 | 0.88 | 0.28 | 0.42 |
+| Desert Ant redact (multilingual) | 13 MB model (on-device) | 0.36 | 1.00 | 0.36 | 0.53 |
+| swedish-pii (regex + name lists) | 2.5 MB JS bundle | 0.50 | 0.77 | 0.40 | 0.52 |
 
 **gold-real LOWERCASED (encyclopedic prose forced lowercase, no casing cues):**
 
@@ -347,7 +351,9 @@ untrimmed student here, which flattered the row.
 | nbailab scandi-ner | 0.69 | 0.77 |
 | KB-NER | 0.28 | 0.35 |
 | KBLab reallysimple-ner | 0.29 | 0.39 |
+| Desert Ant redact (multilingual) | 0.24 | 0.39 |
 | sbx PII general / detailed | 0.09 | 0.16 |
+| swedish-pii (regex + name lists) | 0.00 | 0.00 |
 
 On the curated set all general NER models land within noise of each other
 (typed F1 0.82 to 0.90, maskera redaction recall 1.00).
@@ -383,6 +389,25 @@ Takeaways:
   en/es/fr/de/it/pt/nl; Swedish is not a supported language. This is the
   strongest measured argument for a Swedish-specific model in this size
   class.
+- **Desert Ant redact** (measured 2026-07-16, `@desert-ant-labs/redact`
+  0.3.0 from npm, on-device ONNX, model auto-downloaded to the managed
+  cache, ~13 MB): the same multilingual-on-device category as Rampart and
+  the same Swedish outcome: 0.36 redaction recall cased, 0.24 lowercased.
+  Its typed precision is perfect (1.00) because it predicts very little;
+  what it flags is right, but 6 of 10 real Swedish entities pass through
+  unmasked. Label mapping was generous (NAME->PER, CITY/STATE/STREET->LOC).
+- **swedish-pii** (measured 2026-07-16, built from source at commit
+  `239951f` because the npm package its README documents is not published;
+  `detectPII()` defaults, generous label mapping PER_FIRST/PER_LAST->PER,
+  SE_CITY/MUNICIPALITY/COUNTY/STREET_ADDRESS->LOC, work/education
+  org->ORG): regex + SCB name-list lookup, no model. On cased independent
+  text it misses half of all entities (0.50 redaction recall); on
+  lowercase text it detects **nothing at all** (0.00: the gazetteer and
+  patterns require capitalisation, so chat-register Swedish passes through
+  untouched). List lookup also mislabels: "London" is tagged as a Swedish
+  first name. Structured identifiers with checksums are not graded here;
+  the gap measured is exactly the free-text NER layer the library does not
+  have.
 - None of the alternatives detects street addresses (ADR), handles the
   four-type scheme maskera's placeholder layer expects, or fits a browser
   bundle, so each would still need maskera's distillation pipeline to be
@@ -534,7 +559,7 @@ Two things make numbers in older documents read higher than this file:
 
 ## Known gaps
 
-- The largest held-out number (span F1 91.2% on the 2453-sentence Swedish NER
+- The largest held-out number (span F1 92.1% on the 2453-sentence Swedish NER
   Corpus test split) is **in-distribution**: the model trained on that corpus's
   train split. It confirms the model generalises to unseen sentences of the
   training distribution, but it is not clean independence.
