@@ -127,6 +127,12 @@ body {
   line-height: 1.6;
   color: var(--muted);
 }
+/* Emphasis inside the hero lede renders like .prose strong on the sub-pages:
+   semibold and full-contrast, so the same role never drifts between routes. */
+.lede strong {
+  font-weight: 600;
+  color: var(--fg);
+}
 
 /* ---- controls ---- */
 .controls {
@@ -613,7 +619,7 @@ body {
 }
 .flow-arrow {
   font-size: 12px;
-  color: var(--muted-2);
+  color: var(--muted);
 }
 .restore-grid {
   margin-top: 16px;
@@ -718,6 +724,14 @@ body {
 .prose li {
   position: relative;
   padding-left: 18px;
+  margin: 10px 0;
+  font-size: 15px;
+  line-height: 1.65;
+  color: #2a2a2a;
+}
+/* Body paragraphs between headings (e.g. the test-data intro): same text
+   style as the list items, minus the bullet. */
+.prose-body {
   margin: 10px 0;
   font-size: 15px;
   line-height: 1.65;
@@ -961,9 +975,6 @@ body {
 }
 .flow-band .flow-step {
   background: var(--bg);
-}
-.flow-band .flow-arrow {
-  color: var(--muted);
 }
 .pkgs {
   display: grid;

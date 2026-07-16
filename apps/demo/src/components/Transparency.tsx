@@ -148,7 +148,7 @@ export function Transparency({
               cross-check every identifier shown in the demo against its
               source. */}
           <h2 id="testdata">Testdata i exemplen</h2>
-          <p>
+          <p className="prose-body">
             Personerna i exempeltexterna är påhittade, och varje uppgift med ett riktigt format är
             ett värde som den ansvariga aktören själv har reserverat för test och fiktion. Inget
             exempel visar en verklig persons uppgifter. Här är varje värde, så att du kan
