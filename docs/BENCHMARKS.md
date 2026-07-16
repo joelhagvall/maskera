@@ -18,8 +18,10 @@ disagrees with this file, this file wins and the other document has drifted.
   distractor set ("Festen" tagged PERSON, nothing leaks); see
   [Known gaps](#known-gaps))
 - **Pipeline:** the shipped `maskera` path (model + `reconstruct()`
-  post-processing), measured on `maskera@0.6.1` (the current npm release
-  0.6.2 is a docs-only patch with identical pipeline code), graded by
+  post-processing), measured on `maskera@0.6.1` (0.6.2 was a docs-only
+  patch; 0.6.3's two `reconstruct()` guards were verified against this
+  same artifact with curated, retention and ADR numbers unchanged),
+  graded by
   [`packages/ner/eval/run-eval.mjs`](../packages/ner/eval/run-eval.mjs)
 - **Matching:** exact character span. This is the strict harness CI gates on;
   see [method notes](#method-notes) for why older overlap-based numbers read higher.
