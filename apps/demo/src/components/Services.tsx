@@ -1,6 +1,8 @@
 import { GITHUB } from "../constants"
 import { ArrowUpRightIcon, MaskeraMark } from "../icons"
 import { navClick, viewPaths } from "../routing"
+// Single source of truth: the same overview figure the README embeds.
+import oversiktUrl from "../../../../docs/oversikt.svg"
 
 const EMAIL = "work@joelhagvall.com"
 const BOOKING = "https://calendly.com/joel-hagvall/30min"
@@ -105,26 +107,15 @@ export function Services({ onBack, onDev }: { onBack: () => void; onDev: () => v
             och tränat den svenska modellen.
           </p>
 
-          <div className="flow-band">
-            <p className="flow-band-label">Så ser flödet ut</p>
-            <div className="flow">
-              <span className="flow-step">Supportärende</span>
-              <span className="flow-arrow" aria-hidden="true">
-                →
-              </span>
-              <span className="flow-step">maskeras lokalt hos er</span>
-              <span className="flow-arrow" aria-hidden="true">
-                →
-              </span>
-              <span className="flow-step">
-                AI-tjänsten (t.ex. ChatGPT, Claude) ser bara platshållare
-              </span>
-              <span className="flow-arrow" aria-hidden="true">
-                →
-              </span>
-              <span className="flow-step">svaret återställs i ert system</span>
-            </div>
-          </div>
+          <figure className="oversikt">
+            <img
+              src={oversiktUrl}
+              alt="Översikt i tre steg: din text innehåller känsliga uppgifter som namn, personnummer och telefonnummer; maskera byter ut dem på din enhet med regler och en AI-modell, inget lämnar datorn; mottagaren ser bara platshållare som [NAMN]. Svaret får de riktiga uppgifterna tillbaka hos dig."
+              width="1200"
+              height="690"
+              loading="lazy"
+            />
+          </figure>
 
           <div className="pkgs">
             {PACKAGES.map((p) => (

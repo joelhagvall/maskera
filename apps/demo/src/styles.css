@@ -975,26 +975,16 @@ body {
 }
 /* Anchors the borrowed flow pills: a quiet labelled band instead of a bare
    row floating between the intro and the price cards. */
-.flow-band {
-  margin-top: 28px;
-  padding: 14px 16px 16px;
-  background: var(--gray-100);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+/* The how-it-works overview figure (docs/oversikt.svg, same file the README
+   embeds). The SVG carries its own card frames and white background, so no
+   wrapper chrome; it just needs to scale with the column. */
+.oversikt {
+  margin: 20px 0 0;
 }
-/* On the gray-100 band, --muted-2 lands at 4.41:1 (below WCAG AA); --muted
-   clears it at 5.5:1, hence the darker tone for label and arrows here. */
-.flow-band-label {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted);
-}
-.flow-band .flow {
-  margin-top: 10px;
-}
-.flow-band .flow-step {
-  background: var(--bg);
+.oversikt img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 .pkgs {
   display: grid;
