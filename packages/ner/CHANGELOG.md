@@ -1,5 +1,24 @@
 # maskera
 
+## 0.6.3
+
+### Patch Changes
+
+- Two model-independent `reconstruct()` fixes from the v16 address round:
+
+  - Trim trailing identifier-label words (`org`, `orgnr`, `pnr`, `personnr`, `nr`)
+    and their separators from entity spans: the model's ORG span could swallow
+    the `org` of a following `org.nr`, leaving a dangling `.nr` outside the
+    placeholder ("Kommun A, org.nr 202100-4748"). Entities that ARE such a word
+    ("Org") stay intact, and spans ending in a digit never match.
+  - Widen an ADDRESS span that stops at the street words to cover a bare house
+    number right after it ("Anna Lindhs plats 1" previously left the "1"
+    exposed), including the `nr` form and a detached A-D staircase letter.
+
+  Verified against the shipped v15 model: extended ADR eval 35/35 masked with
+  0 leaks; retention and curated numbers unchanged. Also refreshes the README's
+  self-hosting example to the `maskera-sv-ner-v15` model folder.
+
 ## 0.6.2
 
 ### Patch Changes
