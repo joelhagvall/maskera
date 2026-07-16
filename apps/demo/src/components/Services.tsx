@@ -1,8 +1,8 @@
+// Single source of truth: the same overview figure the README embeds.
+import oversiktUrl from "../../../../docs/oversikt.svg"
 import { GITHUB } from "../constants"
 import { ArrowUpRightIcon, MaskeraMark } from "../icons"
 import { navClick, viewPaths } from "../routing"
-// Single source of truth: the same overview figure the README embeds.
-import oversiktUrl from "../../../../docs/oversikt.svg"
 
 const EMAIL = "work@joelhagvall.com"
 const BOOKING = "https://calendly.com/joel-hagvall/30min"
