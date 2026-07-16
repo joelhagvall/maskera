@@ -198,7 +198,15 @@ function report(file, text, index, kind, value) {
 
 for (const file of repoFiles) {
   if (SKIP_FILES.has(file) || SKIP_PREFIXES.some((prefix) => file.startsWith(prefix))) continue
-  if (statSync(file).size > 20_000_000) continue
+  // `git ls-files --cached` also lists tracked files deleted from the working
+  // tree (e.g. a consumed .changeset entry before its deletion is committed).
+  let stat
+  try {
+    stat = statSync(file)
+  } catch {
+    continue
+  }
+  if (stat.size > 20_000_000) continue
 
   const buffer = readFileSync(file)
   if (buffer.includes(0)) continue

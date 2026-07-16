@@ -1,5 +1,13 @@
 # maskera
 
+## 0.6.2
+
+### Patch Changes
+
+- Documentation snapshot for the v15 model release (balanced-replay round). The published `maskera-sv-ner` weights move to the v15 artifact: gold-real forced-lowercase coverage back at the v11 level (51/58, retiring v14's documented exception), best-measured rare-surname masking (99.3%, 2/294 leaks) and PER-typing (71.4%), first zero-leak curated run (the sentence-initial "Klarna" classic fixed), and klintan-lowercase leak rate down to 13.8%. One documented exception: a single harmless over-redaction ("Festen" tagged as a person name in one distractor sentence; nothing leaks). README numbers re-synced with docs/BENCHMARKS.md (measured 2026-07-16).
+- Updated dependencies [4e27289]
+  - @maskera/core@0.4.3
+
 ## 0.6.1
 
 ### Patch Changes

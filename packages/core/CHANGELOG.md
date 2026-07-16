@@ -1,5 +1,11 @@
 # @maskera/core
 
+## 0.4.3
+
+### Patch Changes
+
+- 4e27289: Replace documentation identifiers with authority-published test values and add repository-level fixture safety checks.
+
 ## 0.4.2
 
 ### Patch Changes

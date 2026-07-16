@@ -161,8 +161,8 @@ The default (and only bundled default) model is
 (`MASKERA_SV_NER_MODEL`, MIT, 43 MB q4): PER/LOC/ORG/ADR, distilled from
 KB-BERT, trained on synthetic + real Swedish with lowercase/ALL CAPS/genitive
 augmentation (chat users type lowercase). On the packaged gold corpus it
-scores 99.5% span-F1 with a 0.5% leak rate; on independent real text, 95.7%
-and 1.7% (measured 2026-07-14). The canonical, dated tables live in
+scores 99.8% span-F1 with a 0.0% leak rate; on independent real text, 93.9%
+and 1.7% (measured 2026-07-16). The canonical, dated tables live in
 [docs/BENCHMARKS.md](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md).
 Run the eval yourself:
 

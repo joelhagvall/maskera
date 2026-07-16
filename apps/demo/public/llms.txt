@@ -20,7 +20,7 @@ const { text, restore } = await redactWithNer(
 // "hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]"
 ```
 
-Benchmarks (exact-span F1, q4 quantized, measured 2026-07-14): 99.5% on the curated corpus, 95.7% on independent real text; leak rate 0.5% / 1.7%. Canonical table: https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md
+Benchmarks (exact-span F1, q4 quantized, measured 2026-07-16): 99.8% on the curated corpus (zero leaks), 93.9% on independent real text; leak rate 0.0% / 1.7%. Canonical table: https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md
 
 ## Docs
 
