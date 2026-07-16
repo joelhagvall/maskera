@@ -44,7 +44,7 @@ export function HighlightedText({ text, redactions }: { text: string; redactions
         <mark
           key={r.key}
           className="hl"
-          style={{ background: `${r.color}1f`, boxShadow: `inset 0 -2px 0 ${r.color}` }}
+          style={{ background: `${r.color}29`, boxShadow: `inset 0 -2px 0 ${r.color}` }}
         >
           {slice}
         </mark>
@@ -78,7 +78,7 @@ export function RestoredText({ text, map }: { text: string; map: Record<string, 
       <mark
         key={`${start}-${token}-${i++}`}
         className="hl"
-        style={{ background: `${color}1f`, boxShadow: `inset 0 -2px 0 ${color}` }}
+        style={{ background: `${color}29`, boxShadow: `inset 0 -2px 0 ${color}` }}
       >
         {value}
       </mark>,
@@ -110,7 +110,7 @@ export function TokenHighlight({ text }: { text: string }) {
         <mark
           key={r.key}
           className="hl"
-          style={{ background: `${r.color}1f`, boxShadow: `inset 0 -2px 0 ${r.color}` }}
+          style={{ background: `${r.color}29`, boxShadow: `inset 0 -2px 0 ${r.color}` }}
         >
           {slice}
         </mark>
@@ -137,7 +137,7 @@ export function RedactedText({ text }: { text: string }) {
         <span
           key={r.key}
           className="token"
-          style={{ color: r.color, background: `${r.color}12`, borderColor: `${r.color}59` }}
+          style={{ color: r.color, background: `${r.color}1a`, borderColor: `${r.color}73` }}
         >
           {slice}
         </span>
