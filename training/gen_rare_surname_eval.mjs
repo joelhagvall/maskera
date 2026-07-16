@@ -22,7 +22,7 @@
  *   1. DECOMPOSES under the trimmed inference vocab (>= 2 wordpieces, no
  *      [UNK]) in BOTH cased and lowercase form. The trimmed vocab is what the
  *      shipped artifact tokenizes with, so this is the failure surface.
- *      Default vocab: the shipped v13 artifact's 20k vocab.txt (verified to
+ *      Default vocab: the shipped v15 artifact's 20k vocab.txt (verified to
  *      keep the same 98 surnames as the v13-round v12-trim vocab), env
  *      TRIM_VOCAB overrides.
  *   2. Does NOT appear (case-insensitive) in the training data

@@ -161,7 +161,7 @@ The model is trained on synthetic Swedish (with whole-sentence lowercase,
 ALL CAPS and genitive augmentation, since chat users type lowercase; the
 current round also trains the student on the trimmed inference vocabulary's
 subword decompositions, so rare surnames like "tjulander" stay caught in the
-chat register) plus five public, openly licensed real corpora (all
+chat register) plus six public, openly licensed real corpora (all
 CC BY 4.0): the
 [**Swedish NER Corpus**](https://github.com/klintan/swedish-ner-corpus)
 (news) train split, a weighted sample of

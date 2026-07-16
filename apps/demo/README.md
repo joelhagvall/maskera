@@ -32,7 +32,7 @@ To populate it, train and export from [`../../training`](../../training):
 cd ../../training
 uv run python train.py                                      # fine-tune KB-BERT
 uv run python distill.py                                    # distill a smaller student
-uv run python trim_vocab.py                                 # 50k -> 16k vocab
+uv run python trim_vocab.py                                 # 50k -> 20k vocab
 uv run python export_onnx.py student-trimmed student-trimmed-onnx
 uv run python quantize_combo.py                             # -> onnx/model_q4.onnx (~43 MB)
 
