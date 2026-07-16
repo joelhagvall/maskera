@@ -46,7 +46,13 @@ function Stats({ result }: { result: RedactResult }) {
         {counts.map(([label, n]) => {
           const m = labelMeta(label)
           return (
-            <span key={label} className="tag">
+            // Same tint recipe as the placeholder chips in the text above, so
+            // the tag and its tokens read as one thing.
+            <span
+              key={label}
+              className="tag"
+              style={{ color: m.color, background: `${m.color}1a`, borderColor: `${m.color}73` }}
+            >
               <span className="tag-dot" style={{ background: m.color }} />
               {m.sv}
               <span className="tag-n">{n}</span>

@@ -491,7 +491,8 @@ body {
   flex: none;
 }
 .tag-n {
-  color: var(--fg);
+  /* Follows the tag's per-type color (set inline), like the chip text. */
+  color: inherit;
   font-variant-numeric: tabular-nums;
 }
 
