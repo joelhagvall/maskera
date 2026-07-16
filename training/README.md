@@ -1207,6 +1207,58 @@ transfer once the pool and frames change; the dose-ratio game is played
 out. The shipped v15 artifact and its documented `Festen` exception stand;
 the next attempt at that class needs a different idea than dose ratios.
 
+### Free-text probe sweep (2026-07-16): demo-register corpus + findings
+
+A 33-probe sweep of realistic "Egen text" demo inputs (industry register:
+HR, kundtjänst, vård, juridik, kommun, bank/försäkring, informal chat) run
+against the demo's exact model-state hybrid (rule detectors + shipped v15).
+Result: 32/33 must-mask, zero must-keep failures. The keepers became
+`packages/ner/eval/corpus-freetext.mjs` (29 docs, 60 gold entities,
+PII-dense industry sentences, structured identifiers as unannotated
+rules-layer context), graded like the other corpora via `CORPUS_FILE=`.
+
+**v15 baselines (2026-07-16, q4):** corpus-freetext 91.2 span F1 / 95.0
+recall / 87.7 precision / 89.6 labeled F1 / 1 leak (1.7%);
+corpus-linkedin 97.2 F1 / 1 leak ("KTH").
+
+**What v15 already handles** (worth protecting in the next round):
+Vietnamese/Polish/Finnish/Arabic/Danish names, double surnames
+(Ståhle-Wik), af-names (af Ugglas), initials (P. Sjöqvist), title +
+surname (advokat Öqvist), ALL CAPS names, lowercase hyphenated names
+(lars-göran öberg), signature nicknames (/Bosse), Swedish-English mixed
+text, and the `Festen` sentence survived unmasked in plain chat context.
+
+**Findings for the next data round, in priority order:**
+
+1. **Lowercase nickname mid-sentence is CONTEXT-DEPENDENT.** "micke på
+   ekonomiavdelningen har inte attesterat fakturan" is caught; "bråket
+   mellan mig och micke i grannsamfälligheten" leaks entirely. Both are
+   tracked in corpus-freetext. This is the one real leak class of the
+   sweep and the concrete bar for the next informal-register round.
+2. **Abbreviation ORGs leak**: "KTH" missed in the linkedin corpus
+   (same length class as the standing Voi/Northmill weakness).
+3. **ALL-CAPS typing wobbles**: "POSTNORD" masked but typed PERSON,
+   "TERMINALEN" over-predicted ORG (consistent with the standing
+   ALL-CAPS bare-surname miss).
+4. **Precision, not recall, is the weak number** (87.7% on freetext).
+   The over-prediction inventory, all privacy-safe but visibly sloppy:
+   sentence-initial verbs ("Swisha" -> PER), the patient abbreviation
+   ("Pat"/"pat" -> PER, also swallowed into "Pat Yusuf El-Sayed"),
+   product names (Excel/Word -> ORG), colloquial institutions
+   ("Systemet" -> LOC), title+region ("regionchef Syd" -> ORG),
+   departments ("ekonomiavdelningen" -> ORG), email local parts
+   ("bengt.akerlund" -> PER; harmless in the hybrid since the EMAIL
+   rule wins the overlap). Boundary case: "Tallkronans" without
+   "skola". Negative frames for these shapes are dose candidates.
+5. **Rules-layer detector backlog surfaced by the sweep** (npm work,
+   not training): bank account numbers (clearing caught as plusgiro,
+   account digits leak), OCR numbers (Luhn-checkable), fastighets-
+   beteckning ("Videboda 2:17" half-masks as ADDRESS leaving ":17"),
+   court case numbers ("T 4821-24"), spelled-out birth dates ("född 3
+   maj 1998"), and username handles/profile slugs ("github.com/user"
+   masks the domain as ORG and leaves the slug). Already partially
+   listed under ROADMAP "coverage & DX".
+
 ## Publish to Hugging Face (single hosted source)
 
 Hosting the model once means the demo and every future `@maskera` package point at
