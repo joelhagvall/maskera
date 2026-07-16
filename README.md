@@ -27,6 +27,14 @@ restore map stays with you. `maskera` re-exports the whole rule layer,
 so one import covers rules and model alike. Rules only, zero dependencies:
 `npm install @maskera/core`. **[Live demo → maskera.dev](https://maskera.dev)**
 
+## How it works
+
+The whole idea in one picture (in Swedish, like the product): what your text
+contains, what maskera does on your device, and what the receiving side
+actually sees.
+
+<img src="docs/oversikt.svg" alt="Översikt i tre steg: din text innehåller känsliga uppgifter som namn, personnummer och telefonnummer; maskera byter ut dem på din enhet med regler och en AI-modell, inget lämnar datorn; mottagaren ser bara platshållare som [NAMN]. Svaret får de riktiga uppgifterna tillbaka hos dig." width="100%">
+
 ## The model is the point
 
 [`maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner) is our
