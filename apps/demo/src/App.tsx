@@ -15,6 +15,10 @@ export function App() {
   const [active, setActive] = useState<Scenario>(scenarios[0])
   const [text, setText] = useState<string>(scenarios[0].text)
   const [anchor, setAnchor] = useState<string | null>(null)
+  // "Se hela flödet" expanded state lives here, NOT in RestoreDemo: that
+  // component is keyed per scenario (to reset the edited draft), and a local
+  // open state would collapse the flow on every scenario switch.
+  const [flowOpen, setFlowOpen] = useState(false)
   const { view, navigate } = useRoute()
   const ner = useSwedishNer(text)
   const invalidPnrs = useMemo(
@@ -107,7 +111,13 @@ export function App() {
                   Only shown once there is something to restore. key resets the
                   edited draft when the scenario changes. */}
               {Object.keys(ner.result.map).length > 0 && (
-                <RestoreDemo key={active.id} result={ner.result} scenarioId={active.id} />
+                <RestoreDemo
+                  key={active.id}
+                  result={ner.result}
+                  scenarioId={active.id}
+                  open={flowOpen}
+                  onToggleOpen={() => setFlowOpen((v) => !v)}
+                />
               )}
             </main>
           </>

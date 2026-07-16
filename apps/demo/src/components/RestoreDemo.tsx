@@ -92,13 +92,26 @@ export function sampleAiReply(map: Record<string, string>, scenarioId?: string):
  * Step three of the demo: the AI answers with the placeholders still in place,
  * and maskera swaps the originals back in locally, using the key that never
  * left the device. Only rendered when there is something to restore.
+ *
+ * The expanded/collapsed state is owned by the parent: this component is
+ * keyed per scenario (to reset the edited draft), so local open state would
+ * collapse the flow on every scenario switch.
  */
-export function RestoreDemo({ result, scenarioId }: { result: RedactResult; scenarioId?: string }) {
+export function RestoreDemo({
+  result,
+  scenarioId,
+  open,
+  onToggleOpen,
+}: {
+  result: RedactResult
+  scenarioId?: string
+  open: boolean
+  onToggleOpen: () => void
+}) {
   const { map } = result
   const auto = useMemo(() => sampleAiReply(map, scenarioId), [map, scenarioId])
   // null = untouched (mirror the generated sample); a string = the visitor's edit.
   const [draft, setDraft] = useState<string | null>(null)
-  const [open, setOpen] = useState(false)
   const backdropRef = useRef<HTMLDivElement>(null)
   const reply = draft ?? auto
 
@@ -116,7 +129,7 @@ export function RestoreDemo({ result, scenarioId }: { result: RedactResult; scen
           type="button"
           className="link restore-toggle"
           aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
+          onClick={onToggleOpen}
         >
           {open ? "Dölj flödet" : "Se hela flödet"}
         </button>
