@@ -233,7 +233,7 @@ not determine which obligations apply.
 \section{Measured quality}
 
 All numbers below were measured on \textbf{2026-07-16} against the published
-artifact (\pkg{maskera@0.6.2}, q4 quantisation, the v15 training round) using
+artifact (\pkg{maskera@0.6.1}, q4 quantisation, the v15 training round) using
 \textbf{exact character spans}, the strict criterion under which both start
 and end offsets must match. The canonical, always-current document is \pkg{docs/BENCHMARKS.md} in
 the repository; this section is a dated snapshot, and where the two disagree,
@@ -538,12 +538,13 @@ Everything claimed in this document can be checked without asking us:
 \section*{Appendix: the sentences the model is known to miss}
 
 The evaluation harness prints every leak verbatim and nothing is filtered.
-As of the artifact above, two gold entities across both corpora have no
-overlapping detection; they are published here deliberately, and in each
-sentence every other entity is caught. Provenance: the curated sentence is
-a hand-authored test case with an invented name; the gold-real sentence is
-verbatim, already-published Wikipedia prose about public figures. No user
-data and no real private persons appear below.
+As of the artifact above, one gold entity has no overlapping detection (a
+genuine miss) and one ordinary word is over-redacted; both are published
+here deliberately, and in each sentence every real entity is caught.
+Provenance: the gold-real sentence is verbatim, already-published
+Wikipedia prose about public figures; the over-redacted sentence is a
+hand-authored test case with invented names. No user data and no real
+private persons appear below.
 
 \begin{table}[H]
 \centering

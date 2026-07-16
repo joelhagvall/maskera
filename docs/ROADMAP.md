@@ -318,7 +318,9 @@ exception needs a different idea; see the journal.
       the curated sentence-initial "Klarna" classic (first zero-leak
       curated run) and the ALL-CAPS spot probe "RING LÖFVEN OMGÅENDE"
       (verified caught against the v15 weights 2026-07-16). Nothing here
-      is gated; all are documented in BENCHMARKS.md.
+      is gated; the two remaining entries are documented in BENCHMARKS.md's
+      known-misses table (the LÖFVEN probe is a journal spot check, not
+      part of a graded corpus).
 - [ ] **Lowercase nicknames mid-sentence are context-dependent** (found by
       the 2026-07-16 free-text probe sweep): "micke på ekonomiavdelningen"
       is caught, "bråket mellan mig och micke i grannsamfälligheten" leaks.
