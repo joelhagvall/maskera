@@ -15,6 +15,10 @@ packages/ner/eval/corpus-domain.mjs
 packages/ner/eval/corpus-stage2.mjs
 apps/demo/reports/
 apps/demo/public/ort/
+# generated from src/meta.ts by vite.config.ts at config load
+apps/demo/developers/
+apps/demo/integritet/
+apps/demo/tjanster/
 # recorded demo clips (scripts/record-demo.mjs output)
 apps/demo/*.mp4
 apps/demo/*.webm

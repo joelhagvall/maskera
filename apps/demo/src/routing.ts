@@ -1,42 +1,9 @@
 import { type MouseEvent, useEffect, useRef, useState } from "react"
+import { type View, viewMeta, viewPaths, viewUrl } from "./meta"
 
-export type View = "demo" | "transparency" | "dev" | "services"
-
-export const viewPaths: Record<View, string> = {
-  demo: "/",
-  dev: "/developers",
-  transparency: "/integritet",
-  services: "/tjanster",
-}
-
-// The tab shows this at runtime; the favicon already carries the maskera mark.
-// Safari hides the leading word of a tab title (favicon/close button cover it)
-// and clips the tail when long, so a long title loses "maskera" either way.
-// Home is the brand: keep it to the bare word so it never truncates and the
-// name stays visible. Sub-pages lead with the page, brand last. The descriptive
-// tagline lives on in the static <title> + og/twitter tags for SEO and sharing.
-const viewMeta: Record<View, { title: string; description: string }> = {
-  demo: {
-    title: "maskera",
-    description:
-      "maskera hittar och döljer svenska personuppgifter innan texten når ChatGPT eller andra AI-tjänster. Allt körs i webbläsaren.",
-  },
-  dev: {
-    title: "för utvecklare · maskera",
-    description:
-      "Installera maskera för svensk PII-maskering lokalt i webbläsaren eller Node. Öppen källkod, TypeScript och en egentränad svensk AI-modell.",
-  },
-  transparency: {
-    title: "integritet & transparens · maskera",
-    description:
-      "Så fungerar maskeras lokala personuppgiftsmaskering, hur modellen tränats, vilka begränsningar som finns och vilken testdata demon använder.",
-  },
-  services: {
-    title: "tjänster · maskera",
-    description:
-      "Få hjälp att granska och integrera lokal personuppgiftsmaskering i era AI-flöden, med fasta tjänstepaket och direkt stöd från maskeras skapare.",
-  },
-}
+// Titles/descriptions live in meta.ts, shared with the generated static HTML
+// shells for the sub-pages (see vite.config.ts).
+export { type View, viewPaths }
 
 function setMetaContent(selector: string, content: string) {
   const element = document.querySelector<HTMLMetaElement>(selector)
@@ -45,7 +12,7 @@ function setMetaContent(selector: string, content: string) {
 
 export function applyViewMeta(view: View) {
   const meta = viewMeta[view]
-  const url = new URL(viewPaths[view], "https://maskera.dev").href
+  const url = viewUrl(view)
 
   document.title = meta.title
   document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute("href", url)
