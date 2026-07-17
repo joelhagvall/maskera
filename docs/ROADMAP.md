@@ -304,9 +304,16 @@ exception needs a different idea; see the journal.
       vs 7.2%; lowercase ORG 62.0%, v15 numbers, the narrowest gap
       measured). v14's pseudo corpus barely moved the klintan-lowercase
       needle (15.5 -> 15.2, the 18k sample is small against 58k gold rows);
-      v15's balanced replay took it to 13.8. Options: grow the sample (the
-      labeled pool holds ~350k more rows), or accept that real annotated
-      support/chat text is the lever (see data section below).
+      v15's balanced replay took it to 13.8. Naive sample growth is now
+      FALSIFIED (the v17 round, 2026-07-17, HELD): PSEUDO_TOTAL 20k -> 66k
+      passed the teacher screen (val F1 0.9708, first above the 0.9696
+      baseline) and set a G2 best (52/58), but klintan lowercase regressed
+      13.8 -> 16.5% leaks; the data increment was nearly all O tokens
+      (+215.7k O vs ~1.6k entity, PER +0), diluting famous lowercase
+      ORG/LOC in news prose (journal has the full leak diff). Remaining
+      options: guard entity density in the pseudo sample (entity-bearing
+      rows / lower empty share) at the 66k scale, or accept that real
+      annotated support/chat text is the lever (see data section below).
 - [ ] **Short brand names** (Voi, Northmill, Knowit): the one ORG subclass
       the v12-v14 gazetteer arc did not dent; a LENGTH problem. Candidate
       ideas unchanged: context weighting or a rules-layer assist in
@@ -368,7 +375,8 @@ exception needs a different idea; see the journal.
 
 - [ ] **The ~15 MB student**: the v14 pseudo-label pool
       (`training/.benchmark/pseudo-labeled.jsonl`, 400k double-labeled
-      rows, only ~18k consumed) was built as its prerequisite. Still
+      rows; ~18k consumed by v14, 66k by the held v17 round) was built as
+      its prerequisite. Still
       waiting on a use case that demands the size (per "Explicitly NOT
       this round", which stands).
 

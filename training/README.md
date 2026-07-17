@@ -1259,6 +1259,61 @@ text, and the `Festen` sentence survived unmasked in plain chat context.
    masks the domain as ORG and leaves the slug). Already partially
    listed under ROADMAP "coverage & DX".
 
+### v17 scaled-pseudo round (2026-07-17): teacher screen passed, register tax, HOLD
+
+The round's bet: scale the pseudo-labeled informal corpus from the default
+20k to 66k rows (`PSEUDO_TOTAL=66000`, v16 generator with its address
+categories at the shipped dose), the "grow the sample" option under the
+standing lowercase weakness. Data was built and audited 2026-07-16 (90,830
+train rows, 0.07% train/val overlap); the run resumed 2026-07-17. The
+teacher (seed 2024) **passed the screen at val F1 0.9708** vs the 0.9696
+baseline, the first candidate above it since the dose-ratio game was
+declared played out (v5 read 0.9657). Distill used the v16 recipe
+(subword replacement 1.0, batch 16 / accum 2, seed 1337).
+
+The q4 battery split the gates:
+
+- **PASS G1**: rotated rare surnames 95.6% masked / 13 leaks vs the v13
+  re-baseline 94.9% / 15 (PER-typing dipped, 63.6% vs 68.7%).
+- **PASS G2**: forced-lowercase coverage **52/58, best ever** (v15: 51).
+- **PASS** gold-real recall 0.95, G5 curated 0 leaks, linkedin, retention
+  99.9% tokens.
+- **FAIL G3**: klintan lowercase 16.5% leaks vs the 15.5% ceiling
+  (shipped v15: 13.8%; cased passed, 8.3% vs 8.7%).
+- **FAIL G4**: ADR corpus F1 97.5% vs the required 100.0, with 0 leaks:
+  a single boundary slip (61 predictions / 60 gold), cosmetic.
+
+Leak diff vs shipped v15 (same harness and leak definition; totals
+reproduce the gate runs, 177 and 211): 157 shared, **54 new in v17, 20
+fixed** (13 of them ORG). The new leaks are famous lowercase entities in
+news prose: ORG 25 (polisen twice, försäkringskassan, socialstyrelsen,
+trafikverket, stockholmspolisen, ericsson, hennes & mauritz, volvo, plus
+the clubs hammarby, gais, ajax, assyriska), LOC 16 (usa, egypten,
+göteborg, wall street, aten), PER 13, mostly sentence-initial bare
+surnames (bengtsson, andersson, ekholm, solberg) and genitives (bergmans,
+patrick swayzes). 9 of 54 are sentence-initial.
+
+Root cause, visible by comparing the v16 and v17 build audits: the data
+increment is +13,610 rows carrying **+215,718 O tokens and only ~1,600
+entity tokens** (LOC +1033, ORG +602, PER +0, ADR +0). The scale-up
+sampled nearly-empty informal rows, diluting the lowercase-entity prior
+in the news register; and the entity signal the pool does carry leans O
+for institutions (the ensemble labels "polisen" O in 77% of pool
+occurrences, 491/637). The same term exposes a structural conflict: v17
+also over-masks "polisen" twice in lowercase retention, so klintan gold
+(ORG) and public-term retention pull in opposite directions on exactly
+the terms that dominate the new leaks.
+
+**Round verdict: HOLD v17; v15 stays live.** The finding mirrors v15's
+zero-sum result one level up: scaled pseudo bought the best
+encyclopedic-lowercase number yet (G2) and a G1 pass, and paid in the
+informal/news lowercase register (G3): zero-sum across REGISTERS where
+v15's was across classes. The next attempt keeps the 66k scale but guards
+entity density in the sample (require entity-bearing rows or lower the
+empty share) and counterweights lowercase news-register entities
+(institutions, clubs, geo); that needs a full teacher retrain. Artifacts:
+`model-v17(-trimmed)`, `student-v17(-trimmed/-onnx)`, `run_v17-*.log`.
+
 ## Publish to Hugging Face (single hosted source)
 
 Hosting the model once means the demo and every future `@maskera` package point at
