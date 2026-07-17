@@ -1,7 +1,8 @@
 import type { RedactResult } from "@maskera/core"
-import { useMemo, useRef, useState } from "react"
+import { useMemo, useState } from "react"
 import { ChatIcon, CheckIcon, KeyIcon } from "../icons"
 import { RestoredText, TokenHighlight } from "../segments"
+import { OverlayEditor } from "./OverlayEditor"
 
 const FLOW = ["Din text", "AI ser", "AI svarar", "Du ser"]
 
@@ -112,7 +113,6 @@ export function RestoreDemo({
   const auto = useMemo(() => sampleAiReply(map, scenarioId), [map, scenarioId])
   // null = untouched (mirror the generated sample); a string = the visitor's edit.
   const [draft, setDraft] = useState<string | null>(null)
-  const backdropRef = useRef<HTMLDivElement>(null)
   const reply = draft ?? auto
 
   return (
@@ -167,22 +167,14 @@ export function RestoreDemo({
                 </button>
               )}
             </div>
-            <div className="editor reply-editor">
-              <div className="backdrop" ref={backdropRef} aria-hidden>
-                <TokenHighlight text={reply} />
-              </div>
-              <textarea
-                name="ai-response"
-                autoComplete="off"
-                value={reply}
-                aria-label="AI:ns svar med platshållare"
-                spellCheck={false}
-                onChange={(e) => setDraft(e.target.value)}
-                onScroll={(e) => {
-                  if (backdropRef.current) backdropRef.current.scrollTop = e.currentTarget.scrollTop
-                }}
-              />
-            </div>
+            <OverlayEditor
+              value={reply}
+              onChange={setDraft}
+              name="ai-response"
+              ariaLabel="AI:ns svar med platshållare"
+              className="editor reply-editor"
+              highlight={<TokenHighlight text={reply} />}
+            />
           </section>
           <section className="card">
             <div className="card-head">

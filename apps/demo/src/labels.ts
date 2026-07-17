@@ -38,3 +38,16 @@ const FALLBACK: LabelMeta = { sv: "Uppgift", color: "#334155" }
 export function labelMeta(label: string): LabelMeta {
   return MAP[label] ?? { ...FALLBACK, sv: label }
 }
+
+/**
+ * Underline-highlight recipe for marked text in the editors. Adds no width,
+ * so it can sit in a backdrop layer behind a transparent textarea.
+ */
+export function hlStyle(color: string) {
+  return { background: `${color}29`, boxShadow: `inset 0 -2px 0 ${color}` }
+}
+
+/** Tinted pill recipe, shared by placeholder tokens and the stats tags. */
+export function pillStyle(color: string) {
+  return { color, background: `${color}1a`, borderColor: `${color}73` }
+}

@@ -9,7 +9,7 @@ import { RestoreDemo } from "./components/RestoreDemo"
 import { Services } from "./components/Services"
 import { Transparency } from "./components/Transparency"
 import { invalidPersonnummer } from "./hints"
-import { navClick, useRoute, viewPaths } from "./routing"
+import { navClick, useRoute, type View, viewPaths } from "./routing"
 import { type Scenario, scenarios } from "./scenarios"
 import { useSwedishNer } from "./useSwedishNer"
 
@@ -74,9 +74,11 @@ export function App() {
     setText(next)
   }
 
-  const goDemo = () => {
-    startModel()
-    navigate("demo")
+  // One navigation handler for the TopBar and sub-pages; entering the demo
+  // also warms the model, like before.
+  const go = (next: View) => {
+    if (next === "demo") startModel()
+    navigate(next)
   }
   const goPolicy = () => {
     setAnchor("integritetspolicy")
@@ -94,7 +96,7 @@ export function App() {
       </a>
       {view === "demo" && (
         <>
-          <Header onDev={() => navigate("dev")} onServices={() => navigate("services")} />
+          <Header go={go} />
           <main id="main-content">
             <Controls
               activeId={active.id}
@@ -149,15 +151,9 @@ export function App() {
           </main>
         </>
       )}
-      {view === "dev" && <Developers onBack={goDemo} onServices={() => navigate("services")} />}
-      {view === "transparency" && (
-        <Transparency
-          onBack={goDemo}
-          onDev={() => navigate("dev")}
-          onServices={() => navigate("services")}
-        />
-      )}
-      {view === "services" && <Services onBack={goDemo} onDev={() => navigate("dev")} />}
+      {view === "dev" && <Developers go={go} />}
+      {view === "transparency" && <Transparency go={go} />}
+      {view === "services" && <Services go={go} />}
       <Footer
         onTransparency={() => navigate("transparency")}
         onPolicy={goPolicy}

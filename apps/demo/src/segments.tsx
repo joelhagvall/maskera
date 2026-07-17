@@ -1,6 +1,6 @@
 import type { Redaction } from "@maskera/core"
 import type { ReactNode } from "react"
-import { labelMeta } from "./labels"
+import { hlStyle, labelMeta, pillStyle } from "./labels"
 
 interface Range {
   start: number
@@ -30,22 +30,31 @@ function weave(
   return nodes
 }
 
-/** Original text with detected PII marked, colour-coded by category. */
-export function HighlightedText({ text, redactions }: { text: string; redactions: Redaction[] }) {
-  const ranges: Range[] = redactions.map((r) => ({
-    start: r.start,
-    end: r.end,
-    key: `${r.start}-${r.label}`,
-    color: labelMeta(r.label).color,
-  }))
+const TOKEN_RE = /\[([A-ZÅÄÖ_]+)_\d+\]/g
+
+/** One range per placeholder token in the text, coloured by its category. */
+function tokenRanges(text: string): Range[] {
+  const ranges: Range[] = []
+  for (const m of text.matchAll(TOKEN_RE)) {
+    ranges.push({
+      start: m.index,
+      end: m.index + m[0].length,
+      key: `${m.index}-${m[0]}`,
+      color: labelMeta(m[1]).color,
+    })
+  }
+  return ranges
+}
+
+/**
+ * Text with the given ranges underline-marked. The trailing newline keeps the
+ * backdrop's height in sync with the textarea when the text ends in newlines.
+ */
+function MarkedText({ text, ranges }: { text: string; ranges: Range[] }) {
   return (
     <>
       {weave(text, ranges, (slice, r) => (
-        <mark
-          key={r.key}
-          className="hl"
-          style={{ background: `${r.color}29`, boxShadow: `inset 0 -2px 0 ${r.color}` }}
-        >
+        <mark key={r.key} className="hl" style={hlStyle(r.color)}>
           {slice}
         </mark>
       ))}
@@ -54,7 +63,38 @@ export function HighlightedText({ text, redactions }: { text: string; redactions
   )
 }
 
-const TOKEN_RE = /\[([A-ZÅÄÖ_]+)_\d+\]/g
+/** Original text with detected PII marked, colour-coded by category. */
+export function HighlightedText({ text, redactions }: { text: string; redactions: Redaction[] }) {
+  const ranges: Range[] = redactions.map((r) => ({
+    start: r.start,
+    end: r.end,
+    key: `${r.start}-${r.label}`,
+    color: labelMeta(r.label).color,
+  }))
+  return <MarkedText text={text} ranges={ranges} />
+}
+
+/**
+ * Placeholder tokens marked per category with the same underline style as the
+ * input highlights. Unlike RedactedText's pills, this adds no width, so it can
+ * sit in a backdrop overlay behind a transparent textarea and stay aligned.
+ */
+export function TokenHighlight({ text }: { text: string }) {
+  return <MarkedText text={text} ranges={tokenRanges(text)} />
+}
+
+/** Redacted text with placeholder tokens styled per category. */
+export function RedactedText({ text }: { text: string }) {
+  return (
+    <>
+      {weave(text, tokenRanges(text), (slice, r) => (
+        <span key={r.key} className="token" style={pillStyle(r.color)}>
+          {slice}
+        </span>
+      ))}
+    </>
+  )
+}
 
 /**
  * The reverse of RedactedText: text that still contains placeholder tokens,
@@ -73,13 +113,8 @@ export function RestoredText({ text, map }: { text: string; map: Record<string, 
     if (value == null) continue // not one of ours; leave it in the plain text
     const start = m.index
     if (start > last) nodes.push(text.slice(last, start))
-    const color = labelMeta(m[1]).color
     nodes.push(
-      <mark
-        key={`${start}-${token}-${i++}`}
-        className="hl"
-        style={{ background: `${color}29`, boxShadow: `inset 0 -2px 0 ${color}` }}
-      >
+      <mark key={`${start}-${token}-${i++}`} className="hl" style={hlStyle(labelMeta(m[1]).color)}>
         {value}
       </mark>,
     )
@@ -87,61 +122,4 @@ export function RestoredText({ text, map }: { text: string; map: Record<string, 
   }
   if (last < text.length) nodes.push(text.slice(last))
   return <>{nodes}</>
-}
-
-/**
- * Placeholder tokens marked per category with the same underline style as the
- * input highlights. Unlike RedactedText's pills, this adds no width, so it can
- * sit in a backdrop overlay behind a transparent textarea and stay aligned.
- */
-export function TokenHighlight({ text }: { text: string }) {
-  const ranges: Range[] = []
-  for (const m of text.matchAll(TOKEN_RE)) {
-    ranges.push({
-      start: m.index,
-      end: m.index + m[0].length,
-      key: `${m.index}-${m[0]}`,
-      color: labelMeta(m[1]).color,
-    })
-  }
-  return (
-    <>
-      {weave(text, ranges, (slice, r) => (
-        <mark
-          key={r.key}
-          className="hl"
-          style={{ background: `${r.color}29`, boxShadow: `inset 0 -2px 0 ${r.color}` }}
-        >
-          {slice}
-        </mark>
-      ))}
-      {"\n"}
-    </>
-  )
-}
-
-/** Redacted text with placeholder tokens styled per category. */
-export function RedactedText({ text }: { text: string }) {
-  const ranges: Range[] = []
-  for (const m of text.matchAll(TOKEN_RE)) {
-    ranges.push({
-      start: m.index,
-      end: m.index + m[0].length,
-      key: `${m.index}-${m[0]}`,
-      color: labelMeta(m[1]).color,
-    })
-  }
-  return (
-    <>
-      {weave(text, ranges, (slice, r) => (
-        <span
-          key={r.key}
-          className="token"
-          style={{ color: r.color, background: `${r.color}1a`, borderColor: `${r.color}73` }}
-        >
-          {slice}
-        </span>
-      ))}
-    </>
-  )
 }

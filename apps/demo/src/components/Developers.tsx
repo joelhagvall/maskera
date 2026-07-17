@@ -1,7 +1,9 @@
-import { type ReactNode, useEffect, useRef, useState } from "react"
+import { type ReactNode, useState } from "react"
 import { GITHUB, HF_MODEL, NPM_NER } from "../constants"
-import { ArrowUpRightIcon, CheckIcon, CopyIcon, MaskeraMark } from "../icons"
-import { navClick, viewPaths } from "../routing"
+import { ArrowUpRightIcon } from "../icons"
+import type { View } from "../routing"
+import { CopyButton } from "./CopyButton"
+import { TopBar } from "./TopBar"
 
 // Order matters: comments win over strings win over keywords/function names.
 const TOKEN =
@@ -50,7 +52,13 @@ function Code({ children, lang }: { children: string; lang: string }) {
         <span className="code-lang" aria-hidden="true">
           {lang}
         </span>
-        <CopyButton text={copyText} />
+        <CopyButton
+          text={copyText}
+          className="code-copy"
+          iconSize={14}
+          ariaLabel="Kopiera koden"
+          title="Kopiera"
+        />
       </div>
       <pre>
         <code>
@@ -62,36 +70,6 @@ function Code({ children, lang }: { children: string; lang: string }) {
         </code>
       </pre>
     </div>
-  )
-}
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false)
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-
-  useEffect(() => () => clearTimeout(timer.current), [])
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(text)
-    } catch {
-      return // clipboard unavailable (permissions/insecure context): keep quiet
-    }
-    setCopied(true)
-    clearTimeout(timer.current)
-    timer.current = setTimeout(() => setCopied(false), 1600)
-  }
-  return (
-    <button
-      type="button"
-      className={`code-copy${copied ? " copied" : ""}`}
-      onClick={copy}
-      aria-label={copied ? "Kopierat" : "Kopiera koden"}
-      title="Kopiera"
-    >
-      {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
-      <span aria-live="polite">{copied ? "Kopierat" : "Kopiera"}</span>
-    </button>
   )
 }
 
@@ -125,7 +103,13 @@ function InstallTabs() {
             </button>
           ))}
         </div>
-        <CopyButton text={pm.cmd} />
+        <CopyButton
+          text={pm.cmd}
+          className="code-copy"
+          iconSize={14}
+          ariaLabel="Kopiera koden"
+          title="Kopiera"
+        />
       </div>
       <pre role="tabpanel" id="install-command" aria-labelledby={`install-tab-${pm.id}`}>
         <code>
@@ -136,27 +120,10 @@ function InstallTabs() {
   )
 }
 
-export function Developers({ onBack, onServices }: { onBack: () => void; onServices: () => void }) {
+export function Developers({ go }: { go: (view: View) => void }) {
   return (
     <>
-      <div className="topbar">
-        <span className="wordmark">
-          <MaskeraMark size={20} />
-          maskera
-        </span>
-        <nav className="head-links">
-          <a className="ghlink" href={viewPaths.services} onClick={navClick(onServices)}>
-            Tjänster
-          </a>
-          <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
-            GitHub
-            <ArrowUpRightIcon size={13} />
-          </a>
-        </nav>
-      </div>
-      <a className="back" href={viewPaths.demo} onClick={navClick(onBack)}>
-        ← Tillbaka till startsidan
-      </a>
+      <TopBar current="dev" go={go} />
 
       <main id="main-content">
         <article className="prose">

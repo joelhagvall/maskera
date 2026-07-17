@@ -1,6 +1,6 @@
-import { GITHUB } from "../constants"
-import { ArrowUpRightIcon, MaskeraMark } from "../icons"
-import { navClick, viewPaths } from "../routing"
+import type { View } from "../routing"
+import { viewPaths } from "../routing"
+import { TopBar } from "./TopBar"
 
 const EMAIL = "work@joelhagvall.com"
 const BOOKING = "https://calendly.com/joel-hagvall/30min"
@@ -69,27 +69,10 @@ const PACKAGES: Pkg[] = [
   },
 ]
 
-export function Services({ onBack, onDev }: { onBack: () => void; onDev: () => void }) {
+export function Services({ go }: { go: (view: View) => void }) {
   return (
     <>
-      <div className="topbar">
-        <span className="wordmark">
-          <MaskeraMark size={20} />
-          maskera
-        </span>
-        <nav className="head-links">
-          <a className="ghlink" href={viewPaths.dev} onClick={navClick(onDev)}>
-            För utvecklare
-          </a>
-          <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
-            GitHub
-            <ArrowUpRightIcon size={13} />
-          </a>
-        </nav>
-      </div>
-      <a className="back" href={viewPaths.demo} onClick={navClick(onBack)}>
-        ← Tillbaka till startsidan
-      </a>
+      <TopBar current="services" go={go} />
 
       <main id="main-content">
         <article className="prose prose-wide">

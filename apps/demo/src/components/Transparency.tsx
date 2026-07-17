@@ -1,39 +1,12 @@
 import { GITHUB, HF_MODEL } from "../constants"
-import { ArrowUpRightIcon, MaskeraMark } from "../icons"
-import { navClick, viewPaths } from "../routing"
+import { ArrowUpRightIcon } from "../icons"
+import type { View } from "../routing"
+import { TopBar } from "./TopBar"
 
-export function Transparency({
-  onBack,
-  onDev,
-  onServices,
-}: {
-  onBack: () => void
-  onDev: () => void
-  onServices: () => void
-}) {
+export function Transparency({ go }: { go: (view: View) => void }) {
   return (
     <>
-      <div className="topbar">
-        <span className="wordmark">
-          <MaskeraMark size={20} />
-          maskera
-        </span>
-        <nav className="head-links">
-          <a className="ghlink" href={viewPaths.dev} onClick={navClick(onDev)}>
-            För utvecklare
-          </a>
-          <a className="ghlink" href={viewPaths.services} onClick={navClick(onServices)}>
-            Tjänster
-          </a>
-          <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
-            GitHub
-            <ArrowUpRightIcon size={13} />
-          </a>
-        </nav>
-      </div>
-      <a className="back" href={viewPaths.demo} onClick={navClick(onBack)}>
-        ← Tillbaka till startsidan
-      </a>
+      <TopBar current="transparency" go={go} />
 
       <main id="main-content">
         <article className="prose">

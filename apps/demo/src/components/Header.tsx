@@ -1,28 +1,10 @@
-import { GITHUB } from "../constants"
-import { ArrowUpRightIcon, MaskeraMark } from "../icons"
-import { navClick, viewPaths } from "../routing"
+import type { View } from "../routing"
+import { TopBar } from "./TopBar"
 
-export function Header({ onDev, onServices }: { onDev: () => void; onServices: () => void }) {
+export function Header({ go }: { go: (view: View) => void }) {
   return (
     <header className="header">
-      <div className="head-row">
-        <span className="wordmark">
-          <MaskeraMark size={20} />
-          maskera
-        </span>
-        <nav className="head-links">
-          <a className="ghlink" href={viewPaths.dev} onClick={navClick(onDev)}>
-            För utvecklare
-          </a>
-          <a className="ghlink" href={viewPaths.services} onClick={navClick(onServices)}>
-            Tjänster
-          </a>
-          <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
-            GitHub
-            <ArrowUpRightIcon size={13} />
-          </a>
-        </nav>
-      </div>
+      <TopBar current="demo" go={go} />
       <h1 className="title">Maskera personuppgifter innan AI:n ser dem.</h1>
       <p className="lede">
         maskera hittar och döljer personuppgifter, som namn, personnummer och adresser, innan texten

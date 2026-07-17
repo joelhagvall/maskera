@@ -1,35 +1,9 @@
 import type { RedactResult } from "@maskera/core"
-import { useEffect, useMemo, useRef, useState } from "react"
-import { CheckIcon, CopyIcon, EyeIcon } from "../icons"
-import { labelMeta } from "../labels"
+import { useMemo } from "react"
+import { EyeIcon } from "../icons"
+import { labelMeta, pillStyle } from "../labels"
 import { RedactedText } from "../segments"
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false)
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-
-  useEffect(() => () => clearTimeout(timer.current), [])
-
-  return (
-    <button
-      type="button"
-      className="clear copy"
-      onClick={() => {
-        navigator.clipboard?.writeText(text).then(
-          () => {
-            setCopied(true)
-            clearTimeout(timer.current)
-            timer.current = setTimeout(() => setCopied(false), 1500)
-          },
-          () => {},
-        )
-      }}
-    >
-      {copied ? <CheckIcon size={13} /> : <CopyIcon size={13} />}
-      <span aria-live="polite">{copied ? "Kopierat" : "Kopiera"}</span>
-    </button>
-  )
-}
+import { CopyButton } from "./CopyButton"
 
 function Stats({ result }: { result: RedactResult }) {
   const counts = useMemo(() => {
@@ -51,13 +25,7 @@ function Stats({ result }: { result: RedactResult }) {
         {counts.map(([label, n]) => {
           const m = labelMeta(label)
           return (
-            // Same tint recipe as the placeholder chips in the text above, so
-            // the tag and its tokens read as one thing.
-            <span
-              key={label}
-              className="tag"
-              style={{ color: m.color, background: `${m.color}1a`, borderColor: `${m.color}73` }}
-            >
+            <span key={label} className="tag" style={pillStyle(m.color)}>
               {m.sv}
               <span className="tag-n">{n}</span>
             </span>
@@ -114,7 +82,7 @@ export function OutputCard({
           Vad AI:n ser
           {analyzing && <span className="card-sub">analyserar…</span>}
         </span>
-        {result.text ? <CopyButton text={result.text} /> : null}
+        {result.text ? <CopyButton text={result.text} className="clear copy" /> : null}
       </div>
 
       <div className={`output ${analyzing ? "analyzing" : ""}`}>
