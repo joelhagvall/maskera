@@ -31,7 +31,7 @@ export const viewMeta: Record<View, { title: string; description: string }> = {
   demo: {
     title: "maskera",
     description:
-      "maskera hittar och döljer svenska personuppgifter (namn, personnummer, adresser) innan texten når ChatGPT eller andra AI-tjänster. Allt körs i webbläsaren.",
+      "maskera döljer svenska personuppgifter (namn, personnummer, adresser) innan de når ChatGPT eller andra AI-tjänster. Allt körs i webbläsaren.",
   },
   dev: {
     title: "för utvecklare · maskera",

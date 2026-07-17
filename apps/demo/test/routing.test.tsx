@@ -55,9 +55,9 @@ describe("useRoute: initial view from pathname", () => {
 })
 
 describe("useRoute: document.title", () => {
-  it("fresh landing on / keeps the static title untouched", () => {
+  it("fresh landing on / replaces the static title with the bare brand", () => {
     const { unmount } = mountAt("/")
-    expect(document.title).toBe(STATIC_TITLE)
+    expect(document.title).toBe("maskera")
     unmount()
   })
 

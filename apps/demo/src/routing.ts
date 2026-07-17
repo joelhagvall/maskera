@@ -1,4 +1,4 @@
-import { type MouseEvent, useEffect, useRef, useState } from "react"
+import { type MouseEvent, useEffect, useState } from "react"
 import { type View, viewMeta, viewPaths, viewUrl } from "./meta"
 
 // Titles/descriptions live in meta.ts, shared with the generated static HTML
@@ -34,28 +34,22 @@ function viewFromPath(pathname: string): View {
 
 export function useRoute() {
   const [view, setView] = useState<View>(() => viewFromPath(window.location.pathname))
-  // Crawlers that execute JS (Google, SEO tools) index whatever document.title
-  // ends up as. On a fresh landing on the home view, keep index.html's
-  // descriptive static title for them; the bare brand title in viewMeta only
-  // takes over once the user actually navigates.
-  const hasNavigated = useRef(false)
 
   useEffect(() => {
-    const onPop = () => {
-      hasNavigated.current = true
-      setView(viewFromPath(window.location.pathname))
-    }
+    const onPop = () => setView(viewFromPath(window.location.pathname))
     window.addEventListener("popstate", onPop)
     return () => window.removeEventListener("popstate", onPop)
   }, [])
 
+  // The bare brand title replaces index.html's descriptive static title as
+  // soon as the app mounts: the tab must read "maskera", also on a fresh
+  // landing. JS-rendering crawlers see the swap too; the descriptive tagline
+  // for SEO/sharing lives in the static og/twitter tags and page content.
   useEffect(() => {
-    if (!hasNavigated.current && view === "demo") return
     applyViewMeta(view)
   }, [view])
 
   const navigate = (next: View) => {
-    hasNavigated.current = true
     if (viewFromPath(window.location.pathname) !== next) {
       window.history.pushState(null, "", viewPaths[next])
     }
