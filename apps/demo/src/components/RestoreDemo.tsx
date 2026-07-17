@@ -1,5 +1,5 @@
 import type { RedactResult } from "@maskera/core"
-import { Fragment, useMemo, useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { ChatIcon, CheckIcon, KeyIcon } from "../icons"
 import { RestoredText, TokenHighlight } from "../segments"
 
@@ -136,8 +136,11 @@ export function RestoreDemo({
         </button>
       </div>
       <div className="flow">
+        {/* Arrow and step share a no-wrap unit: when the band wraps on narrow
+            screens the arrow follows onto the new line ("→ Du ser") instead of
+            dangling at the end of the previous one. */}
         {FLOW.map((step, i) => (
-          <Fragment key={step}>
+          <span className="flow-item" key={step}>
             {i > 0 && (
               <span className="flow-arrow" aria-hidden="true">
                 →
@@ -147,7 +150,7 @@ export function RestoreDemo({
               {i === FLOW.length - 1 && <CheckIcon size={12} />}
               {step}
             </span>
-          </Fragment>
+          </span>
         ))}
       </div>
       {open ? (
