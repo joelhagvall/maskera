@@ -54,8 +54,8 @@ export function Transparency({ go }: { go: (view: View) => void }) {
               personnummer.
             </li>
             <li>
-              <strong>En liten AI-modell</strong> tar hand om resten: namn, platser och
-              organisationer i löpande text. Tekniken kallas <strong>NER</strong> (“named entity
+              <strong>En liten AI-modell</strong> tar hand om resten: namn, platser, organisationer
+              och adresser i löpande text. Tekniken kallas <strong>NER</strong> (“named entity
               recognition”). Modellen har lärt sig att utifrån sammanhanget avgöra <em>att</em> ett
               ord är ett namn eller en plats, även namn den aldrig har sett förut. Det är därför
               fasta sökmönster inte räcker: det går inte att lista alla namn som finns.

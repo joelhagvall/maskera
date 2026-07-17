@@ -1,7 +1,7 @@
 {
   "name": "maskera",
   "version": "0.6.3",
-  "description": "Swedish-first, client-side PII redaction: deterministic rule detectors plus an optional ONNX/Transformers.js NER model for free-text names, places and organisations.",
+  "description": "Swedish-first, client-side PII redaction: deterministic rule detectors plus an optional ONNX/Transformers.js NER model for free-text names, places, organisations and street addresses.",
   "type": "module",
   "license": "MIT",
   "author": "Joel Hägvall",
