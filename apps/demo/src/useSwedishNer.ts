@@ -66,6 +66,13 @@ export function useSwedishNer(text: string, activation: number): SwedishNer {
       raf2 = requestAnimationFrame(() => {
         const worker = new Worker(new URL("./ner.worker.ts", import.meta.url), { type: "module" })
         workerRef.current = worker
+        // A worker whose script fails to fetch or evaluate (e.g. deploy skew:
+        // a stale tab requesting a hashed chunk that no longer exists) never
+        // posts a message, so without this the UI stays on "loading" forever.
+        worker.onerror = () => {
+          setAnalyzing(false)
+          setStatus("error")
+        }
         worker.onmessage = (e: MessageEvent<NerWorkerMsg>) => {
           const msg = e.data
           if (msg.type === "progress") setProgress(msg.progress)

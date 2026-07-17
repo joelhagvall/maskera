@@ -46,16 +46,21 @@ export function App() {
     if (view === "demo") startModel()
   }, [view])
 
-  // On a view switch, jump to the requested section if one was set (e.g. the
-  // footer's "Integritetspolicy" link), otherwise land at the top.
+  // On a view switch, land at the top, unless a section jump is pending.
   useEffect(() => {
-    if (anchor) {
-      document.getElementById(anchor)?.scrollIntoView()
-      setAnchor(null)
-    } else {
-      window.scrollTo(0, 0)
-    }
+    if (!anchor) window.scrollTo(0, 0)
   }, [view])
+
+  // Jump to the requested section (e.g. the footer's "Integritetspolicy"
+  // link) as soon as it is set, not on view change: navigate() is a no-op
+  // when the target view is already active, and the jump must work then too.
+  // Consuming the anchor right away keeps it from leaking into a later
+  // navigation and skipping that page's scroll-to-top.
+  useEffect(() => {
+    if (!anchor) return
+    document.getElementById(anchor)?.scrollIntoView()
+    setAnchor(null)
+  }, [anchor])
 
   function pick(s: Scenario) {
     setActive(s)

@@ -83,7 +83,12 @@ const nameAlternation = [...fullNames, ...FIRST_NAMES, ...LAST_NAMES]
   .map(escapeRe)
   .join("|")
 
-export const namn: Detector = regexDetector("NAMN", new RegExp(`\\b(${nameAlternation})\\b`, "g"))
+// \b is ASCII-only: it misses standalone "Öberg" (no boundary before Ö) and
+// matches "Berg" inside "Bergåsen". Unicode lookarounds treat åäö as letters.
+export const namn: Detector = regexDetector(
+  "NAMN",
+  new RegExp(`(?<!\\p{L})(${nameAlternation})(?!\\p{L})`, "gu"),
+)
 
 /**
  * Off-state (no model): rules + the offline name gazetteer, so the demo still

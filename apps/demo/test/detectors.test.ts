@@ -35,6 +35,10 @@ describe("namn gazetteer: matches", () => {
   it("name followed by punctuation", () => {
     expect(values("Hej Anna!")).toEqual(["Anna"])
   })
+
+  it("standalone name starting with a non-ASCII letter", () => {
+    expect(values("kontakta Öberg på måndag")).toEqual(["Öberg"])
+  })
 })
 
 describe("namn gazetteer: must not match", () => {
@@ -45,6 +49,8 @@ describe("namn gazetteer: must not match", () => {
     ["lowercase berg", "uppför ett berg i norr"],
     ["name glued into an identifier", "ordernummer ANNA123 skickades"],
     ["genitive of a short name", "Pers cykel står kvar"],
+    ["name as prefix of a word continuing with å", "stugan ligger på Bergåsen"],
+    ["name as prefix of a word continuing with ä", "vi promenerade mot Ekängen"],
   ] as const
 
   for (const [name, text] of negatives) {
