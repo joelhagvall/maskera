@@ -28,9 +28,7 @@ export function InputCard({
           <button type="button" className="clear" onClick={() => onChange("")}>
             Rensa
           </button>
-        ) : (
-          <span className="card-sub">skriv eller klistra in</span>
-        )}
+        ) : null}
       </div>
       <div className="editor">
         <div className="backdrop" ref={backdropRef} aria-hidden>

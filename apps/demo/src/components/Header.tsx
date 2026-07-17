@@ -27,8 +27,8 @@ export function Header({ onDev, onServices }: { onDev: () => void; onServices: (
       <p className="lede">
         maskera hittar och döljer personuppgifter, som namn, personnummer och adresser, innan texten
         skickas till ChatGPT eller andra AI-tjänster. Allt sker{" "}
-        <strong>direkt i din webbläsare</strong>, ingenting lämnar din enhet. För utvecklare: allt
-        är öppen källkod och finns som npm-paket att bygga in i din egen tjänst.
+        <strong>direkt i din webbläsare</strong>, ingenting lämnar din enhet. För utvecklare: öppen
+        källkod, finns som npm-paket.
       </p>
     </header>
   )

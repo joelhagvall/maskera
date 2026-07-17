@@ -128,8 +128,8 @@ export function OutputCard({
         <p className="checksum-note">
           <span className="mono">{invalidPnrs.join(", ")}</span>{" "}
           {invalidPnrs.length === 1
-            ? "ser ut som ett personnummer men kontrollsiffran stämmer inte, så det kan inte vara ett riktigt. Därför maskas det inte."
-            : "ser ut som personnummer men kontrollsiffrorna stämmer inte, så de kan inte vara riktiga. Därför maskas de inte."}{" "}
+            ? "ser ut som ett personnummer men kontrollsiffran stämmer inte, så det kan inte vara ett riktigt. Därför maskeras det inte."
+            : "ser ut som personnummer men kontrollsiffrorna stämmer inte, så de kan inte vara riktiga. Därför maskeras de inte."}{" "}
           Testa med ett giltigt nummer, t.ex. 19900101-2385.
         </p>
       )}

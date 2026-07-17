@@ -189,7 +189,7 @@ export function Transparency({
             </li>
             <li>
               <strong>Basmodell:</strong> KB-BERT från Kungliga biblioteket, fri att använda (CC0).
-              Vi har vidaretränat den för att hitta personuppgifter och sedan komprimerat den till
+              Jag har vidaretränat den för att hitta personuppgifter och sedan komprimerat den till
               en mindre modell, som ligger öppet på{" "}
               <a href={HF_MODEL} target="_blank" rel="noreferrer">
                 Hugging Face
@@ -332,11 +332,11 @@ export function Transparency({
             </li>
             <li>
               <strong>Vad verktyget behandlar:</strong> ingenting lämnar din enhet. Text du maskerar
-              behandlas lokalt i din webbläsare och skickas aldrig till oss eller till tredje part.
+              behandlas lokalt i din webbläsare och skickas aldrig till mig eller till tredje part.
               Se avsnitten ovan för detaljer.
             </li>
             <li>
-              <strong>Dina rättigheter:</strong> eftersom vi varken lagrar eller kan koppla data
+              <strong>Dina rättigheter:</strong> eftersom jag varken lagrar eller kan koppla data
               till dig finns inga personuppgifter att begära ut, rätta eller radera. Har du frågor,
               hör av dig via länken ovan.
             </li>

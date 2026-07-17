@@ -86,11 +86,11 @@ function CopyButton({ text }: { text: string }) {
       type="button"
       className={`code-copy${copied ? " copied" : ""}`}
       onClick={copy}
-      aria-label={copied ? "Kopierad" : "Kopiera koden"}
+      aria-label={copied ? "Kopierat" : "Kopiera koden"}
       title="Kopiera"
     >
       {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
-      <span aria-live="polite">{copied ? "Kopierad" : "Kopiera"}</span>
+      <span aria-live="polite">{copied ? "Kopierat" : "Kopiera"}</span>
     </button>
   )
 }
@@ -162,7 +162,7 @@ export function Developers({ onBack, onServices }: { onBack: () => void; onServi
         <article className="prose">
           <h1>För utvecklare</h1>
           <p className="prose-lede">
-            Samma motor som du just testade, ett kommando bort. Allt importeras från ett ställe,{" "}
+            Samma motor som i demon, ett kommando bort. Allt importeras från ett ställe,{" "}
             <a href={HF_MODEL} target="_blank" rel="noreferrer">
               AI-modellen
             </a>{" "}

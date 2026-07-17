@@ -61,7 +61,7 @@ const PACKAGES: Pkg[] = [
     tagline: "För er som kör maskera i produktion.",
     points: [
       "Modelluppdateringar och stöd för nya typer av känsliga uppgifter",
-      "Vi verifierar mot er datatyp vid varje uppdatering, så att träffsäkerheten inte försämras",
+      "Jag verifierar mot er datatyp vid varje uppdatering, så att träffsäkerheten inte försämras",
       "Kvartalsvis riskgenomgång av era AI-flöden, även sådana som tillkommer",
       "Prioriterad support",
     ],
