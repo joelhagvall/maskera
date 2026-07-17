@@ -17,11 +17,8 @@ export function App() {
   const [active, setActive] = useState<Scenario>(scenarios[0])
   const [text, setText] = useState<string>(scenarios[0].text)
   const [anchor, setAnchor] = useState<string | null>(null)
-  // "Se hela flödet" expanded state lives here, NOT in RestoreDemo: that
-  // component is keyed per scenario (to reset the edited draft), and a local
-  // open state would collapse the flow on every scenario switch. Same story
-  // for the output card's "Visa återställningsnyckel" toggle.
-  const [flowOpen, setFlowOpen] = useState(false)
+  // The output card's "Visa återställningsnyckel" toggle lives here so it
+  // survives scenario switches instead of collapsing.
   const [mapOpen, setMapOpen] = useState(false)
   const { view, navigate } = useRoute()
   // The demo autoloads the model on first entry, as before. Direct landings on
@@ -118,8 +115,8 @@ export function App() {
                 redactions={ner.result.redactions}
                 onChange={changeText}
               />
-              {/* The restore-key toggle state lives in App (like flowOpen):
-                  it survives scenario switches instead of collapsing. */}
+              {/* The restore-key toggle state lives in App: it survives
+                  scenario switches instead of collapsing. */}
               <OutputCard
                 result={ner.result}
                 analyzing={ner.analyzing}
@@ -145,13 +142,7 @@ export function App() {
                 Only shown once there is something to restore. key resets the
                 edited draft when the scenario changes. */}
             {Object.keys(ner.result.map).length > 0 && (
-              <RestoreDemo
-                key={active.id}
-                result={ner.result}
-                scenarioId={active.id}
-                open={flowOpen}
-                onToggleOpen={() => setFlowOpen((v) => !v)}
-              />
+              <RestoreDemo key={active.id} result={ner.result} scenarioId={active.id} />
             )}
           </main>
         </>

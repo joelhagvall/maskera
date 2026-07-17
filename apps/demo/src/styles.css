@@ -417,18 +417,6 @@ body {
   .tab.tab-own {
     padding: 8px 11px; /* compensate the border, like the desktop rule */
   }
-  /* Stack the restore header on mobile. Side by side, the toggle button is
-     flex:none and sits next to the intro, so the note paragraph's width tracks
-     the button width, and the button changes width between "Se hela flödet"
-     and "Dölj flödet", which re-wrapped the note text on every toggle. Stacking
-     gives the note a full, stable width independent of the button. */
-  .restore-head {
-    flex-direction: column;
-    gap: 12px;
-  }
-  .restore-toggle {
-    align-self: flex-start;
-  }
   .ghlink,
   .clear,
   .link,
@@ -704,12 +692,6 @@ body {
   padding-top: 20px;
   border-top: 1px solid var(--border);
 }
-.restore-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
 .restore-title {
   margin: 0;
   font-size: 15px;
@@ -722,11 +704,6 @@ body {
   font-size: 13px;
   line-height: 1.55;
   color: var(--muted);
-}
-.restore-toggle {
-  margin: 2px 0 0;
-  flex: none;
-  white-space: nowrap;
 }
 /* process stepper: always visible so the flow reads at a glance */
 .flow {
@@ -767,6 +744,15 @@ body {
 }
 .restore-grid {
   margin-top: 16px;
+}
+/* The AI reply is an incoming message, not the visitor's own input: invert
+   the card (tinted frame, white editor) so the page's two editable textareas
+   cannot be mistaken for each other. */
+.reply-card {
+  background: var(--gray-100);
+}
+.reply-card .backdrop {
+  background: var(--bg);
 }
 /* the AI-reply editor reuses the input overlay (transparent textarea over a
    coloured backdrop) so the placeholder tokens are highlighted per category */

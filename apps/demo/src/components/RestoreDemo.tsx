@@ -93,22 +93,8 @@ export function sampleAiReply(map: Record<string, string>, scenarioId?: string):
  * Step three of the demo: the AI answers with the placeholders still in place,
  * and maskera swaps the originals back in locally, using the key that never
  * left the device. Only rendered when there is something to restore.
- *
- * The expanded/collapsed state is owned by the parent: this component is
- * keyed per scenario (to reset the edited draft), so local open state would
- * collapse the flow on every scenario switch.
  */
-export function RestoreDemo({
-  result,
-  scenarioId,
-  open,
-  onToggleOpen,
-}: {
-  result: RedactResult
-  scenarioId?: string
-  open: boolean
-  onToggleOpen: () => void
-}) {
+export function RestoreDemo({ result, scenarioId }: { result: RedactResult; scenarioId?: string }) {
   const { map } = result
   const auto = useMemo(() => sampleAiReply(map, scenarioId), [map, scenarioId])
   // null = untouched (mirror the generated sample); a string = the visitor's edit.
@@ -117,24 +103,11 @@ export function RestoreDemo({
 
   return (
     <section className="restore">
-      <div className="restore-head">
-        <div className="restore-intro">
-          <h2 className="restore-title">Så fungerar återställningen</h2>
-          <p className="restore-note">
-            AI:n arbetar bara med platshållare. När svaret kommer tillbaka återställer maskera dina
-            riktiga uppgifter lokalt. Återställningsnyckeln lämnar aldrig din enhet.
-          </p>
-        </div>
-        <button
-          type="button"
-          className="link restore-toggle"
-          aria-expanded={open}
-          aria-controls="restore-flow-details"
-          onClick={onToggleOpen}
-        >
-          {open ? "Dölj flödet" : "Se hela flödet"}
-        </button>
-      </div>
+      <h2 className="restore-title">Så fungerar återställningen</h2>
+      <p className="restore-note">
+        AI:n arbetar bara med platshållare. När svaret kommer tillbaka återställer maskera dina
+        riktiga uppgifter lokalt. Återställningsnyckeln lämnar aldrig din enhet.
+      </p>
       <div className="flow">
         {/* Arrow and step share a no-wrap unit: when the band wraps on narrow
             screens the arrow follows onto the new line ("→ Du ser") instead of
@@ -153,44 +126,45 @@ export function RestoreDemo({
           </span>
         ))}
       </div>
-      {open ? (
-        <div className="grid restore-grid" id="restore-flow-details">
-          <section className="card">
-            <div className="card-head">
-              <span className="card-title">
-                <ChatIcon size={14} />
-                AI:ns svar
-              </span>
-              {draft !== null && (
-                <button type="button" className="clear" onClick={() => setDraft(null)}>
-                  Återställ exempel
-                </button>
-              )}
-            </div>
-            <OverlayEditor
-              value={reply}
-              onChange={setDraft}
-              name="ai-response"
-              ariaLabel="AI:ns svar med platshållare"
-              className="editor reply-editor"
-              highlight={<TokenHighlight text={reply} />}
-            />
-          </section>
-          <section className="card">
-            <div className="card-head">
-              <span className="card-title">
-                <KeyIcon size={14} />
-                Med dina uppgifter tillbaka
-              </span>
-            </div>
-            <div className="output restored">
-              <RestoredText text={reply} map={map} />
-            </div>
-          </section>
-        </div>
-      ) : (
-        <div id="restore-flow-details" hidden />
-      )}
+      <div className="grid restore-grid">
+        {/* The reply card is inverted (tinted frame, white editor) so this
+            second editable textarea reads as an incoming message, not as a
+            twin of the visitor's own input card. */}
+        <section className="card reply-card">
+          <div className="card-head">
+            <span className="card-title">
+              <ChatIcon size={14} />
+              AI:ns svar
+            </span>
+            {draft !== null ? (
+              <button type="button" className="clear" onClick={() => setDraft(null)}>
+                Återställ exempel
+              </button>
+            ) : (
+              <span className="card-sub">Exempel, redigera fritt</span>
+            )}
+          </div>
+          <OverlayEditor
+            value={reply}
+            onChange={setDraft}
+            name="ai-response"
+            ariaLabel="AI:ns svar med platshållare"
+            className="editor reply-editor"
+            highlight={<TokenHighlight text={reply} />}
+          />
+        </section>
+        <section className="card">
+          <div className="card-head">
+            <span className="card-title">
+              <KeyIcon size={14} />
+              Med dina uppgifter tillbaka
+            </span>
+          </div>
+          <div className="output restored">
+            <RestoredText text={reply} map={map} />
+          </div>
+        </section>
+      </div>
     </section>
   )
 }
