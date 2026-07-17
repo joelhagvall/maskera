@@ -162,7 +162,7 @@ export function Developers({ onBack, onServices }: { onBack: () => void; onServi
         <article className="prose">
           <h1>För utvecklare</h1>
           <p className="prose-lede">
-            Samma motor som i demon, ett kommando bort. Allt importeras från ett ställe,{" "}
+            Samma motor som på startsidan, ett kommando bort. Allt importeras från ett ställe,{" "}
             <a href={HF_MODEL} target="_blank" rel="noreferrer">
               AI-modellen
             </a>{" "}
