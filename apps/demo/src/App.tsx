@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useDeferredValue, useEffect, useMemo, useState } from "react"
 import { Controls } from "./components/Controls"
 import { Developers } from "./components/Developers"
 import { Footer } from "./components/Footer"
@@ -28,10 +28,16 @@ export function App() {
   // content pages stay at zero and therefore never create the worker or fetch
   // its weights. Incrementing gives the error UI a real retry path.
   const [modelActivation, setModelActivation] = useState(() => (view === "demo" ? 1 : 0))
-  const ner = useSwedishNer(text, modelActivation)
+  // The analysis pipeline runs on a deferred copy of the text: on a large
+  // paste or fast typing, the textarea and its backdrop (the visible text)
+  // commit at urgent priority, while the rule pass and the result cards
+  // re-render at deferred priority. Only the highlight marks can lag a frame,
+  // never the text itself, since InputCard weaves the synchronous text.
+  const deferredText = useDeferredValue(text)
+  const ner = useSwedishNer(deferredText, modelActivation)
   const invalidPnrs = useMemo(
-    () => invalidPersonnummer(text, ner.result.redactions),
-    [text, ner.result.redactions],
+    () => invalidPersonnummer(deferredText, ner.result.redactions),
+    [deferredText, ner.result.redactions],
   )
 
   // Also autoload when the visitor enters the demo from a content page or via

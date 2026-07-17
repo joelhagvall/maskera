@@ -37,7 +37,7 @@ function Stats({ result }: { result: RedactResult }) {
     const c = new Map<string, number>()
     for (const r of result.redactions) c.set(r.label, (c.get(r.label) ?? 0) + 1)
     return [...c.entries()]
-  }, [result])
+  }, [result.redactions])
 
   return (
     <div className="stats">
