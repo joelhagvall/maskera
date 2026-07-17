@@ -1,11 +1,11 @@
 # maskera
 
-> Swedish-first, client-side PII redaction for AI apps. maskera finds and masks Swedish personal data (names, personnummer, addresses, phone numbers, and more) before text reaches an LLM, a log, or analytics. Everything runs on-device (browser via WebGPU/WASM, or Node); nothing is sent anywhere and there is no telemetry. Redactions are reversible via a restore map that stays with the caller.
+> Swedish-first, client-side PII redaction for AI apps. maskera finds and masks Swedish personal data (names, personnummer, addresses, phone numbers, and more) before text reaches an LLM, a log, or analytics. Everything runs on-device (browser via WebGPU/WASM, or Node); your text is never sent anywhere and there is no telemetry. The default setup fetches the model weights and WASM runtime once as static assets (both can be self-hosted), never your content. Redactions are reversible via a restore map that stays with the caller.
 
 Two layers, rules first:
 
 - `@maskera/core` (npm): deterministic, checksum-validated detectors for structured Swedish PII: personnummer, samordningsnummer, organisationsnummer, phone, email, postnummer, bankgiro, plusgiro, IBAN, cards, IP, URL. Zero dependencies, synchronous. Custom patterns join via `regexDetector`.
-- `maskera` (npm): everything in core plus `maskera-sv-ner`, our own Swedish NER model (KB-BERT fine-tuned, distilled to a 43 MB ONNX) that catches free-text names, places, organisations and street addresses, including all-lowercase chat text. On overlap, rules win. The hybrid also enables the low-risk free-text rule heuristics (street address, lägenhetsnummer) by default; `regnummer` is opt-in.
+- `maskera` (npm): everything in core plus `maskera-sv-ner`, my own Swedish NER model (KB-BERT fine-tuned, distilled to a 43 MB ONNX) that catches free-text names, places, organisations and street addresses, including all-lowercase chat text. On overlap, rules win. The hybrid also enables the low-risk free-text rule heuristics (street address, lägenhetsnummer) by default; `regnummer` is opt-in.
 
 Quick start:
 

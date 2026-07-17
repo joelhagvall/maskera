@@ -25,7 +25,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{July 16, 2026 \quad\textperiodcentered\quad Whitepaper v1.9}
+\date{July 17, 2026 \quad\textperiodcentered\quad Whitepaper v1.10}
 
 \begin{document}
 \maketitle
@@ -103,7 +103,7 @@ introduced.
 The redaction flow is: raw text $\rightarrow$ \pkg{redact()} $\rightarrow$
 masked text with placeholders $\rightarrow$ LLM / log / analytics
 $\rightarrow$ \pkg{restore()} locally. The external recipient only ever sees
-placeholders such as \texttt{[PERSON\_1]} and \texttt{[PERSONNUMMER\_1]};
+placeholders such as \texttt{[NAMN\_1]} and \texttt{[PERSONNUMMER\_1]};
 shaded boxes run inside the caller's environment. Restoration is optional:
 in many logging and analytics flows it is never performed, and the
 placeholders are the final stored form.
@@ -135,7 +135,7 @@ When both layers run, any model detection that overlaps a rule detection is
 dropped. A personnummer is therefore always classified by checksum logic,
 never by a probabilistic guess. Within one call, the same value always
 receives the same placeholder, so a language model can reason about
-\texttt{[PERSON\_1]} consistently without ever seeing the underlying value.
+\texttt{[NAMN\_1]} consistently without ever seeing the underlying value.
 Restoration happens locally: the placeholder-to-value mapping never leaves
 the caller's environment, and must never be logged or stored next to the
 redacted text.
@@ -580,8 +580,8 @@ visible failure modes.
 
 \vfill
 \noindent\rule{\textwidth}{0.4pt}\par\smallskip
-{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.9
-\textperiodcentered{} July 16, 2026 \textperiodcentered{} Joel H\"agvall
+{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.10
+\textperiodcentered{} July 17, 2026 \textperiodcentered{} Joel H\"agvall
 \textperiodcentered{} maskera.dev. Current numbers live in
 \pkg{docs/BENCHMARKS.md}; where this document disagrees, that file wins.
 Not legal advice.\par}

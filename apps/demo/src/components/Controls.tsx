@@ -57,7 +57,8 @@ function ModelStatus({
       <div className="status model-error">
         <span className="dot error" aria-hidden="true" />
         <span role="status" aria-live="polite">
-          AI-modellen kunde inte laddas. Regelmaskeringen fungerar fortfarande.
+          AI-modellen kunde inte laddas. Personnummer, telefonnummer och annat med bestämt format
+          maskeras ändå.
         </span>
         <button type="button" className="model-action" onClick={onRetryModel}>
           Försök igen

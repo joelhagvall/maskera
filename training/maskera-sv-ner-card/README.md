@@ -241,7 +241,7 @@ mismatch on PER/LOC/ORG rather than general quality.
 - **This model:** MIT.
 - **Base model:** KB-BERT (`KBLab/bert-base-swedish-cased`) is released CC0 by the
   National Library of Sweden (Kungliga biblioteket). No obligations attach, but
-  we acknowledge it gratefully; see `NOTICE`.
+  I acknowledge it gratefully; see `NOTICE`.
 - **Training data:** includes the Swedish NER Corpus, SUCX 3.0 NER
   (KBLab/Språkbanken Text), MASSIVE sv-SE (Amazon Science), SIC2, MultiCoNER
   v2 sv and pseudo-labeled Flashback/Familjeliv forum text (Språkbanken

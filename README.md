@@ -7,13 +7,13 @@
 <a href="https://maskera.dev"><img src="docs/demo.png" alt="maskera-demon: svensk text med markerade personuppgifter till vänster, samma text med platshållare som [NAMN_1] till höger" width="100%"></a>
 
 ```bash
-npm install maskera @huggingface/transformers   # all-in-one: rules + our Swedish AI model
+npm install maskera @huggingface/transformers   # all-in-one: rules + my Swedish AI model
 ```
 
 ```ts
 import { createNerRecognizer, redactWithNer } from "maskera"
 
-const recognizer = createNerRecognizer() // our 43 MB Swedish model, runs in the browser
+const recognizer = createNerRecognizer() // my 43 MB Swedish model, runs in the browser
 const { text, restore } = await redactWithNer(
   "hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala",
   { recognizer },
@@ -104,7 +104,7 @@ before logging: `logger.info(redact(msg).text)`. Runnable example:
 | Package | Status | What it does |
 | ------- | ------ | ------------ |
 | [`@maskera/core`](packages/core) | ✅ ready | Zero-dep detectors + redact/restore engine |
-| [`maskera`](packages/ner) | ✅ ready | Our Swedish model via Transformers.js |
+| [`maskera`](packages/ner) | ✅ ready | My Swedish model via Transformers.js |
 | `@maskera/node`, `@maskera/react` | ⏳ on demand | Wrappers, built when users ask |
 
 Full API docs live in the package READMEs. For thresholds, self-hosting the
