@@ -35,7 +35,7 @@ export function Transparency({
         ← Tillbaka till startsidan
       </a>
 
-      <main>
+      <main id="main-content">
         <article className="prose">
           <h1>Integritet & transparens</h1>
           <p className="prose-lede">
@@ -43,7 +43,31 @@ export function Transparency({
             gör, hur det fungerar, hur modellen har tränats och var gränserna går.
           </p>
 
-          <h2>Hur fungerar det?</h2>
+          <nav className="toc" aria-label="Innehåll på sidan">
+            <p>På den här sidan</p>
+            <ul>
+              <li>
+                <a href="#hur-fungerar">Hur fungerar det?</a>
+              </li>
+              <li>
+                <a href="#dataflode">Var din data tar vägen</a>
+              </li>
+              <li>
+                <a href="#modelltraning">Hur modellen tränats</a>
+              </li>
+              <li>
+                <a href="#begransningar">Hur bra den är, ärligt</a>
+              </li>
+              <li>
+                <a href="#testdata">Testdata i exemplen</a>
+              </li>
+              <li>
+                <a href="#integritetspolicy">Integritetspolicy</a>
+              </li>
+            </ul>
+          </nav>
+
+          <h2 id="hur-fungerar">Hur fungerar det?</h2>
           <ul>
             <li>
               maskera läser texten och ersätter personuppgifter med platshållare, till exempel{" "}
@@ -70,7 +94,7 @@ export function Transparency({
             </li>
           </ul>
 
-          <h2>Var din data tar vägen: ingenstans</h2>
+          <h2 id="dataflode">Var din data tar vägen: ingenstans</h2>
           <ul>
             <li>
               <strong>All maskering sker på din enhet</strong>, i webbläsaren eller på din egen
@@ -98,7 +122,7 @@ export function Transparency({
             </li>
           </ul>
 
-          <h2>Hur modellen tränats</h2>
+          <h2 id="modelltraning">Hur modellen tränats</h2>
           <ul>
             <li>
               <strong>Inga insamlade personuppgifter i träningen.</strong> Modellen tränades på
@@ -179,7 +203,7 @@ export function Transparency({
             </li>
           </ul>
 
-          <h2>Hur bra den är, ärligt</h2>
+          <h2 id="begransningar">Hur bra den är, ärligt</h2>
           <ul>
             <li>
               Öppet utvärderad mot både en handbyggd testuppsättning och ett oberoende publikt

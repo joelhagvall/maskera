@@ -129,6 +129,7 @@ export function RestoreDemo({
           type="button"
           className="link restore-toggle"
           aria-expanded={open}
+          aria-controls="restore-flow-details"
           onClick={onToggleOpen}
         >
           {open ? "Dölj flödet" : "Se hela flödet"}
@@ -149,8 +150,8 @@ export function RestoreDemo({
           </Fragment>
         ))}
       </div>
-      {open && (
-        <div className="grid restore-grid">
+      {open ? (
+        <div className="grid restore-grid" id="restore-flow-details">
           <section className="card">
             <div className="card-head">
               <span className="card-title">
@@ -168,6 +169,8 @@ export function RestoreDemo({
                 <TokenHighlight text={reply} />
               </div>
               <textarea
+                name="ai-response"
+                autoComplete="off"
                 value={reply}
                 aria-label="AI:ns svar med platshållare"
                 spellCheck={false}
@@ -190,6 +193,8 @@ export function RestoreDemo({
             </div>
           </section>
         </div>
+      ) : (
+        <div id="restore-flow-details" hidden />
       )}
     </section>
   )

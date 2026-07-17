@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react"
 import type { MouseEvent } from "react"
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { navClick, useRoute } from "../src/routing"
 
 /**
@@ -14,6 +14,19 @@ import { navClick, useRoute } from "../src/routing"
  */
 
 const STATIC_TITLE = "maskera personuppgifter innan AI:n ser dem"
+
+beforeEach(() => {
+  document.head.innerHTML = `
+    <title>${STATIC_TITLE}</title>
+    <link rel="canonical" href="https://maskera.dev/">
+    <meta name="description" content="startsida">
+    <meta property="og:url" content="https://maskera.dev/">
+    <meta property="og:title" content="startsida">
+    <meta property="og:description" content="startsida">
+    <meta name="twitter:title" content="startsida">
+    <meta name="twitter:description" content="startsida">
+  `
+})
 
 function mountAt(path: string) {
   window.history.replaceState(null, "", path)
@@ -79,6 +92,40 @@ describe("useRoute: document.title", () => {
     })
     expect(result.current.view).toBe("services")
     expect(document.title).toBe("tjänster · maskera")
+    unmount()
+  })
+})
+
+describe("useRoute: route metadata", () => {
+  it("sets canonical, description and social metadata on a direct sub-page landing", () => {
+    const { unmount } = mountAt("/developers")
+    expect(document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.href).toBe(
+      "https://maskera.dev/developers",
+    )
+    expect(document.querySelector<HTMLMetaElement>('meta[name="description"]')?.content).toContain(
+      "Installera maskera",
+    )
+    expect(document.querySelector<HTMLMetaElement>('meta[property="og:url"]')?.content).toBe(
+      "https://maskera.dev/developers",
+    )
+    expect(document.querySelector<HTMLMetaElement>('meta[name="twitter:title"]')?.content).toBe(
+      "för utvecklare · maskera",
+    )
+    unmount()
+  })
+
+  it("updates metadata during in-app navigation", () => {
+    const { result, unmount } = mountAt("/")
+    act(() => result.current.navigate("services"))
+    expect(document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.href).toBe(
+      "https://maskera.dev/tjanster",
+    )
+    expect(document.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.content).toBe(
+      "tjänster · maskera",
+    )
+    expect(
+      document.querySelector<HTMLMetaElement>('meta[name="twitter:description"]')?.content,
+    ).toContain("fasta tjänstepaket")
     unmount()
   })
 })

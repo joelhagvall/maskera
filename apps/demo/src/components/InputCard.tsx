@@ -37,12 +37,12 @@ export function InputCard({
           <HighlightedText text={text} redactions={redactions} />
         </div>
         <textarea
+          name="source-text"
+          autoComplete="off"
           value={text}
           aria-label="Din text"
           spellCheck={false}
-          placeholder={`Skriv eller klistra in egen text här. Allt körs lokalt.${
-            tagline ? `\n\nExempel: ${tagline}` : ""
-          }`}
+          placeholder={`Skriv eller klistra in egen text här… Allt körs lokalt.${tagline ? `\n\nExempel: ${tagline}` : ""}`}
           onChange={(e) => onChange(e.target.value)}
           onScroll={(e) => {
             if (backdropRef.current) backdropRef.current.scrollTop = e.currentTarget.scrollTop

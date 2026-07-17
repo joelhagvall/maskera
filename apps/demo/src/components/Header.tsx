@@ -1,6 +1,5 @@
 import { GITHUB } from "../constants"
 import { ArrowUpRightIcon, MaskeraMark } from "../icons"
-import { preloadDevelopers, preloadServices } from "../pages"
 import { navClick, viewPaths } from "../routing"
 
 export function Header({ onDev, onServices }: { onDev: () => void; onServices: () => void }) {
@@ -12,22 +11,10 @@ export function Header({ onDev, onServices }: { onDev: () => void; onServices: (
           maskera
         </span>
         <nav className="head-links">
-          <a
-            className="ghlink"
-            href={viewPaths.dev}
-            onClick={navClick(onDev)}
-            onPointerEnter={() => preloadDevelopers()}
-            onFocus={() => preloadDevelopers()}
-          >
+          <a className="ghlink" href={viewPaths.dev} onClick={navClick(onDev)}>
             För utvecklare
           </a>
-          <a
-            className="ghlink"
-            href={viewPaths.services}
-            onClick={navClick(onServices)}
-            onPointerEnter={() => preloadServices()}
-            onFocus={() => preloadServices()}
-          >
+          <a className="ghlink" href={viewPaths.services} onClick={navClick(onServices)}>
             Tjänster
           </a>
           <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">

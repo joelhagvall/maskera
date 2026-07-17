@@ -1,4 +1,4 @@
-import { type ReactNode, useRef, useState } from "react"
+import { type ReactNode, useEffect, useRef, useState } from "react"
 import { GITHUB, HF_MODEL, NPM_NER } from "../constants"
 import { ArrowUpRightIcon, CheckIcon, CopyIcon, MaskeraMark } from "../icons"
 import { navClick, viewPaths } from "../routing"
@@ -68,6 +68,9 @@ function Code({ children, lang }: { children: string; lang: string }) {
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  useEffect(() => () => clearTimeout(timer.current), [])
+
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(text)
@@ -87,7 +90,7 @@ function CopyButton({ text }: { text: string }) {
       title="Kopiera"
     >
       {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
-      {copied ? "Kopierad" : "Kopiera"}
+      <span aria-live="polite">{copied ? "Kopierad" : "Kopiera"}</span>
     </button>
   )
 }
@@ -113,6 +116,8 @@ function InstallTabs() {
               type="button"
               role="tab"
               aria-selected={p.id === pm.id}
+              aria-controls="install-command"
+              id={`install-tab-${p.id}`}
               className={`code-tab${p.id === pm.id ? " on" : ""}`}
               onClick={() => setPm(p)}
             >
@@ -122,7 +127,7 @@ function InstallTabs() {
         </div>
         <CopyButton text={pm.cmd} />
       </div>
-      <pre>
+      <pre role="tabpanel" id="install-command" aria-labelledby={`install-tab-${pm.id}`}>
         <code>
           <span className="code-line">{highlight(pm.cmd)}</span>
         </code>
@@ -153,7 +158,7 @@ export function Developers({ onBack, onServices }: { onBack: () => void; onServi
         ← Tillbaka till startsidan
       </a>
 
-      <main>
+      <main id="main-content">
         <article className="prose">
           <h1>För utvecklare</h1>
           <p className="prose-lede">
@@ -200,19 +205,27 @@ restore(svar)
 // platshållarna byts tillbaka mot originalen, lokalt`}
           </Code>
 
-          <p className="prose-foot foot-links">
-            <a href={NPM_NER} target="_blank" rel="noreferrer">
-              <code>maskera</code> på npm
-            </a>
-            <a href={GITHUB} target="_blank" rel="noreferrer">
-              dokumentation och källkod på GitHub
-              <ArrowUpRightIcon size={13} />
-            </a>
-            <a href={HF_MODEL} target="_blank" rel="noreferrer">
-              modellen på Hugging Face
-              <ArrowUpRightIcon size={13} />
-            </a>
-          </p>
+          <nav className="prose-foot foot-links" aria-label="Utvecklarresurser">
+            <ul>
+              <li>
+                <a href={NPM_NER} target="_blank" rel="noreferrer">
+                  <code>maskera</code> på npm
+                </a>
+              </li>
+              <li>
+                <a href={GITHUB} target="_blank" rel="noreferrer">
+                  dokumentation och källkod på GitHub
+                  <ArrowUpRightIcon size={13} />
+                </a>
+              </li>
+              <li>
+                <a href={HF_MODEL} target="_blank" rel="noreferrer">
+                  modellen på Hugging Face
+                  <ArrowUpRightIcon size={13} />
+                </a>
+              </li>
+            </ul>
+          </nav>
         </article>
       </main>
     </>

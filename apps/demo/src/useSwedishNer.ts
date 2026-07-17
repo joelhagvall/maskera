@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { demoDetectors } from "./detectors"
 import type { NerWorkerMsg } from "./ner.worker"
 
-export type NerStatus = "loading" | "ready" | "error"
+export type NerStatus = "idle" | "loading" | "ready" | "error"
 
 export interface SwedishNer {
   /**
@@ -26,8 +26,8 @@ export interface SwedishNer {
  * the main thread never blocks, and the worker is spawned only after the
  * first paint so the page renders before the heavy loading starts.
  */
-export function useSwedishNer(text: string): SwedishNer {
-  const [status, setStatus] = useState<NerStatus>("loading")
+export function useSwedishNer(text: string, activation: number): SwedishNer {
+  const [status, setStatus] = useState<NerStatus>(activation > 0 ? "loading" : "idle")
   const [progress, setProgress] = useState(0)
   const [analyzing, setAnalyzing] = useState(false)
   const workerRef = useRef<Worker | null>(null)
@@ -48,8 +48,19 @@ export function useSwedishNer(text: string): SwedishNer {
 
   // Spawn the worker after the first paint (double rAF fires after the
   // browser has rendered the initial frame), so hero and cards are visible
-  // before the model download and WASM init begin.
+  // before the model download and WASM init begin. activation === 0 is the
+  // passive/direct-landing state: rules work, but no worker or model fetch is
+  // started until the visitor asks to use the model.
   useEffect(() => {
+    if (activation === 0) return
+
+    requestIdRef.current += 1
+    requestTextRef.current = ""
+    setStatus("loading")
+    setProgress(0)
+    setAnalyzing(false)
+    setNerResult(null)
+
     let raf2 = 0
     const raf1 = requestAnimationFrame(() => {
       raf2 = requestAnimationFrame(() => {
@@ -59,7 +70,10 @@ export function useSwedishNer(text: string): SwedishNer {
           const msg = e.data
           if (msg.type === "progress") setProgress(msg.progress)
           if (msg.type === "ready") setStatus("ready")
-          if (msg.type === "error") setStatus("error")
+          if (msg.type === "error") {
+            setAnalyzing(false)
+            setStatus("error")
+          }
           if (msg.type === "result") {
             if (msg.id !== requestIdRef.current) return // stale, a newer text is in flight
             setAnalyzing(false)
@@ -84,15 +98,23 @@ export function useSwedishNer(text: string): SwedishNer {
       workerRef.current?.terminate()
       workerRef.current = null
     }
-  }, [])
+  }, [activation])
 
   // Ask the worker to reanalyze (debounced) whenever the text changes.
   useEffect(() => {
     const worker = workerRef.current
     if (!ready || !worker) return
-    setAnalyzing(true)
+
     const id = ++requestIdRef.current
     requestTextRef.current = text
+
+    if (!text) {
+      setAnalyzing(false)
+      setNerResult(null)
+      return
+    }
+
+    setAnalyzing(true)
     const timer = setTimeout(() => worker.postMessage({ id, text }), 250)
     return () => clearTimeout(timer)
   }, [text, ready])

@@ -1,4 +1,4 @@
-import { type MouseEvent, useEffect, useRef, useState, useTransition } from "react"
+import { type MouseEvent, useEffect, useRef, useState } from "react"
 
 export type View = "demo" | "transparency" | "dev" | "services"
 
@@ -15,11 +15,46 @@ export const viewPaths: Record<View, string> = {
 // Home is the brand: keep it to the bare word so it never truncates and the
 // name stays visible. Sub-pages lead with the page, brand last. The descriptive
 // tagline lives on in the static <title> + og/twitter tags for SEO and sharing.
-const viewTitles: Record<View, string> = {
-  demo: "maskera",
-  dev: "för utvecklare · maskera",
-  transparency: "integritet & transparens · maskera",
-  services: "tjänster · maskera",
+const viewMeta: Record<View, { title: string; description: string }> = {
+  demo: {
+    title: "maskera",
+    description:
+      "maskera hittar och döljer svenska personuppgifter innan texten når ChatGPT eller andra AI-tjänster. Allt körs i webbläsaren.",
+  },
+  dev: {
+    title: "för utvecklare · maskera",
+    description:
+      "Installera maskera för svensk PII-maskering lokalt i webbläsaren eller Node. Öppen källkod, TypeScript och en egentränad svensk AI-modell.",
+  },
+  transparency: {
+    title: "integritet & transparens · maskera",
+    description:
+      "Så fungerar maskeras lokala personuppgiftsmaskering, hur modellen tränats, vilka begränsningar som finns och vilken testdata demon använder.",
+  },
+  services: {
+    title: "tjänster · maskera",
+    description:
+      "Få hjälp att granska och integrera lokal personuppgiftsmaskering i era AI-flöden, med fasta tjänstepaket och direkt stöd från maskeras skapare.",
+  },
+}
+
+function setMetaContent(selector: string, content: string) {
+  const element = document.querySelector<HTMLMetaElement>(selector)
+  if (element) element.content = content
+}
+
+export function applyViewMeta(view: View) {
+  const meta = viewMeta[view]
+  const url = new URL(viewPaths[view], "https://maskera.dev").href
+
+  document.title = meta.title
+  document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute("href", url)
+  setMetaContent('meta[name="description"]', meta.description)
+  setMetaContent('meta[property="og:url"]', url)
+  setMetaContent('meta[property="og:title"]', meta.title)
+  setMetaContent('meta[property="og:description"]', meta.description)
+  setMetaContent('meta[name="twitter:title"]', meta.title)
+  setMetaContent('meta[name="twitter:description"]', meta.description)
 }
 
 function viewFromPath(pathname: string): View {
@@ -32,21 +67,16 @@ function viewFromPath(pathname: string): View {
 
 export function useRoute() {
   const [view, setView] = useState<View>(() => viewFromPath(window.location.pathname))
-  // Navigating to a code-split page suspends while its chunk loads. Driving the
-  // view change through a transition keeps the current page on screen until the
-  // next chunk is ready, so the switch never flashes a blank Suspense fallback,
-  // even on the first visit before the idle prefetch has warmed the cache.
-  const [pending, startTransition] = useTransition()
   // Crawlers that execute JS (Google, SEO tools) index whatever document.title
   // ends up as. On a fresh landing on the home view, keep index.html's
-  // descriptive static title for them; the bare brand title from viewTitles
-  // only takes over once the user actually navigates.
+  // descriptive static title for them; the bare brand title in viewMeta only
+  // takes over once the user actually navigates.
   const hasNavigated = useRef(false)
 
   useEffect(() => {
     const onPop = () => {
       hasNavigated.current = true
-      startTransition(() => setView(viewFromPath(window.location.pathname)))
+      setView(viewFromPath(window.location.pathname))
     }
     window.addEventListener("popstate", onPop)
     return () => window.removeEventListener("popstate", onPop)
@@ -54,7 +84,7 @@ export function useRoute() {
 
   useEffect(() => {
     if (!hasNavigated.current && view === "demo") return
-    document.title = viewTitles[view]
+    applyViewMeta(view)
   }, [view])
 
   const navigate = (next: View) => {
@@ -62,10 +92,10 @@ export function useRoute() {
     if (viewFromPath(window.location.pathname) !== next) {
       window.history.pushState(null, "", viewPaths[next])
     }
-    startTransition(() => setView(next))
+    setView(next)
   }
 
-  return { view, navigate, pending }
+  return { view, navigate }
 }
 
 // Wraps an in-app navigation on a real <a href>: plain left-clicks route via

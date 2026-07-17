@@ -35,21 +35,28 @@ function serveOrtInDev(): Plugin {
   }
 }
 
+const routeInputs = {
+  index: fileURLToPath(new URL("./index.html", import.meta.url)),
+  developers: fileURLToPath(new URL("./developers/index.html", import.meta.url)),
+  integritet: fileURLToPath(new URL("./integritet/index.html", import.meta.url)),
+  tjanster: fileURLToPath(new URL("./tjanster/index.html", import.meta.url)),
+}
+
 export default defineConfig({
   plugins: [react(), serveOrtInDev()],
   // BENCH=1 also builds bench.html (the latency bench page, never deployed);
   // see scripts/bench-browser.mjs.
-  build:
-    process.env.BENCH === "1"
-      ? {
-          rollupOptions: {
-            input: {
-              index: fileURLToPath(new URL("./index.html", import.meta.url)),
+  build: {
+    rollupOptions: {
+      input:
+        process.env.BENCH === "1"
+          ? {
+              ...routeInputs,
               bench: fileURLToPath(new URL("./bench.html", import.meta.url)),
-            },
-          },
-        }
-      : undefined,
+            }
+          : routeInputs,
+    },
+  },
   // host: true exposes the dev server on the LAN so you can open it on a phone
   server: { port: 5180, open: true, host: true },
   // Transformers.js / onnxruntime-web don't play well with esbuild prebundling.

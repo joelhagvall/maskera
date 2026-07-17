@@ -1,11 +1,15 @@
 import type { RedactResult } from "@maskera/core"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { CheckIcon, CopyIcon, EyeIcon } from "../icons"
 import { labelMeta } from "../labels"
 import { RedactedText } from "../segments"
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  useEffect(() => () => clearTimeout(timer.current), [])
+
   return (
     <button
       type="button"
@@ -14,14 +18,15 @@ function CopyButton({ text }: { text: string }) {
         navigator.clipboard?.writeText(text).then(
           () => {
             setCopied(true)
-            setTimeout(() => setCopied(false), 1500)
+            clearTimeout(timer.current)
+            timer.current = setTimeout(() => setCopied(false), 1500)
           },
           () => {},
         )
       }}
     >
       {copied ? <CheckIcon size={13} /> : <CopyIcon size={13} />}
-      {copied ? "Kopierat" : "Kopiera"}
+      <span aria-live="polite">{copied ? "Kopierat" : "Kopiera"}</span>
     </button>
   )
 }
@@ -65,7 +70,7 @@ function Stats({ result }: { result: RedactResult }) {
 
 function RestoreMap({ map }: { map: Record<string, string> }) {
   return (
-    <div className="map">
+    <div className="map" id="restore-map">
       <p className="map-note">
         Nyckeln stannar på din enhet. AI-tjänsten ser bara platshållarna, och med nyckeln kan du
         sätta tillbaka originalen i svaret efteråt.
@@ -133,10 +138,16 @@ export function OutputCard({
 
       {unique > 0 && (
         <>
-          <button type="button" className="link" onClick={onToggleMap}>
+          <button
+            type="button"
+            className="link"
+            aria-expanded={showMap}
+            aria-controls="restore-map"
+            onClick={onToggleMap}
+          >
             {showMap ? "Dölj" : "Visa"} återställningsnyckel ({unique})
           </button>
-          {showMap && <RestoreMap map={result.map} />}
+          {showMap ? <RestoreMap map={result.map} /> : <div id="restore-map" hidden />}
         </>
       )}
     </section>

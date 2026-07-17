@@ -1,7 +1,7 @@
-import { Analytics } from "@vercel/analytics/react"
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { App } from "./App"
+import { DeferredAnalytics } from "./components/DeferredAnalytics"
 import "./styles.css"
 
 // Cookieless, anonymous page-view counting, same-origin (/_vercel/insights).
@@ -10,6 +10,6 @@ import "./styles.css"
 createRoot(document.getElementById("root") as HTMLElement).render(
   <StrictMode>
     <App />
-    <Analytics />
+    <DeferredAnalytics />
   </StrictMode>,
 )

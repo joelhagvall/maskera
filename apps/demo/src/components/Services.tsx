@@ -91,7 +91,7 @@ export function Services({ onBack, onDev }: { onBack: () => void; onDev: () => v
         ← Tillbaka till startsidan
       </a>
 
-      <main>
+      <main id="main-content">
         <article className="prose prose-wide">
           <h1>Tjänster</h1>
           <p className="prose-lede">
@@ -182,11 +182,12 @@ export function Services({ onBack, onDev }: { onBack: () => void; onDev: () => v
           </ul>
 
           <p className="prose-foot">
+            Frågor eller vill ni beskriva ert dataflöde först? Mejla{" "}
+            <a href={mailto("Maskera: tjänster")}>{EMAIL}</a> eller{" "}
             <a href={booking("foot")} target="_blank" rel="noreferrer">
-              Boka ett kostnadsfritt samtal
-            </a>{" "}
-            direkt i kalendern, eller mejla ett par rader om ert dataflöde:{" "}
-            <a href={mailto("Maskera: tjänster")}>{EMAIL}</a>
+              boka ett kostnadsfritt samtal
+            </a>
+            .
           </p>
         </article>
       </main>
