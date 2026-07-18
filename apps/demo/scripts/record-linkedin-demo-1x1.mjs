@@ -227,7 +227,7 @@ try {
       .restore { display: none !important; }
       .card { padding: 14px 16px !important; }
       .editor { height: 290px !important; }
-      .editor textarea { font-size: 17px !important; }
+      textarea[name="source-text"] { font-size: 17px !important; }
       .output { min-height: 290px !important; font-size: 17px !important; }
     `,
   })
@@ -235,7 +235,7 @@ try {
   const trimStart = Math.max(0, (Date.now() - recordingStartedAt) / 1000 - 0.45)
 
   await sleep(850)
-  const editor = demo.locator(".editor textarea").first()
+  const editor = demo.locator('textarea[name="source-text"]').first()
   await editor.focus()
   for (const character of TYPE) {
     await editor.pressSequentially(character)

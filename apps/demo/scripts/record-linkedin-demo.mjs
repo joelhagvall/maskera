@@ -300,7 +300,7 @@ try {
   const trimStart = Math.max(0, (Date.now() - recordingStartedAt) / 1000 - 0.45)
 
   await sleep(850)
-  const editor = demo.locator(".editor textarea").first()
+  const editor = demo.locator('textarea[name="source-text"]').first()
   await editor.focus()
   for (const character of TYPE) {
     await editor.pressSequentially(character)

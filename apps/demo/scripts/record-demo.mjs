@@ -85,7 +85,7 @@ try {
   // is later cropped to exactly this region, so we only ever show the input and
   // output boxes — never the header, tabs or the restore section.
   const frameGrid = () =>
-    page.locator(".grid").evaluate((el) => {
+    page.locator(".grid").first().evaluate((el) => {
       window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 24)
     })
 
@@ -113,7 +113,7 @@ try {
 
   // Type the free text into the empty editor. focus() (not click) so there is
   // no pointer interaction at all, only keystrokes.
-  const editor = page.locator(".editor textarea")
+  const editor = page.locator('textarea[name="source-text"]')
   await editor.focus()
   for (const ch of TYPE) {
     await editor.pressSequentially(ch)
@@ -126,7 +126,7 @@ try {
 
   // Measure the cards region now (its tallest, once the output has filled in),
   // padded a touch, clamped to the frame, and rounded to even pixels for h264.
-  const box = await page.locator(".grid").boundingBox()
+  const box = await page.locator(".grid").first().boundingBox()
   // Roomy on the sides, tight top/bottom so neither the tab row above nor the
   // restore section below bleeds into frame.
   const padX = 24
