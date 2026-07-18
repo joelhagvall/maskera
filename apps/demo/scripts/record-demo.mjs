@@ -85,9 +85,12 @@ try {
   // is later cropped to exactly this region, so we only ever show the input and
   // output boxes — never the header, tabs or the restore section.
   const frameGrid = () =>
-    page.locator(".grid").first().evaluate((el) => {
-      window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 24)
-    })
+    page
+      .locator(".grid")
+      .first()
+      .evaluate((el) => {
+        window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 24)
+      })
 
   await page.goto(URL, { waitUntil: "networkidle" })
 
