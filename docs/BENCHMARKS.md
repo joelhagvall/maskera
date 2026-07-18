@@ -34,6 +34,10 @@ all-lowercase / ALL CAPS / genitive hard cases (the 2026-07-04 additions come
 from an npm-user-input stress test, including two cases the model is KNOWN to
 miss, graded honestly). It shares an author with the training-data generator,
 so read it as an **upper bound and regression tracker**, not a universal score.
+(The corpus file has since gained one org.nr gate sentence from the held v16
+round, so reproducing today grades 149 sentences / 205 entities; the shipped
+v15 artifact was verified against the addition with these numbers unchanged
+and leaks still 0.)
 
 | metric     | score | meaning                                        |
 | ---------- | ----- | ---------------------------------------------- |
@@ -101,6 +105,10 @@ surface forms are out-of-distribution, not memorised. It shares our annotation
 style, so read it like the curated corpus, not like the independent Wikipedia
 set. Distractor sentences (a bare house number, a PO box, a postcode, a phone
 number) measure whether the model over-flags addresses.
+(The corpus file has since gained the held v16 round's 14 harder sentences,
+so reproducing today grades 41 sentences / 35 address spans; the shipped v15
+artifact was verified against the extended set at 35/35 masked, 0 leaks. The
+table below is the 21-address set as measured.)
 
 | metric | score | meaning |
 | ------ | ----- | ------- |

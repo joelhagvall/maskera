@@ -6,24 +6,26 @@ Swedish gold sets, with the same scorer the maskera CI gates run
 **leaks** = gold entities with zero overlapping prediction, the
 safety-critical number for redaction.
 
-- **Measured:** 2026-07-10, Apple M4 Pro, all systems fully local.
-- maskera's own rows are the artifact and pipeline that
-  [docs/BENCHMARKS.md](../docs/BENCHMARKS.md) described at measurement time
-  (`joelhagvall/maskera-sv-ner`, q4, `maskera@0.4.5`, the pre-v13 weights);
-  this harness reproduced those dated numbers exactly, which was the
-  calibration check that the grading is identical.
-- **Note (2026-07-12):** the v13 release (2026-07-11, `maskera@0.5.1`,
-  ~43 MB) postdates this run and has not been re-graded through this
-  harness yet; on the same independent gold set the shipped v13 pipeline
-  measures higher than the maskera row below (see BENCHMARKS.md). The
-  competitor rows are unaffected (their weights are unchanged), so read
-  the maskera row here as a lower bound.
+- **Measured:** 2026-07-18, Apple M4 Pro, all systems fully local.
+- maskera's own rows are the currently published pipeline
+  (`maskera@0.6.3`, `joelhagvall/maskera-sv-ner` v15 weights, q4, ~43 MB),
+  the same artifact [docs/BENCHMARKS.md](../docs/BENCHMARKS.md) describes.
+  On the shared corpora the rows here reproduce BENCHMARKS.md exactly
+  (gold-real 94.7 / 93.1 / 93.9, 1 leak), the calibration check that the
+  grading is identical.
+- **Corpora note:** the curated and adr sets below are the repo eval
+  corpora as of the 2026-07-16 v16-round extensions (curated 149 docs /
+  205 entities, adr 41 docs / 60 entities incl. 35 street addresses),
+  slightly larger than the sets BENCHMARKS.md's 2026-07-16 tables were
+  measured on (148 / 204, 21 addresses). Every system in this file is
+  graded on the same extended corpora, so the comparison is internally
+  consistent.
 
 ## Systems
 
 | system | version | what runs | model size |
 | --- | --- | --- | --- |
-| maskera | 0.4.5, maskera-sv-ner q4 | rules + Swedish NER, Transformers.js/ONNX | 40 MB |
+| maskera | 0.6.3, maskera-sv-ner v15 q4 | rules + Swedish NER, Transformers.js/ONNX | 43 MB |
 | Microsoft Presidio | presidio-analyzer 2.2.363 | spaCy `sv_core_news_lg` NLP engine | ~550 MB |
 | OpenAI Privacy Filter | openai/privacy-filter, transformers 5.13 / torch 2.13 | 1.5B-param (50M active) token classifier | 2.6 GB |
 | EU PII Safeguard | tabularisai/eu-pii-safeguard, revision `0edf0c8` | XLM-R-large token classifier | 2.24 GB |
@@ -63,8 +65,8 @@ runner headers for full detail):
 ## Gold sets
 
 Same provenance caveats as [docs/BENCHMARKS.md](../docs/BENCHMARKS.md):
-**curated** (148 sentences, 204 entities) and **adr** (27 sentences, 44
-entities incl. 21 street addresses) share an author with maskera's
+**curated** (149 sentences, 205 entities) and **adr** (41 sentences, 60
+entities incl. 35 street addresses) share an author with maskera's
 training-data generator, so read them as upper bounds for maskera but as
 neutral ground for the others; **gold-real** (22 Wikipedia sentences, 58
 entities, written and labeled by others, held out from all training) is the
@@ -73,57 +75,64 @@ independent floor. A larger independent set is in progress
 
 ## Results
 
-### curated (148 docs, 204 gold entities)
+### curated (149 docs, 205 gold entities)
 
 | system | precision | recall | span F1 | labeled F1 | leaks |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| maskera | 97.6% | 98.5% | **98.0%** | 98.0% | **2 (1.0%)** |
-| presidio-sv | 98.4% | 91.7% | 94.9% | 94.4% | 15 (7.4%) |
-| eu-pii-safeguard | 81.5% | 21.6% | 34.1% | 34.1% | 150 (73.5%) |
-| privacy-filter | 73.3% | 21.6% | 33.3% | 31.8% | 146 (71.6%) |
-| blindfold-local | 100.0% | 0.0% | 0.0% | 0.0% | 204 (100.0%) |
+| maskera | 99.5% | 100.0% | **99.8%** | 99.8% | **0 (0.0%)** |
+| presidio-sv | 98.4% | 91.2% | 94.7% | 94.2% | 16 (7.8%) |
+| eu-pii-safeguard | 81.5% | 21.5% | 34.0% | 34.0% | 151 (73.7%) |
+| privacy-filter | 73.3% | 21.5% | 33.2% | 31.7% | 147 (71.7%) |
+| blindfold-local | 100.0% | 0.0% | 0.0% | 0.0% | 205 (100.0%) |
 
 ### gold-real, independent (22 docs, 58 gold entities)
 
 | system | precision | recall | span F1 | labeled F1 | leaks |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| maskera | 86.7% | 89.7% | **88.1%** | 86.4% | **1 (1.7%)** |
+| maskera | 94.7% | 93.1% | **93.9%** | 93.9% | **1 (1.7%)** |
 | presidio-sv | 82.5% | 56.9% | 67.3% | 65.3% | 19 (32.8%) |
 | eu-pii-safeguard | 77.8% | 12.1% | 20.9% | 20.9% | 49 (84.5%) |
 | privacy-filter | 83.3% | 8.6% | 15.6% | 15.6% | 53 (91.4%) |
 | blindfold-local | 100.0% | 0.0% | 0.0% | 0.0% | 58 (100.0%) |
 
-### adr, street addresses (27 docs, 44 gold entities)
+### adr, street addresses (41 docs, 60 gold entities)
 
 | system | precision | recall | span F1 | labeled F1 | leaks |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| maskera | 97.8% | 100.0% | **98.9%** | 98.9% | **0 (0.0%)** |
-| presidio-sv | 53.7% | 50.0% | 51.8% | 51.8% | 3 (6.8%) |
-| eu-pii-safeguard | 60.0% | 34.1% | 43.5% | 43.5% | 19 (43.2%) |
-| privacy-filter | 18.8% | 6.8% | 10.0% | 10.0% | 31 (70.5%) |
-| blindfold-local | 100.0% | 0.0% | 0.0% | 0.0% | 44 (100.0%) |
+| maskera | 92.1% | 96.7% | **94.3%** | 94.3% | **0 (0.0%)** |
+| presidio-sv | 42.9% | 40.0% | 41.4% | 41.4% | 4 (6.7%) |
+| eu-pii-safeguard | 63.9% | 38.3% | 47.9% | 47.9% | 24 (40.0%) |
+| privacy-filter | 23.1% | 10.0% | 14.0% | 14.0% | 39 (65.0%) |
+| blindfold-local | 100.0% | 0.0% | 0.0% | 0.0% | 60 (100.0%) |
 
 Precision at 0% recall (blindfold-local) is vacuous: no predictions in the
-gold label space at all, so nothing to be wrong about.
+gold label space at all, so nothing to be wrong about. The adr corpus now
+includes the v16 round's 14 harder sentences (nr-forms, detached house-number
+letters, lowercase and ALL CAPS addresses), which is why maskera's exact-span
+F1 reads 94.3% here against the 100% clean sweep BENCHMARKS.md reports on the
+original 21-address set; its leak count stays **0 of 35 addresses**.
 
 ### Per-label highlights
 
 Run `node bench/grade.mjs <corpus>` for the full breakdown. The load-bearing
 rows:
 
-- **Presidio ORG recall:** 66.0% curated, 37.0% gold-real. `sv_core_news_lg`
+- **Presidio ORG recall:** 64.6% curated, 37.0% gold-real. `sv_core_news_lg`
   misses Ericsson, Spotify, Klarna, Migrationsverket, Skanska,
-  Polismyndigheten. It also has no address concept (0/21 on adr) and misses
-  lowercase names ("astrid", "bondegatan 41").
+  Polismyndigheten. It also has no address concept (0% exact ADDRESS recall
+  on adr; its LOCATION tags cover most cased addresses, but "bondegatan 41",
+  "drottninggatan 29" and "SANKT PAULSGATAN 8" leak entirely) and misses
+  lowercase names ("astrid").
 - **Privacy Filter on the class it does have:** PERSON recall 47.2% curated,
-  27.8% gold-real; on adr its `private_address` finds 1 of 21 Swedish street
-  addresses. Its model card says English-first and warns about regional
-  naming conventions; on Swedish text that warning is the headline. Repeated
-  Swedish first names ("Björn", "Sofia", "Anders") leak.
+  27.8% gold-real; on adr its `private_address` leaves 26 of 35 Swedish
+  street addresses with no overlapping prediction at all. Its model card
+  says English-first and warns about regional naming conventions; on Swedish
+  text that warning is the headline. Repeated Swedish first names ("Björn",
+  "Sofia", "Anders") leak.
 - **EU PII Safeguard:** PERSON recall is 25.8% curated and 5.6% gold-real;
-  ORGANIZATION recall is 6.4% and 11.1%. It is more useful on the address set,
-  where ADDRESS recall reaches 52.4%, but 3/21 addresses still have no
-  overlapping prediction and overall precision is 60.0%.
+  ORGANIZATION recall is 6.3% and 11.1%. It is more useful on the address set,
+  where ADDRESS recall reaches 54.3%, but 7/35 addresses still have no
+  overlapping prediction and overall precision is 63.9%.
 - **Blindfold local vs cloud:** local mode found personnummer (checksum
   validated), IBAN and phone numbers once `locales` was set, and that tier
   is genuinely fast. But every free-text entity in every set leaked, because
@@ -132,11 +141,10 @@ rows:
 
 ## What this does and does not show
 
-- It shows that on Swedish free text, the 40 MB maskera model graded here
-  (the pre-v13 artifact; the current release is stronger still) beats
-  the 2.6 GB Privacy Filter by 72.5 span-F1 points, the 2.24 GB multilingual
-  EU PII Safeguard by 67.2 points, and the standard open-source choice
-  (Presidio) by 20.8 points on the independent set. Its leak rate is also far
+- It shows that on Swedish free text, the 43 MB maskera model beats the
+  2.6 GB Privacy Filter by 78.3 span-F1 points, the 2.24 GB multilingual
+  EU PII Safeguard by 73.0 points, and the standard open-source choice
+  (Presidio) by 26.6 points on the independent set. Its leak rate is also far
   lower. For redaction, the leak column is the product.
 - It does NOT show general superiority: Privacy Filter targets English and
   eight categories by design; EU PII Safeguard targets 42 finer-grained PII
