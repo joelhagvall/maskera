@@ -12,6 +12,8 @@ places, organisations and street addresses** ("min granne Lars på våning 4").
 Everything runs **client-side** via Transformers.js (WASM/WebGPU in the
 browser, native ONNX in Node).
 
+![The two-layer design: input text forks into layer 1, deterministic checksum-validated rules that catch structured PII like personnummer, and layer 2, a 43 MB Swedish AI model that catches free text like names. Rules win on overlap, and the merged result is the masked output. The restore key stays on your device.](https://maskera.dev/layers.svg)
+
 ```bash
 npm install maskera @huggingface/transformers
 ```

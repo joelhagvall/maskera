@@ -108,6 +108,28 @@ shaded boxes run inside the caller's environment. Restoration is optional:
 in many logging and analytics flows it is never performed, and the
 placeholders are the final stored form.
 
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  box/.style={draw=black!60, rounded corners=1.2pt, align=center,
+              font=\scriptsize, inner sep=4pt, text width=28mm},
+  arr/.style={-{Stealth[length=1.8mm]}, black!70}
+]
+\node[box, fill=black!4, minimum height=16mm] (raw) at (0,0)
+  {\textbf{Input text}\\``hej jag heter anna karlsson, pnr 19900101-2385''};
+\node[box, minimum height=14mm] (rules) at (5.0,1.2)
+  {\textbf{Layer 1: rules}\\deterministic, checksum-validated\\\texttt{19900101-2385} $\rightarrow$\\\texttt{[PERSONNUMMER]}};
+\node[box, minimum height=14mm] (ner) at (5.0,-1.2)
+  {\textbf{Layer 2: NER model}\\43\,MB Swedish model, free text\\\texttt{anna karlsson} $\rightarrow$ \texttt{[NAMN]}};
+\node[box, fill=black!4, minimum height=16mm] (out) at (10.0,0)
+  {\textbf{Masked output}\\rules win on overlap; restore key stays local};
+\draw[arr] (raw.east) -- (rules.west);
+\draw[arr] (raw.east) -- (ner.west);
+\draw[arr] (rules.east) -- (out.west);
+\draw[arr] (ner.east) -- (out.west);
+\end{tikzpicture}
+\end{figure}
+
 \subsection{Layer 1: deterministic rules (\pkg{@maskera/core})}
 
 Structured Swedish identifiers are matched by patterns that are

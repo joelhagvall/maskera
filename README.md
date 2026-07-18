@@ -64,6 +64,8 @@ model in CI against a gold corpus with an F1 floor and a leak-rate ceiling.
 
 ## Two layers, rules first
 
+<img src="docs/layers.svg" alt="The two-layer design: input text forks into layer 1, deterministic checksum-validated rules that catch structured PII like personnummer, and layer 2, a 43 MB Swedish AI model that catches free text like names. Rules win on overlap, and the merged result is the masked output. The restore key stays on your device." width="100%">
+
 1. **`@maskera/core`**: deterministic detectors for structured Swedish PII.
    Personnummer, samordningsnummer, organisationsnummer, phone, email,
    postnummer, bankgiro, plusgiro, IBAN, cards, IP, URL. Checksum-validated
