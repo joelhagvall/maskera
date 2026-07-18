@@ -1,13 +1,13 @@
 # Stage 2 gold set: brief for writers
 
-> Send this file (or just the parts below the line) to each of your 3-5 writers.
+> Send this file (or just the parts below the line) to each of the 3-5 writers.
 > It implements stage 2 of [GOLD_SET_PLAN.md](GOLD_SET_PLAN.md): a
 > support/chat-register independent gold set, written by others, with invented
 > but realistic personal data. **Do not** show writers the training-data
 > generator's templates or `corpus.mjs`, only the scenario prompts below. That
 > is what keeps the set independent.
 
-## Why this exists (for you, not the writers)
+## Why this exists (maintainer context, not for the writers)
 
 Our biggest measurement gap: every large number we have is either our own
 writing style (curated corpus) or the news domain the model trained on (Swedish
@@ -16,7 +16,7 @@ most in production: real people typing support/chat messages, lowercase, with
 typos, in the first person. This set fills that, legally, because the PII is
 invented, not scraped.
 
-## After collection (your job)
+## After collection (maintainer steps)
 
 1. Paste each writer's sentences into `packages/ner/eval/corpus-stage2.mjs`
    (copy it from `corpus-stage2.template.mjs`; the `.mjs` is gitignored).
