@@ -1,5 +1,11 @@
 # maskera
 
+## 0.6.4
+
+### Patch Changes
+
+- Docs-only patch: the README now embeds the two-layer architecture diagram (rules + model, maskera.dev/layers.svg). npm freezes the README at publish time, so the diagram added after 0.6.3 needs this release to show on npmjs.com. No code changes.
+
 ## 0.6.3
 
 ### Patch Changes
