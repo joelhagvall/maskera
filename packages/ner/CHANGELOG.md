@@ -1,5 +1,16 @@
 # maskera
 
+## 0.6.5
+
+### Patch Changes
+
+- Docs-only patch for the maskera-sv-ner v18 model release: README benchmark
+  snapshot updated to the 2026-07-19 numbers (curated 99.8% span F1 with zero
+  leaks, independent real text 94.7% / 3.4% leak rate) and the self-hosting
+  example now points at the `maskera-sv-ner-v18` model folder. No code change;
+  the published Hub model (`joelhagvall/maskera-sv-ner`) serves the new weights
+  to existing installs automatically.
+
 ## 0.6.4
 
 ### Patch Changes
