@@ -1314,6 +1314,86 @@ empty share) and counterweights lowercase news-register entities
 (institutions, clubs, geo); that needs a full teacher retrain. Artifacts:
 `model-v17(-trimmed)`, `student-v17(-trimmed/-onnx)`, `run_v17-*.log`.
 
+### v18 density-guard round (2026-07-19): first zero-exception gate pass, PUBLISHED
+
+The round the v17 verdict prescribed, both levers in `convert_pseudo.mjs`
+and nothing else changed (env identical to v17: `PSEUDO_TOTAL=66000`,
+`BALANCED_REPLAY_TRAIN_ROWS=1200`, teacher seed 2024, distill seed 1337
+with the v13 take-4 mechanics):
+
+- **Entity-density guard.** `PSEUDO_EMPTY_SHARE` now caps empty rows as a
+  share of the ACTUAL appended sample, not of `PSEUDO_TOTAL`. The filtered
+  pool yields only ~15k entity rows in total, so v17's 66k budget was
+  padded with ~13.8k nearly-empty rows (+215.7k O tokens vs ~1.6k entity
+  tokens vs v16: the measured root cause). When the entity strata exhaust
+  below the entity budget, the empty budget shrinks proportionally and the
+  shortfall is logged. v18 build: entity strata exhausted at 15,254/46,200,
+  empties density-guarded 19,800 -> 6,537 (70/30 entity/empty vs v17's
+  44/56).
+- **News-register scrub.** The pool's teacher labels lean O for famous
+  lowercase entities in news prose ("polisen" is O in 77% of pool
+  occurrences), and v17's 54 new klintan leaks were exactly that class.
+  Rows where any of 36 category-exemplar terms (public institutions,
+  famous companies, sports clubs, well-known geo, genitive-s included)
+  appear NOT covered by a teacher span are dropped wholesale: the v11a
+  slot-poison rule applied one level up. 1,571 rows dropped; the entity
+  strata shrank by only 57 rows. Terms that are also graded gold entities
+  are only ever dropped, never trained on (the eval-surname stance).
+
+Provenance check before the run: rebuilding the v17 data with the
+UNCHANGED converter reproduced its build to within 19 rows, all explained
+(the identifier scrub was committed hours after v17's data was built), so
+the env above is confirmed and v18 differs from v17 by the two guards
+alone. v18 mix: 78,841 train rows (v17: 90,830), O tokens down 189k with
+entity tokens near-identical; audit clean, 98 gate surnames absent.
+
+**Teacher screen (seed 2024): PASS at 0.9700** vs the 0.9696 baseline
+(v17: 0.9708), per-class val F1 with no loss (PER 0.98, LOC 0.97, ORG
+0.94, ADR 1.00). A thinner margin than v17 on less but cleaner data.
+
+**q4 battery: ALL FIVE GATES PASS, the first candidate ever with zero
+exceptions** (v14 shipped on a G2 exception, v15 on the `Festen` G4
+exception). Artifact `student-v18-onnx`, q4 42,705,681 bytes, sha256
+110442cc, distill val F1 0.9570:
+
+| Gate (q4 artifact) | bar | v18 | v17 (held) | v15 (was live) |
+| --- | --- | ---: | ---: | ---: |
+| G1 rotated rare masked | > 94.9% | **99.32% / 2 leaks** | 95.6% / 13 | 99.3% / 2 |
+| G2 gold-real forced-LC | >= 51/58 | **53/58 (best ever)** | 52/58 | 51/58 |
+| G3 klintan cased / lower | <= 8.7 / 15.5% | **7.0% / 14.2%** | 8.3 / 16.5% ❌ | 7.2 / 13.8% |
+| G4 ADR strict | 100.0 / 0 | **100.0 / 0 (true clean sweep)** | 97.5 ❌ | 98.9 (`Festen`) |
+| G5 curated strict | F1 >= 0.90 | **99.8 / 0 leaks** | 0 leaks | 99.8 / 0 |
+
+Alongside: rotated rare-surname PER-typing **78.2% (best ever**, v15:
+71.4) at the same masked recall, the combination v14b measured as a trade;
+legacy rare set 98.6% / 4 with PER-typing 94.2%; LinkedIn corpus 0 leaks
+(v15's "KTH" fixed); gold-real 0.965 overlap F1 / 0.95 recall; retention
+21 cased / 31 lowercase false flags (v15: 20/33). The `Festen`
+over-redaction is GONE: the ADR corpus is 100.0 on both axes with no false
+PERSON flag, retiring v15's documented exception.
+
+**Honest minuses, all ungated and within ceilings:**
+
+1. klintan lowercase 14.2% vs shipped v15's 13.8%. Leak diff (dump totals
+   reproduce the gate runs, 182/177): 30 new, 25 fixed, net +5, balanced
+   across PER/LOC/ORG in both directions: ordinary boundary churn, NOT
+   v17's systematic famous-institution pattern (54 new / 20 fixed).
+2. corpus-freetext 88.9 F1 / 2 leaks vs v15's 91.2 / 1: the standing
+   "micke i grannsamfälligheten" class plus ALL-CAPS "POSTNORD" (which
+   v15 masked but typed PERSON). Within the corpus floor/ceiling.
+3. gold-real recall 0.95 vs 0.97 on the 58-entity directional set
+   (floor 0.90).
+4. The ungated "RING LÖFVEN OMGÅENDE" spot probe regressed to missed
+   (v15 caught it; v11/v13/v14 missed it too).
+
+**Publish decision (2026-07-19, human, informed): SHIPPED.** Rationale:
+first candidate whose battery needs no exception paragraph, the wins sit
+on the safety axes (masking, typing, the ADR sweep) and the losses are
+cosmetic and ungated; the v15/v17 zero-sum findings say a candidate that
+wins every ungated counter simultaneously does not exist with this data.
+Demo folder `maskera-sv-ner-v18`, hashes pinned in
+`apps/demo/scripts/fetch-model.mjs`.
+
 ## Publish to Hugging Face (single hosted source)
 
 Hosting the model once means the demo and every future `@maskera` package point at

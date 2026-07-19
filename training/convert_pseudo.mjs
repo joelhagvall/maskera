@@ -29,7 +29,8 @@
  *   1. rows with a LOWERCASE PER span (lowercase name frames, nickname chat),
  *   2. rows with any PER span,
  *   3. rows with ORG/LOC spans (informal-register org signal),
- *   4. entity-free rows as hard negatives, capped at PSEUDO_EMPTY_SHARE.
+ *   4. entity-free rows as hard negatives, capped at PSEUDO_EMPTY_SHARE of
+ *      the ACTUAL appended sample (the v18 density guard below).
  * Within each stratum rows are hash-shuffled (deterministic, not
  * confidence-ranked, so the sample keeps hard examples) and round-robined
  * across source forums.
@@ -45,6 +46,26 @@
  * an email address, a personnummer-shaped number, a phone-shaped number
  * (2-4 digits, dash, 5+ digits) or a 7+ digit run is dropped wholesale.
  * Year and amount ranges (four digits, dash, four digits) deliberately stay.
+ *
+ * v18 guards (after the v17 HOLD; both prescribed by the v17 leak diff in
+ * the journal's scaled-pseudo section):
+ *   - News-register scrub: the pool's teacher labels lean O for famous
+ *     lowercase entities in news prose ("polisen" is O in 77% of pool
+ *     occurrences, 491/637), and v17's 54 new klintan leaks were exactly
+ *     such terms (public institutions, famous companies, clubs, well-known
+ *     geo). Training those tokens as O is the v11a slot-poison shape, so a
+ *     row where any NEWS_TERMS entry appears NOT covered by a teacher span
+ *     is dropped wholesale. The list holds category exemplars matched on
+ *     token boundaries (plain genitive-s included); terms that are also
+ *     graded gold entities are only ever DROPPED here, never trained on
+ *     (the same stance as the eval-surname filter).
+ *   - Entity-density guard: PSEUDO_EMPTY_SHARE now caps empty rows as a
+ *     share of the ACTUAL appended sample, not of PSEUDO_TOTAL. The pool
+ *     yields only ~15k entity rows in total, so v17's TOTAL=66000 filled
+ *     the surplus budget with ~13.8k nearly-empty rows (+215.7k O tokens
+ *     vs ~1.6k entity tokens vs v16), diluting the lowercase-entity prior.
+ *     When the entity strata exhaust below the entity budget, the empty
+ *     budget shrinks proportionally and the shortfall is logged.
  *
  * Usage: node convert_pseudo.mjs [srcJsonl] [trainJsonl] [valJsonl]
  * Knobs: PSEUDO_TOTAL (default 20000), PSEUDO_EMPTY_SHARE (0.3),
@@ -118,9 +139,76 @@ const EVAL_SURNAMES = [
 const IDENTIFIER_TOKEN =
   /\b[a-z]{2}\d{2}[a-z0-9]{10,}\b|@[a-z0-9åäö.-]+\.[a-z]{2,}|\b\d{6}[-+]?\d{4}\b|\b\d{2,4}-\d{5,}\b|\d{7,}/i
 
+// See "News-register scrub" in the header. Category exemplars from the v17
+// leak diff: public institutions, famous companies, sports clubs, well-known
+// geo. Multiword terms are token sequences.
+const NEWS_TERMS = [
+  ["polisen"],
+  ["försäkringskassan"],
+  ["socialstyrelsen"],
+  ["trafikverket"],
+  ["skatteverket"],
+  ["arbetsförmedlingen"],
+  ["migrationsverket"],
+  ["kronofogden"],
+  ["regeringen"],
+  ["riksdagen"],
+  ["tullverket"],
+  ["säpo"],
+  ["ericsson"],
+  ["volvo"],
+  ["ikea"],
+  ["telia"],
+  ["spotify"],
+  ["klarna"],
+  ["nordea"],
+  ["swedbank"],
+  ["handelsbanken"],
+  ["ica"],
+  ["hammarby"],
+  ["djurgården"],
+  ["aik"],
+  ["gais"],
+  ["ajax"],
+  ["usa"],
+  ["göteborg"],
+  ["stockholm"],
+  ["malmö"],
+  ["egypten"],
+  ["aten"],
+  ["wall", "street"],
+  ["hennes", "&", "mauritz"],
+  ["h&m"],
+]
+const hasUntaggedNewsTerm = (tokens, tSpans) => {
+  const covered = new Array(tokens.length).fill(false)
+  for (const s of tSpans) for (let i = s.start; i < s.end; i++) covered[i] = true
+  const lower = tokens.map((t) => t.toLowerCase())
+  for (const term of NEWS_TERMS) {
+    for (let i = 0; i + term.length <= lower.length; i++) {
+      const hit = term.every((word, j) => {
+        // plain genitive-s allowed on the term's last word only
+        const genitive = j === term.length - 1 && lower[i + j] === `${word}s`
+        return lower[i + j] === word || genitive
+      })
+      if (hit && term.some((_, j) => !covered[i + j])) return true
+    }
+  }
+  return false
+}
+
 const rows = []
 const seen = new Set()
-const stats = { pool: 0, adr: 0, unconfirmed: 0, sbxOnly: 0, surname: 0, identifier: 0, dup: 0 }
+const stats = {
+  pool: 0,
+  adr: 0,
+  unconfirmed: 0,
+  sbxOnly: 0,
+  surname: 0,
+  identifier: 0,
+  news: 0,
+  dup: 0,
+}
 for (const line of readFileSync(SRC, "utf-8").split("\n")) {
   if (!line.trim()) continue
   const r = JSON.parse(line)
@@ -151,6 +239,10 @@ for (const line of readFileSync(SRC, "utf-8").split("\n")) {
   }
   if (IDENTIFIER_TOKEN.test(joined)) {
     stats.identifier++
+    continue
+  }
+  if (hasUntaggedNewsTerm(r.tokens, tSpans)) {
+    stats.news++
     continue
   }
   const key = r.tokens.join(" ")
@@ -198,11 +290,22 @@ const bySource = (list) => {
   return out
 }
 
-const emptyBudget = Math.round(TOTAL * EMPTY_SHARE)
-const entityBudget = TOTAL - emptyBudget
+const entityBudget = TOTAL - Math.round(TOTAL * EMPTY_SHARE)
 const picked = []
 for (const name of ["lowerPer", "per", "orgLoc"]) {
   picked.push(...bySource(strata[name]).slice(0, entityBudget - picked.length))
+}
+// v18 entity-density guard (see header): empties are EMPTY_SHARE of the
+// actual sample, so an exhausted entity pool cannot be padded with O rows.
+let emptyBudget = Math.round(TOTAL * EMPTY_SHARE)
+if (picked.length < entityBudget && EMPTY_SHARE < 1) {
+  const guarded = Math.round((picked.length * EMPTY_SHARE) / (1 - EMPTY_SHARE))
+  if (guarded < emptyBudget) {
+    console.log(
+      `entity strata exhausted at ${picked.length}/${entityBudget}; empty budget density-guarded ${emptyBudget} -> ${guarded} (share ${EMPTY_SHARE})`,
+    )
+    emptyBudget = guarded
+  }
 }
 const pickedEmpty = bySource(strata.empty).slice(0, emptyBudget)
 
@@ -217,7 +320,7 @@ appendFileSync(TRAIN_DEST, `${trainOut.join("\n")}\n`)
 appendFileSync(VAL_DEST, `${valOut.join("\n")}\n`)
 
 console.log(
-  `pseudo pool: ${stats.pool} rows (dropped: ${stats.adr} adr, ${stats.unconfirmed} unconfirmed, ${stats.sbxOnly} sbx-only-entity, ${stats.surname} eval-surname, ${stats.identifier} identifier, ${stats.dup} dup)`,
+  `pseudo pool: ${stats.pool} rows (dropped: ${stats.adr} adr, ${stats.unconfirmed} unconfirmed, ${stats.sbxOnly} sbx-only-entity, ${stats.surname} eval-surname, ${stats.identifier} identifier, ${stats.news} untagged-news-term, ${stats.dup} dup)`,
 )
 console.log(
   `strata: lowerPer ${strata.lowerPer.length}, per ${strata.per.length}, orgLoc ${strata.orgLoc.length}, empty ${strata.empty.length}`,
