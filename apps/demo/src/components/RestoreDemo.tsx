@@ -190,7 +190,7 @@ export function RestoreDemo({ result, scenarioId }: { result: RedactResult; scen
                 Återställ exempel
               </button>
             ) : (
-              <span className="card-sub">Exempel, redigera fritt</span>
+              <span className="card-sub">Simulerat svar, redigera fritt</span>
             )}
           </div>
           <OverlayEditor
