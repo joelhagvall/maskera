@@ -506,12 +506,11 @@ body {
   resize: none;
   outline: none;
 }
+/* single-ring focus: the darkened border is the focus indicator; no extra
+   outline, or the field gets a double frame (textareas match :focus-visible
+   even on mouse click) */
 .editor textarea:focus {
   border-color: var(--fg);
-}
-.editor textarea:focus-visible {
-  outline: 2px solid var(--fg);
-  outline-offset: 2px;
 }
 /* the textarea text is transparent (overlay), so colour the placeholder explicitly */
 .editor textarea::placeholder {

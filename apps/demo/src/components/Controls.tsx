@@ -69,8 +69,10 @@ function ModelStatus({
 
   return (
     <div className="status" role="status" aria-live="polite" aria-atomic="true">
+      {/* The output card shows "analyserar…" while typing; here the pulsing
+          dot is the only activity signal, so the row keeps a stable width. */}
       <span className={`dot ready${analyzing ? " analyzing" : ""}`} aria-hidden="true" />
-      <span>{analyzing ? "AI-modellen analyserar texten…" : "maskeras AI-modell aktiv"}</span>
+      <span>maskeras AI-modell aktiv</span>
     </div>
   )
 }
