@@ -37,8 +37,8 @@ small enough to run **directly in a browser tab**, which is exactly how the
 maskera demo ships: try it live at [maskera.dev](https://maskera.dev).
 
 Benchmarked against the public Swedish NER alternatives (KB-NER,
-RecordedFuture, KBLab reallysimple/lowermix, scandi-ner, the sbx PI-detection
-pair), it **holds the best typed F1 on independent Swedish text at under a
+RecordedFuture, KBLab reallysimple/lowermix/neriob, scandi-ner, the sbx
+PI-detection pair), it **holds the best typed F1 on independent Swedish text at under a
 tenth of their size** (0.97 vs 0.94 for the closest full-size model); on
 lowercase text its strength is the chat/support register it targets, while
 KBLab's lowermix still leads on lowercased encyclopedic prose; see
@@ -193,7 +193,7 @@ and `training/`); run them yourself before relying on the numbers.
 
 Every public Swedish NER alternative, measured on the same gold sets
 (competitors 2026-07-04, Rampart 2026-07-14, swedish-pii and Desert Ant
-redact 2026-07-16, the maskera row 2026-07-16;
+redact 2026-07-16, KBLab neriob 2026-07-19, the maskera row 2026-07-16;
 overlap matching,
 PER / LOC / ORG; full method, all three test sets and honest caveats in
 [docs/BENCHMARKS.md](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md),
@@ -204,6 +204,7 @@ which wins on any disagreement):
 | **maskera-sv-ner**                                  | **~43 MB** | **0.97** |
 | KBLab bert-base-swedish-lowermix-reallysimple-ner   | ~475 MB | 0.94     |
 | nbailab-base-ner-scandi                             | ~500 MB | 0.94     |
+| KBLab bert-base-swedish-cased-neriob                | ~475 MB | 0.94     |
 | KB/bert-base-swedish-cased-ner                      | ~475 MB | 0.92     |
 | KBLab bert-base-swedish-cased-reallysimple-ner      | ~475 MB | 0.91     |
 | RecordedFuture/Swedish-NER                          | ~500 MB | 0.88     |

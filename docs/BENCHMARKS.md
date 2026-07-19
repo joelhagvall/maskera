@@ -322,7 +322,7 @@ BENCHMARK_FILE=training/eval/rare-surnames-legacy.txt \
 ## How maskera compares to other Swedish NER models
 
 Competitor rows measured 2026-07-04 (Rampart 2026-07-14; swedish-pii and
-Desert Ant redact 2026-07-16), the maskera row re-measured 2026-07-16 (v15
+Desert Ant redact 2026-07-16; KBLab neriob 2026-07-19), the maskera row re-measured 2026-07-16 (v15
 student; competitor weights are unchanged) with
 [`training/benchmark_competitors.py`](../training/benchmark_competitors.py):
 every model on the same gold sets, overlap matching, labels mapped to
@@ -343,6 +343,7 @@ untrimmed student here, which flattered the row.
 | **maskera student** | **43 MB (q4, in-browser)** | 0.98 | **0.97** | 0.97 | **0.97** |
 | KBLab lowermix reallysimple-ner | ~475 MB | 1.00 | 0.92 | 0.97 | 0.94 |
 | nbailab scandi-ner | ~500 MB | 1.00 | 0.95 | 0.93 | 0.94 |
+| KBLab neriob (IOB head) | ~475 MB | 1.00 | 0.90 | 0.98 | 0.94 |
 | KB-NER (the SUC classic) | ~475 MB | 1.00 | 0.87 | 0.97 | 0.92 |
 | KBLab reallysimple-ner | ~475 MB | 0.98 | 0.89 | 0.93 | 0.91 |
 | RecordedFuture Swedish-NER | ~500 MB | 1.00 | 0.79 | 0.98 | 0.88 |
@@ -361,6 +362,7 @@ untrimmed student here, which flattered the row.
 | nbailab scandi-ner | 0.69 | 0.77 |
 | KB-NER | 0.28 | 0.35 |
 | KBLab reallysimple-ner | 0.29 | 0.39 |
+| KBLab neriob | 0.24 | 0.33 |
 | Desert Ant redact (multilingual) | 0.24 | 0.39 |
 | sbx PII general / detailed | 0.09 | 0.16 |
 | swedish-pii (regex + name lists) | 0.00 | 0.00 |
@@ -384,6 +386,15 @@ Takeaways:
   pipeline now covers 51 of 58 on that set, back at the v11 level (was 50;
   v13 shipped 48): the bare-lowercase-surname declarative class that drove
   the gap is fixed by the v15 balanced replay.
+- **KBLab neriob** (measured 2026-07-19, `KBLab/bert-base-swedish-cased-neriob`,
+  the IOB-head sibling of the classic KB-NER with its own weights): same
+  profile as KB-NER, strong cased (1.00 redaction recall, 0.94 typed F1),
+  collapses on lowercase (0.24 / 0.33). Added while confirming no newer
+  KB/KBLab NER model exists: `KBLab/bert-base-swedish-cased-ner` is
+  byte-identical to `KB/bert-base-swedish-cased-ner` (same blob hashes), and
+  the KB repo's 2026-01-08 commit is a safetensors conversion of the
+  unchanged 2022 weights. The newest KBLab NER model remains lowermix
+  (April 2023), already graded above.
 - The sbx models are branded for PI detection but target a different label
   scheme (they barely flag plain names / places / orgs), so their low numbers
   here reflect scheme mismatch, not general quality. They are not a drop-in
