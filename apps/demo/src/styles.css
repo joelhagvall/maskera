@@ -750,6 +750,11 @@ body {
 .reply-card {
   background: var(--gray-100);
 }
+/* Same WCAG note as .flow-band-label: --muted-2 is 4.41:1 on gray-100,
+   below AA for 12px text, so the subtitle steps down to --muted here. */
+.reply-card .card-sub {
+  color: var(--muted);
+}
 .reply-card .backdrop {
   background: var(--bg);
 }
