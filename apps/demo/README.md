@@ -25,7 +25,7 @@ text**: both run, neither is a single source of truth, and rules win on overlap.
 
 ## The model files (not committed)
 
-The model under `public/models/maskera-sv-ner-v15/` is ~43 MB and is **gitignored**.
+The model under `public/models/maskera-sv-ner-v18/` is ~43 MB and is **gitignored**.
 To populate it, train and export from [`../../training`](../../training):
 
 ```bash
@@ -37,7 +37,7 @@ uv run python export_onnx.py student-trimmed student-trimmed-onnx
 uv run python quantize_combo.py                             # -> onnx/model_q4.onnx (~43 MB)
 
 # copy the browser-needed files into the demo
-D=../apps/demo/public/models/maskera-sv-ner-v15
+D=../apps/demo/public/models/maskera-sv-ner-v18
 mkdir -p "$D/onnx"
 cp student-trimmed-onnx/{config.json,tokenizer.json,tokenizer_config.json,special_tokens_map.json,vocab.txt} "$D/"
 cp student-trimmed-onnx/onnx/model_q4.onnx "$D/onnx/"

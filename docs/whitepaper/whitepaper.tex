@@ -25,7 +25,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{July 19, 2026 \quad\textperiodcentered\quad Whitepaper v1.11}
+\date{July 19, 2026 \quad\textperiodcentered\quad Whitepaper v1.12}
 
 \begin{document}
 \maketitle
@@ -254,8 +254,8 @@ not determine which obligations apply.
 
 \section{Measured quality}
 
-All numbers below were measured on \textbf{2026-07-16} against the published
-artifact (\pkg{maskera@0.6.1}, q4 quantisation, the v15 training round) using
+All numbers below were measured on \textbf{2026-07-19} against the published
+artifact (\pkg{maskera@0.6.4}, q4 quantisation, the v18 training round) using
 \textbf{exact character spans}, the strict criterion under which both start
 and end offsets must match. The canonical, always-current document is \pkg{docs/BENCHMARKS.md} in
 the repository; this section is a dated snapshot, and where the two disagree,
@@ -265,7 +265,7 @@ left unmasked. Every leaked entity is listed verbatim in the appendix.
 
 \subsection{Curated corpus (upper bound, regression tracker)}
 
-148 hand-authored Swedish sentences, 204 free-text entities, including hard
+149 hand-authored Swedish sentences, 205 free-text entities, including hard
 cases (lowercase, ALL CAPS, genitives, deliberate traps). The corpus shares
 an author with the training-data generator and should be read as an upper
 bound, not a universal score.
@@ -279,7 +279,7 @@ Metric & Result & Meaning \\
 Precision & 99.5\% & of the model's detections, how many were correct \\
 Recall & 100.0\% & of the real entities, how many were found \\
 Span $F_1$ & 99.8\% & harmonic mean, label-agnostic \\
-Leakage & 0.0\% & entities missed entirely, 0 of 204 \\
+Leakage & 0.0\% & entities missed entirely, 0 of 205 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -296,10 +296,10 @@ directional independent floor.
 \toprule
 Metric & Result & Meaning \\
 \midrule
-Precision & 94.7\% & of the model's detections, how many were correct \\
+Precision & 96.4\% & of the model's detections, how many were correct \\
 Recall & 93.1\% & of the real entities, how many were found \\
-Span $F_1$ & 93.9\% & harmonic mean, label-agnostic \\
-Leakage & 1.7\% & entities missed entirely, 1 of 58 \\
+Span $F_1$ & 94.7\% & harmonic mean, label-agnostic \\
+Leakage & 3.4\% & entities missed entirely, 2 of 58 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -308,16 +308,17 @@ Leakage & 1.7\% & entities missed entirely, 1 of 58 \\
 
 The three gold sets above cover person, location, and organisation; none
 contains street addresses, the fourth class the model emits. Addresses are
-therefore measured on their own held-out set of 27 sentences (21 address
-spans), with street names chosen to avoid the training generator's stems.
-Measured \textbf{2026-07-16} on the same q4 artifact: redaction recall is
+therefore measured on their own held-out set of 41 sentences (35 address
+spans, including saint-prefix, free-word-ending, farm and abbreviated
+forms), with street names chosen to avoid the training generator's stems.
+Measured \textbf{2026-07-19} on the same q4 artifact: redaction recall is
 \textbf{100\%} (every address masked) with \textbf{zero leaks}, address
 precision is \textbf{100\%} (no false ADDRESS flags on the distractor set),
-and the exact span including the house number is recovered on \textbf{21 of
-21} addresses (\emph{Sveavägen 44}, not just \emph{Sveavägen}). This
-release's one documented exception also lives on this corpus: the ordinary
-word \emph{Festen} is tagged as a person name in one distractor sentence, a
-single harmless over-redaction (nothing leaks).
+and the exact span including the house number is recovered on \textbf{35 of
+35} addresses (\emph{Sveavägen 44}, not just \emph{Sveavägen}). The
+previous release's one documented exception (the ordinary word \emph{Festen}
+over-redacted in one distractor sentence) is fixed in this release, which
+carries no gate exception at all.
 
 \subsection{Comparison with public Swedish NER models}
 
@@ -331,7 +332,7 @@ marked at all, under any label, i.e.\ the safety number.
 \toprule
 Model & Size & Flagged & Typed $F_1$ \\
 \midrule
-\textbf{maskera} (runs in the browser) & \textbf{43\,MB} & 0.98 & \textbf{0.97} \\
+\textbf{maskera} (runs in the browser) & \textbf{43\,MB} & 0.97 & \textbf{0.96} \\
 KBLab lowermix reallysimple-ner & $\sim$475\,MB & 1.00 & 0.94 \\
 NB AI-Lab scandi-ner & $\sim$500\,MB & 1.00 & 0.94 \\
 KBLab neriob (IOB head) & $\sim$475\,MB & 1.00 & 0.94 \\
@@ -348,12 +349,13 @@ competitive enough to justify local deployment, not to rank the field on
 58 entities. The full tables, all-lowercase results, method notes, and
 known exceptions are in \pkg{BENCHMARKS.md}. On text entirely without
 capital letters the picture is register-dependent and reported honestly
-there: in the chat/support register maskera targets, the v15 round is the
-strongest measured (99.3\% of rare out-of-training surnames masked, versus
-98.3\% for the previous release, on a dedicated 294-sentence eval), while on
-lowercased encyclopedic prose the case-robust KBLab lowermix model still
-leads on raw redaction recall. None of the alternative models detects street
-addresses or fits in a web application.
+there: in the chat/support register maskera targets, the v18 round ties the
+strongest measured masking (99.3\% of rare out-of-training surnames, on a
+dedicated 294-sentence eval) while typing them correctly far more often
+(78.2\%, versus 71.4\% for the previous release), and on lowercased
+encyclopedic prose the gap to the case-robust KBLab lowermix model has
+nearly closed (redaction recall 0.95 versus 0.97). None of the alternative
+models detects street addresses or fits in a web application.
 
 \subsection{Latency}
 
@@ -548,7 +550,7 @@ Everything claimed in this document can be checked without asking us:
   \item \textbf{The model:} published openly on Hugging Face
         (\pkg{joelhagvall/maskera-sv-ner}) with a model card. The shipped
         artifact is \pkg{onnx/model\_q4.onnx}, SHA-256\\
-        {\footnotesize\texttt{ca6b4a66d199b0edfb397c39e7ffd25a55320dd4148bb9aed8f1f16ab007c727}};\\
+        {\footnotesize\texttt{110442cc1143e0543f41a5b111c22af34b0bba9d5c30758b4824d9aa114ac5f4}};\\
         the current hash always lives in \pkg{docs/BENCHMARKS.md}.
   \item \textbf{The numbers:} canonical in \pkg{docs/BENCHMARKS.md},
         dated and reproducible.
@@ -578,22 +580,26 @@ Input & Missed & Type & Reading \\
 ``Den 6 mars 2018 bes\"okte L\"ofven Vita huset och hade sitt f\"orsta
 officiella m\"ote med [\dots]'' & Vita huset & LOC &
 metonymic building-as-institution \\
-``Festen \"ar hemma hos Oskar p\aa\ Linn\'egatan 52, fj\"arde v\aa ningen.''
-& (none) & --- & over-redaction: the ordinary word \emph{Festen} is tagged
-as a person name; nothing leaks \\
+``L\"ofven \"ar gift med kyrkopolitikern (S) Ulla L\"ofven sedan 2003.''
+& L\"ofven & PER & sentence-initial bare surname in declarative prose; the
+full name \emph{Ulla L\"ofven} is caught \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 The metonymic ``Vita huset'', fixed in v11, regressed back in v13 and
-stays. The \emph{Festen} over-flag is new in v15 and is this release's one
-documented exception: a harmless over-redaction accepted in exchange for
-the round's fixes. Historically: bare ``L\"ofven'' and the all-caps
+stays. The bare-``L\"ofven'' declarative miss is new in v18 and was weighed
+explicitly in the publish decision: it is the documented bare-surname
+declarative residue surfacing once in cased form, on the axis the dedicated
+294-sentence rare-surname eval measures at its best value ever. In exchange
+v15's \emph{Festen} over-redaction is fixed and the release carries no gate
+exception. Historically: bare ``L\"ofven'' in chat frames and the all-caps
 ``VIKTIGT: RING LARS NORDSTR\"OM OMG\AA ENDE IDAG.'' were fixed by v13;
 the sentence-initial ``Klarna'' (the curated classic since v5) and the
 lowercase-encyclopedic register gap carried by v14 (independent corpus
-forced lowercase, now 51 of 58 covered, back at the v11 level) were both
-fixed by v15's balanced class replay; see \pkg{BENCHMARKS.md}. These misses
+forced lowercase, now 53 of 58 covered, the best measured) were fixed by
+v15's balanced class replay and improved again by v18; see
+\pkg{BENCHMARKS.md}. These misses
 are why leakage, not $F_1$, is the gated metric: every failure mode is
 visible and tracked in the public regression corpus.
 
@@ -603,7 +609,7 @@ visible failure modes.
 
 \vfill
 \noindent\rule{\textwidth}{0.4pt}\par\smallskip
-{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.11
+{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.12
 \textperiodcentered{} July 19, 2026 \textperiodcentered{} Joel H\"agvall
 \textperiodcentered{} maskera.dev. Current numbers live in
 \pkg{docs/BENCHMARKS.md}; where this document disagrees, that file wins.

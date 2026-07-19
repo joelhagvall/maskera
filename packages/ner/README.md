@@ -126,7 +126,7 @@ yourself (they're static files) and point the recognizer at them:
 
 ```ts
 createNerRecognizer({
-  model: "maskera-sv-ner-v15", // version the folder name: the browser caches by URL
+  model: "maskera-sv-ner-v18", // version the folder name: the browser caches by URL
   localModelPath: "/models/",   // your own origin or internal CDN
   allowLocalModels: true,
   allowRemoteModels: false,     // never touch the Hub
@@ -135,7 +135,7 @@ createNerRecognizer({
 
 Copy the files from the
 [Hub repo](https://huggingface.co/joelhagvall/maskera-sv-ner) (config,
-tokenizer, `onnx/model_q4.onnx`) into `public/models/maskera-sv-ner-v15/`
+tokenizer, `onnx/model_q4.onnx`) into `public/models/maskera-sv-ner-v18/`
 (version the folder name, the browser caches model files by URL). This is
 exactly how the maskera demo runs, fully offline after first load.
 
@@ -163,8 +163,8 @@ The default (and only bundled default) model is
 (`MASKERA_SV_NER_MODEL`, MIT, 43 MB q4): PER/LOC/ORG/ADR, distilled from
 KB-BERT, trained on synthetic + real Swedish with lowercase/ALL CAPS/genitive
 augmentation (chat users type lowercase). On the packaged gold corpus it
-scores 99.8% span-F1 with a 0.0% leak rate; on independent real text, 93.9%
-and 1.7% (measured 2026-07-16). The canonical, dated tables live in
+scores 99.8% span-F1 with a 0.0% leak rate; on independent real text, 94.7%
+and 3.4% (measured 2026-07-19). The canonical, dated tables live in
 [docs/BENCHMARKS.md](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md).
 Run the eval yourself:
 

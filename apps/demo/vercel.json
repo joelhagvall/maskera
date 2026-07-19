@@ -33,7 +33,7 @@
       ]
     },
     {
-      "source": "/models/maskera-sv-ner-v15/(.*)",
+      "source": "/models/maskera-sv-ner-v18/(.*)",
       "headers": [
         {
           "key": "Cache-Control",

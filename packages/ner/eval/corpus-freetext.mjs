@@ -18,7 +18,7 @@
  * Grade with:
  *   CORPUS_FILE="./corpus-freetext.mjs" \
  *   MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" \
- *   MASKERA_MODEL=maskera-sv-ner-v15 \
+ *   MASKERA_MODEL=maskera-sv-ner-v18 \
  *   node packages/ner/eval/run-eval.mjs
  */
 

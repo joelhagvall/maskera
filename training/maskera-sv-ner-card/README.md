@@ -64,12 +64,13 @@ through `maskera`, the raw tags map to the placeholder names you see in
 redacted output: `PER` → `NAMN`, `LOC` → `PLATS`, `ORG` → `ORGANISATION`,`ADR` → `ADRESS` (e.g. `[NAMN_1]`).
 
 Note: the PER / LOC / ORG benchmark sets below contain no street addresses, so
-`ADR` is measured on its own set (27 sentences, 21 address spans, held out of
-training). Measured 2026-07-16 on the shipped q4 artifact: **redaction recall
+`ADR` is measured on its own set (41 sentences, 35 address spans incl.
+saint-prefix, free-word-ending, farm and abbreviated forms, held out of
+training). Measured 2026-07-19 on the shipped q4 artifact: **redaction recall
 100%**, **0% leaks**, **ADDRESS precision 100%**, **exact-span recall 100%**,
-house numbers included (`Sveavägen 44`, not just `Sveavägen`). One documented
-over-redaction on this corpus's distractor set (the ordinary word "Festen"
-tagged PERSON; nothing leaks). Full breakdown:
+house numbers included (`Sveavägen 44`, not just `Sveavägen`). The previous
+release's documented over-redaction on this corpus's distractor set (the
+ordinary word "Festen" tagged PERSON) is fixed. Full breakdown:
 [BENCHMARKS.md → Address (ADR) eval](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md#address-adr-eval-the-one-class-the-other-sets-miss).
 
 ## Quantizations
@@ -130,16 +131,15 @@ const out = await ner("Anna Lindqvist bor i Göteborg.")
 
 The canonical, dated benchmark tables live in the maskera repo:
 [`docs/BENCHMARKS.md`](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md).
-Numbers below are copied from there (measured 2026-07-16, `dtype="q4"`,
+Numbers below are copied from there (measured 2026-07-19, `dtype="q4"`,
 **exact-span matching**, via the shipped `maskera` pipeline); when they
 disagree, BENCHMARKS.md wins.
 
-Curated maskera corpus (148 hand-authored sentences, 204 free-text PER/LOC/ORG
+Curated maskera corpus (149 hand-authored sentences, 205 free-text PER/LOC/ORG
 entities, incl. hard negatives and all-lowercase / ALL CAPS / genitive hard
 cases, graded honestly). Clean, well-formed sentences that share an author
 with the training generator, so treat it as an upper bound and regression
-tracker. First release with zero leaks on this set (the sentence-initial
-"Klarna" classic is fixed):
+tracker. Second consecutive release with zero leaks on this set:
 
 | metric    | score | meaning                                  |
 | --------- | ----- | ---------------------------------------- |
@@ -154,10 +154,10 @@ directional independent floor:
 
 | metric    | score | meaning                                  |
 | --------- | ----- | ---------------------------------------- |
-| precision | 94.7% | of predictions, how many were correct    |
+| precision | 96.4% | of predictions, how many were correct    |
 | recall    | 93.1% | of real entities, how many were found    |
-| span F1   | 93.9% | harmonic mean, label-agnostic            |
-| leaks     | 1.7%  | entities missed entirely, 1 of 58        |
+| span F1   | 94.7% | harmonic mean, label-agnostic            |
+| leaks     | 3.4%  | entities missed entirely, 2 of 58 (both listed in BENCHMARKS.md's known-miss table) |
 
 The model is trained on synthetic Swedish (with whole-sentence lowercase,
 ALL CAPS and genitive augmentation, since chat users type lowercase; the
@@ -180,10 +180,12 @@ register-targeted, ensemble pseudo-labeled sample of
 **Flashback / Familjeliv** forum text
 ([Språkbanken](https://spraakbanken.gu.se/resurser); pseudo-labels amplify
 the informal register, every published number is still measured on
-human-labeled sets). The v15 round adds a synthetic balanced
+human-labeled sets). The v15 round added a synthetic balanced
 class-replay dose (sentence-initial bare-surname declaratives paired with
-LOC / ORG / ADR positives and capitalised common-word negatives), which fixed
-the bare-lowercase-surname declarative gap and the "Klarna" miss. That also means the Swedish NER Corpus
+LOC / ORG / ADR positives and capitalised common-word negatives); the v18
+round density-guards the forum sample (empty rows capped against the actual
+sample) and scrubs rows where famous lowercase entities are untagged (label
+poison), the fix the v17 hold prescribed. That also means the Swedish NER Corpus
 test split is in-distribution and is NOT used as the independent measure. A
 larger independent gold set is the top data TODO. Harnesses live in the
 [maskera repo](https://github.com/joelhagvall/maskera) (`packages/ner/eval`
@@ -193,7 +195,7 @@ and `training/`); run them yourself before relying on the numbers.
 
 Every public Swedish NER alternative, measured on the same gold sets
 (competitors 2026-07-04, Rampart 2026-07-14, swedish-pii and Desert Ant
-redact 2026-07-16, KBLab neriob 2026-07-19, the maskera row 2026-07-16;
+redact 2026-07-16, KBLab neriob 2026-07-19, the maskera row 2026-07-19;
 overlap matching,
 PER / LOC / ORG; full method, all three test sets and honest caveats in
 [docs/BENCHMARKS.md](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md),
@@ -201,7 +203,7 @@ which wins on any disagreement):
 
 | Model (gold-real, independent text)                | Size    | Typed F1 |
 | -------------------------------------------------- | ------- | -------- |
-| **maskera-sv-ner**                                  | **~43 MB** | **0.97** |
+| **maskera-sv-ner**                                  | **~43 MB** | **0.96** |
 | KBLab bert-base-swedish-lowermix-reallysimple-ner   | ~475 MB | 0.94     |
 | nbailab-base-ner-scandi                             | ~500 MB | 0.94     |
 | KBLab bert-base-swedish-cased-neriob                | ~475 MB | 0.94     |
@@ -222,13 +224,13 @@ On **lowercase text** (no capitalisation cues) the cased-only models collapse
 (KB-NER falls to 0.35 typed F1 on lowercased gold-real). maskera-sv-ner's
 lowercase strength is the register it targets: on a 294-sentence chat/support
 eval of rare decomposing surnames held out of training, it masks 99.3%
-(previous release: 98.3% on the same rotated frames), and on the lowercased
-2453-sentence news test split its leak rate is 13.8% (previous release:
-15.2%). On lowercased *encyclopedic* prose (gold-real forced lowercase, 58
-entities) KBLab's lowermix still leads on raw redaction recall (0.97 vs 0.90
-for the fp32 student), but the shipped q4 artifact now covers 51 of 58
-there, back at the project's best level (the previous release covered 50 and
-carried this as its documented gap). None of the
+(tying the previous release) and now types 78.2% of them correctly as PERSON
+(previous release: 71.4%), and on the lowercased 2453-sentence news test
+split its leak rate is 14.2% (previous release: 13.8%, the documented churn
+in BENCHMARKS.md). On lowercased *encyclopedic* prose (gold-real forced
+lowercase, 58 entities) the gap to KBLab's lowermix has nearly closed
+(redaction recall 0.95 vs 0.97 for the fp32 student), and the shipped q4
+artifact now covers 53 of 58 there, the project's best. None of the
 alternatives detects street addresses (`ADR`) or fits in a browser tab; the
 one size-class peer (Rampart, 14.7 MB) has no organization class at all and
 strips å/ä/ö, and masks 45% on the rare-surname eval.

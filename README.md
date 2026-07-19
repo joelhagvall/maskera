@@ -37,18 +37,19 @@ places, organisations and street addresses, including all-lowercase chat text
 ("hej jag heter anna karlsson"), ALL CAPS and genitive forms, because that is
 how people actually type.
 
-> **Benchmarks:** span F1 **99.8%** on the curated corpus (zero leaks), **93.9%** on
-> independent real text, leak rate 0.0% / 1.7% (exact-span, q4, measured
-> 2026-07-16). One canonical, dated, reproducible table:
+> **Benchmarks:** span F1 **99.8%** on the curated corpus (zero leaks), **94.7%** on
+> independent real text, leak rate 0.0% / 3.4% (exact-span, q4, measured
+> 2026-07-19). One canonical, dated, reproducible table:
 > **[docs/BENCHMARKS.md](docs/BENCHMARKS.md)**; every other number in this
 > repo defers to it.
 
 Measured against every public Swedish NER alternative on the same gold sets,
-it now leads the best ~500 MB models on independent text (typed F1 0.97 vs
+it leads the best ~500 MB models on independent text (typed F1 0.96 vs
 0.94) at a tenth of their size, and in the lowercase chat/support register it
-targets, it masks 99.3% of rare out-of-training surnames (previous release:
-98.3%); on lowercased encyclopedic prose the case-robust KBLab lowermix still
-leads on raw redaction recall, documented honestly. Tables, method and
+targets, it masks 99.3% of rare out-of-training surnames and now types 78.2%
+of them correctly as PERSON (previous release: 71.4%); on lowercased
+encyclopedic prose the gap to the case-robust KBLab lowermix has nearly
+closed (redaction recall 0.95 vs 0.97), documented honestly. Tables, method and
 caveats: [docs/BENCHMARKS.md](docs/BENCHMARKS.md). The training pipeline and
 the round-by-round journey are fully reproducible: see
 [`training/`](training/). Every push to this repo re-grades the published

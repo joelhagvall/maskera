@@ -201,6 +201,27 @@ LC_AUG-0.40 take 2 is graded in the journal and not selected):
   living in the rules layer, where checksums beat any model (Rampart's own
   ML-side government-ID recall is ~68%; validated rules are the right tool).
 
+## Done: v18, the density-guard round (PUBLISHED 2026-07-19)
+
+The round the v17 hold prescribed, and the first release whose battery
+passes **all five gates with no documented exception** (v14 carried G2,
+v15 carried `Festen`). Two levers, both in `training/convert_pseudo.mjs`,
+nothing else changed vs v17: an entity-density guard (empty pseudo rows
+capped against the ACTUAL appended sample, so the exhausted ~15k-entity
+pool can no longer be padded with O rows) and a news-register scrub (rows
+where a famous lowercase entity is untagged by the teacher are dropped as
+slot poison). Results: G2 **53/58** and rare-surname PER-typing **78.2%**
+(both best measured), G1 99.3% masked / 2 leaks (ties v15's best), klintan
+cased leaks 7.0% (equal best), ADR a true 35/35 clean sweep with the
+`Festen` over-redaction FIXED, curated 0 leaks again, LinkedIn 0 leaks
+("KTH" fixed). Documented costs, all ungated: klintan lowercase 14.2% (vs
+13.8; 30 new / 25 fixed, ordinary churn, not v17's famous-entity pattern),
+a second gold-real leak (sentence-initial bare "Löfven" in declarative
+prose, the standing residue in cased form, weighed explicitly in the
+publish decision), and the ALL-CAPS "RING LÖFVEN OMGÅENDE" spot probe
+regressed to missed. Numbers: [BENCHMARKS.md](BENCHMARKS.md); full round:
+the training journal.
+
 ## Done: v15, the balanced-replay round (PUBLISHED 2026-07-16)
 
 Written 2026-07-14, right after the v14 publish. What v14 measurably left on
@@ -300,34 +321,39 @@ exception needs a different idea; see the journal.
 
 ### Standing weaknesses (unchanged by v14, keep on the list)
 
-- [ ] **Lowercase still trails cased** on the big held-out set (leaks 13.8%
-      vs 7.2%; lowercase ORG 62.0%, v15 numbers, the narrowest gap
-      measured). v14's pseudo corpus barely moved the klintan-lowercase
-      needle (15.5 -> 15.2, the 18k sample is small against 58k gold rows);
-      v15's balanced replay took it to 13.8. Naive sample growth is now
-      FALSIFIED (the v17 round, 2026-07-17, HELD): PSEUDO_TOTAL 20k -> 66k
-      passed the teacher screen (val F1 0.9708, first above the 0.9696
-      baseline) and set a G2 best (52/58), but klintan lowercase regressed
-      13.8 -> 16.5% leaks; the data increment was nearly all O tokens
-      (+215.7k O vs ~1.6k entity, PER +0), diluting famous lowercase
-      ORG/LOC in news prose (journal has the full leak diff). Remaining
-      options: guard entity density in the pseudo sample (entity-bearing
-      rows / lower empty share) at the 66k scale, or accept that real
-      annotated support/chat text is the lever (see data section below).
+- [ ] **Lowercase still trails cased** on the big held-out set (leaks 14.2%
+      vs 7.0%; lowercase ORG 60.1%, v18 numbers). The arc: v14's pseudo
+      corpus barely moved the needle (15.5 -> 15.2), v15's balanced replay
+      took it to 13.8, naive sample growth was FALSIFIED by the held v17
+      round (66k pseudo diluted famous lowercase ORG/LOC, 16.5%), and the
+      v18 density guard + news scrub recovered the class (14.2%, ordinary
+      churn instead of systematic famous-entity leaks) while taking the
+      encyclopedic-lowercase G2 to its best (53/58). The pseudo-pool lever
+      is now fully harvested: the pool yields ~15k entity rows and the
+      sample already takes them all. What remains is real annotated
+      support/chat text (see data section below).
+- [ ] **Bare-surname declaratives, now in CASED form too**: v18's
+      accepted cost is a second gold-real leak, sentence-initial bare
+      "Löfven" in "Löfven är gift med ...". The lowercase variant is the
+      long-standing G2 residue; the cased surfacing is new. Both v15
+      one-sided levers failed on this class and the balanced-replay
+      dose-ratio game is played out (v5 teacher-screen reject), so the
+      next attempt needs a new idea (real declarative-register data, or a
+      targeted eval-far frame family swept against every precision gate).
 - [ ] **Short brand names** (Voi, Northmill, Knowit): the one ORG subclass
       the v12-v14 gazetteer arc did not dent; a LENGTH problem. Candidate
       ideas unchanged: context weighting or a rules-layer assist in
       `@maskera/core`.
-- [ ] **The published known misses**: gold-real metonymic "Vita huset" and
-      v15's documented exception, the ordinary word "Festen" tagged PERSON
-      in one ADR-corpus distractor sentence (an over-redaction, not a
-      leak). Two long-standing entries are FIXED by v15's balanced replay:
-      the curated sentence-initial "Klarna" classic (first zero-leak
-      curated run) and the ALL-CAPS spot probe "RING LÖFVEN OMGÅENDE"
-      (verified caught against the v15 weights 2026-07-16). Nothing here
-      is gated; the two remaining entries are documented in BENCHMARKS.md's
-      known-misses table (the LÖFVEN probe is a journal spot check, not
-      part of a graded corpus).
+- [ ] **The published known misses**: gold-real metonymic "Vita huset"
+      (since v13) and, new in v18, gold-real sentence-initial bare
+      "Löfven" in declarative prose (the bare-surname residue in cased
+      form; see the entry above). v15's "Festen" over-redaction is FIXED
+      by v18. The ALL-CAPS spot probe "RING LÖFVEN OMGÅENDE" regressed to
+      missed in v18 (v15 caught it; v11-v14 missed it; a journal spot
+      check, not part of a graded corpus). The curated "Klarna" classic
+      stays fixed (second zero-leak curated run in a row). Nothing here is
+      gated; the graded entries are documented in BENCHMARKS.md's
+      known-misses table.
 - [ ] **Lowercase nicknames mid-sentence are context-dependent** (found by
       the 2026-07-16 free-text probe sweep): "micke på ekonomiavdelningen"
       is caught, "bråket mellan mig och micke i grannsamfälligheten" leaks.
@@ -375,7 +401,9 @@ exception needs a different idea; see the journal.
 
 - [ ] **The ~15 MB student**: the v14 pseudo-label pool
       (`training/.benchmark/pseudo-labeled.jsonl`, 400k double-labeled
-      rows; ~18k consumed by v14, 66k by the held v17 round) was built as
+      rows; ~18k consumed by v14, ~22k by the shipped v18 round's
+      density-guarded 66k request, which already takes every entity row
+      the pool yields) was built as
       its prerequisite. Still
       waiting on a use case that demands the size (per "Explicitly NOT
       this round", which stands).
@@ -414,6 +442,11 @@ exception needs a different idea; see the journal.
 - [ ] More structured detectors: bank account (clearing + number), IBAN mod-97
       validation, VAT numbers, IPv6.
 - [ ] `confidence` scores per detection.
+- [ ] `npx maskera` CLI: mask a file or stdin straight from the terminal,
+      no code written. The shortest onboarding that exists (beats even
+      `npm install` + first snippet), and the natural shape for log masking
+      in scripts/CI pipelines. Rules-only mode runs instantly via
+      `@maskera/core`; `--ner` downloads the model on first run.
 - [ ] `redactStream()` for chat-as-you-type.
 - [ ] Smaller model (fewer layers / MiniLM-class, toward ~15 MB) if a use
       case demands it; quality starts to cost below 40 MB with today's data.

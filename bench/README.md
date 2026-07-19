@@ -6,27 +6,26 @@ Swedish gold sets, with the same scorer the maskera CI gates run
 **leaks** = gold entities with zero overlapping prediction, the
 safety-critical number for redaction.
 
-- **Measured:** 2026-07-18, Apple M4 Pro, all systems fully local.
+- **Measured:** 2026-07-19 (maskera rows; competitor rows 2026-07-18, their systems unchanged), Apple M4 Pro, all systems fully local.
 - maskera's own rows are the currently published pipeline
-  (`maskera@0.6.3`, `joelhagvall/maskera-sv-ner` v15 weights, q4, ~43 MB;
-  0.6.4 is a docs-only README patch, no code change),
+  (`maskera@0.6.3` code, `joelhagvall/maskera-sv-ner` v18 weights, q4,
+  ~43 MB; 0.6.4 is a docs-only README patch, no code change),
   the same artifact [docs/BENCHMARKS.md](../docs/BENCHMARKS.md) describes.
   On the shared corpora the rows here reproduce BENCHMARKS.md exactly
-  (gold-real 94.7 / 93.1 / 93.9, 1 leak), the calibration check that the
+  (gold-real 96.4 / 93.1 / 94.7, 2 leaks), the calibration check that the
   grading is identical.
 - **Corpora note:** the curated and adr sets below are the repo eval
   corpora as of the 2026-07-16 v16-round extensions (curated 149 docs /
   205 entities, adr 41 docs / 60 entities incl. 35 street addresses),
-  slightly larger than the sets BENCHMARKS.md's 2026-07-16 tables were
-  measured on (148 / 204, 21 addresses). Every system in this file is
-  graded on the same extended corpora, so the comparison is internally
-  consistent.
+  the same sets BENCHMARKS.md's 2026-07-19 tables are measured on. Every
+  system in this file is graded on the same corpora, so the comparison is
+  internally consistent.
 
 ## Systems
 
 | system | version | what runs | model size |
 | --- | --- | --- | --- |
-| maskera | 0.6.3, maskera-sv-ner v15 q4 | rules + Swedish NER, Transformers.js/ONNX | 43 MB |
+| maskera | 0.6.3 code, maskera-sv-ner v18 q4 | rules + Swedish NER, Transformers.js/ONNX | 43 MB |
 | Microsoft Presidio | presidio-analyzer 2.2.363 | spaCy `sv_core_news_lg` NLP engine | ~550 MB |
 | OpenAI Privacy Filter | openai/privacy-filter, transformers 5.13 / torch 2.13 | 1.5B-param (50M active) token classifier | 2.6 GB |
 | EU PII Safeguard | tabularisai/eu-pii-safeguard, revision `0edf0c8` | XLM-R-large token classifier | 2.24 GB |
@@ -90,7 +89,7 @@ independent floor. A larger independent set is in progress
 
 | system | precision | recall | span F1 | labeled F1 | leaks |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| maskera | 94.7% | 93.1% | **93.9%** | 93.9% | **1 (1.7%)** |
+| maskera | 96.4% | 93.1% | **94.7%** | 94.7% | **2 (3.4%)** |
 | presidio-sv | 82.5% | 56.9% | 67.3% | 65.3% | 19 (32.8%) |
 | eu-pii-safeguard | 77.8% | 12.1% | 20.9% | 20.9% | 49 (84.5%) |
 | privacy-filter | 83.3% | 8.6% | 15.6% | 15.6% | 53 (91.4%) |
@@ -100,18 +99,18 @@ independent floor. A larger independent set is in progress
 
 | system | precision | recall | span F1 | labeled F1 | leaks |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| maskera | 92.1% | 96.7% | **94.3%** | 94.3% | **0 (0.0%)** |
+| maskera | 100.0% | 100.0% | **100.0%** | 100.0% | **0 (0.0%)** |
 | presidio-sv | 42.9% | 40.0% | 41.4% | 41.4% | 4 (6.7%) |
 | eu-pii-safeguard | 63.9% | 38.3% | 47.9% | 47.9% | 24 (40.0%) |
 | privacy-filter | 23.1% | 10.0% | 14.0% | 14.0% | 39 (65.0%) |
 | blindfold-local | 100.0% | 0.0% | 0.0% | 0.0% | 60 (100.0%) |
 
 Precision at 0% recall (blindfold-local) is vacuous: no predictions in the
-gold label space at all, so nothing to be wrong about. The adr corpus now
+gold label space at all, so nothing to be wrong about. The adr corpus
 includes the v16 round's 14 harder sentences (nr-forms, detached house-number
-letters, lowercase and ALL CAPS addresses), which is why maskera's exact-span
-F1 reads 94.3% here against the 100% clean sweep BENCHMARKS.md reports on the
-original 21-address set; its leak count stays **0 of 35 addresses**.
+letters, lowercase and ALL CAPS addresses); the v18 weights sweep the whole
+extended corpus exact-span (the v15 row read 94.3% here, from the since-fixed
+"Festen" over-flag and boundary slips); leaks stay **0 of 35 addresses**.
 
 ### Per-label highlights
 
@@ -143,9 +142,9 @@ rows:
 ## What this does and does not show
 
 - It shows that on Swedish free text, the 43 MB maskera model beats the
-  2.6 GB Privacy Filter by 78.3 span-F1 points, the 2.24 GB multilingual
-  EU PII Safeguard by 73.0 points, and the standard open-source choice
-  (Presidio) by 26.6 points on the independent set. Its leak rate is also far
+  2.6 GB Privacy Filter by 79.1 span-F1 points, the 2.24 GB multilingual
+  EU PII Safeguard by 73.8 points, and the standard open-source choice
+  (Presidio) by 27.4 points on the independent set. Its leak rate is also far
   lower. For redaction, the leak column is the product.
 - It does NOT show general superiority: Privacy Filter targets English and
   eight categories by design; EU PII Safeguard targets 42 finer-grained PII

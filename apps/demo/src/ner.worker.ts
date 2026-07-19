@@ -33,7 +33,7 @@ const recognizerPromise = (async () => {
   // model ships: Transformers.js caches by URL and never revalidates, so
   // returning visitors would silently keep the old weights forever.
   const recognizer = createNerRecognizer({
-    model: "maskera-sv-ner-v15",
+    model: "maskera-sv-ner-v18",
     localModelPath: "/models/",
     allowLocalModels: true,
     allowRemoteModels: false,
