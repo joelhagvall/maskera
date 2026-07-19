@@ -20,7 +20,8 @@ disagrees with this file, this file wins and the other document has drifted.
 - **Pipeline:** the shipped `maskera` path (model + `reconstruct()`
   post-processing), measured on `maskera@0.6.1` (0.6.2 was a docs-only
   patch; 0.6.3's two `reconstruct()` guards were verified against this
-  same artifact with curated, retention and ADR numbers unchanged),
+  same artifact with curated, retention and ADR numbers unchanged;
+  0.6.4 is a docs-only README patch, no code change),
   graded by
   [`packages/ner/eval/run-eval.mjs`](../packages/ner/eval/run-eval.mjs)
 - **Matching:** exact character span. This is the strict harness CI gates on;
