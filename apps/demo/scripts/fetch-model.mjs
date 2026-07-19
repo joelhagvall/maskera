@@ -38,12 +38,40 @@ const FILES = {
 
 const sha256 = (buf) => createHash("sha256").update(buf).digest("hex")
 
+// The Hub throws the occasional transient 503, which used to fail whole CI
+// runs. Retry those (and network errors) with backoff; a 4xx is a real
+// problem (gone file, bad path) and still fails immediately.
+const RETRY_DELAYS_MS = [2000, 5000, 10000]
+async function fetchWithRetry(url) {
+  for (let attempt = 0; ; attempt++) {
+    let failure
+    try {
+      const res = await fetch(url)
+      if (res.ok) return res
+      if (res.status < 500 && res.status !== 429) return res
+      failure = `${res.status} ${res.statusText}`
+    } catch (err) {
+      failure = err?.message ?? String(err)
+    }
+    if (attempt >= RETRY_DELAYS_MS.length) throw new Error(failure)
+    const delay = RETRY_DELAYS_MS[attempt]
+    console.log(`  ${failure}, retrying in ${delay / 1000}s ...`)
+    await new Promise((r) => setTimeout(r, delay))
+  }
+}
+
 for (const [file, expected] of Object.entries(FILES)) {
   const target = join(DEST, file)
   // A present-and-verified file costs one hash; a mismatch is re-fetched.
   if (existsSync(target) && sha256(readFileSync(target)) === expected) continue
   console.log(`fetching ${file} ...`)
-  const res = await fetch(`${HUB}/${file}`)
+  let res
+  try {
+    res = await fetchWithRetry(`${HUB}/${file}`)
+  } catch (err) {
+    console.error(`failed to fetch ${file}: ${err.message}`)
+    process.exit(1)
+  }
   if (!res.ok) {
     console.error(`failed to fetch ${file}: ${res.status} ${res.statusText}`)
     process.exit(1)
