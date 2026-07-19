@@ -68,25 +68,74 @@ const REPLIES: Record<string, (map: Record<string, string>) => string> = {
   },
 }
 
+/** "a, b och c" — comma-joined clauses with "och" before the last. */
+function joinClauses(parts: string[]): string {
+  if (parts.length <= 1) return parts[0]
+  return `${parts.slice(0, -1).join(", ")} och ${parts[parts.length - 1]}`
+}
+
 /**
  * A believable AI reply for the current redaction, written with the very
  * placeholders the model would have received. Restoring it demonstrates the
  * round trip end to end without asking the visitor to actually call an AI.
  * Derived from the live map, so it gains the person's name the moment the
  * model layer adds it. When a scenario id is given, its domain-specific reply
- * is used; otherwise (e.g. "Egen text") a generic case-handling reply.
+ * is used; otherwise (e.g. "Egen text") a generic reply woven from whichever
+ * token types the visitor's own text produced.
  */
 export function sampleAiReply(map: Record<string, string>, scenarioId?: string): string {
   const builder = scenarioId ? REPLIES[scenarioId] : undefined
   if (builder) return builder(map)
+
   const namn = pickToken(map, "NAMN")
+  const adress = pickToken(map, "ADRESS")
+  const plats = pickToken(map, "PLATS")
+  const id = pickToken(map, "PERSONNUMMER", "SAMORDNINGSNUMMER", "ORGANISATIONSNUMMER", "REGNUMMER")
   const contact = pickToken(map, "TELEFON", "EPOST")
-  const who = namn ? ` för ${namn}` : ""
-  const first = `Tack för underlaget! Jag har sammanställt ärendet${who} och föreslår nästa steg nedan.`
-  const second = contact
+  const konto = pickToken(map, "KORTNUMMER", "IBAN", "BANKGIRO", "PLUSGIRO")
+  const org = pickToken(map, "ORGANISATION")
+
+  // Weave in at most four placeholders, claimed in demonstrativeness order:
+  // enough for the restore card to show several round trips, few enough that
+  // the reply still reads as an answer rather than an inventory.
+  let budget = namn ? 3 : 4
+  const spend = (token: string | null): boolean => {
+    if (!token || budget === 0) return false
+    budget--
+    return true
+  }
+  const hasAdress = spend(adress)
+  const hasPlats = spend(plats)
+  const hasId = spend(id)
+  const hasContact = spend(contact)
+  const hasKonto = spend(konto)
+  const hasOrg = spend(org)
+
+  const clauses = [
+    `sammanställt ärendet${namn ? ` för ${namn}` : ""}${hasOrg ? ` hos ${org}` : ""}`,
+  ]
+  if (hasAdress) {
+    clauses.push(`noterat adressen ${adress}${hasPlats ? ` i ${plats}` : ""}`)
+  } else if (hasPlats) {
+    clauses.push(`noterat platsen ${plats}`)
+  }
+  if (hasId) clauses.push(`stämt av uppgifterna mot ${id}`)
+
+  // Catch-all: the text can mask only types no clause above covers (URL,
+  // IP-adress, postnummer, lägenhetsnummer). Rather than reply without a
+  // single placeholder, weave the first tokens in generically so the restore
+  // card always has something to demonstrate.
+  const anyToken = namn || hasAdress || hasPlats || hasId || hasContact || hasKonto || hasOrg
+  if (!anyToken) {
+    const rest = Object.keys(map).slice(0, 2)
+    if (rest.length > 0) clauses.push(`noterat ${joinClauses(rest)}`)
+  }
+
+  const pay = hasKonto ? ` Bekräfta att betalning ska ske till ${konto}.` : ""
+  const back = hasContact
     ? `Återkoppla${namn ? ` till ${namn}` : ""} på ${contact} och dokumentera bedömningen i systemet.`
     : "Dokumentera bedömningen i systemet och boka en uppföljning."
-  return `${first} ${second}`
+  return `Tack för underlaget! Jag har ${joinClauses(clauses)}. Förslag på nästa steg finns nedan.${pay} ${back}`
 }
 
 /**
