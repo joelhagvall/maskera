@@ -1,5 +1,13 @@
 # maskera
 
+## 0.6.6
+
+### Patch Changes
+
+- 123c638: Make self-hosted model loading safe with the published Transformers.js runtime, route Yarn Plug'n'Play caches to a writable path, document the strict-PnP runtime install, report model failures accurately, and declare the supported Node.js version.
+- Updated dependencies [123c638]
+  - @maskera/core@0.4.4
+
 ## 0.6.5
 
 ### Patch Changes

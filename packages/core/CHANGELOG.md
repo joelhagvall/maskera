@@ -1,5 +1,11 @@
 # @maskera/core
 
+## 0.4.4
+
+### Patch Changes
+
+- 123c638: Declare Node.js 18 as the minimum supported runtime.
+
 ## 0.4.3
 
 ### Patch Changes
