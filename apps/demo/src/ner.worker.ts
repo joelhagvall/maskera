@@ -39,6 +39,10 @@ const recognizerPromise = (async () => {
     allowRemoteModels: false,
     dtype: "q4",
     device: "wasm",
+    // The monorepo carries the body-cancel fix for Transformers.js 4.2's
+    // local metadata probe, so the demo can safely show native byte progress.
+    // Registry consumers default to coarse start/ready events instead.
+    nativeLocalProgress: true,
     onProgress: (p) => {
       const prog = p as { status?: string; file?: string; loaded?: number }
       // Track the onnx weights only (41 of 41.6 MB): their bytes ARE the

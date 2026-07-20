@@ -26,6 +26,7 @@ declare module "@huggingface/transformers" {
   export interface PipelineOptions {
     dtype?: string
     device?: "wasm" | "webgpu" | "cpu" | "auto"
+    cache_dir?: string
     progress_callback?: (progress: unknown) => void
   }
 
@@ -36,9 +37,11 @@ declare module "@huggingface/transformers" {
   ): Promise<TokenClassificationPipeline>
 
   export const env: {
+    version?: string
     localModelPath?: string
     allowRemoteModels?: boolean
     allowLocalModels?: boolean
+    cacheDir?: string
     [key: string]: unknown
   }
 }

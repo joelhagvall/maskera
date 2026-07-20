@@ -18,6 +18,14 @@ browser, native ONNX in Node).
 npm install maskera @huggingface/transformers
 ```
 
+npm, pnpm and Bun resolve that install as-is. Yarn 4's strict Plug'n'Play
+mode also requires Transformers.js 4.2's undeclared runtime import as a direct
+application dependency:
+
+```bash
+yarn add maskera @huggingface/transformers@4.2.0 onnxruntime-common@1.24.3
+```
+
 The ML runtime is an **optional peer dependency**: skip it (and install
 [`@maskera/core`](https://www.npmjs.com/package/@maskera/core) instead) if you
 only want the zero-dependency rule layer. Core's entire API is re-exported
@@ -78,6 +86,7 @@ createNerRecognizer({
   minScore: 0.5,               // drop predictions below this confidence
   labelMap: defaultLabelMap,   // remap or drop raw model groups (return null to drop)
   onProgress: (e) => {},       // model download progress for a loading UI
+  cacheDir: ".cache/models",   // optional writable cache directory (mainly Node)
 })
 ```
 
@@ -107,8 +116,8 @@ createNerRecognizer({
   })
   ```
 
-- **`onProgress`**: receives Transformers.js progress events verbatim (typed
-  as `NerProgressEvent`). Per-file `progress` events carry `file` and a
+- **`onProgress`**: Hub downloads receive Transformers.js events verbatim
+  (typed as `NerProgressEvent`). Per-file `progress` events carry `file` and a
   0-100 `progress`; with `@huggingface/transformers` v4+ there are also
   `progress_total` events whose `progress` is the aggregate percentage across
   all files, which is the one number a loading bar wants:
@@ -119,6 +128,15 @@ createNerRecognizer({
   }
   ```
 
+  Self-hosted models emit safe coarse `initiate` (0) and `ready` (100) events
+  by default. Transformers.js 4.2 otherwise probes the full ONNX file in
+  parallel with the real download, which can fail in a fresh Chromium cache.
+  Set `nativeLocalProgress: true` only if your Transformers.js runtime includes
+  a fix that cancels that metadata response.
+- **`cacheDir`**: sets a writable Transformers.js cache directory. Under Yarn
+  PnP, maskera automatically redirects the runtime's read-only virtual default
+  to `<project>/.cache/transformers`; set this option to choose another path.
+
 ### Self-hosting the model
 
 Don't want a runtime dependency on the Hugging Face Hub? Host the model files
@@ -127,7 +145,7 @@ yourself (they're static files) and point the recognizer at them:
 ```ts
 createNerRecognizer({
   model: "maskera-sv-ner-v18", // version the folder name: the browser caches by URL
-  localModelPath: "/models/",   // your own origin or internal CDN
+  localModelPath: "/models/",   // same-origin path (or a CDN reverse-proxied here)
   allowLocalModels: true,
   allowRemoteModels: false,     // never touch the Hub
 })
@@ -137,7 +155,10 @@ Copy the files from the
 [Hub repo](https://huggingface.co/joelhagvall/maskera-sv-ner) (config,
 tokenizer, `onnx/model_q4.onnx`) into `public/models/maskera-sv-ner-v18/`
 (version the folder name, the browser caches model files by URL). This is
-exactly how the maskera demo runs, fully offline after first load.
+exactly how the maskera demo runs, fully offline after first load. Use a
+same-origin path such as `/models/`; Transformers.js 4.2's tokenizer metadata
+path does not reliably support an absolute CDN base URL. If the files live on
+a CDN, reverse-proxy that origin below your own `/models/` route.
 
 ### Node
 

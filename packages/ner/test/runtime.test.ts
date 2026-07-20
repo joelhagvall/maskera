@@ -1,0 +1,84 @@
+import { beforeEach, describe, expect, it, vi } from "vitest"
+import { createNerRecognizer, type NerProgressEvent } from "../src/index"
+
+interface MockPipelineOptions {
+  cache_dir?: string
+  progress_callback?: (progress: unknown) => void
+}
+
+const transformers = vi.hoisted(() => {
+  const env: Record<string, unknown> = {}
+  const pipeline = vi.fn(async (_task: string, _model: string, _options?: MockPipelineOptions) => {
+    const pipe = vi.fn(async () => []) as ReturnType<typeof vi.fn> & {
+      tokenizer?: { encode: (text: string) => number[] }
+    }
+    pipe.tokenizer = { encode: () => [] }
+    return pipe
+  })
+  return { env, pipeline }
+})
+
+vi.mock("@huggingface/transformers", () => transformers)
+
+beforeEach(() => {
+  for (const key of Object.keys(transformers.env)) delete transformers.env[key]
+  transformers.pipeline.mockClear()
+})
+
+describe("Transformers runtime integration", () => {
+  it("uses coarse progress for self-hosted models by default", async () => {
+    const events: NerProgressEvent[] = []
+
+    await createNerRecognizer({
+      model: "maskera-sv-ner-v18",
+      localModelPath: "/models/",
+      allowRemoteModels: false,
+      onProgress: (event) => events.push(event),
+    }).ready
+
+    expect(transformers.pipeline).toHaveBeenCalledTimes(1)
+    const pipelineOptions = transformers.pipeline.mock.calls[0]?.[2]
+    expect(pipelineOptions?.progress_callback).toBeUndefined()
+    expect(events).toEqual([
+      { status: "initiate", name: "maskera-sv-ner-v18", progress: 0 },
+      { status: "ready", name: "maskera-sv-ner-v18", progress: 100 },
+    ])
+  })
+
+  it("allows patched runtimes to opt in to native local progress", async () => {
+    const onProgress = vi.fn()
+
+    await createNerRecognizer({
+      localModelPath: "/models/",
+      nativeLocalProgress: true,
+      onProgress,
+    }).ready
+
+    const pipelineOptions = transformers.pipeline.mock.calls[0]?.[2]
+    expect(pipelineOptions?.progress_callback).toBeTypeOf("function")
+    expect(onProgress).not.toHaveBeenCalled()
+  })
+
+  it("redirects Yarn PnP's read-only virtual cache", async () => {
+    transformers.env.cacheDir = "/node_modules/@huggingface/transformers/.cache/"
+
+    await createNerRecognizer().ready
+
+    expect(transformers.env.cacheDir).toBe(`${process.cwd()}/.cache/transformers`)
+  })
+
+  it("honours an explicit cache directory in env and pipeline options", async () => {
+    await createNerRecognizer({ cacheDir: "/tmp/maskera-cache" }).ready
+
+    expect(transformers.env.cacheDir).toBe("/tmp/maskera-cache")
+    expect(transformers.pipeline.mock.calls[0]?.[2]?.cache_dir).toBe("/tmp/maskera-cache")
+  })
+
+  it("reports a model-loading error without claiming the peer is missing", async () => {
+    transformers.pipeline.mockRejectedValueOnce(new Error("model response was invalid"))
+
+    await expect(createNerRecognizer().ready).rejects.toThrow(
+      'maskera: failed to load model "joelhagvall/maskera-sv-ner".\nError: model response was invalid',
+    )
+  })
+})

@@ -157,13 +157,10 @@ export const DEFAULT_DENYLIST: ReadonlySet<string> = new Set([
 ])
 
 /**
- * A Transformers.js progress event, forwarded verbatim to `onProgress` while
- * the model downloads. Events arrive per file: `initiate` / `download` /
- * `done` mark lifecycle steps, and `progress` events carry `file` plus a
- * `progress` percentage (0-100) for that file. From `@huggingface/transformers`
- * v4 there are also `progress_total` events without a `file`, whose `progress`
- * is the aggregate percentage across all model files: the one number a single
- * loading bar wants. A final `ready` event fires when the pipeline is usable.
+ * A model-loading progress event. Hub downloads forward Transformers.js events
+ * verbatim. Self-hosted models default to coarse `initiate` / `ready` events to
+ * avoid Transformers.js 4.2's duplicate full-file metadata request; opt in to
+ * native per-byte events only with {@link NerOptions.nativeLocalProgress}.
  */
 export interface NerProgressEvent {
   status: string
@@ -203,10 +200,22 @@ export interface NerOptions {
    * models. Set this (plus `model`) to load your own model instead of the Hub.
    */
   localModelPath?: string
+  /**
+   * Transformers.js cache directory. Also applied to `env.cacheDir`, which is
+   * required by Yarn PnP because its dependency archive is read-only.
+   */
+  cacheDir?: string
   /** Transformers.js `env.allowRemoteModels` (default left untouched). */
   allowRemoteModels?: boolean
   /** Transformers.js `env.allowLocalModels` (default left untouched). */
   allowLocalModels?: boolean
+  /**
+   * Forward native per-byte progress for a self-hosted model. Default: `false`.
+   * Transformers.js 4.2 probes local files with an uncancelled full GET when a
+   * progress callback is present, so only enable this with a patched/newer
+   * runtime known not to race the real download.
+   */
+  nativeLocalProgress?: boolean
 }
 
 export interface NerRecognizer {
@@ -232,8 +241,10 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
     denylist = DEFAULT_DENYLIST,
     onProgress,
     localModelPath,
+    cacheDir,
     allowRemoteModels,
     allowLocalModels,
+    nativeLocalProgress = false,
   } = options
 
   const denySet = denylist === null ? null : new Set(Array.from(denylist, (w) => w.toLowerCase()))
@@ -241,31 +252,83 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
   let pipePromise: Promise<import("@huggingface/transformers").TokenClassificationPipeline> | null =
     null
 
+  const withCause = (message: string, cause: unknown): Error => {
+    const error = new Error(`${message}\n${String(cause)}`) as Error & { cause?: unknown }
+    error.cause = cause
+    return error
+  }
+
+  const configureCache = (transformersEnv: Record<string, unknown>): void => {
+    if (cacheDir !== undefined) {
+      transformersEnv.cacheDir = cacheDir
+      return
+    }
+
+    // Yarn PnP resolves the package from a read-only zip/archive. Transformers
+    // derives `/node_modules/.../.cache` from that virtual path and then fails
+    // with EROFS. Keep normal npm/pnpm/Bun defaults untouched; only redirect
+    // the known virtual/read-only forms to a project-local cache.
+    const current = transformersEnv.cacheDir
+    const normalized = typeof current === "string" ? current.replaceAll("\\", "/") : ""
+    const isVirtualReadOnly =
+      normalized.startsWith("/node_modules/") || normalized.includes(".zip/node_modules/")
+    const runtimeProcess = (globalThis as typeof globalThis & { process?: { cwd?: () => string } })
+      .process
+    const cwd = runtimeProcess?.cwd?.()
+    if (isVirtualReadOnly && cwd) {
+      transformersEnv.cacheDir = `${cwd.replace(/[\\/]$/, "")}/.cache/transformers`
+    }
+  }
+
   const load = () => {
     if (!pipePromise) {
       pipePromise = import("@huggingface/transformers")
-        .then((t) => {
+        .catch((err) => {
+          throw withCause(
+            'maskera: could not import the optional peer dependency "@huggingface/transformers".',
+            err,
+          )
+        })
+        .then(async (t) => {
           // Configure env on the exact module instance we use, so a custom
           // model path applies regardless of how the host bundles things.
           if (localModelPath !== undefined) t.env.localModelPath = localModelPath
           if (allowRemoteModels !== undefined) t.env.allowRemoteModels = allowRemoteModels
           if (allowLocalModels !== undefined) t.env.allowLocalModels = allowLocalModels
-          return t.pipeline("token-classification", model, {
-            dtype,
-            device,
-            // Transformers.js types the callback param as `unknown`; the
-            // events are the documented NerProgressEvent shape at runtime.
-            progress_callback: onProgress
-              ? (p: unknown) => onProgress(p as NerProgressEvent)
-              : undefined,
-          })
+          configureCache(t.env)
+
+          const coarseLocalProgress =
+            localModelPath !== undefined && onProgress !== undefined && !nativeLocalProgress
+          if (coarseLocalProgress) {
+            onProgress({ status: "initiate", name: model, progress: 0 })
+          }
+
+          try {
+            const pipe = await t.pipeline("token-classification", model, {
+              dtype,
+              device,
+              cache_dir: cacheDir,
+              // Transformers.js 4.2 implements progress totals by probing
+              // every local file with a full GET. Its 43 MB ONNX probe is not
+              // consumed or cancelled in the published package and can race
+              // the real download in a fresh Chromium cache. Coarse local
+              // progress keeps the safe one-download path for npm consumers.
+              progress_callback:
+                onProgress && (localModelPath === undefined || nativeLocalProgress)
+                  ? (p: unknown) => onProgress(p as NerProgressEvent)
+                  : undefined,
+            })
+            if (coarseLocalProgress) {
+              onProgress({ status: "ready", name: model, progress: 100 })
+            }
+            return pipe
+          } catch (err) {
+            throw withCause(`maskera: failed to load model "${model}".`, err)
+          }
         })
         .catch((err) => {
           pipePromise = null
-          throw new Error(
-            `maskera: failed to load "${model}". Is the optional peer ` +
-              `dependency "@huggingface/transformers" installed?\n${String(err)}`,
-          )
+          throw err
         })
     }
     return pipePromise

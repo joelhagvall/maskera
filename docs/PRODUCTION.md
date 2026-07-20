@@ -9,7 +9,14 @@ actually are. For API details see the package READMEs
 
 ```bash
 npm install @maskera/core                              # rules only
-npm install maskera @huggingface/transformers     # + free-text names/places
+npm install maskera @huggingface/transformers          # + free-text names/places
+```
+
+Yarn 4 with strict Plug'n'Play also needs Transformers.js 4.2's undeclared
+runtime import at the application level:
+
+```bash
+yarn add maskera @huggingface/transformers@4.2.0 onnxruntime-common@1.24.3
 ```
 
 ```ts
@@ -92,6 +99,10 @@ const recognizer = createNerRecognizer({
 })
 ```
 
+Hub downloads forward native per-file and aggregate progress. A self-hosted
+model defaults to coarse 0/100 events because Transformers.js 4.2 can otherwise
+start an uncancelled full-file metadata GET beside the real ONNX download.
+
 ### Logging & analytics
 
 ```ts
@@ -168,7 +179,7 @@ serve them from your own origin and forbid remote fetches:
 ```ts
 createNerRecognizer({
   model: "maskera-sv-ner-v18", // version the folder name: the browser caches by URL
-  localModelPath: "/models/",
+  localModelPath: "/models/",   // same-origin path (or a CDN reverse-proxied here)
   allowLocalModels: true,
   allowRemoteModels: false,
 })
@@ -180,7 +191,13 @@ Copy `config.json`, `tokenizer.json`, `tokenizer_config.json`,
 `public/models/maskera-sv-ner-v18/`. Version the folder name; Transformers.js
 caches by URL in the browser and never revalidates, so a renamed folder is
 what gets returning visitors onto a new model. After that, nothing leaves your
-infrastructure, which is the whole point of the tool.
+infrastructure, which is the whole point of the tool. Keep `localModelPath`
+same-origin; Transformers.js 4.2's tokenizer metadata path does not reliably
+handle an absolute CDN base. Reverse-proxy a CDN below `/models/` instead.
+
+The default coarse `onProgress` events keep this path safe in a stock npm
+installation. Only set `nativeLocalProgress: true` when the installed
+Transformers.js runtime includes a body-cancel fix for local metadata probes.
 
 ## Verifying it keeps working (the part people skip)
 

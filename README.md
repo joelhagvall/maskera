@@ -10,6 +10,10 @@
 npm install maskera @huggingface/transformers   # all-in-one: rules + my Swedish AI model
 ```
 
+Yarn 4/PnP also needs the runtime leaf that Transformers.js 4.2 imports
+without declaring: `yarn add maskera @huggingface/transformers@4.2.0
+onnxruntime-common@1.24.3`. npm, pnpm and Bun use the shorter command above.
+
 ```ts
 import { createNerRecognizer, redactWithNer } from "maskera"
 

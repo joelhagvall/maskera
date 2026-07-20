@@ -73,13 +73,16 @@ function Code({ children, lang }: { children: string; lang: string }) {
   )
 }
 
-// Same install, four package managers. Copy yields just the command for the
-// active tab (no comment), like the code blocks above.
+// Yarn PnP needs the runtime's undeclared onnxruntime-common import installed
+// at the app level. Copy yields just the command for the active tab.
 const INSTALL = [
   { id: "npm", cmd: "npm install maskera @huggingface/transformers" },
   { id: "pnpm", cmd: "pnpm add maskera @huggingface/transformers" },
   { id: "bun", cmd: "bun add maskera @huggingface/transformers" },
-  { id: "yarn", cmd: "yarn add maskera @huggingface/transformers" },
+  {
+    id: "yarn",
+    cmd: "yarn add maskera @huggingface/transformers@4.2.0 onnxruntime-common@1.24.3",
+  },
 ]
 
 function InstallTabs() {
