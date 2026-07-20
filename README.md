@@ -43,15 +43,15 @@ how people actually type.
 > **[docs/BENCHMARKS.md](docs/BENCHMARKS.md)**; every other number in this
 > repo defers to it.
 
-Measured against every public Swedish NER alternative on the same gold sets,
-it leads the best ~500 MB models on independent text (typed F1 0.96 vs
+Measured against the public Swedish NER alternatives in the dated comparison
+table, it leads the best ~500 MB models on independent text (typed F1 0.96 vs
 0.94) at a tenth of their size, and in the lowercase chat/support register it
 targets, it masks 99.3% of rare out-of-training surnames and now types 78.2%
 of them correctly as PERSON (previous release: 71.4%); on lowercased
 encyclopedic prose the gap to the case-robust KBLab lowermix has nearly
-closed (redaction recall 0.95 vs 0.97), documented honestly. Tables, method and
-caveats: [docs/BENCHMARKS.md](docs/BENCHMARKS.md). The training pipeline and
-the round-by-round journey are fully reproducible: see
+closed (redaction recall 0.95 vs 0.97), documented honestly. Tables, model
+scope, method and caveats: [docs/BENCHMARKS.md](docs/BENCHMARKS.md). The
+training pipeline and the round-by-round journey are fully reproducible: see
 [`training/`](training/). Every push to this repo re-grades the published
 model in CI against a gold corpus with an F1 floor and a leak-rate ceiling.
 

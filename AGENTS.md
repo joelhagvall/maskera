@@ -43,12 +43,21 @@ Gotchas:
 
 ## Benchmark numbers
 
-`docs/BENCHMARKS.md` is the single source of truth. Every other file (root
-README, package READMEs, HF model card, whitepaper, and
-`apps/demo/public/llms.txt`) carries dated snapshots that MUST be synced in
-the same commit as a BENCHMARKS.md update. They have drifted before (last
-find: llms.txt sat on 2026-07-03 numbers and the old 40 MB size until
-2026-07-13); grep for the old numbers when updating.
+STANDING RULE: everything is always in sync, no number, date, version or
+size may drift anywhere. `docs/BENCHMARKS.md` is the single source of truth.
+Every other file carrying dated snapshots MUST be synced in the same commit
+as a BENCHMARKS.md update. The full snapshot-carrier list: root README,
+package READMEs (also what npmjs shows; needs a patch release to update
+there), HF model card (`training/maskera-sv-ner-card/README.md`; needs
+`hf upload` to go live), whitepaper (rebuild the PDF), and
+`apps/demo/public/llms.txt`, `bench/README.md`, `docs/FORSTA_MODELLEN.md`.
+They have drifted before (llms.txt sat on 2026-07-03 numbers until
+2026-07-13; bench/README.md sat on pre-v13 numbers until 2026-07-18); grep
+for the old numbers when updating. Also: if an eval corpus file changes
+after a measurement, note the new counts in BENCHMARKS.md in that same
+commit so reproduce runs match. When asked whether docs are synced, also
+diff the LIVE npm READMEs (`npm view <pkg> readme`) and the LIVE HF card
+against the repo sources.
 
 ## Whitepaper
 
@@ -82,6 +91,11 @@ Full model publishes use `scripts/publish-model.sh`.
   must be carried forward on every transformers bump until it is, and any
   bump must be smoke-tested in a fresh Chrome context against the deployed
   site (a normal profile with disk cache hides the bug).
+- `docs/layers.svg` (the two-layer architecture diagram) has a served copy
+  at `apps/demo/public/layers.svg` -> maskera.dev/layers.svg, which is what
+  the npm `maskera` README and the HF model card embed. Keep the two files
+  identical in the same commit; the external embeds update on deploy
+  without a release.
 - LinkedIn drafts (`docs/LINKEDIN_POST*.md`) are gitignored on purpose;
   don't try to commit them.
 - Lint is biome: `pnpm lint`.

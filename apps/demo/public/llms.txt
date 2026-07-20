@@ -1,6 +1,6 @@
 # maskera
 
-> Swedish-first, client-side PII redaction for AI apps. maskera finds and masks Swedish personal data (names, personnummer, addresses, phone numbers, and more) before text reaches an LLM, a log, or analytics. Everything runs on-device (browser via WebGPU/WASM, or Node); your text is never sent anywhere and there is no telemetry. The default setup fetches the model weights and WASM runtime once as static assets (both can be self-hosted), never your content. Redactions are reversible via a restore map that stays with the caller.
+> Swedish-first, client-side PII redaction for AI apps. maskera finds and masks Swedish personal data (names, personnummer, addresses, phone numbers, and more) before text reaches an LLM, a log, or analytics. Everything runs on-device (browser via WebGPU/WASM, or Node); your text is never sent anywhere. The packages contain no telemetry. The demo counts anonymous, cookieless page views, never your content. The default setup fetches the model weights and WASM runtime once as static assets (both can be self-hosted), never your content. Redactions are reversible via a restore map that stays with the caller.
 
 Two layers, rules first:
 

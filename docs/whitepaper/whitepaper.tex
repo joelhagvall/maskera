@@ -25,7 +25,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{July 20, 2026 \quad\textperiodcentered\quad Whitepaper v1.13}
+\date{July 20, 2026 \quad\textperiodcentered\quad Whitepaper v1.14}
 
 \begin{document}
 \maketitle
@@ -39,8 +39,8 @@ caught by deterministic rules, checksum-validated where a checksum exists. Names
 organisations, and street addresses in free text are caught by a purpose-built
 Swedish NER model of 43\,MB, small enough to run where the text already is,
 including inside a browser tab. The input text never leaves the caller's
-environment, no telemetry is collected, and the mapping that restores masked
-values is held locally by the caller. In the default setup the browser
+environment, the packages collect no telemetry, and the mapping that restores
+masked values is held locally by the caller. In the default setup the browser
 downloads the static assets once from a public host; self-hosting those
 assets makes zero external requests. Measured on a small independent Swedish gold set, the
 pipeline flagged 98\% of PII entities and achieved the highest typed $F_1$
@@ -169,7 +169,8 @@ redaction runs
 locally, in the browser or in the caller's Node process. The packages contain
 no telemetry and phone home to nothing. The claim is verifiable: the code is
 open, and the browser's developer tools show that typed text triggers no
-network requests.
+network requests. The hosted demo counts anonymous, cookieless page views via
+Vercel Analytics; those events never contain text entered by the user.
 
 For completeness, two network calls exist in the default setup, both fetching
 static assets and never content:
@@ -307,7 +308,7 @@ Leakage & 3.4\% & entities missed entirely, 2 of 58 \\
 
 \subsection{Street addresses (the class no comparison model has)}
 
-The three gold sets above cover person, location, and organisation; none
+The two gold sets above cover person, location, and organisation; neither
 contains street addresses, the fourth class the model emits. Addresses are
 therefore measured on their own held-out set of 41 sentences (35 address
 spans, including saint-prefix, free-word-ending, farm and abbreviated
@@ -609,7 +610,7 @@ visible failure modes.
 
 \vfill
 \noindent\rule{\textwidth}{0.4pt}\par\smallskip
-{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.13
+{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.14
 \textperiodcentered{} July 20, 2026 \textperiodcentered{} Joel H\"agvall
 \textperiodcentered{} maskera.dev. Current numbers live in
 \pkg{docs/BENCHMARKS.md}; where this document disagrees, that file wins.

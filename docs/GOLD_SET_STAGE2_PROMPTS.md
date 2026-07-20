@@ -62,14 +62,16 @@ verklig persons uppgifter, inte din egen, inte en kändis, ingen du känner.
   svenska namn: svenska, arabiska, kurdiska, somaliska, finska, polska,
   spanska, vietnamesiska, engelska osv. (Verktyget är svagare på ovanligare
   namn i gemener, så just den blandningen är det vi behöver mäta.)
-- **Gator:** använd gärna riktiga gatunamn men **påhittade nummer**
-  (t.ex. "Storgatan 148"). Orter och stadsdelar får vara riktiga.
+- **Gator:** använd tydligt påhittade gatunamn och påhittade nummer
+  (t.ex. "Påhittsgatan 148" eller "Maskeravägen 7"). Orter och stadsdelar
+  får vara riktiga.
 - **Företag/organisationer:** blanda kända (ICA, Klarna, Skatteverket) med
   påhittade ("Nordvik Bygg AB").
-- **Siffror (personnummer, telefon, kontonummer):** ta med dem ibland som
-  naturlig utfyllnad, men **hitta på dem** (t.ex. personnummer
-  "19xx-serien" med uppenbart påhittade siffror). De ska se rimliga ut men
-  inte tillhöra någon.
+- **Strukturerade identifierare:** skriv inte personnummer, telefonnummer,
+  kontonummer eller andra identifierare som kan råka vara giltiga. Det här
+  setet mäter fritextentiteter. Om ett scenario behöver ett sådant värde
+  lägger maintainer senare in ett myndighetspublicerat testvärde enligt
+  `docs/TEST_DATA.md`.
 
 ### Skriv om varierade situationer
 

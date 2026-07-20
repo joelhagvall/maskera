@@ -6,13 +6,13 @@ rule layer can't catch: **PER** (person), **LOC** (place), **ORG**
 phone, IBAN…) stays with `@maskera/core`'s deterministic detectors.
 
 > **Numbers note.** This file is the training *journal*: the tables below are
-> round-by-round history (v1 → v6), measured with the Python harness
+> round-by-round history (v1 → v18), measured with the Python harness
 > (overlap matching), kept for the lessons they carry. The canonical, dated
 > numbers for the **published** artifact live in
 > [`docs/BENCHMARKS.md`](../docs/BENCHMARKS.md), measured with the stricter
 > exact-span JS harness CI gates on. When the two disagree, BENCHMARKS.md wins.
-> Naming: the published Hub artifact (byte-identical to the demo's
-> `maskera-sv-ner-v5` folder) is the **v6** training round.
+> Naming: the published Hub artifact is the **v18** training round and is
+> byte-identical to the demo's `maskera-sv-ner-v18` folder.
 
 ## Why a Swedish model
 
@@ -1396,19 +1396,21 @@ Demo folder `maskera-sv-ner-v18`, hashes pinned in
 
 ## Publish to Hugging Face (single hosted source)
 
-Hosting the model once means the demo and every future `@maskera` package point at
-the same place: `createNerRecognizer({ model: MASKERA_SV_NER_MODEL, dtype: "q8" })`.
+The full publish path is the repository-level script. It assembles a clean
+Transformers.js layout with q4, q8 and fp32 weights, the tokenizer, model card
+and NOTICE, verifies the staging tree, then uploads it. `MODEL_SRC` is required
+on purpose so an old default can never overwrite the live model:
 
 ```bash
-uv pip install huggingface_hub
-huggingface-cli login                 # or export HF_TOKEN=...
-uv run python push_to_hub.py joelhagvall/maskera-sv-ner   # use your HF username
+hf auth login
+MODEL_SRC=student-v18-onnx ./scripts/publish-model.sh
 ```
 
-`push_to_hub.py` uploads `student-onnx/` (int8 ONNX + tokenizer + config) with
-`maskera-sv-ner-card/README.md` as the repo README, skipping the large fp32
-weights. After it's up, switch the demo from the local copy to the hosted id
-(drop `localModelPath` and `allowRemoteModels: false`).
+Run that command from the repository root. The npm package defaults to the Hub
+id; the demo intentionally self-hosts a versioned copy fetched by
+`apps/demo/scripts/fetch-model.mjs` so its runtime has no third-party model
+dependency. Card-only updates use the narrower `hf upload` command documented
+in the root repo notes and do not republish weights.
 
 ## Base model & license
 

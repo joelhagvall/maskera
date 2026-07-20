@@ -36,10 +36,11 @@ All inference happens **on the device where the text is**, via
 small enough to run **directly in a browser tab**, which is exactly how the
 maskera demo ships: try it live at [maskera.dev](https://maskera.dev).
 
-Benchmarked against the public Swedish NER alternatives (KB-NER,
+Benchmarked against the public Swedish NER alternatives in the dated
+comparison (KB-NER,
 RecordedFuture, KBLab reallysimple/lowermix/neriob, scandi-ner, the sbx
 PI-detection pair), it **holds the best typed F1 on independent Swedish text at under a
-tenth of their size** (0.97 vs 0.94 for the closest full-size model); on
+tenth of their size** (0.96 vs 0.94 for the closest full-size model); on
 lowercase text its strength is the chat/support register it targets, while
 KBLab's lowermix still leads on lowercased encyclopedic prose; see
 [How it compares](#how-it-compares).
@@ -193,7 +194,8 @@ and `training/`); run them yourself before relying on the numbers.
 
 ## How it compares
 
-Every public Swedish NER alternative, measured on the same gold sets
+The public Swedish NER alternatives included in this comparison, measured on
+the same gold sets
 (competitors 2026-07-04, Rampart 2026-07-14, swedish-pii and Desert Ant
 redact 2026-07-16, KBLab neriob 2026-07-19, the maskera row 2026-07-19;
 overlap matching,

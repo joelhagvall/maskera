@@ -17,7 +17,7 @@ export function Footer({
         <a href={HF_MODEL} target="_blank" rel="noreferrer">
           en egentränad svensk AI-modell
         </a>
-        , allt körs i din webbläsare. Ingen data skickas någonstans.
+        , allt körs i din webbläsare. Texten du skriver skickas ingenstans.
       </p>
       <nav className="footer-nav" aria-label="Integritet och dokumentation">
         <ul>

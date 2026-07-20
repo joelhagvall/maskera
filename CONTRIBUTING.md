@@ -41,7 +41,8 @@ pnpm eval          # grade the published model against the gold corpus
   `pnpm check:fixtures` enforces the approved values.
 - `docs/BENCHMARKS.md` is the single source of truth for numbers. If your
   change touches benchmark results, sync every dated snapshot (root README,
-  package READMEs, HF model card, whitepaper, `apps/demo/public/llms.txt`)
+  package READMEs, HF model card, whitepaper, `apps/demo/public/llms.txt`,
+  `bench/README.md`) and any maintainer-only carrier named in the repo notes
   in the same commit.
 
 ## Reporting detection misses

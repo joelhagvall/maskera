@@ -1,9 +1,9 @@
 # Benchmarks
 
 **This file is the single source of truth for the published model's numbers.**
-Every other document (README, Hugging Face model card, transparency page,
-training notes) links here instead of copying tables. If a number elsewhere
-disagrees with this file, this file wins and the other document has drifted.
+Other documents link here and some carry dated summary snapshots or copied
+tables. If a number elsewhere disagrees with this file, this file wins and the
+other document has drifted.
 
 - **Measured:** 2026-07-19
 - **Artifact:** [`joelhagvall/maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner),
@@ -579,7 +579,7 @@ Two things make numbers in older documents read higher than this file:
 
 ## Known gaps
 
-- The largest held-out number (span F1 92.1% on the 2453-sentence Swedish NER
+- The largest held-out number (span F1 91.9% on the 2453-sentence Swedish NER
   Corpus test split) is **in-distribution**: the model trained on that corpus's
   train split. It confirms the model generalises to unseen sentences of the
   training distribution, but it is not clean independence.

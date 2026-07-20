@@ -62,7 +62,7 @@ lowercase-encyclopedic trade in [training/README.md](../training/README.md)
 (v13 section). Live artifact: take 4 (`student-v13d-onnx`, sha256 7505b72d).
 
 Everything carried out of this round is consolidated in
-[Next: v14](#next-v14-the-informal-register-round-planned) below.
+[the v14 round](#v14-the-informal-register-round-shipped-2026-07-14) below.
 
 - [x] **Decomposed-surname robustness, the publish blocker.**
   - [x] (1) rare-surname chat-register eval built and baselined:
@@ -93,7 +93,8 @@ Written 2026-07-13 before any v14 training; checkboxes updated with outcomes
 after the round. Shipped as take 1 (`student-v14-onnx`, q4 sha256 f4745c72)
 with one documented gate exception (G2, see the gate status below and the
 [training journal](../training/README.md) v14 section). Everything carried
-out of this round is consolidated in [Next: v15](#next-v15-planned) below.
+out of this round is consolidated in
+[the v15 round](#done-v15-the-balanced-replay-round-published-2026-07-16) below.
 
 The through-line from the v13 ledger held: **masking leads; typing and the
 informal register lag.** Every number referenced lives in
@@ -438,7 +439,7 @@ exception needs a different idea; see the journal.
 
 ## Next: coverage & DX
 
-- [ ] Deploy the demo publicly (the launch CTA).
+- [x] **Demo publicly deployed:** [maskera.dev](https://maskera.dev).
 - [ ] More structured detectors: bank account (clearing + number), IBAN mod-97
       validation, VAT numbers, IPv6.
 - [ ] `confidence` scores per detection.
