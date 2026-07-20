@@ -216,7 +216,7 @@ infrastructure, which is the whole point of the tool.
 
 maskera is **data minimisation, not a compliance guarantee**. The rule layer
 is deterministic and reliable for structured Swedish PII. The model layer
-catches most free-text PII (0.98 redaction recall on independent text) but no
+catches most free-text PII (0.97 redaction recall on independent text) but no
 model is perfect: unusual names, heavy misspellings and OCR noise will
 sometimes get through. Treat it as a strong first line, keep server-side
 access controls, and don't market it as "GDPR compliance in one line", it

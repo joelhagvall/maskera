@@ -9,7 +9,7 @@ safety-critical number for redaction.
 - **Measured:** 2026-07-19 (maskera rows; competitor rows 2026-07-18, their systems unchanged), Apple M4 Pro, all systems fully local.
 - maskera's own rows are the currently published pipeline
   (`maskera@0.6.3` code, `joelhagvall/maskera-sv-ner` v18 weights, q4,
-  ~43 MB; 0.6.4 is a docs-only README patch, no code change),
+  ~43 MB; 0.6.4 and 0.6.5 are docs-only README patches, no code change),
   the same artifact [docs/BENCHMARKS.md](../docs/BENCHMARKS.md) describes.
   On the shared corpora the rows here reproduce BENCHMARKS.md exactly
   (gold-real 96.4 / 93.1 / 94.7, 2 leaks), the calibration check that the

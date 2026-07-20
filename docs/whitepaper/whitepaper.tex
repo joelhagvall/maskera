@@ -25,7 +25,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{July 19, 2026 \quad\textperiodcentered\quad Whitepaper v1.12}
+\date{July 20, 2026 \quad\textperiodcentered\quad Whitepaper v1.13}
 
 \begin{document}
 \maketitle
@@ -255,7 +255,8 @@ not determine which obligations apply.
 \section{Measured quality}
 
 All numbers below were measured on \textbf{2026-07-19} against the published
-artifact (\pkg{maskera@0.6.4}, q4 quantisation, the v18 training round) using
+artifact (\pkg{maskera@0.6.5}, whose \pkg{reconstruct()} code is unchanged
+since 0.6.3; q4 quantisation, the v18 training round) using
 \textbf{exact character spans}, the strict criterion under which both start
 and end offsets must match. The canonical, always-current document is \pkg{docs/BENCHMARKS.md} in
 the repository; this section is a dated snapshot, and where the two disagree,
@@ -445,7 +446,7 @@ all, so the limitations are reported as plainly as the results.
         is probabilistic. Unusual names, heavy misspellings, and OCR noise
         will sometimes slip through, and all-lowercase text still trails
         cased text (see the appendix). On independent text the leakage is
-        low (1 of 58 entities) but not zero.
+        low (2 of 58 entities) but not zero.
   \item \textbf{Four entity types, one language.} The model recognises
         persons, locations, organisations, and street addresses in Swedish
         text. Data outside those types, and PII in other languages, is not
@@ -563,13 +564,12 @@ Everything claimed in this document can be checked without asking us:
 \section*{Appendix: the sentences the model is known to miss}
 
 The evaluation harness prints every leak verbatim and nothing is filtered.
-As of the artifact above, one gold entity has no overlapping detection (a
-genuine miss) and one ordinary word is over-redacted; both are published
-here deliberately, and in each sentence every other real entity is caught.
-Provenance: the gold-real sentence is verbatim, already-published
-Wikipedia prose about public figures; the over-redacted sentence is a
-hand-authored test case with an invented name. No user data and no real
-private persons appear below.
+As of the artifact above, two gold entities have no overlapping detection
+(genuine misses) and no ordinary word is over-redacted; the misses are
+published here deliberately, and in each sentence every other real entity
+is caught. Provenance: both sentences are verbatim, already-published
+Wikipedia prose about public figures. No user data and no real private
+persons appear below.
 
 \begin{table}[H]
 \centering
@@ -609,8 +609,8 @@ visible failure modes.
 
 \vfill
 \noindent\rule{\textwidth}{0.4pt}\par\smallskip
-{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.12
-\textperiodcentered{} July 19, 2026 \textperiodcentered{} Joel H\"agvall
+{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.13
+\textperiodcentered{} July 20, 2026 \textperiodcentered{} Joel H\"agvall
 \textperiodcentered{} maskera.dev. Current numbers live in
 \pkg{docs/BENCHMARKS.md}; where this document disagrees, that file wins.
 Not legal advice.\par}
