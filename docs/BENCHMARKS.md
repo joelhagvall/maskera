@@ -50,7 +50,7 @@ sentence-initial "Klarna" classic; v18 keeps the sweep on the extended
 Reproduce (downloads the published model from the Hub):
 
 ```bash
-pnpm install && pnpm -C packages/ner build
+pnpm install && pnpm build
 MASKERA_REMOTE=1 node packages/ner/eval/run-eval.mjs
 ```
 
@@ -83,7 +83,7 @@ leaks); see [Known misses](#known-misses-published-on-purpose).
 Reproduce:
 
 ```bash
-pnpm install && pnpm -C packages/ner build
+pnpm install && pnpm build
 node packages/ner/eval/convert-gold-real.mjs        # prints the corpus path
 CORPUS_FILE=<printed path> MASKERA_REMOTE=1 MASKERA_F1_FLOOR=0 MASKERA_LEAK_CEIL=1 \
   node packages/ner/eval/run-eval.mjs
@@ -127,7 +127,7 @@ corpus reads 100.0.
 Reproduce (corpus is committed; the model downloads from the Hub):
 
 ```bash
-pnpm install && pnpm -C packages/ner build
+pnpm install && pnpm build
 CORPUS_FILE="./corpus-adr.mjs" MASKERA_MODEL=joelhagvall/maskera-sv-ner \
   node packages/ner/eval/analyze-adr.mjs   # ADR-only breakdown + every gold vs predicted span
 ```
@@ -164,11 +164,12 @@ Method caveat: only the NER model is graded, not the rules layer, because the
 corpus does not annotate structured PII, so a rules hit on e.g. a phone-like
 number could be a genuine detection.
 
-Reproduce (fetch the corpus per the file header, then):
+Reproduce (the model downloads from the Hub):
 
 ```bash
-MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v18 \
-  node packages/ner/eval/benchmark-retention.mjs
+curl -fsSL https://raw.githubusercontent.com/klintan/swedish-ner-corpus/master/test_corpus.txt \
+  --create-dirs -o training/.benchmark/test_corpus.txt
+MASKERA_REMOTE=1 node packages/ner/eval/benchmark-retention.mjs
 ```
 
 ## Swedish NER Corpus test split (large held-out, in-distribution)
@@ -204,14 +205,13 @@ labeled F1 +0.1 (flat), ORG recall 77.0% -> 75.1% (a real 1.9pp dip; short
 brand names remain the gap and the boundary churn is documented in the
 training journal's v18 leak diff).
 
-Reproduce (needs the model locally; downloads the test split, gitignored):
+Reproduce (downloads the test split, gitignored, and the model from the Hub):
 
 ```bash
-pnpm install && pnpm -C packages/ner build
+pnpm install && pnpm build
 curl -fsSL https://raw.githubusercontent.com/klintan/swedish-ner-corpus/master/test_corpus.txt \
-  -o training/.benchmark/test_corpus.txt
-MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v18 \
-  node packages/ner/eval/benchmark-swedish-ner.mjs
+  --create-dirs -o training/.benchmark/test_corpus.txt
+MASKERA_REMOTE=1 node packages/ner/eval/benchmark-swedish-ner.mjs
 ```
 
 ## Error analysis (where the model actually fails)
@@ -305,12 +305,10 @@ sentence weaker on masking there, typing up 1.7pp.
 Reproduce:
 
 ```bash
-pnpm install && pnpm -C packages/ner build
-MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v18 \
-  node packages/ner/eval/benchmark-rare-surnames.mjs
+pnpm install && pnpm build
+MASKERA_REMOTE=1 node packages/ner/eval/benchmark-rare-surnames.mjs
 BENCHMARK_FILE=training/eval/rare-surnames-legacy.txt \
-  MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v18 \
-  node packages/ner/eval/benchmark-rare-surnames.mjs
+  MASKERA_REMOTE=1 node packages/ner/eval/benchmark-rare-surnames.mjs
 ```
 
 ## How maskera compares to other Swedish NER models
@@ -487,10 +485,14 @@ Reproduce:
 
 ```bash
 # Node + rules
-pnpm -C packages/ner build
+pnpm build
 MASKERA_REMOTE=1 node packages/ner/eval/bench-latency.mjs
 
-# Browser (needs Chrome; puppeteer-core is deliberately not a repo dep)
+# Browser (needs Chrome; puppeteer-core is deliberately not a repo dep).
+# The demo's model dir is gitignored; fetch the published model into it first:
+hf download joelhagvall/maskera-sv-ner config.json tokenizer.json tokenizer_config.json \
+  special_tokens_map.json vocab.txt onnx/model_q4.onnx \
+  --local-dir apps/demo/public/models/maskera-sv-ner-v18
 BENCH=1 pnpm --filter demo build
 npm --prefix /tmp/bench install puppeteer-core
 cd apps/demo && NODE_PATH=/tmp/bench/node_modules node scripts/bench-browser.mjs

@@ -28,13 +28,17 @@
  *     -o training/.benchmark/test_corpus.txt
  *
  * Run:
+ *   MASKERA_REMOTE=1 node packages/ner/eval/benchmark-retention.mjs
+ * or with a local model copy:
  *   MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" \
  *   node packages/ner/eval/benchmark-retention.mjs
  *
  * Env:
  *   BENCHMARK_FILE     path to the CoNLL file (default training/.benchmark/test_corpus.txt)
- *   MASKERA_MODEL_PATH base dir containing the model folder (required)
- *   MASKERA_MODEL      model folder/id (default: maskera-sv-ner)
+ *   MASKERA_REMOTE=1   load MASKERA_MODEL from the Hugging Face Hub instead of
+ *                      MASKERA_MODEL_PATH (defaults the model to joelhagvall/maskera-sv-ner)
+ *   MASKERA_MODEL_PATH base dir containing the model folder (required unless MASKERA_REMOTE=1)
+ *   MASKERA_MODEL      model folder/id (default: maskera-sv-ner, or the Hub id above)
  *   MASKERA_DTYPE      dtype (default: q4)
  *   LIMIT              only score the first N PII-free sentences (default: all)
  *   LOWERCASE=1        force the text to lowercase (chat-register proxy)
@@ -46,7 +50,9 @@
 import fs from "node:fs"
 
 const FILE = process.env.BENCHMARK_FILE ?? "training/.benchmark/test_corpus.txt"
-const MODEL = process.env.MASKERA_MODEL ?? "maskera-sv-ner"
+const REMOTE = process.env.MASKERA_REMOTE === "1"
+const MODEL =
+  process.env.MASKERA_MODEL ?? (REMOTE ? "joelhagvall/maskera-sv-ner" : "maskera-sv-ner")
 const MODEL_PATH = process.env.MASKERA_MODEL_PATH
 const DTYPE = process.env.MASKERA_DTYPE ?? "q4"
 const LIMIT = process.env.LIMIT ? Number(process.env.LIMIT) : Number.POSITIVE_INFINITY
@@ -58,7 +64,8 @@ function skip(reason) {
 }
 
 if (!fs.existsSync(FILE)) skip(`no data at ${FILE} (see this file's header for the curl command)`)
-if (!MODEL_PATH) skip("set MASKERA_MODEL_PATH to the directory containing the model folder")
+if (!MODEL_PATH && !REMOTE)
+  skip("set MASKERA_MODEL_PATH to the directory containing the model folder, or MASKERA_REMOTE=1")
 
 // --- Parse CoNLL, keep only sentences where every tag is "0" ----------------
 function parse(text) {
@@ -94,14 +101,16 @@ const all = parse(fs.readFileSync(FILE, "utf8"))
 const subset = Number.isFinite(LIMIT) ? all.slice(0, LIMIT) : all
 console.log(`\nRetention benchmark: ${subset.length} PII-free sentences from ${FILE}`)
 if (LOWERCASE) console.log("Mode: LOWERCASE (text forced to lowercase, chat-register proxy)")
-console.log(`Loading model "${MODEL}" (dtype=${DTYPE}) from ${MODEL_PATH} ...`)
+console.log(
+  `Loading model "${MODEL}" (dtype=${DTYPE}) from ${REMOTE ? "the HF Hub" : MODEL_PATH} ...`,
+)
 const recognizer = createNerRecognizer({
   model: MODEL,
   dtype: DTYPE,
   device: "cpu",
-  localModelPath: MODEL_PATH,
-  allowLocalModels: true,
-  allowRemoteModels: false,
+  ...(REMOTE
+    ? { allowRemoteModels: true }
+    : { localModelPath: MODEL_PATH, allowLocalModels: true, allowRemoteModels: false }),
   labelMap: (g) => g,
 })
 try {

@@ -19,14 +19,18 @@
  *   curl -fsSL https://raw.githubusercontent.com/klintan/swedish-ner-corpus/master/test_corpus.txt \
  *     -o training/.benchmark/test_corpus.txt
  *
- * Then (model must be available locally, like run-eval.mjs):
+ * Then:
+ *   MASKERA_REMOTE=1 node packages/ner/eval/benchmark-swedish-ner.mjs
+ * or with a local model copy:
  *   MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" \
  *   node packages/ner/eval/benchmark-swedish-ner.mjs
  *
  * Env:
  *   BENCHMARK_FILE     path to the CoNLL file (default training/.benchmark/test_corpus.txt)
- *   MASKERA_MODEL_PATH base dir containing the model folder (required)
- *   MASKERA_MODEL      model folder/id (default: maskera-sv-ner)
+ *   MASKERA_REMOTE=1   load MASKERA_MODEL from the Hugging Face Hub instead of
+ *                      MASKERA_MODEL_PATH (defaults the model to joelhagvall/maskera-sv-ner)
+ *   MASKERA_MODEL_PATH base dir containing the model folder (required unless MASKERA_REMOTE=1)
+ *   MASKERA_MODEL      model folder/id (default: maskera-sv-ner, or the Hub id above)
  *   MASKERA_DTYPE      dtype (default: q4)
  *   LIMIT              only score the first N sentences (default: all)
  *   LOWERCASE=1        grade the corpus forced to lowercase (chat-register proxy)
@@ -40,7 +44,9 @@ import fs from "node:fs"
 import { aggregate, scoreDocument } from "./score.mjs"
 
 const FILE = process.env.BENCHMARK_FILE ?? "training/.benchmark/test_corpus.txt"
-const MODEL = process.env.MASKERA_MODEL ?? "maskera-sv-ner"
+const REMOTE = process.env.MASKERA_REMOTE === "1"
+const MODEL =
+  process.env.MASKERA_MODEL ?? (REMOTE ? "joelhagvall/maskera-sv-ner" : "maskera-sv-ner")
 const MODEL_PATH = process.env.MASKERA_MODEL_PATH
 const DTYPE = process.env.MASKERA_DTYPE ?? "q4"
 const LIMIT = process.env.LIMIT ? Number(process.env.LIMIT) : Number.POSITIVE_INFINITY
@@ -127,7 +133,8 @@ try {
 } catch {
   skip('could not import "maskera"; run `pnpm -C packages/ner build` first')
 }
-if (!MODEL_PATH) skip("set MASKERA_MODEL_PATH to the directory containing the model folder")
+if (!MODEL_PATH && !REMOTE)
+  skip("set MASKERA_MODEL_PATH to the directory containing the model folder, or MASKERA_REMOTE=1")
 
 const docs = parse(fs.readFileSync(FILE, "utf8")).filter((d) => d.text.trim())
 const subset = Number.isFinite(LIMIT) ? docs.slice(0, LIMIT) : docs
@@ -135,15 +142,17 @@ const totalGold = subset.reduce((n, d) => n + d.gold.length, 0)
 
 console.log(`\nBenchmark: ${subset.length} sentences, ${totalGold} PER/LOC/ORG entities`)
 if (LOWERCASE) console.log("Mode: LOWERCASE (text forced to lowercase, chat-register proxy)")
-console.log(`Loading model "${MODEL}" (dtype=${DTYPE}) from ${MODEL_PATH} ...`)
+console.log(
+  `Loading model "${MODEL}" (dtype=${DTYPE}) from ${REMOTE ? "the HF Hub" : MODEL_PATH} ...`,
+)
 
 const recognizer = createNerRecognizer({
   model: MODEL,
   dtype: DTYPE,
   device: "cpu",
-  localModelPath: MODEL_PATH,
-  allowLocalModels: true,
-  allowRemoteModels: false,
+  ...(REMOTE
+    ? { allowRemoteModels: true }
+    : { localModelPath: MODEL_PATH, allowLocalModels: true, allowRemoteModels: false }),
   minScore: process.env.MIN_SCORE ? Number(process.env.MIN_SCORE) : 0.5,
   // Gold uses the CoNLL-style vocabulary (see TAG_TO_LABEL); the product
   // default is Swedish (NAMN/PLATS/...), so map explicitly.

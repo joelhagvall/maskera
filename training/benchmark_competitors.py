@@ -22,6 +22,7 @@ annotate), so treat cross-model precision as indicative, not definitive.
 
     uv run python benchmark_competitors.py         # or .venv/bin/python
 """
+import os
 import re
 import sys
 
@@ -113,6 +114,15 @@ SETS = [("gold-real (independent)", "eval/gold-real.txt"), ("our set (maskera-fa
 # (cased-only models collapse here). Same gold spans, lowercased surface text.
 def lower_docs(docs):
     return [(t.lower(), s) for t, s in docs]
+
+if not os.path.isdir(MODELS[0][1]):
+    print(
+        f"note: local maskera checkpoint '{MODELS[0][1]}' not found (training checkpoints "
+        "are not committed), so its row will fail below. The same weights are published "
+        "as onnx/model.onnx in the Hub repo; see the reproducibility note in "
+        "docs/BENCHMARKS.md. The competitor rows run regardless.",
+        file=sys.stderr,
+    )
 
 RUNS = [(n, load_gold(p)) for n, p in SETS]
 RUNS.append(("gold-real LOWERCASED (chat style)", lower_docs(load_gold("eval/gold-real.txt"))))

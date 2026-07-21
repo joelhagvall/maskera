@@ -11,13 +11,17 @@
  * detection, any label); PER-typed recall is reported alongside. Per
  * docs/ROADMAP.md, a v13 candidate must BEAT v11 on this eval, not tie it.
  *
+ *   MASKERA_REMOTE=1 node packages/ner/eval/benchmark-rare-surnames.mjs
+ * or with a local model copy:
  *   MASKERA_MODEL_PATH="$PWD/training" MASKERA_MODEL=student-v12-onnx \
  *   node packages/ner/eval/benchmark-rare-surnames.mjs
  *
  * Env:
  *   BENCHMARK_FILE     gold file (default training/eval/rare-surnames.txt)
- *   MASKERA_MODEL_PATH base dir containing the model folder (required)
- *   MASKERA_MODEL      model folder/id (default: maskera-sv-ner)
+ *   MASKERA_REMOTE=1   load MASKERA_MODEL from the Hugging Face Hub instead of
+ *                      MASKERA_MODEL_PATH (defaults the model to joelhagvall/maskera-sv-ner)
+ *   MASKERA_MODEL_PATH base dir containing the model folder (required unless MASKERA_REMOTE=1)
+ *   MASKERA_MODEL      model folder/id (default: maskera-sv-ner, or the Hub id above)
  *   MASKERA_DTYPE      dtype (default: q4)
  *
  * Last line is machine-readable for run-script gates:
@@ -26,7 +30,9 @@
 import fs from "node:fs"
 
 const FILE = process.env.BENCHMARK_FILE ?? "training/eval/rare-surnames.txt"
-const MODEL = process.env.MASKERA_MODEL ?? "maskera-sv-ner"
+const REMOTE = process.env.MASKERA_REMOTE === "1"
+const MODEL =
+  process.env.MASKERA_MODEL ?? (REMOTE ? "joelhagvall/maskera-sv-ner" : "maskera-sv-ner")
 const MODEL_PATH = process.env.MASKERA_MODEL_PATH
 const DTYPE = process.env.MASKERA_DTYPE ?? "q4"
 
@@ -36,7 +42,8 @@ function skip(reason) {
 }
 
 if (!fs.existsSync(FILE)) skip(`no data at ${FILE} (node training/gen_rare_surname_eval.mjs)`)
-if (!MODEL_PATH) skip("set MASKERA_MODEL_PATH to the directory containing the model folder")
+if (!MODEL_PATH && !REMOTE)
+  skip("set MASKERA_MODEL_PATH to the directory containing the model folder, or MASKERA_REMOTE=1")
 
 // --- parse the [PER:...] gold format (one sentence per line) ---------------
 const RE = /\[(PER|LOC|ORG|ADR):([^\]]+)\]/g
@@ -68,14 +75,16 @@ try {
 }
 
 console.log(`\nRare-surname benchmark: ${docs.length} sentences from ${FILE}`)
-console.log(`Loading model "${MODEL}" (dtype=${DTYPE}) from ${MODEL_PATH} ...`)
+console.log(
+  `Loading model "${MODEL}" (dtype=${DTYPE}) from ${REMOTE ? "the HF Hub" : MODEL_PATH} ...`,
+)
 const recognizer = createNerRecognizer({
   model: MODEL,
   dtype: DTYPE,
   device: "cpu",
-  localModelPath: MODEL_PATH,
-  allowLocalModels: true,
-  allowRemoteModels: false,
+  ...(REMOTE
+    ? { allowRemoteModels: true }
+    : { localModelPath: MODEL_PATH, allowLocalModels: true, allowRemoteModels: false }),
   labelMap: (g) => g,
 })
 try {

@@ -26,7 +26,15 @@ text**: both run, neither is a single source of truth, and rules win on overlap.
 ## The model files (not committed)
 
 The model under `public/models/maskera-sv-ner-v18/` is ~43 MB and is **gitignored**.
-To populate it, train and export from [`../../training`](../../training):
+The quickest way to populate it is to fetch the published model from the Hub:
+
+```bash
+hf download joelhagvall/maskera-sv-ner config.json tokenizer.json tokenizer_config.json \
+  special_tokens_map.json vocab.txt onnx/model_q4.onnx \
+  --local-dir public/models/maskera-sv-ner-v18
+```
+
+Or train and export it yourself from [`../../training`](../../training):
 
 ```bash
 cd ../../training
