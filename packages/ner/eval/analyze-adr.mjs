@@ -14,7 +14,7 @@ const { corpus } = await import(CORPUS_FILE)
 
 const { createNerRecognizer } = await import("maskera")
 const recognizer = createNerRecognizer({
-  model: process.env.MASKERA_MODEL ?? "maskera-sv-ner-v11",
+  model: process.env.MASKERA_MODEL ?? "maskera-sv-ner",
   dtype: process.env.MASKERA_DTYPE ?? "q4",
   device: "cpu",
   localModelPath: process.env.MASKERA_MODEL_PATH,

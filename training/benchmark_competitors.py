@@ -2,7 +2,9 @@
 Honest hard benchmark: maskera vs the real Swedish competitors.
 
 Models compared on the SAME gold sets, mapped to PER/LOC/ORG:
-  - maskera      : our distilled student (student-v5, fp32 safetensors)
+  - maskera      : our distilled student (student-v18-trimmed, the
+                   vocabulary-trimmed fp32 safetensors that the shipped
+                   ONNX artifact is exported from; update per release)
   - KB-NER       : KB/bert-base-swedish-cased-ner (full BERT, SUC-trained)
   - sbx general  : sbx/KB-bert-swedish_PI-detection-general-iob
   - sbx detailed : sbx/KB-bert-swedish_PI-detection-detailed-iob
@@ -94,9 +96,10 @@ def score(docs, nlp):
 
 
 MODELS = [
-    ("maskera (student-v5, fp32)", "student-v5"),
+    ("maskera (student-v18-trimmed, fp32)", "student-v18-trimmed"),
     ("RecordedFuture Swedish-NER", "RecordedFuture/Swedish-NER"),
     ("KB-NER (full BERT)", "KB/bert-base-swedish-cased-ner"),
+    ("KBLab neriob (IOB head)", "KBLab/bert-base-swedish-cased-neriob"),
     ("KBLab reallysimple-ner", "KBLab/bert-base-swedish-cased-reallysimple-ner"),
     ("KBLab lowermix (case-robust)", "KBLab/bert-base-swedish-lowermix-reallysimple-ner"),
     ("nbailab scandi-ner", "saattrupdan/nbailab-base-ner-scandi"),

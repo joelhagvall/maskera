@@ -124,14 +124,17 @@ word tagged PERSON in one distractor sentence, that release's documented
 exception) is gone, so the aggregate `run-eval.mjs` span-F1 on this mixed
 corpus reads 100.0.
 
-Reproduce (needs the model locally; corpus is committed, no download):
+Reproduce (corpus is committed; the model downloads from the Hub):
 
 ```bash
 pnpm install && pnpm -C packages/ner build
-CORPUS_FILE="./corpus-adr.mjs" \
-  MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v18 \
+CORPUS_FILE="./corpus-adr.mjs" MASKERA_MODEL=joelhagvall/maskera-sv-ner \
   node packages/ner/eval/analyze-adr.mjs   # ADR-only breakdown + every gold vs predicted span
 ```
+
+With a local copy of the model (e.g. the demo's gitignored
+`apps/demo/public/models/`), point at it instead:
+`MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v18`.
 
 ## Public-term retention (over-redaction on PII-free text)
 
@@ -325,7 +328,14 @@ was the entity flagged at all, under any label. Cross-model *precision* is
 indicative rather than definitive, since label schemes differ. Method fix
 from this release: the maskera row is now the **vocabulary-trimmed** fp32
 student (what actually ships, pre-quantization); earlier releases graded the
-untrimmed student here, which flattered the row.
+untrimmed student here, which flattered the row. Reproducibility note: the
+competitor rows all download from the Hub automatically, but the maskera row
+grades the local training checkpoint `training/student-v18-trimmed`, which is
+not committed. The same weights are published: `onnx/model.onnx` in the
+[Hub repo](https://huggingface.co/joelhagvall/maskera-sv-ner) is the fp32 ONNX
+export of exactly that checkpoint, so the row can be verified externally
+against the published fp32 ONNX (or, closer to production, compare the shipped
+q4 numbers from the sections above).
 
 **gold-real (22 independent Wikipedia sentences, 58 entities):**
 
