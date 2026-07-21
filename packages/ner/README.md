@@ -82,7 +82,7 @@ await redactWithNer(text, {
 createNerRecognizer({
   model: MASKERA_SV_NER_MODEL, // default; any HF token-classification model id works
   dtype: "q4",                 // "q4" (43 MB, default) | "q8" (59 MB) | "fp32" (233 MB)
-  device: "auto",              // "wasm" | "webgpu" | "cpu" | "auto"
+  device: "auto",              // browser default; Node defaults to "cpu"
   minScore: 0.5,               // drop predictions below this confidence
   labelMap: defaultLabelMap,   // remap or drop raw model groups (return null to drop)
   onProgress: (e) => {},       // model download progress for a loading UI
@@ -93,8 +93,9 @@ createNerRecognizer({
 - **`dtype`**: `"q4"` is what the maskera demo ships and what the eval gates
   run against. `"q8"` is slightly more accurate on some inputs; `"fp32"` is
   for benchmarking, not the browser.
-- **`device`**: `"auto"` picks WebGPU when available, else WASM. In Node,
-  Transformers.js uses native ONNX on CPU; `"cpu"` is the explicit choice.
+- **`device`**: in the browser, the default `"auto"` picks WebGPU when
+  available, else WASM. Node defaults to `"cpu"`, using native ONNX without
+  probing macOS CoreML; pass an explicit value to override either default.
 - **`minScore`**: raise it (e.g. `0.7`) to trade recall for precision. For a
   privacy tool the default errs toward recall: a false positive over-masks,
   a false negative leaks.

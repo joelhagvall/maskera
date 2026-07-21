@@ -232,10 +232,14 @@ export interface NerRecognizer {
  * Requires the optional peer dependency `@huggingface/transformers`.
  */
 export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
+  const runtimeProcess = (
+    globalThis as typeof globalThis & { process?: { versions?: { node?: string } } }
+  ).process
+  const defaultDevice = runtimeProcess?.versions?.node ? "cpu" : "auto"
   const {
     model = DEFAULT_NER_MODEL,
     dtype = "q4",
-    device = "auto",
+    device = defaultDevice,
     minScore = 0.5,
     labelMap = defaultLabelMap,
     denylist = DEFAULT_DENYLIST,

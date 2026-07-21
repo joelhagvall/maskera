@@ -11,7 +11,7 @@
     "check:fixtures": "node scripts/check-fixture-identifiers.mjs",
     "smoke": "node scripts/pack-smoke.mjs",
     "typecheck": "for p in packages/core packages/ner apps/demo; do node node_modules/typescript-7/lib/tsc.js -p $p/tsconfig.json --noEmit || exit 1; done && node node_modules/typescript-7/lib/tsc.js -p packages/ner/tsconfig.runtime-test.json --noEmit",
-    "eval": "pnpm -C packages/ner eval",
+    "eval": "node scripts/run-published-eval.mjs",
     "demo": "pnpm -C apps/demo dev",
     "lint": "pnpm check:fixtures && biome check .",
     "format": "biome format --write .",
@@ -30,9 +30,13 @@
     "node": ">=18"
   },
   "pnpm": {
+    "overrides": {
+      "adm-zip": "0.6.0"
+    },
     "onlyBuiltDependencies": [
       "esbuild",
-      "@biomejs/biome"
+      "@biomejs/biome",
+      "puppeteer"
     ],
     "patchedDependencies": {
       "@huggingface/transformers@4.2.0": "patches/@huggingface__transformers@4.2.0.patch"

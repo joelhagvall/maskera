@@ -3,6 +3,7 @@ import { createNerRecognizer, type NerProgressEvent } from "../src/index"
 
 interface MockPipelineOptions {
   cache_dir?: string
+  device?: string
   progress_callback?: (progress: unknown) => void
 }
 
@@ -26,6 +27,15 @@ beforeEach(() => {
 })
 
 describe("Transformers runtime integration", () => {
+  it("defaults Node inference to CPU and honours an explicit device", async () => {
+    await createNerRecognizer().ready
+    expect(transformers.pipeline.mock.calls[0]?.[2]?.device).toBe("cpu")
+
+    transformers.pipeline.mockClear()
+    await createNerRecognizer({ device: "wasm" }).ready
+    expect(transformers.pipeline.mock.calls[0]?.[2]?.device).toBe("wasm")
+  })
+
   it("uses coarse progress for self-hosted models by default", async () => {
     const events: NerProgressEvent[] = []
 
