@@ -1,5 +1,15 @@
 # @maskera/core
 
+## 0.4.5
+
+### Patch Changes
+
+- Fix a quadratic-backtracking (ReDoS) blowup in the `EPOST` detector. The local-part and domain quantifiers are now bounded to the RFC 5321 maxima (64, 255 and 63 characters) instead of being unbounded, which caps how far the pattern can backtrack.
+
+  Any long unbroken run of `[A-Za-z0-9._%+-]` with no `@` after it forced the previous pattern to rescan the run from every start position: a hex digest, a base64url blob or a JWT segment is exactly that shape. A 250 KB input took roughly 57 seconds to scan and 512 KB took nearly four minutes, so a single pasted or submitted blob could stall a browser tab or a request handler. The same input now scans in tens of milliseconds. Ordinary text was never affected, in either direction.
+
+  Detection behaviour is unchanged for real addresses (verified against 100,000 fuzzed inputs). Only a local part longer than 64 characters differs: its trailing 64 characters are matched rather than the whole run.
+
 ## 0.4.4
 
 ### Patch Changes

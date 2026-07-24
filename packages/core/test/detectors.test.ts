@@ -107,6 +107,41 @@ describe("email detector", () => {
     ["no @", "anna.example.com"],
     ["bare domain", "example.com"],
   ])("rejects %s: %s", (_label, s) => expectMiss(email, s))
+
+  // The pattern is bounded to RFC 5321 maxima so it cannot backtrack
+  // quadratically (see the detector's comment). These pin the boundary so a
+  // future "let's simplify the regex" doesn't quietly reintroduce the blowup.
+  it("matches a local part at the 64-character maximum", () => {
+    expectHit(email, `x ${"a".repeat(64)}@example.com`, `${"a".repeat(64)}@example.com`)
+  })
+
+  it("still finds the address when the local part exceeds 64 characters", () => {
+    // The match window slides rather than failing: the trailing 64 characters
+    // are what gets masked, so the domain and most of the local part are still
+    // redacted. An over-long local part is not a real address anyway.
+    const found = email.detect(`${"a".repeat(70)}@example.com`).map((m) => m.value)
+    expect(found).toEqual([`${"a".repeat(64)}@example.com`])
+  })
+
+  it("does not backtrack quadratically on a long unbroken run", () => {
+    // Every character here is in the local-part class, and there is no "@" at
+    // all: the shape that made the unbounded pattern take ~57 s at 250 KB.
+    // A base64url blob or a hex digest in a paste is exactly this shape.
+    const hostile = "a1._%+-".repeat(40_000) // ~280 KB
+    const started = performance.now()
+    expect(email.detect(hostile)).toHaveLength(0)
+    // Bounded runs in tens of milliseconds; the threshold is deliberately
+    // loose so a slow CI runner cannot flake it, while still being ~3 orders
+    // of magnitude below the unbounded pattern.
+    expect(performance.now() - started).toBeLessThan(2000)
+  })
+
+  it("does not backtrack quadratically on a long run that ends in an address", () => {
+    const hostile = `${"a".repeat(200_000)} kontakt@example.com`
+    const started = performance.now()
+    expectHit(email, hostile, "kontakt@example.com")
+    expect(performance.now() - started).toBeLessThan(2000)
+  })
 })
 
 // --- Phone ----------------------------------------------------------------

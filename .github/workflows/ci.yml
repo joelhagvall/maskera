@@ -9,6 +9,11 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Nothing here writes to the repo; checkout and the Hub download are all the
+# token is for. Set explicitly so the job never inherits a read/write default.
+permissions:
+  contents: read
+
 jobs:
   # Lint + build + unit tests across the supported Node range, then a pack
   # smoke: install the actual tarballs into a fresh project and exercise the
@@ -43,6 +48,10 @@ jobs:
   # Grade the published Swedish NER model against the gold corpus and gate on
   # a span-F1 floor plus a leak-rate ceiling (missed entities are the safety
   # metric for a redaction tool). Downloads ~40 MB from the HF Hub.
+  #
+  # No MASKERA_REVISION here on purpose: this grades the sha the package pins,
+  # which is what consumers download. The weekly canary grades `main` instead,
+  # so a bad Hub upload still surfaces somewhere.
   model-eval:
     runs-on: ubuntu-latest
     timeout-minutes: 15

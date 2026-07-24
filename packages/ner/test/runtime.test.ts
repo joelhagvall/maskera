@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { createNerRecognizer, type NerProgressEvent } from "../src/index"
+import { createNerRecognizer, MASKERA_SV_NER_REVISION, type NerProgressEvent } from "../src/index"
 
 interface MockPipelineOptions {
   cache_dir?: string
   device?: string
+  revision?: string
   progress_callback?: (progress: unknown) => void
 }
 
@@ -34,6 +35,30 @@ describe("Transformers runtime integration", () => {
     transformers.pipeline.mockClear()
     await createNerRecognizer({ device: "wasm" }).ready
     expect(transformers.pipeline.mock.calls[0]?.[2]?.device).toBe("wasm")
+  })
+
+  // Without a revision Transformers.js resolves `main`, so the Hub decides
+  // which weights run inside an already-released version of maskera.
+  it("pins maskera's own model to an immutable Hub commit", async () => {
+    await createNerRecognizer().ready
+    expect(transformers.pipeline.mock.calls[0]?.[2]?.revision).toBe(MASKERA_SV_NER_REVISION)
+    expect(MASKERA_SV_NER_REVISION).toMatch(/^[0-9a-f]{40}$/)
+  })
+
+  it("leaves a third-party model on the Transformers.js default revision", async () => {
+    // maskera's sha names a commit in maskera's repo; sending it to someone
+    // else's would request a revision that repo has never had.
+    await createNerRecognizer({ model: "Xenova/bert-base-NER" }).ready
+    expect(transformers.pipeline.mock.calls[0]?.[2]?.revision).toBeUndefined()
+  })
+
+  it("honours an explicit revision, including opting back into main", async () => {
+    await createNerRecognizer({ revision: "main" }).ready
+    expect(transformers.pipeline.mock.calls[0]?.[2]?.revision).toBe("main")
+
+    transformers.pipeline.mockClear()
+    await createNerRecognizer({ model: "Xenova/bert-base-NER", revision: "v2" }).ready
+    expect(transformers.pipeline.mock.calls[0]?.[2]?.revision).toBe("v2")
   })
 
   it("uses coarse progress for self-hosted models by default", async () => {

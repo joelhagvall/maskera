@@ -27,6 +27,7 @@ declare module "@huggingface/transformers" {
     dtype?: string
     device?: "wasm" | "webgpu" | "cpu" | "auto"
     cache_dir?: string
+    revision?: string
     progress_callback?: (progress: unknown) => void
   }
 

@@ -1,5 +1,12 @@
 # maskera-examples
 
+## 0.0.9
+
+### Patch Changes
+
+- Updated dependencies
+  - @maskera/core@0.4.5
+
 ## 0.0.8
 
 ### Patch Changes

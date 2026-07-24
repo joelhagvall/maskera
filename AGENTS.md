@@ -78,6 +78,19 @@ hf upload joelhagvall/maskera-sv-ner training/maskera-sv-ner-card/README.md READ
 
 Full model publishes use `scripts/publish-model.sh`.
 
+IMPORTANT: any commit to the Hub repo, including a card-only `hf upload`,
+moves its head sha, and npm consumers are pinned to a sha. A model publish is
+therefore not done until BOTH pins are updated in the same sitting, or users
+keep downloading the old weights (or, worse, a sha that no longer resolves):
+
+- `MASKERA_SV_NER_REVISION` in `packages/ner/src/index.ts` (the Hub commit
+  sha; read the new one from
+  `curl -s https://huggingface.co/api/models/joelhagvall/maskera-sv-ner | jq -r .sha`).
+  This one only reaches users through an npm release, so a weight change means
+  a changeset and `pnpm release`, not just an upload.
+- The per-file sha256 map in `apps/demo/scripts/fetch-model.mjs` (what the
+  demo build verifies), plus `onnxBytes` in `apps/demo/src/model-meta.json`.
+
 ## Copy coupling with app.maskera.dev
 
 The "För företag" page (`apps/demo/src/components/Services.tsx`) repeats

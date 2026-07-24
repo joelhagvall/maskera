@@ -65,7 +65,11 @@ export async function safeCompletion(userInput: string) {
 }
 ```
 
-- The recognizer downloads the model (~43 MB) on first use and caches it.
+- The recognizer downloads the model (~43 MB) on first use and caches it. The
+  download is pinned to an immutable Hub commit (`MASKERA_SV_NER_REVISION`), so
+  a given maskera version always runs the weights it was benchmarked against and
+  the Hub cannot change them underneath you. New weights arrive when you upgrade
+  the package; `revision: "main"` opts into always-latest instead.
 - All published benchmark numbers are measured on `q4`, the default. If you
   pin `q8` as above, validate accuracy and latency on your own data.
   Await `recognizer.ready` at startup if you want to pay that cost at boot

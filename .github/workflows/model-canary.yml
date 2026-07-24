@@ -51,6 +51,11 @@ jobs:
         shell: bash
         env:
           MASKERA_REMOTE: "1"
+          # Grade the Hub's current head, NOT the sha the package pins. The pin
+          # is what protects consumers, and it is exactly what would hide a bad
+          # upload from this canary. CI's own eval grades the pin; catching
+          # drift on `main` is this job's whole reason to exist.
+          MASKERA_REVISION: main
           MASKERA_DTYPE: q4
           MASKERA_F1_FLOOR: "0.90"
           MASKERA_LEAK_CEIL: "0.08"

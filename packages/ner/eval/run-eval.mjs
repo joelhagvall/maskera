@@ -22,6 +22,11 @@
  *                       MASKERA_MODEL_PATH (what CI uses; defaults the model to
  *                       joelhagvall/maskera-sv-ner)
  *   MASKERA_MODEL       model folder/id (default: maskera-sv-ner, or the Hub id above)
+ *   MASKERA_REVISION    Hub revision to grade (default: the sha the package pins,
+ *                       i.e. what consumers actually download). Set to "main" to
+ *                       grade whatever currently sits on the Hub instead, which
+ *                       is what the weekly canary needs in order to catch a bad
+ *                       upload: the pin deliberately hides one from consumers.
  *   MASKERA_F1_FLOOR    minimum acceptable span-F1 (default: 0.80)
  *   MASKERA_LEAK_CEIL   maximum acceptable leak rate, the share of gold entities
  *                       with zero overlapping prediction (default: 0.08)
@@ -42,6 +47,7 @@ const MODEL =
   process.env.MASKERA_MODEL ?? (REMOTE ? "joelhagvall/maskera-sv-ner" : "maskera-sv-ner")
 const MODEL_PATH = process.env.MASKERA_MODEL_PATH
 const DTYPE = process.env.MASKERA_DTYPE ?? "q4"
+const REVISION = process.env.MASKERA_REVISION
 
 function skip(reason) {
   console.log(`\n⏭  eval skipped: ${reason}`)
@@ -74,7 +80,7 @@ const recognizer = createNerRecognizer({
   dtype: DTYPE,
   device: "cpu",
   ...(REMOTE
-    ? { allowRemoteModels: true }
+    ? { allowRemoteModels: true, ...(REVISION ? { revision: REVISION } : {}) }
     : { localModelPath: MODEL_PATH, allowLocalModels: true, allowRemoteModels: false }),
   // The gold corpora keep the CoNLL-style vocabulary (PERSON/LOCATION/...)
   // even though the product default is Swedish (NAMN/PLATS/...), so map
@@ -83,9 +89,10 @@ const recognizer = createNerRecognizer({
     ({ PER: "PERSON", LOC: "LOCATION", ORG: "ORGANIZATION", ADR: "ADDRESS" })[g] ?? g,
 })
 
-console.log(
-  `\nLoading model "${MODEL}" (dtype=${DTYPE}) from ${REMOTE ? "the HF Hub" : MODEL_PATH} …`,
-)
+// Name the revision in the log: "the gate passed" means nothing without
+// knowing whether it graded the pinned weights or the Hub's current head.
+const source = REMOTE ? `the HF Hub @ ${REVISION ?? "the pinned revision"}` : MODEL_PATH
+console.log(`\nLoading model "${MODEL}" (dtype=${DTYPE}) from ${source} …`)
 try {
   await recognizer.ready
 } catch (err) {

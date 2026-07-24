@@ -66,7 +66,20 @@ export const organisationsnummer = regexDetector(
 
 // åäö in both parts: addresses like "åsa.öberg@example.com" exist in the wild,
 // and a leading \b would never match before "å" (JS \b is ASCII-only).
-export const email = regexDetector("EPOST", /[A-ZÅÄÖ0-9._%+-]+@[A-ZÅÄÖ0-9.-]+\.[A-Z]{2,}\b/gi)
+//
+// The quantifiers are bounded to the RFC 5321 maxima (local part 64 octets,
+// domain 255, DNS label 63) rather than left open. Not for validation: it caps
+// backtracking. `[A-Z0-9._%+-]+@` is quadratic on any long unbroken run of
+// those characters, because every start position consumes the whole run and
+// then backs out one char at a time looking for an `@` that isn't there. A
+// hex digest, a base64url blob or a JWT segment is exactly such a run
+// (base64url's `-` and `_` are both in the class), so a 250 KB paste took ~57 s
+// on the unbounded pattern and ~30 ms bounded. Ordinary prose never noticed,
+// which is precisely why this could sit here unseen.
+export const email = regexDetector(
+  "EPOST",
+  /[A-ZÅÄÖ0-9._%+-]{1,64}@[A-ZÅÄÖ0-9.-]{1,255}\.[A-Z]{2,63}\b/gi,
+)
 
 /**
  * Swedish phone numbers: +46 / 0 prefix, mobile and landline, including the

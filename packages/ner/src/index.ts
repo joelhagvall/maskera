@@ -15,6 +15,21 @@ export * from "@maskera/core"
 export const MASKERA_SV_NER_MODEL = "joelhagvall/maskera-sv-ner"
 
 /**
+ * The exact Hub commit {@link MASKERA_SV_NER_MODEL} is pinned to (v18 weights).
+ *
+ * Without a pin, Transformers.js resolves `main`, so whatever sits on the Hub
+ * at download time is what runs. That makes a compromised Hub account enough to
+ * swap the weights of a redaction model under every installed consumer, with no
+ * npm release and nothing to diff, and it means two runs of the same maskera
+ * version can grade differently. Pinning trades automatic model updates for
+ * reproducibility: a new model reaches consumers when this constant changes and
+ * a release ships, which is also when the benchmark numbers move.
+ *
+ * Pass `revision: "main"` to opt back into always-latest.
+ */
+export const MASKERA_SV_NER_REVISION = "aa273561ee25cc613acdb41cf328b10d187051f5"
+
+/**
  * The default model is maskera's own Swedish model. Pass any other
  * Transformers.js token-classification model id via `options.model` if you
  * need different language coverage.
@@ -176,6 +191,16 @@ export interface NerProgressEvent {
 export interface NerOptions {
   /** Hugging Face model id. Default: {@link DEFAULT_NER_MODEL}. */
   model?: string
+  /**
+   * Hub revision (commit sha, tag or branch) to download the model from.
+   *
+   * Defaults to {@link MASKERA_SV_NER_REVISION} for maskera's own model, so
+   * the weights are immutable per release; `"main"` opts into always-latest.
+   * For any other `model` the default is Transformers.js's own (`main`), since
+   * maskera's pin says nothing about a third-party repo. Ignored entirely when
+   * loading from `localModelPath`.
+   */
+  revision?: string
   /** Quantization dtype passed to Transformers.js. Default: `"q4"`. */
   dtype?: string
   /** Backend. Default: `"auto"` (WebGPU if available, else WASM). */
@@ -238,6 +263,9 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
   const defaultDevice = runtimeProcess?.versions?.node ? "cpu" : "auto"
   const {
     model = DEFAULT_NER_MODEL,
+    // Only maskera's own model carries maskera's pin: forcing our sha onto a
+    // caller's `model` would request a commit that repo has never heard of.
+    revision = model === MASKERA_SV_NER_MODEL ? MASKERA_SV_NER_REVISION : undefined,
     dtype = "q4",
     device = defaultDevice,
     minScore = 0.5,
@@ -312,6 +340,7 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
               dtype,
               device,
               cache_dir: cacheDir,
+              revision,
               // Transformers.js 4.2 implements progress totals by probing
               // every local file with a full GET. Its 43 MB ONNX probe is not
               // consumed or cancelled in the published package and can race

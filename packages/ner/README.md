@@ -81,6 +81,7 @@ await redactWithNer(text, {
 ```ts
 createNerRecognizer({
   model: MASKERA_SV_NER_MODEL, // default; any HF token-classification model id works
+  revision: MASKERA_SV_NER_REVISION, // default for maskera's model: a pinned Hub commit
   dtype: "q4",                 // "q4" (43 MB, default) | "q8" (59 MB) | "fp32" (233 MB)
   device: "auto",              // browser default; Node defaults to "cpu"
   minScore: 0.5,               // drop predictions below this confidence
@@ -90,6 +91,14 @@ createNerRecognizer({
 })
 ```
 
+- **`revision`**: the Hub commit, tag or branch the weights come from. maskera's
+  own model defaults to the pinned `MASKERA_SV_NER_REVISION`, so a given release
+  of this package always runs the exact weights it was benchmarked against, and
+  a compromised Hub account cannot swap the model out from under an installed
+  version. New weights therefore arrive with a maskera release, not on their
+  own; pass `revision: "main"` if you would rather track the Hub directly. Any
+  other `model` keeps Transformers.js's own default, and the option is ignored
+  when loading from `localModelPath`.
 - **`dtype`**: `"q4"` is what the maskera demo ships and what the eval gates
   run against. `"q8"` is slightly more accurate on some inputs; `"fp32"` is
   for benchmarking, not the browser.

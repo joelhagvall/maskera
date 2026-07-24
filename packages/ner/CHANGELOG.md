@@ -1,5 +1,23 @@
 # maskera
 
+## 0.7.0
+
+### Minor Changes
+
+- Pin the Hugging Face model download to an immutable commit and expose it as a new `revision` option.
+
+  Transformers.js resolves `main` by default, so an already-released version of maskera ran whatever weights sat on the Hub at download time. That let a compromised Hub account swap the weights of a redaction model under every installed consumer with no npm release to notice, and meant two runs of the same maskera version could grade differently. `createNerRecognizer()` now requests the exact commit exported as `MASKERA_SV_NER_REVISION`.
+
+  New weights therefore arrive with a maskera release rather than on their own. Pass `revision: "main"` to opt back into tracking the Hub, or any commit, tag or branch to pin elsewhere. A third-party `model` keeps the Transformers.js default, since maskera's commit sha says nothing about another repo, and the option is ignored when loading from `localModelPath`.
+
+  Transformers.js includes the revision in its cache key, so the first run after upgrading re-downloads the model once even though the weights are identical.
+
+### Patch Changes
+
+- 621a502: Default Node.js NER inference to the native CPU provider while retaining automatic device selection in browsers, avoiding macOS CoreML warnings and potential resource leaks.
+- Updated dependencies
+  - @maskera/core@0.4.5
+
 ## 0.6.6
 
 ### Patch Changes
