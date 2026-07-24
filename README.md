@@ -37,7 +37,7 @@ This public repository and the demo are the free, local-processing option:
 your team owns the integration and operation. Companies that do not want to
 operate it themselves can use
 [Maskera Cloud](https://app.maskera.dev/pricing), where content is processed
-in memory on EU-owned infrastructure with zero payload retention. Companies
+in memory at an EU-owned company in the EU with zero payload retention. Companies
 that require original text and restore keys to remain in their own
 environment can use the
 [private Gateway](https://app.maskera.dev/gateway). Gateway is delivered as a

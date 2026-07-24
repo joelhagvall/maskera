@@ -57,10 +57,10 @@ const PRODUCTS: Product[] = [
     points: [
       "Färdigt API, klart att integrera direkt",
       "Er befintliga OpenAI-kod fungerar: byt bara adressen",
-      "Bearbetning i minnet på EU-ägd infrastruktur",
+      "Bearbetning i minnet hos ett EU-ägt bolag i EU",
       "Ingen lagring av innehållet i era anrop",
     ],
-    cta: "Se Cloud och priser",
+    cta: "Se priser för Cloud",
     href: cloud("/pricing", "business_cloud"),
   },
   {
