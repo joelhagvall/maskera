@@ -1216,6 +1216,8 @@ body {
 .prose .pkg-cta {
   display: inline-flex;
   justify-content: center;
+  align-items: center;
+  gap: 5px;
   padding: 8px 14px;
   font: 500 13.5px var(--sans);
   color: var(--fg);
@@ -1236,6 +1238,20 @@ body {
 .prose .pkg.featured .pkg-cta:hover {
   opacity: 0.85;
 }
+/* Destination caption under the outbound Cloud/Gateway CTAs: the cards
+   leave for the customer portal, and the button itself is where a reader
+   decides to click, so the site change is announced right there. */
+.prose .pkg-dest {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted);
+  text-align: center;
+}
+.prose .pkg-dest-ghost {
+  visibility: hidden;
+}
+
 /* Pilot-offer row inside the featured card, between the list and the CTA. */
 .pkg-note {
   margin: 0 0 12px;

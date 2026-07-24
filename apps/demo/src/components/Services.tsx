@@ -1,3 +1,4 @@
+import { ArrowUpRightIcon } from "../icons"
 import type { View } from "../routing"
 import { navClick, viewPaths } from "../routing"
 import { TopBar } from "./TopBar"
@@ -88,6 +89,12 @@ const GATEWAY_FLOW = [
 
 function ProductCard({ product, go }: { product: Product; go: (view: View) => void }) {
   const onClick = product.view ? navClick(() => go(product.view as View)) : undefined
+  // Cloud and Gateway leave for the customer portal on another subdomain.
+  // The two sites deliberately share one visual identity, so each leaving
+  // button says so itself: the same outbound arrow the GitHub link uses,
+  // plus the destination right under the button. A single note below all
+  // three cards read as an afterthought and got missed.
+  const external = product.href.startsWith("http")
 
   return (
     <section className={`pkg${product.featured ? " featured" : ""}`}>
@@ -102,7 +109,14 @@ function ProductCard({ product, go }: { product: Product; go: (view: View) => vo
       {product.note && <p className="pkg-note">{product.note}</p>}
       <a className="pkg-cta" href={product.href} onClick={onClick}>
         {product.cta}
+        {external && <ArrowUpRightIcon size={13} />}
       </a>
+      {/* Ghost copy on the internal card keeps all three CTA rows on one
+          baseline; without it the outbound cards' captions push their
+          buttons up relative to the open source card's. */}
+      <p className={`pkg-dest${external ? "" : " pkg-dest-ghost"}`} aria-hidden={!external}>
+        Öppnas på app.maskera.dev, Maskeras kundportal
+      </p>
     </section>
   )
 }
@@ -129,15 +143,6 @@ export function Services({ go }: { go: (view: View) => void }) {
               <ProductCard key={product.name} product={product} go={go} />
             ))}
           </div>
-
-          {/* The Cloud/Gateway cards leave for the customer portal on a
-              different subdomain. Saying so up front makes that handoff
-              expected instead of disorienting; the two sites deliberately
-              share one visual identity, so the URL is the only other cue. */}
-          <p className="prose-sub">
-            Priser, köp och dokumentation för Cloud och Gateway finns på{" "}
-            <a href={cloud("/", "business_portal_note")}>app.maskera.dev</a>, Maskeras kundportal.
-          </p>
 
           <h2>Vilket alternativ passar er?</h2>
           <div
