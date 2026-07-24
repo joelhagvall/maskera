@@ -391,18 +391,8 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
       }
       return
     }
-    // Split near the middle, preferring whitespace; overlap is proportional
-    // so both halves are strictly smaller and the recursion terminates.
-    let mid = Math.floor(chunk.length / 2)
-    for (let i = mid; i > mid - 200 && i > 1; i--) {
-      if (WHITESPACE.test(chunk[i] ?? "")) {
-        mid = i
-        break
-      }
-    }
-    const overlap = Math.min(100, Math.floor(chunk.length / 8))
-    await runChunk(pipe, chunk.slice(0, mid + overlap), offset, out)
-    const rightStart = Math.max(0, mid - overlap)
+    const { leftEnd, rightStart } = splitPoint(chunk)
+    await runChunk(pipe, chunk.slice(0, leftEnd), offset, out)
     await runChunk(pipe, chunk.slice(rightStart), offset + rightStart, out)
   }
 
@@ -587,10 +577,16 @@ export function reconstruct(
         // the name, so trim it plus the separators before it. Requiring a
         // separator keeps entities that ARE such a word ("Org" as a name)
         // intact, and spans ending in a digit ("Storgatan nr 5") never match.
+        // The separator run is bounded rather than `+`: unanchored `[...]+$`
+        // backtracks quadratically over a span that is mostly separators, and
+        // locateGroup will happily skip an unbounded whitespace gap between two
+        // pieces of one entity. "Anna" + 200k spaces + "Andersson" is one such
+        // span, and it took 18 s here (text extracted from PDFs produces exactly
+        // those runs). A real label separator is a comma and a space or two.
         for (;;) {
           const labelWord = text
             .slice(start, end)
-            .match(/[\s,;:(]+(?:org|orgnr|pnr|personnr|nr)\.?$/iu)
+            .match(/[\s,;:(]{1,16}(?:org|orgnr|pnr|personnr|nr)\.?$/iu)
           if (!labelWord) break
           end -= labelWord[0].length
         }
@@ -688,6 +684,38 @@ function locateGroup(
     start = lower.indexOf(first, start + 1)
   }
   return null
+}
+
+/**
+ * Where to cut an over-long chunk in two, with an overlap so an entity sitting
+ * on the seam still appears whole in one of the halves.
+ *
+ * Splitting at whitespace is a PREFERENCE, never a licence to stand still.
+ * The search walks up to 200 characters down from the middle, so on a short
+ * but token-dense chunk whose only space sits near the start it would land
+ * there, `mid - overlap` would clamp to 0, and the right-hand slice would be
+ * the input itself: a fixed point that made `detect()` never return. 500
+ * characters were enough (CJK and long symbol runs tokenize about 1:1, so they
+ * pass MAX_TOKENS while staying short enough for the window to reach the
+ * start), and because the runaway recursion floods the microtask queue it
+ * starves timers too, so nothing times out and the process never recovers.
+ *
+ * Exported for tests: `leftEnd < chunk.length` and `0 < rightStart` is the
+ * whole termination argument, and it is cheap to verify exhaustively.
+ */
+export function splitPoint(chunk: string): { leftEnd: number; rightStart: number } {
+  const half = Math.floor(chunk.length / 2)
+  const overlap = Math.min(100, Math.floor(chunk.length / 8))
+  let mid = half
+  for (let i = half; i > half - 200 && i > 1; i--) {
+    if (WHITESPACE.test(chunk[i] ?? "")) {
+      mid = i
+      break
+    }
+  }
+  // Fall back to the exact middle, which always leaves both sides shorter.
+  if (mid + overlap >= chunk.length || mid <= overlap) mid = half
+  return { leftEnd: mid + overlap, rightStart: mid - overlap }
 }
 
 /**

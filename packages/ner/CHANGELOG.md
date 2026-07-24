@@ -1,5 +1,25 @@
 # maskera
 
+## 0.7.1
+
+### Patch Changes
+
+- Fix an infinite recursion that made `detect()` hang forever on a 500-character input.
+
+  `detect()` splits input that exceeds the model's token limit, preferring a whitespace position found by scanning up to 200 characters down from the middle. That preference was taken unconditionally. On a chunk that is short but token-dense, the search could land near the start, `mid - overlap` clamped to 0, and the right-hand slice came back as the whole input: the recursion had a fixed point and never returned.
+
+  Reaching it needs no unusual size, only about 1 token per character, which is what the tokenizer produces for CJK and for long symbol runs (measured: 500 CJK characters is 502 tokens, against a 480 limit). Ordinary Latin prose runs about 4 characters per token and never gets near it.
+
+  The failure mode is worse than a slow call. The runaway recursion floods the microtask queue, so timers never fire: nothing times out, `Promise.race` guards do not help, and a server process that hits this stops serving everything else and does not recover without a restart.
+
+  Splitting now falls back to the exact middle whenever the whitespace position would not leave both halves strictly shorter. The split point is exported as `splitPoint` and its termination and coverage invariants are verified exhaustively across every length and whitespace layout the search can reach.
+
+- Fix a quadratic-backtracking blowup in the NER identifier-label trim. The separator run in the pattern that strips a trailing `org.nr` / `pnr` / `nr` from a model span is now bounded to 16 characters instead of being an unbounded `+`.
+
+  `locateGroup` skips whitespace between two pieces of one entity without a bound, so a wide gap produces a detection span that is almost entirely separators. The unanchored `[\s,;:(]+…$` then rescanned that span from every start position: `"Anna"` followed by 200,000 spaces and `"Andersson"` cost 18 seconds, essentially all of it in this one match. Text extracted from PDFs produces whitespace runs like that without anyone crafting them. The same span is now handled in well under a millisecond.
+
+  Trimming behaviour is unchanged, including labels separated by several spaces and a comma.
+
 ## 0.7.0
 
 ### Minor Changes
