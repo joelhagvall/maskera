@@ -61,6 +61,15 @@ runner headers for full detail):
   @blindfold/sdk 1.0.2 ships without `dist/policies.json` and its ESM build
   references a bare `__dirname`, so the setup below patches the file in and
   the runner imports the CJS build. `run-blindfold.mjs`.
+- **Azure AI Language** must be evaluated as both PII detection and general
+  NER: PII has the privacy-specific categories while NER supplies Location and
+  the general entity taxonomy. `run-azure.mjs` writes separate `azure-pii`,
+  `azure-ner`, and deduplicated `azure-pii-ner` rows from two API calls per
+  batch (up to five documents). It pins the GA `2024-11-01` API, Swedish
+  input, UTF-16 offsets and
+  `loggingOptOut: true`; unrelated entity categories are dropped to match the
+  four-label gold space. Azure results are not added to the tables above until
+  the credentialed run has been completed and recorded.
 
 ## Gold sets
 
@@ -72,6 +81,16 @@ neutral ground for the others; **gold-real** (22 Wikipedia sentences, 58
 entities, written and labeled by others, held out from all training) is the
 independent floor. A larger independent set is in progress
 ([docs/GOLD_SET_PLAN.md](../docs/GOLD_SET_PLAN.md)).
+
+`osm-addresses` is a separate, generated stress test rather than part of the
+published snapshot above. It samples 500 real address points across twelve
+Swedish regions from OpenStreetMap, limits repeated street names, and inserts
+them into new chat-style wrappers with normal, lowercase and uppercase forms.
+The addresses are real; their surrounding conversations are synthetic and do
+not contain people. The generated corpus and metadata are git-ignored, and the
+metadata records source timestamps plus a corpus SHA-256 so a measured run can
+be tied to one exact snapshot. Data: © OpenStreetMap contributors, available
+under the Open Database License (ODbL) 1.0.
 
 ## Results
 
@@ -184,6 +203,29 @@ uv pip install --python .venv-pf/bin/python torch transformers
 
 # EU PII Safeguard (~2.24 GB; read its commercial-evaluation license first)
 .venv-pf/bin/python run_eu_pii_safeguard.py
+
+# Microsoft Azure AI Language (Free F0 is sufficient; credentials stay local)
+read "AZURE_LANGUAGE_ENDPOINT?Azure Language endpoint: "
+read -s "AZURE_LANGUAGE_KEY?Azure Language key: " && echo
+export AZURE_LANGUAGE_ENDPOINT AZURE_LANGUAGE_KEY
+node run-azure.mjs
+unset AZURE_LANGUAGE_ENDPOINT AZURE_LANGUAGE_KEY
+
+# independent real-address stress test (live OSM snapshot, git-ignored)
+node fetch-osm-addresses.mjs
+node run-maskera.mjs osm-addresses
+node run-azure.mjs osm-addresses
+node grade.mjs osm-addresses
+node analyze-address-coverage.mjs osm-addresses
+
+# After a candidate is locked, make an address-disjoint final holdout. Record
+# the random salt before fetching; do not tune after viewing this set.
+OSM_CORPUS_NAME=osm-addresses-holdout \
+OSM_ADDRESS_COUNT=1000 \
+OSM_ADDRESS_SALT="$HOLDOUT_SALT" \
+OSM_EXCLUDE_CORPUS=corpora/osm-addresses.json \
+OSM_REFRESH=1 \
+node fetch-osm-addresses.mjs
 
 # grade everything
 node grade.mjs curated && node grade.mjs gold-real && node grade.mjs adr

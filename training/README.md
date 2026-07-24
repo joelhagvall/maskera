@@ -23,6 +23,10 @@ recall is weak. This pipeline trains a Swedish-first model instead.
 
 ## Pipeline
 
+The next address-focused round has a separate, leakage-safe, command-by-command
+runbook: [`ADDRESS_V19_RUNBOOK.md`](ADDRESS_V19_RUNBOOK.md). Follow it instead
+of tuning against the inspected OSM development corpus.
+
 ```bash
 # 1. Generate synthetic, BIO-tagged Swedish data (no real PII, GDPR-safe),
 #    then append the real Swedish NER Corpus train split (see the v6 journal
