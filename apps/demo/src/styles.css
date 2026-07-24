@@ -777,6 +777,13 @@ body {
   line-height: 1.6;
   color: var(--muted);
 }
+/* A page that ends with a bordered .prose-foot already draws the divider;
+   a second hairline right below it reads as an empty band. */
+main:has(.prose-foot) + .footer {
+  margin-top: 26px;
+  padding-top: 0;
+  border-top: 0;
+}
 .footer-row {
   margin: 0;
 }
