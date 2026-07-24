@@ -1,5 +1,17 @@
 # @maskera/core
 
+## 0.4.6
+
+### Patch Changes
+
+- Fix a PII leak in overlap resolution: a detection that partially overlapped another was dropped whole, leaving its remainder in the clear.
+
+  Detectors genuinely reach across each other. Digits and `.` are e-mail local-part characters, so `4242 4242 4242 4242.anna@example.com` produces a card span and an e-mail span that starts inside it. The card won on "earliest start", the e-mail was discarded, and the entire address stayed in the output unmasked. `Ring 070-174 06 58.anna@example.com` leaked the same way, as did the tail of a phone number that a preceding URL had partly swallowed.
+
+  Overlapping detections are now clipped to the part no earlier detection claimed, then trimmed to something meaningful, instead of being discarded. A detection wholly inside a kept one is still dropped, so a full IBAN still wins over the postnummer inside it, and spans still never overlap each other. `redactWithNer` already clipped model spans against rule spans for this exact reason; the rule layer now does the same among its own detectors.
+
+  Measured over 400,000 generated inputs that butt identifiers against each other: 30 distinct spans were left half-masked before, none are now. Output is unchanged on all 251 sentences of the Swedish eval corpora, and the gold-corpus eval is identical at 99.8 span-F1 with zero leaks.
+
 ## 0.4.5
 
 ### Patch Changes

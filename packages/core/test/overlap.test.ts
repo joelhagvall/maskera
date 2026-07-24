@@ -55,6 +55,31 @@ describe("overlap resolution between structured identifiers", () => {
     expect(labels).toContain("POSTNUMMER")
   })
 
+  it("clips a partially overlapping detection instead of dropping it", () => {
+    // The e-mail detector matches "4242.anna@example.com" (digits and "." are
+    // local-part characters), starting inside the card span. Dropping it whole
+    // is what leaked the address; the remainder is masked on its own instead.
+    const { text, redactions } = redact("Betalning 4242 4242 4242 4242.anna@example.com klar.")
+    expect(text).toContain("[KORTNUMMER_1]")
+    expect(text).toContain("[EPOST_1]")
+    expect(text).not.toContain("anna@example.com")
+    // The clipped span carries only the part no earlier detection claimed,
+    // trimmed of the separator that joined them.
+    expect(redactions.find((r) => r.label === "EPOST")?.value).toBe("anna@example.com")
+  })
+
+  it("keeps the no-overlap guarantee after clipping", () => {
+    const input = "Kort 4242 4242 4242 4242.anna@example.com och 070-174 06 58.b@example.org"
+    const spans = redact(input)
+      .redactions.map((r) => [r.start, r.end] as const)
+      .sort((a, b) => a[0] - b[0])
+    for (let i = 1; i < spans.length; i++) {
+      expect(spans[i]?.[0], `span ${i} overlaps the previous one`).toBeGreaterThanOrEqual(
+        spans[i - 1]?.[1] ?? 0,
+      )
+    }
+  })
+
   it("redacts a dense mix without dropping any of the high-value identifiers", () => {
     const input =
       "Personnummer 900101-2385, org 202100-4748, IBAN SE4280000890119146168423, kort 4242 4242 4242 4242."

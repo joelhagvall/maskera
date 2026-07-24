@@ -5,12 +5,25 @@ function defaultPlaceholder(label: PiiLabel, index: number): string {
   return `[${label}_${index}]`
 }
 
+/** A character that can carry meaning on its own, used to trim clipped edges. */
+const WORD_CHAR = /[\p{L}\p{N}]/u
+
 /**
  * Resolve overlapping detections deterministically:
  * keep the earliest start, and among equal starts the longest match.
  * This means e.g. a full IBAN wins over a postnummer hiding inside it.
+ *
+ * A detection that is *fully* inside a kept one is dropped. One that merely
+ * *overlaps* is clipped to the part no earlier detection claimed, rather than
+ * dropped: dropping it wholesale leaks the remainder in the clear. Detectors
+ * genuinely reach across each other, because `.` and digits belong to the
+ * e-mail local part too, so "4242 4242 4242 4242.anna@example.com" produces a
+ * card span and an e-mail span starting inside it, and the naive rule left the
+ * whole address unmasked. Over-masking the clipped remnant is the right side to
+ * err on for a redaction tool; `redactWithNer` already clips model spans
+ * against rule spans for exactly this reason.
  */
-function resolveOverlaps(detections: Detection[]): Detection[] {
+function resolveOverlaps(detections: Detection[], input: string): Detection[] {
   const sorted = [...detections].sort((a, b) => {
     if (a.start !== b.start) return a.start - b.start
     if (b.end - b.start !== a.end - a.start) return b.end - b.start - (a.end - a.start)
@@ -22,7 +35,19 @@ function resolveOverlaps(detections: Detection[]): Detection[] {
     if (d.start >= cursor) {
       kept.push(d)
       cursor = d.end
+      continue
     }
+    if (d.end <= cursor) continue // wholly inside what we already mask
+    // Partial overlap: mask the tail, trimmed to something meaningful. A
+    // single leftover character is punctuation or a stray digit, never PII
+    // worth a placeholder of its own.
+    let start = Math.max(cursor, 0)
+    let end = d.end
+    while (start < end && !WORD_CHAR.test(input[start] ?? "")) start++
+    while (end > start && !WORD_CHAR.test(input[end - 1] ?? "")) end--
+    if (end - start < 2) continue
+    kept.push({ ...d, start, end, value: input.slice(start, end) })
+    cursor = end
   }
   return kept
 }
@@ -59,7 +84,7 @@ export function redactFromDetections(
 ): RedactResult {
   const placeholder = options.placeholder ?? defaultPlaceholder
 
-  const resolved = resolveOverlaps(detections)
+  const resolved = resolveOverlaps(detections, input)
 
   // Stable numbering: same value under the same label reuses its placeholder.
   const counters = new Map<PiiLabel, number>()

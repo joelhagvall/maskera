@@ -62,6 +62,30 @@ const CASES: LeakCase[] = [
     input: "Vi träffas på fredag och pratar om budgeten.",
     mustKeep: ["Vi träffas på fredag och pratar om budgeten."],
   },
+  // Overlap resolution used to DROP a detection that merely overlapped the one
+  // it kept, which left the dropped value in the clear. Digits and "." belong
+  // to the e-mail local part too, so an identifier butted straight against an
+  // address produces exactly that shape, and the whole address survived.
+  {
+    note: "overlap leak: card butted against an email (no space) left the address exposed",
+    input: "Betalning mottagen 4242 4242 4242 4242.anna@example.com bekräftar.",
+    mustRedact: ["anna@example.com", "4242 4242 4242 4242"],
+  },
+  {
+    note: "overlap leak: phone butted against an email left the address exposed",
+    input: "Ring 070-174 06 58.anna@example.com så fixar vi det.",
+    mustRedact: ["anna@example.com", "070-174 06 58"],
+  },
+  {
+    note: "overlap leak: a URL swallowing a phone left the phone's tail behind",
+    input: "Se https://example.com/x-070-174 06 58 för detaljer.",
+    mustRedact: ["06 58"],
+  },
+  {
+    note: "the winning span is still masked whole when the loser is inside it",
+    input: "Betala till SE4280000890119146168423 idag.",
+    mustRedact: ["SE4280000890119146168423"],
+  },
 ]
 
 describe("leak regression suite", () => {
