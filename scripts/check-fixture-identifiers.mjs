@@ -68,7 +68,7 @@ const TEST_POSTNUMMER = new Set(["12345"])
 
 // Real operational contact details are allowed explicitly. Every other email
 // literal must use an IANA-reserved example domain or the reserved .test TLD.
-const OPERATIONAL_EMAILS = new Set(["work@joelhagvall.com"])
+const OPERATIONAL_EMAILS = new Set(["hej@maskera.dev", "work@joelhagvall.com"])
 
 // User-facing examples and unit fixtures use conspicuously fictional street
 // names. Evaluation corpora are excluded here: their public place vocabulary

@@ -2,7 +2,7 @@ import type { View } from "../routing"
 import { navClick, viewPaths } from "../routing"
 import { TopBar } from "./TopBar"
 
-const EMAIL = "work@joelhagvall.com"
+const EMAIL = "hej@maskera.dev"
 const BOOKING = "https://calendly.com/joel-hagvall/30min"
 const CLOUD = "https://app.maskera.dev"
 
