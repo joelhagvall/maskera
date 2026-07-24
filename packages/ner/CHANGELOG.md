@@ -1,5 +1,17 @@
 # maskera
 
+## 0.7.2
+
+### Patch Changes
+
+- Fix a PII leak at the chunk seam: the dedupe could drop the head of a detected entity.
+
+  Long input is split into overlapping chunks, so the same entity is scored twice with the model seeing different context each time, and the two spans can differ at both edges. That is what the overlap is for. The dedupe kept whichever span was longer and discarded the other wholesale, but the list is sorted by ascending start, so a longer span can still begin later. Replacing the earlier span then dropped its head.
+
+  A name cut by a seam is exactly that shape: the left chunk tags `Anna Karlsson`, the right one tags the longer `Karlsson Bergström`, and the first name was left in the output unmasked.
+
+  Overlapping spans are now merged to cover their union instead of one replacing the other, which is safe because they touch by definition. Gold-corpus eval is unchanged at 99.8 span-F1 with zero leaks.
+
 ## 0.7.1
 
 ### Patch Changes

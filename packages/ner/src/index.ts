@@ -409,10 +409,21 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
       for (const d of collected) {
         const prev = merged[merged.length - 1]
         if (prev && d.start < prev.end) {
-          if (d.end - d.start > prev.end - prev.start) merged[merged.length - 1] = d
+          // Two overlapping chunks saw the same entity with different
+          // boundaries, which is exactly what the seam overlap exists to
+          // produce. Cover the UNION rather than keeping whichever span is
+          // longer: `collected` is sorted by ascending start, so a longer `d`
+          // can still begin later, and replacing `prev` with it dropped
+          // `prev`'s head. A name cut by the seam ("Anna Karlsson" from the
+          // left chunk, "Karlsson Bergström" from the right) leaked its first
+          // name that way. Extending is safe because the spans touch.
+          if (d.end > prev.end) {
+            prev.end = d.end
+            prev.value = text.slice(prev.start, prev.end)
+          }
           continue
         }
-        merged.push(d)
+        merged.push({ ...d })
       }
       // A single-character span is never meaningful PII on its own (the model
       // tags "Q" in "Q3" as ORG); masking it just mangles the word around it.
