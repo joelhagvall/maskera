@@ -142,7 +142,22 @@ export function App() {
                 Only shown once there is something to restore. key resets the
                 edited draft when the scenario changes. */}
             {Object.keys(ner.result.map).length > 0 && (
-              <RestoreDemo key={active.id} result={ner.result} scenarioId={active.id} />
+              <>
+                <RestoreDemo key={active.id} result={ner.result} scenarioId={active.id} />
+                {/* Right after the full mask-send-restore loop has proven
+                    itself: that is when "can we run this in production?"
+                    gets asked. Conditional on a result so it stays out of
+                    the way until then; the footer keeps the generic pointer.
+                    The services page owns the app.maskera.dev links. */}
+                <p className="exnote">
+                  Samma maskering finns som färdigt moln-API och som Maskera Gateway på era egna
+                  servrar.{" "}
+                  <a href={viewPaths.services} onClick={navClick(() => navigate("services"))}>
+                    Se Maskera för företag
+                  </a>
+                  .
+                </p>
+              </>
             )}
           </main>
         </>

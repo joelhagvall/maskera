@@ -4,7 +4,7 @@ import { navClick, type View, viewPaths } from "../routing"
 
 const NAV: { view: View; label: string }[] = [
   { view: "dev", label: "För utvecklare" },
-  { view: "services", label: "Tjänster" },
+  { view: "services", label: "För företag" },
 ]
 
 /**

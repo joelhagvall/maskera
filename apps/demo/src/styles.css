@@ -1246,6 +1246,69 @@ body {
   background: var(--gray-100);
   border-radius: var(--radius-sm);
 }
+.implementation-help {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 18px;
+  padding: 18px 20px;
+  background: var(--gray-100);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.implementation-help p {
+  max-width: 60ch;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.prose .implementation-help .pkg-cta {
+  flex: 0 0 auto;
+  background: var(--bg);
+}
+@media (max-width: 700px) {
+  .implementation-help {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+  }
+}
+.choice-table {
+  margin-top: 18px;
+  border-block: 1px solid var(--border);
+}
+.choice-table dl {
+  margin: 0;
+}
+.choice-table dl > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.55fr);
+  gap: 24px;
+  padding: 14px 0;
+}
+.choice-table dl > div + div {
+  border-top: 1px solid var(--border);
+}
+.choice-table dt,
+.choice-table dd {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.choice-table dt {
+  font-weight: 500;
+}
+.choice-table dd {
+  color: var(--muted);
+}
+@media (max-width: 560px) {
+  .choice-table dl > div {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+}
 /* Numbered steps for "Så går det till". */
 .how {
   margin: 0;

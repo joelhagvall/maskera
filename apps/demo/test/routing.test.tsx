@@ -91,7 +91,7 @@ describe("useRoute: document.title", () => {
       window.dispatchEvent(new PopStateEvent("popstate"))
     })
     expect(result.current.view).toBe("services")
-    expect(document.title).toBe("tjänster · maskera")
+    expect(document.title).toBe("för företag · maskera")
     unmount()
   })
 })
@@ -121,11 +121,11 @@ describe("useRoute: route metadata", () => {
       "https://maskera.dev/tjanster",
     )
     expect(document.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.content).toBe(
-      "tjänster · maskera",
+      "för företag · maskera",
     )
     expect(
       document.querySelector<HTMLMetaElement>('meta[name="twitter:description"]')?.content,
-    ).toContain("fasta tjänstepaket")
+    ).toContain("Maskera Gateway")
     unmount()
   })
 })

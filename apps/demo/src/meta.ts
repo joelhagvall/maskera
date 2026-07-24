@@ -44,9 +44,9 @@ export const viewMeta: Record<View, { title: string; description: string }> = {
       "Så fungerar maskeras lokala personuppgiftsmaskering, hur modellen tränats, vilka begränsningar som finns och vilken testdata demon använder.",
   },
   services: {
-    title: "tjänster · maskera",
+    title: "för företag · maskera",
     description:
-      "Få hjälp att granska och integrera lokal personuppgiftsmaskering i era AI-flöden, med fasta tjänstepaket och direkt stöd från maskeras skapare.",
+      "Jämför Maskera open source, ett driftat Cloud-API och Maskera Gateway som körs på CPU före era AI-anrop.",
   },
 }
 
@@ -77,16 +77,13 @@ const jsonLd: Record<RouteHtmlView, object> = {
   },
   services: {
     "@context": "https://schema.org",
-    "@type": "Service",
-    name: "maskera implementationstjänster",
+    "@type": "WebPage",
+    name: "Maskera för företag",
     url: viewUrl("services"),
-    description: "Granskning och integration av lokal personuppgiftsmaskering i AI-flöden.",
-    areaServed: "SE",
-    provider: {
-      "@type": "Person",
-      name: "Joel Hägvall",
-      url: "https://joelhagvall.com",
-    },
+    description:
+      "Open source, driftat Cloud-API och privat CPU-baserad Gateway för svensk personuppgiftsmaskering före AI-anrop.",
+    inLanguage: "sv",
+    isPartOf: { "@type": "WebSite", name: "maskera", url: `${SITE_ORIGIN}/` },
   },
 }
 

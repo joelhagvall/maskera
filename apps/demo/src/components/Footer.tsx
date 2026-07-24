@@ -47,11 +47,11 @@ export function Footer({
         </ul>
       </nav>
       <p className="footer-row footer-help">
-        Vill du ha hjälp att integrera maskera i er produkt eller era AI-flöden? Se{" "}
+        Vill ni köra själva, använda ett färdigt API eller installera Maskera Gateway? Se{" "}
         <a className="footer-link" href={viewPaths.services} onClick={navClick(onServices)}>
-          tjänster
-        </a>{" "}
-        eller mejla <a href="mailto:work@joelhagvall.com">work@joelhagvall.com</a>
+          Maskera för företag
+        </a>
+        .
       </p>
       <p className="footer-row footer-credit">
         Byggd av{" "}

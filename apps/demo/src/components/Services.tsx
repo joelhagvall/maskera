@@ -1,73 +1,111 @@
 import type { View } from "../routing"
-import { viewPaths } from "../routing"
+import { navClick, viewPaths } from "../routing"
 import { TopBar } from "./TopBar"
 
 const EMAIL = "work@joelhagvall.com"
 const BOOKING = "https://calendly.com/joel-hagvall/30min"
+const CLOUD = "https://app.maskera.dev"
 
 function mailto(subject: string) {
   return `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}`
 }
 
-// utm_content shows up on the Calendly booking, so each card's clicks stay
-// attributable to its package.
 function booking(pkg: string) {
   return `${BOOKING}?utm_source=maskera_dev&utm_content=${pkg}`
 }
 
-type Pkg = {
+function cloud(path: string, content: string) {
+  const url = new URL(path, CLOUD)
+  url.searchParams.set("utm_source", "maskera_dev")
+  url.searchParams.set("utm_medium", "referral")
+  url.searchParams.set("utm_content", content)
+  return url.href
+}
+
+type Product = {
   name: string
   price: string
   tagline: string
   points: string[]
-  slug: string
+  cta: string
+  href: string
   featured?: boolean
+  view?: View
   note?: string
 }
 
-const PACKAGES: Pkg[] = [
+const PRODUCTS: Product[] = [
   {
-    name: "AI-integritetsgranskning",
-    price: "från 7 500 kr",
-    tagline: "Fast pris. Ni vet var ni står innan ni bygger vidare.",
+    name: "Open source",
+    price: "0 kr",
+    tagline: "För team som vill äga integration och drift själva.",
     points: [
-      "Genomgång av era AI-flöden: var personuppgifter kan nå externa tjänster",
-      "Live-demo av maskering på er egen exempeldata",
-      "Rekommenderad arkitektur och prioriterad åtgärdslista",
-      "Fast offert på implementation, om ni vill gå vidare",
+      "Kör i webbläsaren eller Node",
+      "Text och återställningsnyckel stannar i er miljö",
+      "MIT-licens, utan användningsavgift eller inlåsning",
+      "Svensk modell och färdiga regler för vanliga personuppgifter",
     ],
-    slug: "granskning",
+    cta: "Installera och kom igång",
+    href: viewPaths.dev,
+    view: "dev",
   },
   {
-    name: "Integrationssprint",
-    price: "från 25 000 kr",
-    tagline: "3 till 5 arbetsdagar, fast pris.",
+    name: "Maskera Cloud",
+    price: "från 0 kr",
+    tagline: "För team som vill komma igång utan egen drift.",
     featured: true,
     points: [
-      "maskera integreras i ert flöde, före ChatGPT, Claude, supportverktyg eller analys",
-      "Identifierare och regler anpassas för just er datatyp",
-      "Mätning på er data: vad som fångas, före och efter anpassningen",
-      "Tester, dokumentation och överlämning till ert team",
+      "Färdigt API, klart att integrera direkt",
+      "Er befintliga OpenAI-kod fungerar: byt bara adressen",
+      "Bearbetning i minnet på EU-ägd infrastruktur",
+      "Ingen lagring av innehållet i era anrop",
     ],
-    slug: "sprint",
-    // Time-limited scarcity claim: must be updated or removed no later than
-    // the August launch post, and immediately once both pilot slots are
-    // taken. A stale "pilotplatser kvar" reads as fake urgency.
-    note: "2 pilotplatser kvar: från 19 000 kr, mot att projektet får användas som anonymiserat referenscase.",
+    cta: "Se Cloud och priser",
+    href: cloud("/pricing", "business_cloud"),
   },
   {
-    name: "Löpande avtal",
-    price: "från 5 000 kr/mån",
-    tagline: "För er som kör maskera i produktion.",
+    name: "Maskera Gateway",
+    price: "149 000 kr/år",
+    tagline: "För verksamheter som behöver köra i sin egen miljö.",
     points: [
-      "Modelluppdateringar och stöd för nya typer av känsliga uppgifter",
-      "Jag verifierar mot er datatyp vid varje uppdatering, så att träffsäkerheten inte försämras",
-      "Kvartalsvis riskgenomgång av era AI-flöden, även sådana som tillkommer",
-      "Prioriterad support",
+      "Signerad container för Docker eller Kubernetes",
+      "Maskerar AI-trafiken innan den lämnar ert nätverk",
+      "Ingen GPU eller databas; den svenska modellen på 43\u00a0MB ingår",
+      "Central policy, företagsinloggning och säkerhetsuppdateringar",
     ],
-    slug: "avtal",
+    cta: "Läs om Gateway",
+    href: cloud("/gateway", "business_gateway"),
+    note: "Startnivå: 2 CPU-kärnor och 2\u00a0GB RAM. Priser exkl. moms. 60 dagars pilot: 49\u00a0000 kr.",
   },
 ]
+
+const GATEWAY_FLOW = [
+  "Er applikation: originaltext",
+  "Gateway: maskerar i er miljö",
+  "AI-tjänsten: endast skyddad text",
+  "Gateway: återställer svaret",
+] as const
+
+function ProductCard({ product, go }: { product: Product; go: (view: View) => void }) {
+  const onClick = product.view ? navClick(() => go(product.view as View)) : undefined
+
+  return (
+    <section className={`pkg${product.featured ? " featured" : ""}`}>
+      <h2 className="pkg-name">{product.name}</h2>
+      <p className="pkg-price">{product.price}</p>
+      <p className="pkg-tag">{product.tagline}</p>
+      <ul>
+        {product.points.map((point) => (
+          <li key={point}>{point}</li>
+        ))}
+      </ul>
+      {product.note && <p className="pkg-note">{product.note}</p>}
+      <a className="pkg-cta" href={product.href} onClick={onClick}>
+        {product.cta}
+      </a>
+    </section>
+  )
+}
 
 export function Services({ go }: { go: (view: View) => void }) {
   return (
@@ -76,101 +114,95 @@ export function Services({ go }: { go: (view: View) => void }) {
 
       <main id="main-content">
         <article className="prose prose-wide">
-          <h1>Tjänster</h1>
+          <h1>Maskera för företag</h1>
           <p className="prose-lede">
-            Använder ni AI på text som kan innehålla personuppgifter? Jag hjälper er att hitta och
-            maskera känsliga uppgifter lokalt, innan texten når externa AI-tjänster, loggar eller
-            analysverktyg.
+            Börja gratis och kör själva, använd ett färdigt API eller installera Maskera Gateway i
+            er egen miljö. Samma svenska maskering, tre sätt att ta den till produktion.
           </p>
           <p className="prose-sub">
-            maskera är öppen källkod och gratis att använda. Behöver ni hjälp med implementationen
-            erbjuder jag fasta tjänstepaket, och ni arbetar direkt med personen som byggt verktyget
-            och tränat den svenska modellen.
+            Open source-versionen kan ni börja med direkt. Cloud och Gateway öppnar för
+            självbetjäning inom kort; fram till dess kan ni anmäla intresse eller boka en genomgång.
           </p>
 
-          <div className="flow-band">
-            <p className="flow-band-label">Så ser flödet ut</p>
-            <div className="flow">
-              <span className="flow-step">Supportärende</span>
-              <span className="flow-arrow" aria-hidden="true">
-                →
-              </span>
-              <span className="flow-step">maskeras lokalt hos er</span>
-              <span className="flow-arrow" aria-hidden="true">
-                →
-              </span>
-              <span className="flow-step">
-                AI-tjänsten (t.ex. ChatGPT, Claude) ser bara platshållare
-              </span>
-              <span className="flow-arrow" aria-hidden="true">
-                →
-              </span>
-              <span className="flow-step">svaret återställs i ert system</span>
-            </div>
-          </div>
-
           <div className="pkgs">
-            {PACKAGES.map((p) => (
-              <section key={p.name} className={`pkg${p.featured ? " featured" : ""}`}>
-                <h2 className="pkg-name">{p.name}</h2>
-                <p className="pkg-price">{p.price}</p>
-                <p className="pkg-tag">{p.tagline}</p>
-                <ul>
-                  {p.points.map((point) => (
-                    <li key={point}>{point}</li>
-                  ))}
-                </ul>
-                {p.note && <p className="pkg-note">{p.note}</p>}
-                <a className="pkg-cta" href={booking(p.slug)} target="_blank" rel="noreferrer">
-                  Boka ett kostnadsfritt samtal
-                </a>
-              </section>
+            {PRODUCTS.map((product) => (
+              <ProductCard key={product.name} product={product} go={go} />
             ))}
           </div>
 
-          <h2>Så går det till</h2>
-          <ol className="how">
-            <li>
-              <strong>Mejla ett par rader</strong> om ert dataflöde: vilken typ av text, vart den
-              skickas i dag och vad som oroar er. Inga bilagor eller persondata behövs.
-            </li>
-            <li>
-              <strong>Kort samtal, kostnadsfritt.</strong> Vi går igenom flödet och jag visar direkt
-              hur maskering skulle se ut på ett anonymiserat exempel som liknar er data.
-            </li>
-            <li>
-              <strong>Fast offert.</strong> Tydligt avgränsad leverans till fast pris, inga löpande
-              timmar utan tak. Passar det inte säger jag det också.
-            </li>
-          </ol>
+          <h2>Vilket alternativ passar er?</h2>
+          <div
+            className="choice-table"
+            role="region"
+            aria-label="Jämförelse av Maskeras driftformer"
+          >
+            <dl>
+              <div>
+                <dt>Ni vill ha full kontroll och kan drifta själva</dt>
+                <dd>Välj open source.</dd>
+              </div>
+              <div>
+                <dt>Ni vill integrera snabbt och slippa egen drift</dt>
+                <dd>Välj Maskera Cloud.</dd>
+              </div>
+              <div>
+                <dt>Text och återställningsnycklar måste stanna i er miljö</dt>
+                <dd>Välj Maskera Gateway.</dd>
+              </div>
+            </dl>
+          </div>
 
-          <h2>Innan ni köper, det finstilta</h2>
+          <h2>Så skyddar Gateway AI-flödet</h2>
+          <p>
+            Varje AI-anrop som ni skickar genom Gateway maskeras före den godkända AI-tjänsten.
+            Originaltexten och återställningsnyckeln stannar i er miljö.
+          </p>
+          <div className="flow-band">
+            <p className="flow-band-label">Dataflöde för Gateway</p>
+            <div className="flow">
+              {GATEWAY_FLOW.map((step, index) => (
+                <span className="flow-item" key={step}>
+                  {index > 0 ? (
+                    <span className="flow-arrow" aria-hidden="true">
+                      →
+                    </span>
+                  ) : null}
+                  <span className="flow-step">{step}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <h2>Bra att veta innan ni väljer</h2>
           <ul>
             <li>
-              <strong>Maskering är riskminskning, inte en garanti.</strong> Uppgifter med bestämt
-              format, som personnummer, fångas av regler och är mycket pålitligt. Namn och platser i
-              löpande text bygger på en AI-modell som kan missa saker. Jag mäter och redovisar
-              träffsäkerheten på er datatyp i stället för att lova hundra procent. Läs mer under{" "}
+              <strong>Maskering minskar risk, men är inte en garanti.</strong> Namn och platser i
+              löpande text identifieras av en AI-modell som kan missa uppgifter. Träffsäkerheten
+              mäts öppet och löften om hundra procent undviks. Läs mer under{" "}
               <a href={viewPaths.transparency}>integritet &amp; transparens</a>.
             </li>
             <li>
-              <strong>Ingen inlåsning.</strong> maskera är öppen källkod. Integrationskod,
-              konfiguration och dokumentation som tas fram för er äger ni. Säger ni upp avtalet
-              fortsätter er integration att fungera.
-            </li>
-            <li>
-              <strong>All maskering körs hos er.</strong> I webbläsaren eller på er server. Er data
-              passerar aldrig mig eller någon tredje part, inte ens under projektet.
+              <strong>Ingen inlåsning i kärnan.</strong> Open source-paketen är MIT-licensierade och
+              fortsätter fungera även om ni inte köper Cloud, Gateway eller konsultstöd.
             </li>
           </ul>
 
-          <p className="prose-foot">
-            Frågor eller vill ni beskriva ert dataflöde först? Mejla{" "}
-            <a href={mailto("Maskera: tjänster")}>{EMAIL}</a> eller{" "}
-            <a href={booking("foot")} target="_blank" rel="noreferrer">
-              boka ett kostnadsfritt samtal
+          <h2>Behöver ni hjälp med införandet?</h2>
+          <section className="implementation-help">
+            <p>
+              <strong>Teknisk onboarding och anpassad integration</strong> erbjuds separat, från
+              25&nbsp;000 kr exkl. moms. Jag hjälper ert team att koppla Maskera till rätt flöde och
+              lämnar över tester och dokumentation.
+            </p>
+            <a className="pkg-cta" href={booking("implementation")}>
+              Boka ett införandesamtal
             </a>
-            .
+          </section>
+
+          <p className="prose-foot">
+            Osäkra på vilket alternativ som passar? Mejla{" "}
+            <a href={mailto("Maskera för företag")}>{EMAIL}</a> eller{" "}
+            <a href={booking("business_foot")}>boka ett kostnadsfritt samtal</a>.
           </p>
         </article>
       </main>

@@ -31,6 +31,27 @@ restore map stays with you. `maskera` re-exports the whole rule layer,
 so one import covers rules and model alike. Rules only, zero dependencies:
 `npm install @maskera/core`. **[Live demo → maskera.dev](https://maskera.dev)**
 
+## Choose how to run it
+
+This public repository and the demo are the free, local-processing option:
+your team owns the integration and operation. Companies that do not want to
+operate it themselves can use
+[Maskera Cloud](https://app.maskera.dev/pricing), where content is processed
+in memory on EU-owned infrastructure with zero payload retention. Companies
+that require original text and restore keys to remain in their own
+environment can use the
+[private Gateway](https://app.maskera.dev/gateway). Gateway is delivered as a
+signed, digest-pinned OCI image with the same 43 MB model built in. It runs on
+CPU without a database, GPU or separate model server, and masks every AI call
+that the application routes through it before the approved upstream receives
+the request.
+
+The three options are compared at
+[maskera.dev/tjanster](https://maskera.dev/tjanster). Full plan details,
+contracts and Cloud/Gateway documentation live only on app.maskera.dev so
+they cannot drift across repositories; the public site shows only the free
+option and clear starting prices.
+
 ## The model is the point
 
 [`maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner) is our
