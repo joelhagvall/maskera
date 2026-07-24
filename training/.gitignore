@@ -45,3 +45,6 @@ student-v7-onnx/
 # for compatibility with existing working copies).
 model-v*/
 student-v*/
+
+# homograph name-list source downloads (SALDO is 71 MB)
+.cache/

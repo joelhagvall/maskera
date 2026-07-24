@@ -1,0 +1,292 @@
+# Homograph-name lowercase eval. DIAGNOSTIC ONLY, never a publish gate
+# (see the header of training/gen_homograph_name_eval.mjs for why).
+# GENERATED FILE, do not hand-edit: node training/gen_homograph_name_eval.mjs
+#
+# 30 homograph names + 12 control names x 6 frames
+# = 252 name-use lines, plus 31 word-use lines.
+# [PER:x] = must be masked. [WORD:x] = must NOT be masked (false-positive control).
+# The <...> prefix is the cell the line belongs to; the benchmark splits on it.
+
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min iphone. [PER:dag] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min samsung. [PER:dag] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min macbook än. [PER:dag] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min faktura. [PER:dag] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min leverans. [PER:dag] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min mobil än. [PER:dag] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min samsung. [PER:liv] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min macbook. [PER:liv] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min spotify än. [PER:liv] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min leverans. [PER:liv] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min mobil. [PER:liv] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min dator än. [PER:liv] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min macbook. [PER:bror] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min spotify. [PER:bror] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min klarna än. [PER:bror] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min mobil. [PER:bror] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min dator. [PER:bror] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min order än. [PER:bror] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min spotify. [PER:klara] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min klarna. [PER:klara] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min zalando än. [PER:klara] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min dator. [PER:klara] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min order. [PER:klara] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min telefon än. [PER:klara] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min klarna. [PER:jack] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min zalando. [PER:jack] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min airpods än. [PER:jack] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min order. [PER:jack] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min telefon. [PER:jack] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min paket än. [PER:jack] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min zalando. [PER:tom] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min airpods. [PER:tom] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min playstation än. [PER:tom] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min telefon. [PER:tom] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min paket. [PER:tom] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min beställning än. [PER:tom] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min airpods. [PER:bo] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min playstation. [PER:bo] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min iphone än. [PER:bo] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min paket. [PER:bo] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min beställning. [PER:bo] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min faktura än. [PER:bo] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min playstation. [PER:frank] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min iphone. [PER:frank] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min samsung än. [PER:frank] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min beställning. [PER:frank] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min faktura. [PER:frank] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min leverans än. [PER:frank] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min iphone. [PER:max] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min samsung. [PER:max] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min macbook än. [PER:max] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min faktura. [PER:max] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min leverans. [PER:max] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min mobil än. [PER:max] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min samsung. [PER:fred] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min macbook. [PER:fred] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min spotify än. [PER:fred] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min leverans. [PER:fred] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min mobil. [PER:fred] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min dator än. [PER:fred] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min macbook. [PER:dan] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min spotify. [PER:dan] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min klarna än. [PER:dan] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min mobil. [PER:dan] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min dator. [PER:dan] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min order än. [PER:dan] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min spotify. [PER:henry] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min klarna. [PER:henry] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min zalando än. [PER:henry] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min dator. [PER:henry] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min order. [PER:henry] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min telefon än. [PER:henry] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min klarna. [PER:lova] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min zalando. [PER:lova] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min airpods än. [PER:lova] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min order. [PER:lova] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min telefon. [PER:lova] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min paket än. [PER:lova] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min zalando. [PER:per] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min airpods. [PER:per] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min playstation än. [PER:per] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min telefon. [PER:per] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min paket. [PER:per] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min beställning än. [PER:per] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min airpods. [PER:karl] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min playstation. [PER:karl] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min iphone än. [PER:karl] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min paket. [PER:karl] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min beställning. [PER:karl] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min faktura än. [PER:karl] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min playstation. [PER:emma] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min iphone. [PER:emma] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min samsung än. [PER:emma] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min beställning. [PER:emma] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min faktura. [PER:emma] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min leverans än. [PER:emma] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min iphone. [PER:sten] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min samsung. [PER:sten] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min macbook än. [PER:sten] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min faktura. [PER:sten] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min leverans. [PER:sten] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min mobil än. [PER:sten] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min samsung. [PER:lisa] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min macbook. [PER:lisa] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min spotify än. [PER:lisa] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min leverans. [PER:lisa] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min mobil. [PER:lisa] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min dator än. [PER:lisa] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min macbook. [PER:stig] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min spotify. [PER:stig] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min klarna än. [PER:stig] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min mobil. [PER:stig] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min dator. [PER:stig] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min order än. [PER:stig] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min spotify. [PER:laura] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min klarna. [PER:laura] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min zalando än. [PER:laura] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min dator. [PER:laura] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min order. [PER:laura] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min telefon än. [PER:laura] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min klarna. [PER:linda] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min zalando. [PER:linda] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min airpods än. [PER:linda] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min order. [PER:linda] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min telefon. [PER:linda] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min paket än. [PER:linda] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min zalando. [PER:rita] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min airpods. [PER:rita] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min playstation än. [PER:rita] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min telefon. [PER:rita] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min paket. [PER:rita] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min beställning än. [PER:rita] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min airpods. [PER:eva] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min playstation. [PER:eva] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min iphone än. [PER:eva] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min paket. [PER:eva] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min beställning. [PER:eva] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min faktura än. [PER:eva] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min playstation. [PER:sanna] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min iphone. [PER:sanna] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min samsung än. [PER:sanna] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min beställning. [PER:sanna] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min faktura. [PER:sanna] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min leverans än. [PER:sanna] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min iphone. [PER:björn] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min samsung. [PER:björn] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min macbook än. [PER:björn] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min faktura. [PER:björn] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min leverans. [PER:björn] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min mobil än. [PER:björn] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min samsung. [PER:juni] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min macbook. [PER:juni] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min spotify än. [PER:juni] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min leverans. [PER:juni] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min mobil. [PER:juni] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min dator än. [PER:juni] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min macbook. [PER:maj] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min spotify. [PER:maj] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min klarna än. [PER:maj] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min mobil. [PER:maj] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min dator. [PER:maj] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min order än. [PER:maj] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min spotify. [PER:tina] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min klarna. [PER:tina] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min zalando än. [PER:tina] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min dator. [PER:tina] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min order. [PER:tina] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min telefon än. [PER:tina] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min klarna. [PER:ann] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min zalando. [PER:ann] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min airpods än. [PER:ann] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min order. [PER:ann] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min telefon. [PER:ann] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min paket än. [PER:ann] undrar också
+<use=name type=homograph arm=brand tail=short> hej jag har fortfarande inte fått min zalando. [PER:axel] kommer imorgon
+<use=name type=homograph arm=brand tail=long> hejsan det är jag igen jag har inte fått min airpods. [PER:axel] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=brand tail=short> tjena har ni skickat min playstation än. [PER:axel] undrar också
+<use=name type=homograph arm=neutral tail=short> hej jag har fortfarande inte fått min telefon. [PER:axel] kommer imorgon
+<use=name type=homograph arm=neutral tail=long> hejsan det är jag igen jag har inte fått min paket. [PER:axel] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=homograph arm=neutral tail=short> tjena har ni skickat min beställning än. [PER:axel] undrar också
+<use=name type=plain arm=brand tail=short> hej jag har fortfarande inte fått min airpods. [PER:göran] kommer imorgon
+<use=name type=plain arm=brand tail=long> hejsan det är jag igen jag har inte fått min playstation. [PER:göran] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=brand tail=short> tjena har ni skickat min iphone än. [PER:göran] undrar också
+<use=name type=plain arm=neutral tail=short> hej jag har fortfarande inte fått min paket. [PER:göran] kommer imorgon
+<use=name type=plain arm=neutral tail=long> hejsan det är jag igen jag har inte fått min beställning. [PER:göran] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=neutral tail=short> tjena har ni skickat min faktura än. [PER:göran] undrar också
+<use=name type=plain arm=brand tail=short> hej jag har fortfarande inte fått min playstation. [PER:magda] kommer imorgon
+<use=name type=plain arm=brand tail=long> hejsan det är jag igen jag har inte fått min iphone. [PER:magda] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=brand tail=short> tjena har ni skickat min samsung än. [PER:magda] undrar också
+<use=name type=plain arm=neutral tail=short> hej jag har fortfarande inte fått min beställning. [PER:magda] kommer imorgon
+<use=name type=plain arm=neutral tail=long> hejsan det är jag igen jag har inte fått min faktura. [PER:magda] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=neutral tail=short> tjena har ni skickat min leverans än. [PER:magda] undrar också
+<use=name type=plain arm=brand tail=short> hej jag har fortfarande inte fått min iphone. [PER:anna] kommer imorgon
+<use=name type=plain arm=brand tail=long> hejsan det är jag igen jag har inte fått min samsung. [PER:anna] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=brand tail=short> tjena har ni skickat min macbook än. [PER:anna] undrar också
+<use=name type=plain arm=neutral tail=short> hej jag har fortfarande inte fått min faktura. [PER:anna] kommer imorgon
+<use=name type=plain arm=neutral tail=long> hejsan det är jag igen jag har inte fått min leverans. [PER:anna] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=neutral tail=short> tjena har ni skickat min mobil än. [PER:anna] undrar också
+<use=name type=plain arm=brand tail=short> hej jag har fortfarande inte fått min samsung. [PER:kalle] kommer imorgon
+<use=name type=plain arm=brand tail=long> hejsan det är jag igen jag har inte fått min macbook. [PER:kalle] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=brand tail=short> tjena har ni skickat min spotify än. [PER:kalle] undrar också
+<use=name type=plain arm=neutral tail=short> hej jag har fortfarande inte fått min leverans. [PER:kalle] kommer imorgon
+<use=name type=plain arm=neutral tail=long> hejsan det är jag igen jag har inte fått min mobil. [PER:kalle] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=neutral tail=short> tjena har ni skickat min dator än. [PER:kalle] undrar också
+<use=name type=plain arm=brand tail=short> hej jag har fortfarande inte fått min macbook. [PER:lennart] kommer imorgon
+<use=name type=plain arm=brand tail=long> hejsan det är jag igen jag har inte fått min spotify. [PER:lennart] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=brand tail=short> tjena har ni skickat min klarna än. [PER:lennart] undrar också
+<use=name type=plain arm=neutral tail=short> hej jag har fortfarande inte fått min mobil. [PER:lennart] kommer imorgon
+<use=name type=plain arm=neutral tail=long> hejsan det är jag igen jag har inte fått min dator. [PER:lennart] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=neutral tail=short> tjena har ni skickat min order än. [PER:lennart] undrar också
+<use=name type=plain arm=brand tail=short> hej jag har fortfarande inte fått min spotify. [PER:birgitta] kommer imorgon
+<use=name type=plain arm=brand tail=long> hejsan det är jag igen jag har inte fått min klarna. [PER:birgitta] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=brand tail=short> tjena har ni skickat min zalando än. [PER:birgitta] undrar också
+<use=name type=plain arm=neutral tail=short> hej jag har fortfarande inte fått min dator. [PER:birgitta] kommer imorgon
+<use=name type=plain arm=neutral tail=long> hejsan det är jag igen jag har inte fått min order. [PER:birgitta] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=neutral tail=short> tjena har ni skickat min telefon än. [PER:birgitta] undrar också
+<use=name type=plain arm=brand tail=short> hej jag har fortfarande inte fått min klarna. [PER:yusuf] kommer imorgon
+<use=name type=plain arm=brand tail=long> hejsan det är jag igen jag har inte fått min zalando. [PER:yusuf] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=brand tail=short> tjena har ni skickat min airpods än. [PER:yusuf] undrar också
+<use=name type=plain arm=neutral tail=short> hej jag har fortfarande inte fått min order. [PER:yusuf] kommer imorgon
+<use=name type=plain arm=neutral tail=long> hejsan det är jag igen jag har inte fått min telefon. [PER:yusuf] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=neutral tail=short> tjena har ni skickat min paket än. [PER:yusuf] undrar också
+<use=name type=plain arm=brand tail=short> hej jag har fortfarande inte fått min zalando. [PER:amina] kommer imorgon
+<use=name type=plain arm=brand tail=long> hejsan det är jag igen jag har inte fått min airpods. [PER:amina] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=brand tail=short> tjena har ni skickat min playstation än. [PER:amina] undrar också
+<use=name type=plain arm=neutral tail=short> hej jag har fortfarande inte fått min telefon. [PER:amina] kommer imorgon
+<use=name type=plain arm=neutral tail=long> hejsan det är jag igen jag har inte fått min paket. [PER:amina] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=neutral tail=short> tjena har ni skickat min beställning än. [PER:amina] undrar också
+<use=name type=plain arm=brand tail=short> hej jag har fortfarande inte fått min airpods. [PER:mehmet] kommer imorgon
+<use=name type=plain arm=brand tail=long> hejsan det är jag igen jag har inte fått min playstation. [PER:mehmet] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=brand tail=short> tjena har ni skickat min iphone än. [PER:mehmet] undrar också
+<use=name type=plain arm=neutral tail=short> hej jag har fortfarande inte fått min paket. [PER:mehmet] kommer imorgon
+<use=name type=plain arm=neutral tail=long> hejsan det är jag igen jag har inte fått min beställning. [PER:mehmet] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=neutral tail=short> tjena har ni skickat min faktura än. [PER:mehmet] undrar också
+<use=name type=plain arm=brand tail=short> hej jag har fortfarande inte fått min playstation. [PER:elvira] kommer imorgon
+<use=name type=plain arm=brand tail=long> hejsan det är jag igen jag har inte fått min iphone. [PER:elvira] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=brand tail=short> tjena har ni skickat min samsung än. [PER:elvira] undrar också
+<use=name type=plain arm=neutral tail=short> hej jag har fortfarande inte fått min beställning. [PER:elvira] kommer imorgon
+<use=name type=plain arm=neutral tail=long> hejsan det är jag igen jag har inte fått min faktura. [PER:elvira] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=neutral tail=short> tjena har ni skickat min leverans än. [PER:elvira] undrar också
+<use=name type=plain arm=brand tail=short> hej jag har fortfarande inte fått min iphone. [PER:sofia] kommer imorgon
+<use=name type=plain arm=brand tail=long> hejsan det är jag igen jag har inte fått min samsung. [PER:sofia] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=brand tail=short> tjena har ni skickat min macbook än. [PER:sofia] undrar också
+<use=name type=plain arm=neutral tail=short> hej jag har fortfarande inte fått min faktura. [PER:sofia] kommer imorgon
+<use=name type=plain arm=neutral tail=long> hejsan det är jag igen jag har inte fått min leverans. [PER:sofia] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=neutral tail=short> tjena har ni skickat min mobil än. [PER:sofia] undrar också
+<use=name type=plain arm=brand tail=short> hej jag har fortfarande inte fått min samsung. [PER:aleksandra] kommer imorgon
+<use=name type=plain arm=brand tail=long> hejsan det är jag igen jag har inte fått min macbook. [PER:aleksandra] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=brand tail=short> tjena har ni skickat min spotify än. [PER:aleksandra] undrar också
+<use=name type=plain arm=neutral tail=short> hej jag har fortfarande inte fått min leverans. [PER:aleksandra] kommer imorgon
+<use=name type=plain arm=neutral tail=long> hejsan det är jag igen jag har inte fått min mobil. [PER:aleksandra] kommer imorgon och tar med alla papper så vi kan gå igenom ärendet
+<use=name type=plain arm=neutral tail=short> tjena har ni skickat min dator än. [PER:aleksandra] undrar också
+<use=word type=homograph> jag ska [WORD:bo] kvar i lägenheten till sista augusti
+<use=word type=homograph> vi vill [WORD:bo] närmare stan men hittar inget
+<use=word type=homograph> det ligger en [WORD:sten] i vägen framför garaget
+<use=word type=homograph> hela gården är lagd med [WORD:sten] så det går inte att gräva
+<use=word type=homograph> vi såg en [WORD:björn] när vi var i norrland förra veckan
+<use=word type=homograph> kan ni höra av er nästa [WORD:dag] efter leveransen
+<use=word type=homograph> det tog en hel [WORD:dag] att få tag på någon
+<use=word type=homograph> det här har krånglat i hela mitt [WORD:liv]
+<use=word type=homograph> jag har aldrig i mitt [WORD:liv] sett en sådan faktura
+<use=word type=homograph> min [WORD:bror] har samma abonnemang som jag
+<use=word type=homograph> jag hinner inte [WORD:klara] det här innan fredag
+<use=word type=homograph> vi ska nog [WORD:klara] oss utan den delen
+<use=word type=homograph> kan ni [WORD:linda] om paketet ordentligt nästa gång
+<use=word type=homograph> det går en smal [WORD:stig] ner till bryggan
+<use=word type=homograph> jag har ont i min [WORD:axel] sedan olyckan
+<use=word type=homograph> det tar [WORD:max] tio minuter att fylla i formuläret
+<use=word type=homograph> det blir tvåhundra kronor [WORD:per] månad
+<use=word type=homograph> vi betalar [WORD:per] påbörjad timme enligt avtalet
+<use=word type=homograph> det stod en [WORD:karl] utanför dörren och väntade
+<use=word type=homograph> [WORD:mina] uppgifter stämmer inte i systemet
+<use=word type=homograph> kan ni ta bort [WORD:mina] gamla adresser
+<use=word type=homograph> lådan var [WORD:tom] när den kom fram
+<use=word type=homograph> jag behöver en ny [WORD:jack] till hörlurarna
+<use=word type=homograph> vi vill bara ha [WORD:fred] och lugn i huset
+<use=word type=homograph> kan ni [WORD:rita] upp hur det ska kopplas in
+<use=word type=homograph> väskan jag beställde skulle vara [WORD:rosa] inte röd
+<use=word type=homograph> det är en [WORD:knut] på sladden som jag inte får loss
+<use=word type=homograph> det var i [WORD:maj] som jag beställde varan
+<use=word type=homograph> det här ärendet är en enda lång [WORD:saga]
+<use=word type=homograph> vi bor i en [WORD:urban] miljö utan egen parkering
+<use=word type=homograph> ni kan inte [WORD:lova] en leverans ni inte kan hålla

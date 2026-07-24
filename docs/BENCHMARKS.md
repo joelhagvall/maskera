@@ -255,6 +255,54 @@ entities), the shipped artifact now covers **53 of 58** (redaction recall
 remaining five misses are three bare lowercase "löfven" declaratives plus
 the standing "vita huset" / "usa" metonym sentence.
 
+### Homograph first names (the sharpest lowercase hole, measured 2026-07-21)
+
+A user report ("lowercase `göran` right after `iphone.` is not masked")
+turned into a contrast measurement, and the reported cause was not the real
+one. On 252 generated lowercase chat sentences, each with one bare given
+name ([`training/eval/homograph-names.txt`](../training/eval/homograph-names.txt),
+graded by
+[`benchmark-homograph-names.mjs`](../packages/ner/eval/benchmark-homograph-names.mjs)):
+
+| cell | n | leaks | leak rate |
+| ---- | - | ----- | --------- |
+| name is also an ordinary Swedish word | 180 | 46 | **25.6%** |
+| name with no word sense (control) | 72 | 1 | **1.4%** |
+| homograph, brand word right before | 90 | 27 | 30.0% |
+| homograph, ordinary noun right before | 90 | 19 | 21.1% |
+| control, brand word right before | 36 | 1 | 2.8% |
+| control, ordinary noun right before | 36 | 0 | 0.0% |
+
+**The collision is the failure, not the context.** A name that is also a word
+(`dag`, `bror`, `lova`, `juni`, `liv`, `bo` leak 5-6 of 6 frames each) leaks
+~18x more than a control name in the identical sentence. The brand word that
+prompted the report is real but worth ~9pp on homographs and ~3pp on ordinary
+names: tail noise on top of the actual hole. The tail-length dimension did not
+replicate between two runs of the experiment and should be treated as frame
+noise, not signal.
+
+**Precision on those same words is currently perfect: 0 of 31** ordinary uses
+(`jag ska bo kvar i lägenheten`, `det ligger en sten i vägen`) is flagged.
+That is the number that rules out the obvious fix: a lowercase first-name
+gazetteer would buy recall here by spending exactly this, in exactly the
+register where those words are common. The fix belongs in training data that
+carries both roles of each word, and is on the roadmap for the next round.
+
+The set is a **diagnostic, never a publish gate** (six generated frames;
+gating would train the next round against the frame, the failure the v14
+rare-surname frame rotation had to undo). The name list it draws from is
+derived mechanically, not hand-picked, by crossing SCB given names against
+SALDO word classes: [`training/gen_homograph_names.mjs`](../training/gen_homograph_names.mjs).
+
+Reproduce:
+
+```bash
+pnpm -C packages/ner build
+node training/gen_homograph_names.mjs        # downloads SCB + SALDO, ~75 MB
+node training/gen_homograph_name_eval.mjs
+MASKERA_REMOTE=1 node packages/ner/eval/benchmark-homograph-names.mjs
+```
+
 ### ORG is still the weakest type (both registers)
 
 ORG recall is 75.1% cased / 60.1% lowercased, the weakest type in both and
@@ -612,6 +660,11 @@ Two things make numbers in older documents read higher than this file:
 - **Lowercase still trails cased text** (leak rate 14.2% vs 7.0%; the
   four-release improvement streak paused, the churn is documented above);
   real annotated support/chat text remains the lever that closes it.
+- **Lowercase given names that are also ordinary words leak 25.6%** vs 1.4%
+  for names with no word sense (`dag`, `bror`, `bo`, `liv`, `juni`, `lova`;
+  measured 2026-07-21, table above). Precision on the word sense is perfect
+  today (0/31), so the fix is training data carrying both roles of each word,
+  not a gazetteer. Nothing ships against this yet.
 - **This release's accepted cost is a second gold-real leak**:
   sentence-initial bare "Löfven" in one declarative-prose sentence (2 of
   58 leak there now, see [Known misses](#known-misses-published-on-purpose)).
