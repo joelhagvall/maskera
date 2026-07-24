@@ -130,6 +130,15 @@ export function Services({ go }: { go: (view: View) => void }) {
             ))}
           </div>
 
+          {/* The Cloud/Gateway cards leave for the customer portal on a
+              different subdomain. Saying so up front makes that handoff
+              expected instead of disorienting; the two sites deliberately
+              share one visual identity, so the URL is the only other cue. */}
+          <p className="prose-sub">
+            Priser, köp och dokumentation för Cloud och Gateway finns på{" "}
+            <a href={cloud("/", "business_portal_note")}>app.maskera.dev</a>, Maskeras kundportal.
+          </p>
+
           <h2>Vilket alternativ passar er?</h2>
           <div
             className="choice-table"
