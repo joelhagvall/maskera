@@ -150,7 +150,7 @@ export function App() {
                     the way until then; the footer keeps the generic pointer.
                     The services page owns the app.maskera.dev links. */}
                 <p className="exnote">
-                  Samma maskering finns som färdigt moln-API och som Maskera Gateway på era egna
+                  Samma maskering finns som Maskera Gateway, en färdig installation för era egna
                   servrar.{" "}
                   <a href={viewPaths.services} onClick={navClick(() => navigate("services"))}>
                     Se Maskera för företag

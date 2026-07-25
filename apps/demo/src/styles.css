@@ -1165,7 +1165,9 @@ main:has(.prose-foot) + .footer {
 }
 .pkgs {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Two cards while the Cloud card is commented out in Services.tsx;
+     back to 3 columns when it returns. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin: 28px 0 0;
 }

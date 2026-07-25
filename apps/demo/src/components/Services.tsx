@@ -50,24 +50,12 @@ const PRODUCTS: Product[] = [
     href: viewPaths.dev,
     view: "dev",
   },
-  {
-    name: "Maskera Cloud",
-    price: "från 0 kr",
-    tagline: "För team som vill komma igång utan egen drift.",
-    featured: true,
-    points: [
-      "Färdigt API, klart att integrera direkt",
-      "Er befintliga OpenAI-kod fungerar: byt bara adressen",
-      "Bearbetning i minnet hos ett EU-ägt bolag i EU",
-      "Ingen lagring av innehållet i era anrop",
-    ],
-    cta: "Se priser för Cloud",
-    href: cloud("/pricing", "business_cloud"),
-  },
+  // Gateway is featured: it is the product on sale today.
   {
     name: "Maskera Gateway",
     price: "149 000 kr/år",
     tagline: "För verksamheter som behöver köra i sin egen miljö.",
+    featured: true,
     points: [
       "Signerad container för Docker eller Kubernetes",
       "Maskerar AI-trafiken innan den lämnar ert nätverk",
@@ -78,6 +66,23 @@ const PRODUCTS: Product[] = [
     href: cloud("/gateway", "business_gateway"),
     note: "Startnivå: 2 CPU-kärnor och 2\u00a0GB RAM. Priser exkl. moms. 60 dagars pilot: 49\u00a0000 kr.",
   },
+  // Maskera Cloud is deliberately not offered while the product line is
+  // Gateway-first (decision 2026-07-25). Reinstate this card — and the Cloud
+  // row in the choice table below, plus the third .pkgs grid column in
+  // styles.css — if hosted demand materialises.
+  // {
+  //   name: "Maskera Cloud",
+  //   price: "från 0 kr",
+  //   tagline: "För team som vill komma igång utan egen drift.",
+  //   points: [
+  //     "Färdigt API, klart att integrera direkt",
+  //     "Er befintliga OpenAI-kod fungerar: byt bara adressen",
+  //     "Bearbetning i minnet hos ett EU-ägt bolag i EU",
+  //     "Ingen lagring av innehållet i era anrop",
+  //   ],
+  //   cta: "Se priser för Cloud",
+  //   href: cloud("/pricing", "business_cloud"),
+  // },
 ]
 
 const GATEWAY_FLOW = [
@@ -130,12 +135,12 @@ export function Services({ go }: { go: (view: View) => void }) {
         <article className="prose prose-wide">
           <h1>Maskera för företag</h1>
           <p className="prose-lede">
-            Börja gratis och kör själva, använd ett färdigt API eller installera Maskera Gateway i
-            er egen miljö. Samma svenska maskering, tre sätt att ta den till produktion.
+            Börja gratis och kör själva, eller installera Maskera Gateway i er egen miljö. Samma
+            svenska maskering, två sätt att ta den till produktion.
           </p>
           <p className="prose-sub">
-            Open source-versionen kan ni börja med direkt. Cloud och Gateway öppnar för
-            självbetjäning inom kort; fram till dess kan ni anmäla intresse eller boka en genomgång.
+            Open source-versionen kan ni börja med direkt. Gateway säljs via pilot — boka en
+            genomgång så kommer ni igång.
           </p>
 
           <div className="pkgs">
@@ -156,13 +161,16 @@ export function Services({ go }: { go: (view: View) => void }) {
                 <dd>Välj open source.</dd>
               </div>
               <div>
-                <dt>Ni vill integrera snabbt och slippa egen drift</dt>
-                <dd>Välj Maskera Cloud.</dd>
-              </div>
-              <div>
                 <dt>Text och återställningsnycklar måste stanna i er miljö</dt>
                 <dd>Välj Maskera Gateway.</dd>
               </div>
+              {/* The Cloud row returns with the Cloud card above if hosted
+                  demand materialises.
+              <div>
+                <dt>Ni vill integrera snabbt och slippa egen drift</dt>
+                <dd>Välj Maskera Cloud.</dd>
+              </div>
+              */}
             </dl>
           </div>
 
@@ -197,7 +205,7 @@ export function Services({ go }: { go: (view: View) => void }) {
             </li>
             <li>
               <strong>Ingen inlåsning i kärnan.</strong> Open source-paketen är MIT-licensierade och
-              fortsätter fungera även om ni inte köper Cloud, Gateway eller konsultstöd.
+              fortsätter fungera även om ni inte köper Gateway eller konsultstöd.
             </li>
           </ul>
 

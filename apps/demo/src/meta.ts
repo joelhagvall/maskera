@@ -46,7 +46,7 @@ export const viewMeta: Record<View, { title: string; description: string }> = {
   services: {
     title: "för företag · maskera",
     description:
-      "Jämför Maskera open source, ett driftat Cloud-API och Maskera Gateway som körs på CPU före era AI-anrop.",
+      "Jämför Maskera open source och Maskera Gateway, som körs på CPU i er egen miljö före era AI-anrop.",
   },
 }
 
@@ -81,7 +81,7 @@ const jsonLd: Record<RouteHtmlView, object> = {
     name: "Maskera för företag",
     url: viewUrl("services"),
     description:
-      "Open source, driftat Cloud-API och privat CPU-baserad Gateway för svensk personuppgiftsmaskering före AI-anrop.",
+      "Open source och privat CPU-baserad Gateway för svensk personuppgiftsmaskering före AI-anrop.",
     inLanguage: "sv",
     isPartOf: { "@type": "WebSite", name: "maskera", url: `${SITE_ORIGIN}/` },
   },
