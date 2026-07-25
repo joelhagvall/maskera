@@ -76,7 +76,14 @@ export const defaultLabelMap: LabelMap = (group) => {
     .replace(/^[BI]-/, "")
     .replace(/[\s_]/g, "")
     .toUpperCase()
-  return DEFAULT_LABEL_MAP[key] ?? key
+  const mapped = DEFAULT_LABEL_MAP[key]
+  if (mapped) return mapped
+  // An unknown group passes through as the placeholder label verbatim, so a
+  // hostile model must not be able to smuggle bracket or placeholder syntax
+  // ("]...[NAMN_1]") into redacted output. Keep a safe charset; if nothing
+  // survives, fall back to a generic label.
+  const safe = key.replace(/[^A-Z0-9-]/g, "")
+  return safe === "" ? "PII" : safe
 }
 
 /**
@@ -278,6 +285,13 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
     allowLocalModels,
     nativeLocalProgress = false,
   } = options
+
+  // Scores are probabilities in [0, 1]. An invalid threshold — NaN above all,
+  // since `avg >= NaN` is always false — would silently drop EVERY model
+  // detection, which is fail-open for PII. Reject bad config loudly instead.
+  if (!Number.isFinite(minScore) || minScore < 0 || minScore > 1) {
+    throw new Error(`maskera: minScore must be a finite number between 0 and 1, got ${minScore}`)
+  }
 
   const denySet = denylist === null ? null : new Set(Array.from(denylist, (w) => w.toLowerCase()))
 
@@ -589,11 +603,10 @@ export function reconstruct(
         // separator keeps entities that ARE such a word ("Org" as a name)
         // intact, and spans ending in a digit ("Storgatan nr 5") never match.
         // The separator run is bounded rather than `+`: unanchored `[...]+$`
-        // backtracks quadratically over a span that is mostly separators, and
-        // locateGroup will happily skip an unbounded whitespace gap between two
-        // pieces of one entity. "Anna" + 200k spaces + "Andersson" is one such
-        // span, and it took 18 s here (text extracted from PDFs produces exactly
-        // those runs). A real label separator is a comma and a space or two.
+        // backtracks quadratically over a span that is mostly separators.
+        // locateGroup caps the whitespace it skips between pieces, so such a
+        // span can no longer reach here, but the bound stays as a second line
+        // of defence. A real label separator is a comma and a space or two.
         for (;;) {
           const labelWord = text
             .slice(start, end)
@@ -646,6 +659,8 @@ export function reconstruct(
 const LETTER = /\p{L}/u
 const DIGIT = /\p{N}/u
 const WHITESPACE = /\s/
+/** Max whitespace skipped between two pieces of one entity; see locateGroup. */
+const MAX_PIECE_GAP = 32
 const STREET_ADDRESS_TAIL =
   /^(?:gata(?:n)?|väg(?:en)?|gränd(?:en)?|allé(?:n)?|torg(?:et)?|plan)\s+\p{N}/iu
 
@@ -658,6 +673,12 @@ const pieceOf = (t: RawToken) => (t.word.startsWith("##") ? t.word.slice(2) : t.
  * pieces `Karl`, `-`, `Gustav`, so we match piece by piece, allowing optional
  * whitespace before each new word (but none before a `##` continuation),
  * instead of guessing a single joined surface string.
+ *
+ * The whitespace skip between pieces is capped at {@link MAX_PIECE_GAP}:
+ * pieces of one entity sit a space or two apart, and an unbounded skip let
+ * the retry loop below re-walk a 200k-space run (PDF extraction produces
+ * exactly those) once per anchor of the head piece. Two pieces further apart
+ * than the cap are not one entity anyway.
  */
 function locateGroup(
   text: string,
@@ -681,7 +702,11 @@ function locateGroup(
         break
       }
       if (!tok.word.startsWith("##")) {
-        while (pos < text.length && WHITESPACE.test(text[pos] ?? "")) pos++
+        let skipped = 0
+        while (skipped < MAX_PIECE_GAP && pos < text.length && WHITESPACE.test(text[pos] ?? "")) {
+          pos++
+          skipped++
+        }
       }
       const piece = safeLower(pieceOf(tok))
       if (piece && lower.startsWith(piece, pos)) {

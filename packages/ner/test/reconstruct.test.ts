@@ -323,12 +323,12 @@ describe("reconstruct", () => {
     expect(out).toEqual([{ start: 10, end: 19, value: "Storgatan", label: "ADR" }])
   })
 
-  // locateGroup skips whitespace between two pieces of one entity without a
-  // bound, so a wide gap yields a span that is almost entirely separators. The
-  // identifier-label trim used to run an unanchored `[\s,;:(]+…$` over that
-  // span and backtracked quadratically: 200k spaces cost 18 s. Text extracted
-  // from a PDF produces runs like this without anyone crafting them.
-  it("trims the identifier label in linear time on a separator-heavy span", () => {
+  // locateGroup caps the whitespace it skips between two pieces of one
+  // entity (PDF extraction produces runs like this without anyone crafting
+  // them): without a bound the retry loop re-walked the run once per anchor,
+  // and pieces this far apart are not one entity anyway. The group is now
+  // dropped, fast.
+  it("does not join pieces across a huge whitespace run", () => {
     const text = `Anna${" ".repeat(200_000)}Andersson, org.nr 202100-4748`
     const started = performance.now()
     const out = reconstruct(
@@ -338,9 +338,18 @@ describe("reconstruct", () => {
       0.5,
     )
     expect(performance.now() - started).toBeLessThan(2000)
-    // The span still ends at the name, with the "org.nr" label trimmed off.
-    expect(out).toHaveLength(1)
-    expect(out[0]?.value.endsWith("Andersson")).toBe(true)
+    expect(out).toEqual([])
+  })
+
+  it("still joins pieces across an ordinary whitespace gap", () => {
+    const text = `Anna${" ".repeat(16)}Andersson`
+    const out = reconstruct(
+      text,
+      [tok("B-PER", "Anna", 0), tok("I-PER", "Andersson", 1)],
+      labelMap,
+      0.5,
+    )
+    expect(out).toEqual([{ start: 0, end: text.length, value: text, label: "PERSON" }])
   })
 
   it("still trims a label separated by several spaces and a comma", () => {

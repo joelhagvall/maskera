@@ -30,6 +30,17 @@ describe("defaultLabelMap", () => {
   it("upper-cases unknown groups so third-party models pass through", () => {
     expect(defaultLabelMap("misc")).toBe("MISC")
   })
+  it("constrains unknown groups to a placeholder-safe charset", () => {
+    // A hostile group must not be able to inject bracket/placeholder syntax
+    // into redacted output.
+    expect(defaultLabelMap("]...[NAMN_1]")).toBe("NAMN1")
+    expect(defaultLabelMap("[PER]")).toBe("PER")
+    expect(defaultLabelMap("MISC-TYPE")).toBe("MISC-TYPE")
+  })
+  it("falls back to PII when nothing safe remains", () => {
+    expect(defaultLabelMap("[]...")).toBe("PII")
+    expect(defaultLabelMap("!!!")).toBe("PII")
+  })
 })
 
 describe("custom labelMap", () => {

@@ -116,4 +116,17 @@ describe("Transformers runtime integration", () => {
       'maskera: failed to load model "joelhagvall/maskera-sv-ner".\nError: model response was invalid',
     )
   })
+
+  it("rejects an invalid minScore instead of silently dropping every detection", () => {
+    // `avg >= NaN` is always false: a NaN threshold would silently drop ALL
+    // model detections, which is fail-open for PII. Throw instead.
+    expect(() => createNerRecognizer({ minScore: Number.NaN })).toThrow(
+      /minScore must be a finite number between 0 and 1/,
+    )
+    expect(() => createNerRecognizer({ minScore: -0.1 })).toThrow(/minScore/)
+    expect(() => createNerRecognizer({ minScore: 1.5 })).toThrow(/minScore/)
+    expect(() => createNerRecognizer({ minScore: Number.POSITIVE_INFINITY })).toThrow(/minScore/)
+    expect(() => createNerRecognizer({ minScore: 0 })).not.toThrow()
+    expect(() => createNerRecognizer({ minScore: 1 })).not.toThrow()
+  })
 })
