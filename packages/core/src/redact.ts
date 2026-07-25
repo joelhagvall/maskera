@@ -53,6 +53,58 @@ function resolveOverlaps(detections: Detection[], input: string): Detection[] {
 }
 
 /**
+ * Key for the stable-placeholder cache. Length-prefixed rather than
+ * `${label}::${value}`, which is ambiguous the moment a custom label contains
+ * `::`: ("A::B", "c") and ("A", "B::c") would share one placeholder, and
+ * restore() would then write the first value where the second one stood.
+ */
+function tokenKey(label: PiiLabel, value: string): string {
+  return `${label.length}:${label}:${value}`
+}
+
+/**
+ * Answers "does this generated token already occur in the input?" without
+ * scanning the input once per redacted value.
+ *
+ * The plain scan is O(values × input): 4k distinct values in a 150 KB log spent
+ * 237 ms in this check alone, and both factors grow with the document, so a
+ * megabyte-sized log dump (the paste this library exists for) blocks for
+ * seconds. The placeholders of one label share a prefix ("[EPOST_"), so one
+ * scan per label settles all of them: a token carrying that prefix can only
+ * occur where the prefix occurs, which is usually nowhere and is a short list
+ * even when re-redacting an already redacted document. A token that does not
+ * carry the prefix - `placeholder` is an arbitrary caller function, it need not
+ * be prefix-stable - still takes the full scan, so the answer stays exact.
+ */
+function createInputProbe(
+  input: string,
+  placeholder: (label: PiiLabel, index: number) => string,
+): (label: PiiLabel, token: string) => boolean {
+  const prefixes = new Map<PiiLabel, { prefix: string; at: number[] } | null>()
+  return (label, token) => {
+    let entry = prefixes.get(label)
+    if (entry === undefined) {
+      const first = placeholder(label, 1)
+      const second = placeholder(label, 2)
+      let n = 0
+      while (n < first.length && n < second.length && first[n] === second[n]) n++
+      const prefix = first.slice(0, n)
+      entry = null
+      if (prefix.length > 0) {
+        const at: number[] = []
+        for (let i = input.indexOf(prefix); i !== -1; i = input.indexOf(prefix, i + 1)) at.push(i)
+        entry = { prefix, at }
+      }
+      prefixes.set(label, entry)
+    }
+    if (entry !== null && token.startsWith(entry.prefix)) {
+      return entry.at.some((i) => input.startsWith(token, i))
+    }
+    return input.includes(token)
+  }
+}
+
+/**
  * Detect and replace PII in `input`, returning the redacted text plus a
  * restore map. Placeholders are *stable*: the same value always maps to the
  * same token within one call, so an LLM can reason about `[NAMN_1]`
@@ -84,6 +136,26 @@ export function redactFromDetections(
 ): RedactResult {
   const placeholder = options.placeholder ?? defaultPlaceholder
 
+  // Spans arrive from callers too (`redactWithNer`, anything model-shaped), and
+  // a malformed one does not fail loudly on its own: `resolveOverlaps` sorts a
+  // reversed span into place and the rebuild loop below then *duplicates* the
+  // text between `last` and `r.start` instead of removing it, which is silent
+  // corruption of a document someone is redacting. Reject it instead.
+  for (const d of detections) {
+    if (
+      !Number.isInteger(d.start) ||
+      !Number.isInteger(d.end) ||
+      d.start < 0 ||
+      d.end > input.length ||
+      d.start >= d.end
+    ) {
+      throw new Error(
+        `maskera: detection span out of range for "${d.label}": [${d.start}, ${d.end}) ` +
+          `in an input of length ${input.length}`,
+      )
+    }
+  }
+
   const resolved = resolveOverlaps(detections, input)
 
   // Stable numbering: same value under the same label reuses its placeholder.
@@ -91,9 +163,10 @@ export function redactFromDetections(
   const tokenByKey = new Map<string, string>()
   const map: Record<string, string> = {}
   const redactions: Redaction[] = []
+  const occursInInput = createInputProbe(input, placeholder)
 
   for (const d of resolved) {
-    const key = `${d.label}::${d.value}`
+    const key = tokenKey(d.label, d.value)
     let token = tokenByKey.get(key)
     if (!token) {
       // Never hand out a token that already occurs literally in the input
@@ -104,16 +177,23 @@ export function redactFromDetections(
       // otherwise silently map two values to one token and corrupt restore).
       let next = counters.get(d.label) ?? 0
       let attempts = 0
-      do {
+      for (;;) {
         next += 1
         token = placeholder(d.label, next)
         attempts += 1
-      } while (attempts < 100 && (input.includes(token) || token in map))
-      if (input.includes(token) || token in map) {
-        throw new Error(
-          "maskera: placeholder() must return a token that is unique per (label, index) " +
-            "and does not occur in the input",
-        )
+        if (token.length > 0 && !occursInInput(d.label, token) && !(token in map)) break
+        // Giving up after a fixed number of tries made a crafted input a denial
+        // of service: seeding "[EPOST_1]".."[EPOST_100]" was enough to make
+        // every later redact() throw. An input can only hold
+        // input.length / token.length distinct colliding tokens, so past that
+        // bound the placeholder() itself is broken (it ignores the index) and
+        // no further index will help.
+        if (token.length === 0 || attempts > 8 + input.length / token.length) {
+          throw new Error(
+            "maskera: placeholder() must return a token that is unique per (label, index) " +
+              "and does not occur in the input",
+          )
+        }
       }
       counters.set(d.label, next)
       tokenByKey.set(key, token)
@@ -145,11 +225,62 @@ export function redactFromDetections(
  * Safe to call on LLM output that echoes the placeholders back.
  */
 export function restore(text: string, map: Record<string, string>): string {
-  let out = text
-  // Replace longer tokens first to avoid `[X_1]` clobbering `[X_10]`.
-  const tokens = Object.keys(map).sort((a, b) => b.length - a.length)
+  const tokens = Object.keys(map).filter((t) => t.length > 0)
+  if (tokens.length === 0) return text
+
+  // One left-to-right pass over a trie of the tokens, rather than a
+  // split/join per token. Two reasons, and the first one is correctness:
+  // replacing token by token re-scans text that was already restored, so a
+  // value that happens to contain another token ("Anna [EPOST_1]" as a NAMN
+  // value handed in via redactFromDetections) got substituted a second time
+  // and the output was neither the placeholder nor the original. A single pass
+  // never revisits what it wrote. The second is cost: split/join is O(tokens ×
+  // text), which is the same product that made redaction slow on large logs.
+  // Matching the deepest node at each position keeps the old longest-first
+  // rule, so `[X_10]` still wins over `[X_1]`.
+  const root: TrieNode = { next: new Map() }
   for (const token of tokens) {
-    out = out.split(token).join(map[token] as string)
+    let node = root
+    // Indexed by UTF-16 unit, the same way the scan below reads the text: a
+    // code-point walk here would key a surrogate pair as one two-unit string
+    // and never match.
+    for (let k = 0; k < token.length; k++) {
+      const ch = token[k] as string
+      let child = node.next.get(ch)
+      if (!child) {
+        child = { next: new Map() }
+        node.next.set(ch, child)
+      }
+      node = child
+    }
+    node.value = map[token]
   }
-  return out
+
+  let out = ""
+  let last = 0
+  let i = 0
+  while (i < text.length) {
+    let node = root.next.get(text[i] as string)
+    let matchEnd = -1
+    let matchValue: string | undefined
+    let j = i
+    while (node) {
+      j++
+      if (node.value !== undefined) {
+        matchEnd = j
+        matchValue = node.value
+      }
+      node = j < text.length ? node.next.get(text[j] as string) : undefined
+    }
+    if (matchValue === undefined) {
+      i++
+      continue
+    }
+    out += text.slice(last, i) + matchValue
+    i = matchEnd
+    last = i
+  }
+  return out + text.slice(last)
 }
+
+type TrieNode = { value?: string; next: Map<string, TrieNode> }

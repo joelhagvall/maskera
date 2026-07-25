@@ -77,6 +77,23 @@ describe("personnummer detector", () => {
     expect(found.some((v) => v.includes("9001012385"))).toBe(true)
   })
 
+  // A space where the dash goes is how people actually type it, and it was a
+  // one-character bypass: "900101 2385" passed through untouched while
+  // "900101-2385" was masked.
+  it.each([
+    ["10-digit, space separator", "Patient 900101 2385 skrevs in.", "900101 2385"],
+    ["12-digit, space separator", "Patient 19900101 2385 skrevs in.", "19900101 2385"],
+  ])("matches %s", (_label, input, value) => expectHit(personnummer, input, value))
+
+  // The space is only allowed where the identifier's own separator sits. Two
+  // unrelated numbers must not fuse into one, or every invoice table becomes a
+  // source of false positives.
+  it.each([
+    ["split at a non-separator position", "Ref 90010 12385 klar."],
+    ["numbers in a column", "900101\n2385"],
+    ["separated by a sentence", "Ordernr 900101. Antal 2385 st."],
+  ])("does not fuse %s", (_label, s) => expectMiss(personnummer, s))
+
   it("reports the 12-digit form once, not also as the 10-digit form inside it", () => {
     expect(personnummer.detect("Patient 199001012385 skrevs in.")).toHaveLength(1)
   })

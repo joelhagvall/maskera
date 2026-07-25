@@ -5,6 +5,7 @@ import {
   luhnValid,
   personnummer,
   redact,
+  redactFromDetections,
   regexDetector,
   restore,
 } from "../src/index"
@@ -113,5 +114,73 @@ describe("redact", () => {
     const { text, map } = redact(input)
     expect(text).toBe("[PERSONNUMMER_1] [PERSONNUMMER_2] [PERSONNUMMER_3]")
     expect(map["[PERSONNUMMER_3]"]).toBe(PNR)
+  })
+
+  it("keeps going when the input is seeded with a hundred token-shaped strings", () => {
+    // Skipping collisions used to give up after a fixed number of tries, so
+    // pasting "[EPOST_1]".."[EPOST_120]" ahead of a real address was enough to
+    // make redaction throw instead of redact. Fail-closed, but attacker-chosen.
+    const seeded = Array.from({ length: 120 }, (_, i) => `[EPOST_${i + 1}]`).join(" ")
+    const { text, map } = redact(`${seeded} kontakt: a@example.com`)
+    expect(text.endsWith("[EPOST_121]")).toBe(true)
+    expect(map["[EPOST_121]"]).toBe("a@example.com")
+  })
+
+  it("stays fast on a document with thousands of distinct values", () => {
+    // The collision check and restore() were both O(values × text): 4k values
+    // in 150 KB took 237 ms and grew with the product, so a log dump blocked
+    // for seconds.
+    const input = Array.from(
+      { length: 4000 },
+      (_, i) => `anv${i}@example.com loggade in fran 192.0.2.1`,
+    ).join("\n")
+    const started = performance.now()
+    const { text, restore: undo } = redact(input)
+    expect(performance.now() - started).toBeLessThan(2000)
+    expect(text).not.toContain("@example.com")
+    expect(undo(text)).toBe(input)
+  })
+
+  it("reports a capture group's real span, not the first place its text occurs", () => {
+    // `m[0].indexOf(value)` finds the copy inside the consumed left guard, so
+    // the detector masked the guard and left the captured value in the clear.
+    const detector = regexDetector("NAMN", /(?:Anna )(Anna)/g)
+    expect(detector.detect("Hej Anna Anna!")).toEqual([{ start: 9, end: 13, value: "Anna" }])
+    const { text } = redact("Hej Anna Anna!", { detectors: [detector] })
+    expect(text).toBe("Hej Anna [NAMN_1]!")
+  })
+})
+
+describe("redactFromDetections", () => {
+  it("rejects a malformed span instead of duplicating text", () => {
+    // A reversed span sorted into place and the rebuild loop then emitted the
+    // text between the previous end and `start` twice: silent corruption of a
+    // document someone is redacting.
+    const input = "Anna Andersson bor i Lund."
+    expect(() =>
+      redactFromDetections(input, [{ start: 14, end: 5, value: "Anna", label: "NAMN" }]),
+    ).toThrow(/out of range/)
+    expect(() =>
+      redactFromDetections(input, [{ start: 0, end: 999, value: input, label: "NAMN" }]),
+    ).toThrow(/out of range/)
+    expect(() =>
+      redactFromDetections(input, [{ start: 5, end: 5, value: "", label: "NAMN" }]),
+    ).toThrow(/out of range/)
+  })
+})
+
+describe("restore", () => {
+  it("does not substitute inside a value it just inserted", () => {
+    // Replacing token by token re-scanned text that was already restored, so a
+    // value containing another token (values can come from a caller via
+    // redactFromDetections) got substituted a second time and the output was
+    // neither the placeholder nor the original.
+    const map = { "[NAMN_1]": "Anna [ORT_1]", "[ORT_1]": "Lund" }
+    expect(restore("Hej [NAMN_1].", map)).toBe("Hej Anna [ORT_1].")
+  })
+
+  it("still prefers the longest token at a position", () => {
+    const map = { "[X_1]": "ett", "[X_10]": "tio" }
+    expect(restore("[X_10] och [X_1]", map)).toBe("tio och ett")
   })
 })

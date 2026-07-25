@@ -20,17 +20,40 @@ export function regexDetector(
   if (!regex.global) {
     throw new Error(`Detector "${label}" requires a global ("g") regex`)
   }
+  // Match indices ("d") give the capture group's real position. Looking the
+  // group text up inside m[0] instead (`m[0].indexOf(value)`) finds its first
+  // *occurrence*, which is a different place whenever that text also appears
+  // earlier in the match: a custom detector like /kontakt (\S+) mejl \1/ then
+  // reports a span four characters too far left, and redact() masks the wrong
+  // slice and leaves the value itself in the clear. The built-in detectors all
+  // capture at an unambiguous position, but this is public API.
+  //
+  // The flag is added to a copy, which also keeps `lastIndex` off the caller's
+  // regex. Engines predating the flag (it needs Chrome 90 / Safari 15 / Node
+  // 16) throw on construction, and these detectors are built at module scope,
+  // so the fallback is what keeps `import` itself from failing there.
+  let scanner = regex
+  let hasIndices = regex.flags.includes("d")
+  if (!hasIndices) {
+    try {
+      scanner = new RegExp(regex.source, `${regex.flags}d`)
+      hasIndices = true
+    } catch {
+      scanner = regex
+    }
+  }
   return {
     label,
     detect(input: string): RawMatch[] {
       const out: RawMatch[] = []
-      regex.lastIndex = 0
-      for (const m of input.matchAll(regex)) {
+      for (const m of input.matchAll(scanner)) {
         if (m.index === undefined) continue
         // If the pattern uses a capture group for the actual value, prefer it.
-        const value = m[1] ?? m[0]
+        const group = m[1] !== undefined ? 1 : 0
+        const value = m[group] as string
         if (value.length === 0) continue
-        const start = m.index + m[0].indexOf(value)
+        const span = hasIndices ? (m as MatchWithIndices).indices?.[group] : undefined
+        const start = span ? span[0] : m.index + m[0].indexOf(value)
         if (validate && !validate(value)) continue
         out.push({ start, end: start + value.length, value })
       }
@@ -39,12 +62,26 @@ export function regexDetector(
   }
 }
 
+/** `RegExpMatchArray.indices` is ES2022; the package compiles against ES2021. */
+type MatchWithIndices = RegExpMatchArray & {
+  indices?: Array<[number, number] | undefined>
+}
+
 // --- Swedish structured identifiers --------------------------------------
 
-/** A maximal run of digits, plus the `-`/`+` a Swedish identifier may contain. */
-const DIGIT_RUN = /\d[\d+-]*\d|\d/g
+/**
+ * A maximal run of digits, plus the `-`/`+` a Swedish identifier may contain
+ * and the horizontal whitespace it is routinely typed with ("811218 9876",
+ * "19 811218 9876" in forms and journal notes). Stopping the run at a space
+ * made one space a reliable one-character bypass, the same failure the missing
+ * word boundary was fixed for. Newlines are NOT included, so two numbers in a
+ * column never merge, and the whitespace run is bounded so the pattern cannot
+ * backtrack over a long gap.
+ */
+const DIGIT_RUN = /\d(?:[\d+-]|[ \t\u00a0]{1,2}(?=\d))*\d|\d/g
 
 const isDigit = (code: number) => code >= 48 && code <= 57
+const WS = /\s/
 
 /**
  * Find checksum-valid identifiers by sliding a window over every digit run,
@@ -65,6 +102,12 @@ const isDigit = (code: number) => code >= 48 && code <= 57
  * Luhn) are NOT scanned this way: they fire on ~10% of window positions, which
  * measured at 10 false positives per 100 sentences. They keep their boundaries.
  *
+ * A run may contain whitespace ("811218 9876"), but a window is only allowed to
+ * cross it at the position the separator actually belongs, four digits from the
+ * end. Anything else would let two unrelated numbers in a table ("Belopp 4711
+ * 220345") fuse into a candidate, and it is the cheap check that keeps the
+ * widened run from spending the false-positive budget the checksum bought.
+ *
  * Widths are tried widest-first and a match consumes its window, so a 12-digit
  * form is never also reported as the 10-digit form hiding inside it.
  */
@@ -83,13 +126,22 @@ function checksumWindowDetector(
         const base = run.index
         if (base === undefined) continue
         // Absolute offset of each digit, so a separator inside the run stays
-        // inside the reported span.
+        // inside the reported span. `spaced[k]` records that whitespace sits
+        // between digit k-1 and digit k.
         const offsets: number[] = []
+        const spaced: boolean[] = []
         let digits = ""
+        let gapSpaced = false
+        let anySpaced = false
         for (let i = 0; i < text.length; i++) {
           if (isDigit(text.charCodeAt(i))) {
             offsets.push(base + i)
+            spaced.push(gapSpaced)
             digits += text[i]
+            gapSpaced = false
+          } else if (WS.test(text[i] as string)) {
+            gapSpaced = true
+            anySpaced = true
           }
         }
         let i = 0
@@ -97,6 +149,18 @@ function checksumWindowDetector(
           let width = 0
           for (const w of widths) {
             if (i + w > digits.length) continue
+            // Whitespace may only sit where the identifier's own separator
+            // does: four digits from the end of the window.
+            if (anySpaced) {
+              let ok = true
+              for (let k = i + 1; k < i + w; k++) {
+                if (spaced[k] && k !== i + w - 4) {
+                  ok = false
+                  break
+                }
+              }
+              if (!ok) continue
+            }
             if (!validate(digits.slice(i, i + w))) continue
             width = w
             break
