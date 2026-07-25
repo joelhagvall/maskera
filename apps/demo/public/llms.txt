@@ -23,13 +23,13 @@ const { text, restore } = await redactWithNer(
 Benchmarks (exact-span F1, q4 quantized, measured 2026-07-19): 99.8% on the curated corpus (zero leaks), 94.7% on independent real text; leak rate 0.0% / 3.4%. Canonical table: https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md
 
 Deployment boundary: the local/on-device claims above apply to this
-open-source package and the maskera.dev browser demo. Maskera Cloud is a
-separate managed service: content is processed in memory at an EU-owned
-company in the EU with zero payload retention. Maskera Gateway is the private
-deployment for a customer's own servers. Gateway is a signed OCI container
+open-source package and the maskera.dev browser demo. Maskera Gateway is the
+commercial deployment for a customer's own servers: a signed OCI container
 with the 43 MB model built in. It runs on CPU without a database, GPU or
 separate model server, and masks routed AI traffic before the approved
-upstream receives it.
+upstream receives it. Text sent to the demo and hosted API on app.maskera.dev
+is processed in memory at an EU-owned company in the EU with zero payload
+retention.
 
 ## Docs
 
@@ -47,7 +47,7 @@ upstream receives it.
 ## Optional
 
 - [Live demo](https://maskera.dev/): paste Swedish text, watch it get masked in the browser
-- [For companies](https://maskera.dev/tjanster): compare open source, the managed Cloud API, and the private Gateway (Swedish)
-- [Cloud and Gateway pricing](https://app.maskera.dev/pricing): the canonical commercial plans and prices
+- [For companies](https://maskera.dev/tjanster): compare open source and the private Gateway (Swedish)
+- [Gateway pricing](https://app.maskera.dev/pricing): the canonical commercial plans and prices
 - [Private Gateway](https://app.maskera.dev/gateway): customer-hosted installation, security, and purchase flow
 - [Source repository](https://github.com/joelhagvall/maskera): monorepo with packages, training pipeline, and CI that re-grades the published model against a gold corpus

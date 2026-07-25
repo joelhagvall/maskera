@@ -42,9 +42,9 @@ CPU without a database, GPU or separate model server, and masks every AI call
 that the application routes through it before the approved upstream receives
 the request.
 
-The three options are compared at
+The options are compared at
 [maskera.dev/tjanster](https://maskera.dev/tjanster). Full plan details,
-contracts and Cloud/Gateway documentation live only on app.maskera.dev so
+contracts and Gateway documentation live only on app.maskera.dev so
 they cannot drift across repositories; the public site shows only the free
 option and clear starting prices.
 
