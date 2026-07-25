@@ -26,6 +26,9 @@ function cloud(path: string, content: string) {
 type Product = {
   name: string
   price: string
+  /** The low-commitment entry offer, shown right under the price so the
+      realistic first purchase is not buried in the footnote. */
+  pilot?: string
   tagline: string
   points: string[]
   cta: string
@@ -54,6 +57,7 @@ const PRODUCTS: Product[] = [
   {
     name: "Maskera Gateway",
     price: "149 000 kr/år",
+    pilot: "Börja med en 60 dagars pilot för 49\u00a0000 kr. Hela beloppet avräknas mot årslicensen vid köp inom 30 dagar.",
     tagline: "För verksamheter som behöver köra i sin egen miljö.",
     featured: true,
     points: [
@@ -64,7 +68,7 @@ const PRODUCTS: Product[] = [
     ],
     cta: "Läs om Gateway",
     href: cloud("/gateway", "business_gateway"),
-    note: "Startnivå: 2 CPU-kärnor och 2\u00a0GB RAM. Priser exkl. moms. 60 dagars pilot: 49\u00a0000 kr.",
+    note: "Startnivå: 2 CPU-kärnor och 2\u00a0GB RAM. Priser exkl. moms.",
   },
   // Maskera Cloud is deliberately not offered while the product line is
   // Gateway-first (decision 2026-07-25). Reinstate this card — and the Cloud
@@ -105,6 +109,7 @@ function ProductCard({ product, go }: { product: Product; go: (view: View) => vo
     <section className={`pkg${product.featured ? " featured" : ""}`}>
       <h2 className="pkg-name">{product.name}</h2>
       <p className="pkg-price">{product.price}</p>
+      {product.pilot && <p className="pkg-pilot">{product.pilot}</p>}
       <p className="pkg-tag">{product.tagline}</p>
       <ul>
         {product.points.map((point) => (
