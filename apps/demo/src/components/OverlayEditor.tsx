@@ -33,6 +33,9 @@ export function OverlayEditor({
       <textarea
         name={name}
         autoComplete="off"
+        // Bound input size: masking runs a main-thread regex pass plus worker
+        // clones per keystroke, so an unbounded paste can freeze the tab.
+        maxLength={100_000}
         value={value}
         aria-label={ariaLabel}
         spellCheck={false}

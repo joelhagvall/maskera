@@ -100,7 +100,10 @@ export function renderRouteHtml(view: RouteHtmlView): string {
   const title = escapeHtml(viewMeta[view].title)
   const description = escapeHtml(viewMeta[view].description)
   const url = viewUrl(view)
-  const structuredData = JSON.stringify(jsonLd[view], null, 2).replace(/\n/g, "\n      ")
+  // Escape "<" so a "</script>" in a future value can never close the tag.
+  const structuredData = JSON.stringify(jsonLd[view], null, 2)
+    .replace(/</g, "\\u003c")
+    .replace(/\n/g, "\n      ")
   // Only the developers page renders code blocks, so it alone preloads the
   // mono font.
   const monoPreload =
