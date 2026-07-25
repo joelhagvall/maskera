@@ -61,6 +61,31 @@ describe("personnummer detector", () => {
     ["order number", "Order 100200-3000 levererad"],
     ["just a year range", "2019-2024"],
   ])("rejects %s: %s", (_label, s) => expectMiss(personnummer, s))
+
+  // Detection must not hinge on a word boundary. It used to, and appending a
+  // single digit took detection from 100% to 0% on every value we generated:
+  // a one-character, fully reliable way to walk a personnummer past the
+  // filter. The checksum plus the date range carries that weight now.
+  it.each([
+    ["digit appended", "Kontakt: 900101-23857 tack."],
+    ["digit prepended", "Kontakt: 7900101-2385 tack."],
+    ["glued to an IP address", "Kontakt: 900101-2385192.0.2.1 tack."],
+    ["buried inside a long digit run", "Ref 4471899001012385221947 klar."],
+    ["12-digit form with a digit appended", "Kontakt: 1990010123857 tack."],
+  ])("finds a personnummer with no word boundary: %s", (_label, s) => {
+    const found = personnummer.detect(s).map((m) => m.value.replace(/\D/g, ""))
+    expect(found.some((v) => v.includes("9001012385"))).toBe(true)
+  })
+
+  it("reports the 12-digit form once, not also as the 10-digit form inside it", () => {
+    expect(personnummer.detect("Patient 199001012385 skrevs in.")).toHaveLength(1)
+  })
+
+  it("stays linear on a long digit run", () => {
+    const started = performance.now()
+    expect(personnummer.detect("1".repeat(400_000))).toEqual([])
+    expect(performance.now() - started).toBeLessThan(2000)
+  })
 })
 
 describe("samordningsnummer detector", () => {

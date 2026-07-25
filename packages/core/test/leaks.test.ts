@@ -86,6 +86,28 @@ const CASES: LeakCase[] = [
     input: "Betala till SE4280000890119146168423 idag.",
     mustRedact: ["SE4280000890119146168423"],
   },
+  // A word boundary was all it took to walk a personnummer past the filter:
+  // one appended digit dropped detection from 100% to 0%, every time.
+  {
+    note: "boundary bypass: personnummer with a digit stuck to it",
+    input: "Journalanteckning för 900101-23857 avslutad.",
+    mustRedact: ["900101-2385"],
+  },
+  {
+    note: "boundary bypass: personnummer concatenated with the next value",
+    input: "Poster: 900101-2385192.0.2.1 i loggen.",
+    mustRedact: ["900101-2385"],
+  },
+  {
+    note: "false-positive guard: a plain order number stays untouched",
+    input: "Order 100200-3000 levererad, referens 4711829.",
+    mustKeep: ["100200-3000", "4711829"],
+  },
+  {
+    note: "false-positive guard: an ISO date and a timestamp are not identifiers",
+    input: "Mötet 2026-07-24 loggades vid 1753387200 utan fel.",
+    mustKeep: ["2026-07-24", "1753387200"],
+  },
 ]
 
 describe("leak regression suite", () => {

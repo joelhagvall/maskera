@@ -41,17 +41,88 @@ export function regexDetector(
 
 // --- Swedish structured identifiers --------------------------------------
 
+/** A maximal run of digits, plus the `-`/`+` a Swedish identifier may contain. */
+const DIGIT_RUN = /\d[\d+-]*\d|\d/g
+
+const isDigit = (code: number) => code >= 48 && code <= 57
+
+/**
+ * Find checksum-valid identifiers by sliding a window over every digit run,
+ * with no word-boundary requirement at all.
+ *
+ * `\b` is what a caller uses to slip PII past the filter: appending a single
+ * digit to a personnummer took detection from 100% to 0%, reliably, and that is
+ * a poor property for the most sensitive identifier Sweden has. The boundary is
+ * only load-bearing because a bare digit run is usually an order id, so we let
+ * the checksum carry that weight instead. It can, but only where the format is
+ * selective enough: personnummer and samordningsnummer also constrain month and
+ * day, which rejects ~96% of candidates before Luhn even runs. Measured on
+ * 20,000 sentences of number-dense Swedish business text containing no personal
+ * identifiers, this costs 0.4 false positives per 100 sentences against 0.1 for
+ * the boundary version.
+ *
+ * Organisationsnummer (only "third digit >= 2" plus Luhn) and card numbers (only
+ * Luhn) are NOT scanned this way: they fire on ~10% of window positions, which
+ * measured at 10 false positives per 100 sentences. They keep their boundaries.
+ *
+ * Widths are tried widest-first and a match consumes its window, so a 12-digit
+ * form is never also reported as the 10-digit form hiding inside it.
+ */
+function checksumWindowDetector(
+  label: PiiLabel,
+  widths: readonly number[],
+  validate: (digits: string) => boolean,
+): Detector {
+  return {
+    label,
+    detect(input: string): RawMatch[] {
+      const out: RawMatch[] = []
+      DIGIT_RUN.lastIndex = 0
+      for (const run of input.matchAll(DIGIT_RUN)) {
+        const text = run[0]
+        const base = run.index
+        if (base === undefined) continue
+        // Absolute offset of each digit, so a separator inside the run stays
+        // inside the reported span.
+        const offsets: number[] = []
+        let digits = ""
+        for (let i = 0; i < text.length; i++) {
+          if (isDigit(text.charCodeAt(i))) {
+            offsets.push(base + i)
+            digits += text[i]
+          }
+        }
+        let i = 0
+        while (i < digits.length) {
+          let width = 0
+          for (const w of widths) {
+            if (i + w > digits.length) continue
+            if (!validate(digits.slice(i, i + w))) continue
+            width = w
+            break
+          }
+          if (width === 0) {
+            i++
+            continue
+          }
+          const start = offsets[i] as number
+          const end = (offsets[i + width - 1] as number) + 1
+          out.push({ start, end, value: input.slice(start, end) })
+          i += width
+        }
+      }
+      return out
+    },
+  }
+}
+
 /** Personnummer: YYYYMMDD-XXXX / YYMMDD-XXXX, `-` or `+` separator optional. */
-export const personnummer = regexDetector(
-  "PERSONNUMMER",
-  /\b(?:19|20)?\d{6}[-+]?\d{4}\b/g,
-  isPersonnummer,
-)
+export const personnummer = checksumWindowDetector("PERSONNUMMER", [12, 10], isPersonnummer)
 
 /** Samordningsnummer: personnummer-shaped but with day + 60. */
-export const samordningsnummer = regexDetector(
+export const samordningsnummer = checksumWindowDetector(
   "SAMORDNINGSNUMMER",
-  /\b(?:19|20)?\d{6}[-+]?\d{4}\b/g,
+  [12, 10],
   isSamordningsnummer,
 )
 

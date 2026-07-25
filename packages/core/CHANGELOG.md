@@ -1,5 +1,19 @@
 # @maskera/core
 
+## 0.5.0
+
+### Minor Changes
+
+- Detect personnummer and samordningsnummer without relying on a word boundary, closing a one-character bypass.
+
+  `\b` was load-bearing for these detectors, and it was trivially defeated: appending a single digit to a personnummer dropped detection from 100% to 0% on every value tested, in both the 10- and 12-digit written forms. So did prepending one, or concatenating the next value straight after it. That is a reliable way to walk Sweden's most sensitive identifier past the filter, and it also happens on its own whenever text loses its spacing, which is what PDF and OCR extraction routinely do.
+
+  Both detectors now slide a window over every digit run and let the checksum decide, with no boundary requirement. That is only safe where the format is selective enough: personnummer and samordningsnummer also constrain month and day, which rejects about 96% of candidates before Luhn runs. Widths are tried widest-first and a match consumes its window, so a 12-digit form is never also reported as the 10-digit form inside it.
+
+  Organisationsnummer (only "third digit >= 2" plus Luhn) and card numbers (only Luhn) deliberately keep their boundaries: scanned the same way they fire on roughly 10% of window positions, which measured at 10 false positives per 100 sentences. IBAN is already anchored on its `SE` prefix.
+
+  Measured cost. On the project's own 251 sentences of real Swedish prose, output is identical. On 20,000 sentences of deliberately number-dense business text containing no personal identifiers (order ids, invoice numbers, transaction ids, article numbers, timestamps), false positives per 100 sentences go from 0.13 to 0.39 for personnummer and from 0.00 to 0.77 for samordningsnummer. Those are over-maskings, the safe direction for a redaction tool. Recall on the bypass shapes goes from 0% to 97-100%. The gold-corpus eval is unchanged at 99.8 span-F1 with zero leaks, and scanning stays linear: 400 KB of digits in 114 ms.
+
 ## 0.4.6
 
 ### Patch Changes
