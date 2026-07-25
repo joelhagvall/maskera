@@ -34,13 +34,9 @@ so one import covers rules and model alike. Rules only, zero dependencies:
 ## Choose how to run it
 
 This public repository and the demo are the free, local-processing option:
-your team owns the integration and operation. Companies that do not want to
-operate it themselves can use
-[Maskera Cloud](https://app.maskera.dev/pricing), where content is processed
-in memory at an EU-owned company in the EU with zero payload retention. Companies
-that require original text and restore keys to remain in their own
-environment can use the
-[private Gateway](https://app.maskera.dev/gateway). Gateway is delivered as a
+your team owns the integration and operation. Companies that want the same
+masking as a ready-made, supported installation in their own environment can
+use the [private Gateway](https://app.maskera.dev/gateway). Gateway is delivered as a
 signed, digest-pinned OCI image with the same 43 MB model built in. It runs on
 CPU without a database, GPU or separate model server, and masks every AI call
 that the application routes through it before the approved upstream receives
