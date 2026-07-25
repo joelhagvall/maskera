@@ -26,9 +26,10 @@ function cloud(path: string, content: string) {
 type Product = {
   name: string
   price: string
-  /** The low-commitment entry offer, shown right under the price so the
-      realistic first purchase is not buried in the footnote. */
-  pilot?: string
+  /** The low-commitment entry offer, shown as a second price line under the
+      annual anchor so the realistic first purchase reads as a price, not a
+      sentence. Terms carry the credit condition in quieter type. */
+  pilot?: { price: string; terms: string }
   tagline: string
   points: string[]
   cta: string
@@ -57,7 +58,10 @@ const PRODUCTS: Product[] = [
   {
     name: "Maskera Gateway",
     price: "149 000 kr/år",
-    pilot: "Börja med en 60 dagars pilot för 49\u00a0000 kr. Hela beloppet avräknas mot årslicensen vid köp inom 30 dagar.",
+    pilot: {
+      price: "60 dagars pilot: 49\u00a0000 kr",
+      terms: "Hela beloppet avräknas mot årslicensen vid köp inom 30 dagar.",
+    },
     tagline: "För verksamheter som behöver köra i sin egen miljö.",
     featured: true,
     points: [
@@ -109,7 +113,12 @@ function ProductCard({ product, go }: { product: Product; go: (view: View) => vo
     <section className={`pkg${product.featured ? " featured" : ""}`}>
       <h2 className="pkg-name">{product.name}</h2>
       <p className="pkg-price">{product.price}</p>
-      {product.pilot && <p className="pkg-pilot">{product.pilot}</p>}
+      {product.pilot && (
+        <p className="pkg-pilot">
+          <span className="pkg-pilot-price">{product.pilot.price}</span>
+          <span className="pkg-pilot-terms">{product.pilot.terms}</span>
+        </p>
+      )}
       <p className="pkg-tag">{product.tagline}</p>
       <ul>
         {product.points.map((point) => (
