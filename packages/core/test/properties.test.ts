@@ -108,3 +108,72 @@ describe("redact invariants", () => {
     )
   })
 })
+
+/**
+ * The same invariants, but over inputs built from characters chosen to break
+ * the canonical-view offset mapping: invisible formatting, compatibility digits
+ * and letters, ligatures that fold to more characters than they occupy,
+ * combining marks, and lone separators. Ordinary text takes an identity fast
+ * path through `canonicalize`, so only a generator like this exercises the
+ * segment map at all, and a mapping bug there is a mis-masked span: the wrong
+ * text redacted and the real value left in the clear.
+ */
+const hostileChars = [
+  "​", // zero width space
+  "­", // soft hyphen
+  "⁠", // word joiner
+  "﻿", // BOM
+  " ", // narrow no-break space
+  " ", // thin space
+  " ", // no-break space
+  "͏", // combining grapheme joiner
+  "̊", // combining ring above
+  "‮", // right-to-left override
+  "ﬁ", // ligature fi -> two characters
+  "㎐", // squared unit -> three characters
+  "①", // circled digit one
+  "…", // ellipsis -> three dots
+  "０",
+  "５",
+  "８",
+  "＠", // fullwidth 0, 5, 8, @
+  ..."0123456789 \t\n-+.@ASÅåÖ",
+]
+
+const hostileDocumentArb = fc
+  .array(fc.constantFrom(...hostileChars), { maxLength: 80 })
+  .map((chars) => chars.join(""))
+
+describe("canonical-view invariants", () => {
+  it("keeps every detection anchored to real text, and round-trips", () => {
+    fc.assert(
+      fc.property(hostileDocumentArb, (input) => {
+        const result = redact(input)
+        // restore() must reproduce the original bytes, folding and all.
+        expect(result.restore(result.text)).toBe(input)
+        let previousEnd = 0
+        for (const detection of result.redactions) {
+          // A span must describe the text it claims to describe. If the offset
+          // map drifted, this is where it shows up.
+          expect(input.slice(detection.start, detection.end)).toBe(detection.value)
+          expect(detection.start).toBeGreaterThanOrEqual(previousEnd)
+          expect(detection.end).toBeLessThanOrEqual(input.length)
+          previousEnd = detection.end
+        }
+      }),
+      { numRuns: 20000 },
+    )
+  })
+
+  it("never leaves a redacted value in the output", () => {
+    fc.assert(
+      fc.property(hostileDocumentArb, (input) => {
+        const result = redact(input)
+        for (const detection of result.redactions) {
+          if (detection.value.length > 3) expect(result.text).not.toContain(detection.value)
+        }
+      }),
+      { numRuns: 20000 },
+    )
+  })
+})

@@ -1,5 +1,6 @@
+import { canonicalize } from "./canonicalize"
 import { defaultDetectors } from "./detectors"
-import type { Detection, PiiLabel, Redaction, RedactOptions, RedactResult } from "./types"
+import type { Detection, Detector, PiiLabel, Redaction, RedactOptions, RedactResult } from "./types"
 
 function defaultPlaceholder(label: PiiLabel, index: number): string {
   return `[${label}_${index}]`
@@ -75,12 +76,34 @@ function tokenKey(label: PiiLabel, value: string): string {
  * even when re-redacting an already redacted document. A token that does not
  * carry the prefix - `placeholder` is an arbitrary caller function, it need not
  * be prefix-stable - still takes the full scan, so the answer stays exact.
+ *
+ * The positions are then indexed BY TOKEN LENGTH rather than walked per query.
+ * Walking them is quadratic in the number of seeded tokens, and the retry loop
+ * in `redactFromDetections` is what supplies the second factor: an input seeded
+ * with "[EPOST_1]".."[EPOST_N]" forces N probes, and probe k walks about k
+ * positions before it finds its collision. Measured on the walk, with one real
+ * e-mail in the document: 24 kB of seeded tokens took 37 ms, 50 kB took 131 ms,
+ * 101 kB took 521 ms, 208 kB took 1.9 s and 427 kB took 7.7 s, a clean n^2 that
+ * blocks the event loop (or freezes the tab) on an input a redaction tool is
+ * expected to swallow. Grouping by length costs one pass per distinct length
+ * (about six for any counter-shaped placeholder) and answers each probe in O(1).
  */
 function createInputProbe(
   input: string,
   placeholder: (label: PiiLabel, index: number) => string,
 ): (label: PiiLabel, token: string) => boolean {
-  const prefixes = new Map<PiiLabel, { prefix: string; at: number[] } | null>()
+  interface Probe {
+    prefix: string
+    at: number[]
+    /** Candidate substrings at `at`, per token length. */
+    byLength: Map<number, Set<string>>
+  }
+  // Distinct token lengths per label, past which we stop caching and walk
+  // instead. A counter-shaped placeholder produces one length per decade, so
+  // this is far above any real one; it only bounds the memory a crafted
+  // `placeholder` could make us hold.
+  const MAX_CACHED_LENGTHS = 24
+  const prefixes = new Map<PiiLabel, Probe | null>()
   return (label, token) => {
     let entry = prefixes.get(label)
     if (entry === undefined) {
@@ -93,12 +116,23 @@ function createInputProbe(
       if (prefix.length > 0) {
         const at: number[] = []
         for (let i = input.indexOf(prefix); i !== -1; i = input.indexOf(prefix, i + 1)) at.push(i)
-        entry = { prefix, at }
+        entry = { prefix, at, byLength: new Map() }
       }
       prefixes.set(label, entry)
     }
     if (entry !== null && token.startsWith(entry.prefix)) {
-      return entry.at.some((i) => input.startsWith(token, i))
+      let candidates = entry.byLength.get(token.length)
+      if (candidates === undefined) {
+        if (entry.byLength.size >= MAX_CACHED_LENGTHS) {
+          return entry.at.some((i) => input.startsWith(token, i))
+        }
+        candidates = new Set<string>()
+        for (const i of entry.at) {
+          if (i + token.length <= input.length) candidates.add(input.slice(i, i + token.length))
+        }
+        entry.byLength.set(token.length, candidates)
+      }
+      return candidates.has(token)
     }
     return input.includes(token)
   }
@@ -111,16 +145,37 @@ function createInputProbe(
  * consistently and you can map results back afterwards.
  */
 export function redact(input: string, options: RedactOptions = {}): RedactResult {
-  const detectors = options.detectors ?? defaultDetectors
+  return redactFromDetections(input, runDetectors(input, options.detectors), options)
+}
 
+/**
+ * Run rule detectors over `input` and return their detections, with spans in
+ * `input`'s own coordinates.
+ *
+ * Detectors do NOT see `input`; they see its canonical view (see
+ * {@link canonicalize}), because a zero-width space or a fullwidth digit would
+ * otherwise walk a personnummer straight past every pattern. Spans come back
+ * mapped, and `value` is re-sliced from the original, so a detection always
+ * describes real text: `input.slice(d.start, d.end) === d.value` holds even
+ * when the folded text the detector matched looked nothing like it.
+ *
+ * Exported because the hybrid entry point in `maskera` needs the rule
+ * detections separately from the model's, and both must fold identically.
+ */
+export function runDetectors(input: string, detectors: Detector[] = defaultDetectors): Detection[] {
+  const canonical = canonicalize(input)
   const all: Detection[] = []
   for (const detector of detectors) {
-    for (const m of detector.detect(input)) {
-      all.push({ ...m, label: detector.label })
+    for (const m of detector.detect(canonical.text)) {
+      if (canonical.identity) {
+        all.push({ ...m, label: detector.label })
+        continue
+      }
+      const [start, end] = canonical.span(m.start, m.end)
+      all.push({ start, end, value: input.slice(start, end), label: detector.label })
     }
   }
-
-  return redactFromDetections(input, all, options)
+  return all
 }
 
 /**
@@ -135,6 +190,7 @@ export function redactFromDetections(
   options: Pick<RedactOptions, "placeholder"> = {},
 ): RedactResult {
   const placeholder = options.placeholder ?? defaultPlaceholder
+  const ownPlaceholder = options.placeholder === undefined
 
   // Spans arrive from callers too (`redactWithNer`, anything model-shaped), and
   // a malformed one does not fail loudly on its own: `resolveOverlaps` sorts a
@@ -152,6 +208,39 @@ export function redactFromDetections(
       throw new Error(
         `maskera: detection span out of range for "${d.label}": [${d.start}, ${d.end}) ` +
           `in an input of length ${input.length}`,
+      )
+    }
+    // `value` is what `restore()` writes back, and nothing downstream ever
+    // re-derives it from the span. A detection whose value disagrees with its
+    // own span therefore does not fail, it silently rewrites the document:
+    // ({start: 5, end: 18, value: "HELT ANNAT"}) restores "Ring HELT ANNAT
+    // imorgon." over "Ring Anna Svensson imorgon.". Same argument as the span
+    // check above, so the same treatment.
+    if (d.value !== input.slice(d.start, d.end)) {
+      throw new Error(
+        `maskera: detection value for "${d.label}" does not match its span [${d.start}, ${d.end}): ` +
+          `expected ${JSON.stringify(input.slice(d.start, d.end))}, got ${JSON.stringify(d.value)}`,
+      )
+    }
+    // The default placeholder wraps the label in brackets, which only delimits
+    // anything as long as the label carries none of its own. A label from an
+    // external model ("X] [PERSONNUMMER_1", say) otherwise produces the token
+    // "[X] [PERSONNUMMER_1_1]", and the redacted text an LLM sees then contains
+    // the literal string "[PERSONNUMMER_1]" at a place the real personnummer
+    // never stood. Echo that fragment back and `restore()` writes the real
+    // value into it: a document-controlled exfiltration primitive.
+    //
+    // Banning both brackets is exactly enough for this placeholder. A token is
+    // "[" + label + "_" + digits + "]"; with no bracket inside the label its
+    // only "[" is the first character and its only "]" the last, so any other
+    // token contained in it would have to be the token itself. `maskera`'s
+    // `defaultLabelMap` already strips this at the source; this is the guard
+    // for everyone calling core directly, which the doc comment invites.
+    if (ownPlaceholder && (d.label.includes("[") || d.label.includes("]"))) {
+      throw new Error(
+        `maskera: label ${JSON.stringify(d.label)} contains a bracket, which would nest inside ` +
+          "the default placeholder and let one token be read as another. Sanitise the label " +
+          "(see defaultLabelMap in maskera) or pass your own placeholder().",
       )
     }
   }

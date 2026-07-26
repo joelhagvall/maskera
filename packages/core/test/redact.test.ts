@@ -184,3 +184,76 @@ describe("restore", () => {
     expect(restore("[X_10] och [X_1]", map)).toBe("tio och ett")
   })
 })
+
+describe("redactFromDetections rejects detections it cannot trust", () => {
+  const input = "Ring Anna Svensson imorgon."
+
+  it("rejects a value that disagrees with its own span", () => {
+    // Nothing downstream re-derives `value` from the span, so this used to
+    // restore "Ring HELT ANNAT imorgon." over the original document.
+    expect(() =>
+      redactFromDetections(input, [{ start: 5, end: 18, value: "HELT ANNAT", label: "NAMN" }]),
+    ).toThrow(/does not match its span/)
+  })
+
+  it("rejects a label that would nest a placeholder inside another", () => {
+    // With the default placeholder this label produces the token
+    // "[X] [PERSONNUMMER_1_1]", so the text an LLM sees contains the literal
+    // "[PERSONNUMMER_1]" where the real personnummer never stood. Echo that
+    // fragment back and restore() writes the real value into it.
+    expect(() =>
+      redactFromDetections(input, [
+        { start: 5, end: 9, value: "Anna", label: "X] [PERSONNUMMER_1" },
+      ]),
+    ).toThrow(/contains a bracket/)
+  })
+
+  it("allows a bracketed label when the caller owns the placeholder", () => {
+    const result = redactFromDetections(input, [{ start: 5, end: 9, value: "Anna", label: "X]" }], {
+      placeholder: (_label, index) => `<<${index}>>`,
+    })
+    expect(result.text).toBe("Ring <<1>> Svensson imorgon.")
+  })
+
+  it("still accepts labels that only look dangerous", () => {
+    for (const label of ["__proto__", "constructor", "toString"]) {
+      const result = redactFromDetections(input, [{ start: 5, end: 9, value: "Anna", label }])
+      expect(result.restore(result.text)).toBe(input)
+    }
+  })
+})
+
+describe("crafted placeholder collisions stay linear", () => {
+  /**
+   * An input seeded with "[EPOST_1]".."[EPOST_N]" forces the placeholder loop
+   * to probe N indices before it finds a free one. When each probe walked the
+   * list of prefix positions, probe k walked about k of them, so the whole
+   * thing was quadratic: 24 kB of seeded tokens took 37 ms, 101 kB took 521 ms,
+   * 208 kB took 1.9 s and 427 kB took 7.7 s of blocked event loop, with one
+   * real e-mail in the document. Indexing the positions by token length makes
+   * each probe O(1).
+   */
+  const seed = (n: number) =>
+    `${Array.from({ length: n }, (_, i) => `[EPOST_${i + 1}]`).join(" ")} kontakt: anna@example.com`
+
+  it("still picks the first index that does not collide", () => {
+    for (const n of [1, 9, 10, 99, 100, 1000]) {
+      const result = redact(seed(n))
+      expect(result.redactions).toHaveLength(1)
+      expect(result.redactions[0]?.replacement).toBe(`[EPOST_${n + 1}]`)
+      // None of the seeded tokens may end up in the restore map.
+      expect(Object.keys(result.map)).toEqual([`[EPOST_${n + 1}]`])
+    }
+  })
+
+  it("does not blow up on a document seeded with 16k placeholder tokens", () => {
+    const input = seed(16_000)
+    const started = performance.now()
+    const result = redact(input)
+    const elapsed = performance.now() - started
+    expect(result.redactions[0]?.replacement).toBe("[EPOST_16001]")
+    // ~12 ms after the fix, ~1.9 s before it. A generous ceiling so this is a
+    // regression guard rather than a benchmark.
+    expect(elapsed).toBeLessThan(1000)
+  })
+})

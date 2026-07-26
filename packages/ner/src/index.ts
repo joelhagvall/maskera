@@ -1,5 +1,11 @@
 import type { Detection, PiiLabel, RedactOptions, RedactResult } from "@maskera/core"
-import { adress, defaultDetectors, lagenhetsnummer, redactFromDetections } from "@maskera/core"
+import {
+  adress,
+  defaultDetectors,
+  lagenhetsnummer,
+  redactFromDetections,
+  runDetectors,
+} from "@maskera/core"
 
 // Re-export the whole rule layer so one install + one import is enough:
 // installing maskera pulls in @maskera/core automatically, and
@@ -230,6 +236,8 @@ export interface NerOptions {
   /**
    * Transformers.js `env.localModelPath`: base URL/path for locally hosted
    * models. Set this (plus `model`) to load your own model instead of the Hub.
+   *
+   * PROCESS-GLOBAL, see {@link allowRemoteModels}.
    */
   localModelPath?: string
   /**
@@ -237,9 +245,32 @@ export interface NerOptions {
    * required by Yarn PnP because its dependency archive is read-only.
    */
   cacheDir?: string
-  /** Transformers.js `env.allowRemoteModels` (default left untouched). */
+  /**
+   * Transformers.js `env.allowRemoteModels` (default left untouched).
+   *
+   * PROCESS-GLOBAL, like {@link localModelPath} and {@link allowLocalModels}:
+   * Transformers.js keeps these on one shared module-level `env`, not per
+   * pipeline, so a recognizer writes them for the whole process and the last
+   * writer wins. Two recognizers with conflicting values will fight:
+   *
+   *   A = createNerRecognizer({ localModelPath: "/models/", allowRemoteModels: false })
+   *   B = createNerRecognizer({ allowRemoteModels: true })
+   *   // B's load leaves allowRemoteModels true. If A has not loaded yet, or
+   *   // retries after a failed load, A now resolves against the network,
+   *   // against its own setting. A recognizer that sets none of these
+   *   // inherits whatever the previous one left behind.
+   *
+   * So treat them as one process-wide configuration decided once at startup,
+   * not as per-recognizer options. If you need `allowRemoteModels: false` as an
+   * actual guarantee, enforce it outside the library too (CSP `connect-src`,
+   * network policy, an offline container).
+   */
   allowRemoteModels?: boolean
-  /** Transformers.js `env.allowLocalModels` (default left untouched). */
+  /**
+   * Transformers.js `env.allowLocalModels` (default left untouched).
+   *
+   * PROCESS-GLOBAL, see {@link allowRemoteModels}.
+   */
   allowLocalModels?: boolean
   /**
    * Forward native per-byte progress for a self-hosted model. Default: `false`.
@@ -501,6 +532,7 @@ export function reconstruct(
     }
     const tag = tok.entity ?? tok.entity_group ?? ""
     if (!tag || tag === "O") {
+      cursor = advancePastToken(text, lower, tok, cursor)
       i++
       continue
     }
@@ -555,9 +587,18 @@ export function reconstruct(
 
     const avg = group.reduce((s, p) => s + p.score, 0) / group.length
     const joined = group.map(pieceOf).join("")
+    let located = false
     if (joined && avg >= minScore && LETTER.test(joined)) {
-      const span = locateGroup(text, lower, group, cursor)
+      // Case-sensitive first. maskera-sv-ner's tokenizer is cased, so the
+      // token's `word` still carries the casing the text had, and an exact hit
+      // is always the more trustworthy of the two. The folded pass stays as the
+      // fallback for tokenizers that lower-case or strip accents.
+      const span =
+        spanFromOffsets(group, text.length) ??
+        locateGroup(text, text, group, cursor, false) ??
+        locateGroup(text, lower, group, cursor, true)
       if (span) {
+        located = true
         let start = span.start
         // The model can tag a trailing subword of a word it half-recognises
         // (e.g. "##r" in "dr Svensson"). Widen to the word boundary so the
@@ -619,10 +660,16 @@ export function reconstruct(
           const label = labelMap(base)
           if (label) {
             out.push({ start, end, value: text.slice(start, end), label })
-            cursor = end
           }
         }
+        // Advance whether or not the group was kept. A rejected group still
+        // says where the tokenizer had got to, and a cursor left behind is
+        // exactly what lets a later group re-match this same stretch of text.
+        if (end > cursor) cursor = end
       }
+    }
+    if (!located) {
+      for (const part of group) cursor = advancePastToken(text, lower, part, cursor)
     }
     i = j
   }
@@ -668,11 +715,72 @@ const STREET_ADDRESS_TAIL =
 const pieceOf = (t: RawToken) => (t.word.startsWith("##") ? t.word.slice(2) : t.word)
 
 /**
+ * The span the tokenizer itself reported, when it reported one.
+ *
+ * {@link RawToken} has always carried `start`/`end` and `reconstruct` ignored
+ * them, searching for the surface string instead. That search exists for BERT
+ * wordpiece, which tracks no offsets; where a tokenizer does track them they
+ * are exact, and preferring them removes the wrong-occurrence failure mode
+ * below outright rather than merely narrowing it.
+ */
+function spanFromOffsets(group: RawToken[], length: number): { start: number; end: number } | null {
+  const start = group[0]?.start
+  const end = group[group.length - 1]?.end
+  if (typeof start !== "number" || typeof end !== "number") return null
+  if (!Number.isInteger(start) || !Number.isInteger(end)) return null
+  if (start < 0 || end > length || start >= end) return null
+  return { start, end }
+}
+
+/**
+ * Move the search cursor past one token's surface text.
+ *
+ * {@link locateGroup} takes the first occurrence at or after `cursor`, so the
+ * cursor is what separates an entity from an identically spelled word earlier
+ * in the sentence, and its folded fallback pass makes even the casing no help.
+ * Tokens tagged `O` used not to move the cursor at all.
+ *
+ * Transformers.js's token-classification pipeline drops `O` tokens before we
+ * see them, so on maskera's own path this never fires; the case-sensitive
+ * lookup above is what carries that job. It matters for anyone calling the
+ * exported {@link reconstruct} with a full token stream, and it is the only
+ * correct thing to do with an `O` token when one does arrive.
+ *
+ * Only a piece sitting exactly where the next token belongs counts, which is
+ * immediately after the previous one with nothing but whitespace between:
+ * wordpiece splits on whitespace and punctuation and makes a token of every
+ * other character, so consecutive tokens are adjacent by construction. A
+ * tokenizer configured to strip accents turns "Åsa" into "asa", which cannot be
+ * found at its true position at all, and a plain distance bound would happily
+ * let that piece drag the cursor to some later "asa" and skip every real entity
+ * in between. Failing to advance is always safe; overshooting is not.
+ */
+function advancePastToken(text: string, lower: string, token: RawToken, cursor: number): number {
+  const end = token.end
+  if (typeof end === "number" && Number.isInteger(end) && end > cursor && end <= text.length) {
+    return end
+  }
+  const piece = pieceOf(token)
+  if (!piece) return cursor
+  let at = text.indexOf(piece, cursor)
+  if (at < 0) at = lower.indexOf(safeLower(piece), cursor)
+  if (at < 0 || at - cursor > MAX_PIECE_GAP) return cursor
+  for (let k = cursor; k < at; k++) {
+    if (!WHITESPACE.test(text[k] as string)) return cursor
+  }
+  return at + piece.length
+}
+
+/**
  * Locate a token group's span in the original text, starting at `cursor`.
  * The tokenizer discards whitespace, so "Karl-Gustav" comes back as the
  * pieces `Karl`, `-`, `Gustav`, so we match piece by piece, allowing optional
  * whitespace before each new word (but none before a `##` continuation),
  * instead of guessing a single joined surface string.
+ *
+ * `haystack` is `text` itself for the case-sensitive pass and its {@link
+ * safeLower} form for the folded fallback; `fold` says which, so the pieces are
+ * normalised the same way the haystack was.
  *
  * The whitespace skip between pieces is capped at {@link MAX_PIECE_GAP}:
  * pieces of one entity sit a space or two apart, and an unbounded skip let
@@ -682,16 +790,18 @@ const pieceOf = (t: RawToken) => (t.word.startsWith("##") ? t.word.slice(2) : t.
  */
 function locateGroup(
   text: string,
-  lower: string,
+  haystack: string,
   group: RawToken[],
   cursor: number,
+  fold: boolean,
 ): { start: number; end: number } | null {
+  const norm = fold ? safeLower : identity
   const head = group[0]
   if (!head) return null
-  const first = safeLower(pieceOf(head))
+  const first = norm(pieceOf(head))
   if (!first) return null
 
-  let start = lower.indexOf(first, cursor)
+  let start = haystack.indexOf(first, cursor)
   while (start >= 0) {
     let pos = start + first.length
     let ok = true
@@ -708,8 +818,8 @@ function locateGroup(
           skipped++
         }
       }
-      const piece = safeLower(pieceOf(tok))
-      if (piece && lower.startsWith(piece, pos)) {
+      const piece = norm(pieceOf(tok))
+      if (piece && haystack.startsWith(piece, pos)) {
         pos += piece.length
       } else {
         ok = false
@@ -717,10 +827,12 @@ function locateGroup(
       }
     }
     if (ok) return { start, end: pos }
-    start = lower.indexOf(first, start + 1)
+    start = haystack.indexOf(first, start + 1)
   }
   return null
 }
+
+const identity = (s: string): string => s
 
 /**
  * Where to cut an over-long chunk in two, with an overlap so an entity sitting
@@ -804,14 +916,9 @@ export async function redactWithNer(
   input: string,
   options: RedactWithNerOptions,
 ): Promise<RedactResult> {
-  const detectors = options.detectors ?? hybridDefaultDetectors
-
-  const ruleDetections: Detection[] = []
-  for (const detector of detectors) {
-    for (const m of detector.detect(input)) {
-      ruleDetections.push({ ...m, label: detector.label })
-    }
-  }
+  // Same folded view as the synchronous `redact()`, so a zero-width space
+  // cannot hide a personnummer from the rule half of the hybrid either.
+  const ruleDetections = runDetectors(input, options.detectors ?? hybridDefaultDetectors)
 
   const modelDetections = await options.recognizer.detect(input)
 

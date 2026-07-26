@@ -1,3 +1,4 @@
+export { type CanonicalText, canonicalize } from "./canonicalize"
 export {
   adress,
   // payment
@@ -23,7 +24,7 @@ export {
   samordningsnummer,
   url,
 } from "./detectors"
-export { redact, redactFromDetections, restore } from "./redact"
+export { redact, redactFromDetections, restore, runDetectors } from "./redact"
 export type {
   Detection,
   Detector,

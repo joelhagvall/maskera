@@ -358,3 +358,65 @@ describe("reconstruct", () => {
     expect(out).toEqual([{ start: 0, end: 8, value: "Kommun A", label: "ORGANIZATION" }])
   })
 })
+
+describe("reconstruct locates the right occurrence", () => {
+  it("prefers the case-exact occurrence over an earlier lower-case one", () => {
+    // The span search is case-insensitive so an identically spelled word
+    // earlier in the sentence used to shadow the tagged one, masking "berg"
+    // and leaving the real "Berg" in the clear. Swedish makes this ordinary:
+    // Berg, Ek, Lund, Sten, Ros and Ström are names and common words at once.
+    const text = "berg hörde av sig. Kontakta Berg om det."
+    const out = reconstruct(text, [tok("B-PER", "Berg", 7)], labelMap, 0.5)
+    expect(out).toEqual([{ start: 28, end: 32, value: "Berg", label: "PERSON" }])
+  })
+
+  it("falls back to a folded match when no case-exact one exists", () => {
+    const text = "Kontakta BERG om det."
+    const out = reconstruct(text, [tok("B-PER", "Berg", 2)], labelMap, 0.5)
+    expect(out).toEqual([{ start: 9, end: 13, value: "BERG", label: "PERSON" }])
+  })
+
+  it("uses tokenizer offsets when the tokenizer reports them", () => {
+    const text = "anna hörde av sig. Kontakta anna om det."
+    const out = reconstruct(
+      text,
+      [{ ...tok("B-PER", "anna", 7), start: 28, end: 32 }],
+      labelMap,
+      0.5,
+    )
+    expect(out).toEqual([{ start: 28, end: 32, value: "anna", label: "PERSON" }])
+  })
+
+  it("advances the cursor over O tokens so a later duplicate is found", () => {
+    const text = "anna hörde av sig. Kontakta anna om det."
+    const out = reconstruct(
+      text,
+      [
+        tok("O", "anna", 1),
+        tok("O", "hörde", 2),
+        tok("O", "av", 3),
+        tok("O", "sig", 4),
+        tok("O", ".", 5),
+        tok("O", "Kontakta", 6),
+        tok("B-PER", "anna", 7),
+      ],
+      labelMap,
+      0.5,
+    )
+    expect(out).toEqual([{ start: 28, end: 32, value: "anna", label: "PERSON" }])
+  })
+
+  it("does not let an unlocatable O token drag the cursor past a real entity", () => {
+    // A tokenizer that strips accents reports "asa" for "Åsa", which cannot be
+    // found at its true position. Advancing to some far-off later occurrence
+    // would skip everything in between, so the cursor must simply stay put.
+    const text = "Åsa och Anna kom. Sedan kom asa igen."
+    const out = reconstruct(
+      text,
+      [tok("O", "asa", 1), tok("O", "och", 2), tok("B-PER", "Anna", 3)],
+      labelMap,
+      0.5,
+    )
+    expect(out).toEqual([{ start: 8, end: 12, value: "Anna", label: "PERSON" }])
+  })
+})

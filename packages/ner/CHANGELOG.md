@@ -1,5 +1,55 @@
 # maskera
 
+## 0.9.0
+
+### Minor Changes
+
+- Security: see through invisible-character and compatibility-character obfuscation, and reject detections that cannot be trusted.
+
+  Detectors match ASCII-ish shapes, which made any character that renders as
+  nothing, or renders as a digit without being one, a one-character bypass of the
+  whole rule layer. A personnummer split by a zero-width space, a soft hyphen, a
+  word joiner, a narrow no-break space or written in fullwidth digits was reported
+  as clean, while a human and an LLM tokenizer both still read the number. This
+  was not only reachable by an adversary: U+00AD is what PDF de-hyphenation leaves
+  behind and U+202F is what Word and typographic number formatting insert.
+
+  Detectors now run against a canonical view of the input (invisible characters
+  removed, NFKC folded) and their spans are mapped back, so `restore()` still
+  round trips the original text byte for byte and `value` is always the real
+  substring. Ordinary text takes an identity fast path and is unaffected. The
+  NER eval is unchanged by this release (F1 99.8%, 0 leaks).
+
+  - `canonicalize()` and `runDetectors()` are exported from `@maskera/core` for
+    callers building their own detection pipeline.
+  - `redactFromDetections()` now rejects a detection whose `value` disagrees with
+    its own span. Such a detection did not fail, it silently rewrote the document
+    on `restore()`.
+  - `redactFromDetections()` now rejects a label containing `[` or `]` when using
+    the default placeholder. Such a label nests one placeholder inside another
+    ("[X] [PERSONNUMMER_1_1]"), which puts the literal text of a _different_
+    token into the document an LLM sees; echoing that fragment back made
+    `restore()` write the real value into it. `maskera`'s own `defaultLabelMap`
+    already stripped this at the source.
+  - Crafted placeholder collisions no longer take quadratic time. An input seeded
+    with `[EPOST_1]`..`[EPOST_N]` forced the placeholder loop to probe N indices,
+    and each probe walked the list of prefix positions, so 427 kB of seeded tokens
+    spent 7.7 s of blocked event loop (24 kB took 37 ms, 101 kB took 521 ms). The
+    positions are now indexed by token length, which answers each probe in O(1);
+    the same input takes 22 ms. Re-redacting an already redacted document hits the
+    same path.
+  - `reconstruct()` now prefers the case-exact occurrence of a model entity and
+    uses tokenizer offsets when the tokenizer reports them. The span search is
+    case-insensitive, so an identically spelled word earlier in the sentence could
+    shadow the tagged one and get masked in its place, leaving the real entity in
+    the clear. Swedish makes this ordinary rather than exotic: Berg, Ek, Lund,
+    Sten, Ros and Ström are names and common words at once.
+
+### Patch Changes
+
+- Updated dependencies
+  - @maskera/core@0.7.0
+
 ## 0.8.0
 
 ### Minor Changes

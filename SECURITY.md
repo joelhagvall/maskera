@@ -40,5 +40,25 @@ Out of scope:
   with a sentence for the eval corpus (see
   [docs/PRODUCTION.md](docs/PRODUCTION.md)). maskera is documented as
   defense in depth, not a guarantee.
+
+  A deliberate **bypass** is different and IS in scope: a construction that
+  hides PII from the detectors while a human or an LLM still reads it, such as
+  splitting an identifier with characters that render as nothing. Detectors run
+  against a folded view of the input (invisible characters removed, NFKC
+  applied) for exactly this reason. If you find a construction that survives
+  that, report it privately.
 - Vulnerabilities in dependencies with no exploitable path through maskera
   (report those upstream)
+
+## Known design limits
+
+`restore()` re-inserts real values wherever a placeholder token appears, and
+the tokens are deterministic (`[PERSONNUMMER_1]`). That is the whole point of
+it, but it means restoring text you do not control is a re-insertion primitive:
+a prompt injection in the source document can ask the model to emit
+`[PERSONNUMMER_1]` inside a URL, and `restore()` will fill in the real value.
+Do not run `restore()` on output that is then fetched, rendered as HTML or
+logged. Redaction protects what you send; it does not sanitise what comes back.
+
+A placeholder that already occurs in the input is never handed out again, so
+seeding `[PERSONNUMMER_1]` in the source cannot capture a real value.
