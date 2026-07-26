@@ -1,12 +1,12 @@
 import type { Redaction } from "@maskera/core"
 import type { ReactNode } from "react"
-import { hlStyle, labelMeta, pillStyle } from "./labels"
+import { hlStyle, type LabelMeta, labelMeta, pillStyle } from "./labels"
 
 interface Range {
   start: number
   end: number
   key: string
-  color: string
+  meta: LabelMeta
 }
 
 /**
@@ -40,7 +40,7 @@ function tokenRanges(text: string): Range[] {
       start: m.index,
       end: m.index + m[0].length,
       key: `${m.index}-${m[0]}`,
-      color: labelMeta(m[1]).color,
+      meta: labelMeta(m[1]),
     })
   }
   return ranges
@@ -54,7 +54,7 @@ function MarkedText({ text, ranges }: { text: string; ranges: Range[] }) {
   return (
     <>
       {weave(text, ranges, (slice, r) => (
-        <mark key={r.key} className="hl" style={hlStyle(r.color)}>
+        <mark key={r.key} className="hl" style={hlStyle(r.meta)}>
           {slice}
         </mark>
       ))}
@@ -69,7 +69,7 @@ export function HighlightedText({ text, redactions }: { text: string; redactions
     start: r.start,
     end: r.end,
     key: `${r.start}-${r.label}`,
-    color: labelMeta(r.label).color,
+    meta: labelMeta(r.label),
   }))
   return <MarkedText text={text} ranges={ranges} />
 }
@@ -88,7 +88,7 @@ export function RedactedText({ text }: { text: string }) {
   return (
     <>
       {weave(text, tokenRanges(text), (slice, r) => (
-        <span key={r.key} className="token" style={pillStyle(r.color)}>
+        <span key={r.key} className="token" style={pillStyle(r.meta)}>
           {slice}
         </span>
       ))}
@@ -114,7 +114,7 @@ export function RestoredText({ text, map }: { text: string; map: Record<string, 
     const start = m.index
     if (start > last) nodes.push(text.slice(last, start))
     nodes.push(
-      <mark key={`${start}-${token}-${i++}`} className="hl" style={hlStyle(labelMeta(m[1]).color)}>
+      <mark key={`${start}-${token}-${i++}`} className="hl" style={hlStyle(labelMeta(m[1]))}>
         {value}
       </mark>,
     )

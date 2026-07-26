@@ -122,7 +122,8 @@ export function renderRouteHtml(view: RouteHtmlView): string {
     <title>${title}</title>
     <meta name="description" content="${description}" />
     <link rel="canonical" href="${url}" />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0a" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="maskera" />

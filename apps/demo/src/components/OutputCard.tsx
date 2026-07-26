@@ -25,7 +25,7 @@ function Stats({ result }: { result: RedactResult }) {
         {counts.map(([label, n]) => {
           const m = labelMeta(label)
           return (
-            <span key={label} className="tag" style={pillStyle(m.color)}>
+            <span key={label} className="tag" style={pillStyle(m)}>
               {m.sv}
               <span className="tag-n">{n}</span>
             </span>

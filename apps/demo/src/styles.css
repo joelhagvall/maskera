@@ -43,6 +43,7 @@
 }
 
 :root {
+  color-scheme: light dark;
   --bg: #ffffff;
   --fg: #000000;
   --gray-100: #fafafa;
@@ -51,10 +52,38 @@
   --border-2: #dcdcdc;
   --muted: #666666;
   --muted-2: #757575;
+  /* Body text one step below full contrast (prose lists, code hover). */
+  --ink: #2a2a2a;
+  --border-hover: #c9c9c9;
+  --ok: #15803d;
+  --warn: #b45309;
   --radius: 8px;
   --radius-sm: 6px;
   --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Dark mode: no toggle, the OS setting decides. Neutral near-black palette in
+   the same roles as the light one (gray-100/200 are raised surfaces, border-2
+   the stronger hairline). --muted/--muted-2 keep their light-mode ordering
+   (muted-2 the quieter of the two) and both clear 4.5:1 on every surface they
+   sit on, darkest included. PII hues have their own per-label dark values in
+   src/labels.ts, applied through light-dark(). */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0a0a0a;
+    --fg: #ededed;
+    --gray-100: #111111;
+    --gray-200: #1a1a1a;
+    --border: #262626;
+    --border-2: #333333;
+    --muted: #a1a1a1;
+    --muted-2: #8f8f8f;
+    --ink: #c9c9c9;
+    --border-hover: #4a4a4a;
+    --ok: #4ade80;
+    --warn: #fbbf24;
+  }
 }
 
 * {
@@ -287,7 +316,7 @@ body {
 }
 .model-action:hover {
   background: var(--gray-100);
-  border-color: #c9c9c9;
+  border-color: var(--border-hover);
 }
 .bar {
   width: 72px;
@@ -325,7 +354,7 @@ body {
   font-weight: 500;
 }
 .dot.ready {
-  background: #15803d;
+  background: var(--ok);
 }
 .dot.ready.analyzing {
   animation: dot-pulse 1.1s ease-in-out infinite;
@@ -342,7 +371,7 @@ body {
   }
 }
 .dot.error {
-  background: #b45309;
+  background: var(--warn);
 }
 
 /* ---- grid / cards ---- */
@@ -375,6 +404,11 @@ body {
   }
   .controls {
     margin-top: 28px;
+    /* The tabs wrap to two rows on a phone; letting the model status share
+       that row crowds both. Stack it under the tabs with its own air. */
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
   }
   .app {
     padding: 40px 18px 64px;
@@ -911,7 +945,7 @@ main:has(.prose-foot) + .footer {
   margin: 10px 0;
   font-size: 15px;
   line-height: 1.65;
-  color: #2a2a2a;
+  color: var(--ink);
 }
 /* Body paragraphs between headings (e.g. the test-data intro): same text
    style as the list items, minus the bullet. */
@@ -919,7 +953,7 @@ main:has(.prose-foot) + .footer {
   margin: 10px 0;
   font-size: 15px;
   line-height: 1.65;
-  color: #2a2a2a;
+  color: var(--ink);
 }
 .prose li::before {
   content: "";
@@ -946,7 +980,7 @@ main:has(.prose-foot) + .footer {
   margin: 0 0 12px;
   font-size: 15px;
   line-height: 1.65;
-  color: #2a2a2a;
+  color: var(--ink);
 }
 .code-block {
   position: relative;
@@ -974,14 +1008,14 @@ main:has(.prose-foot) + .footer {
   padding: 4px 9px;
   font: 500 11.5px var(--sans);
   color: var(--muted);
-  background: #fff;
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   cursor: pointer;
 }
 .code-block .code-copy:hover {
-  color: #2a2a2a;
-  border-color: #c9c9c9;
+  color: var(--ink);
+  border-color: var(--border-hover);
 }
 .code-block .code-copy.copied {
   color: #166534;
@@ -1052,7 +1086,7 @@ main:has(.prose-foot) + .footer {
   white-space: nowrap;
 }
 .install-tabs .code-tab:hover {
-  color: #2a2a2a;
+  color: var(--ink);
 }
 .install-tabs .code-tab.on {
   color: var(--fg);
@@ -1069,6 +1103,28 @@ main:has(.prose-foot) + .footer {
 .install-note code {
   font-size: 12px;
 }
+/* The two-layer architecture diagram, framed like the code blocks (bordered
+   card, gray-100 caption strip). The SVG carries its own background and is
+   swapped for a dark variant via <picture> under prefers-color-scheme. */
+.layers-fig {
+  margin: 20px 0 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.layers-fig img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.layers-fig figcaption {
+  padding: 8px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--gray-100);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
 .tok-k {
   color: #7e22ce;
 }
@@ -1081,6 +1137,25 @@ main:has(.prose-foot) + .footer {
 .tok-c {
   color: var(--muted);
   font-style: italic;
+}
+/* Dark-mode one-offs that are not palette variables: the copied state (a
+   green-tinted confirmation pill) and the syntax hues, lightened to keep
+   their 4.5:1 on the dark code surface. */
+@media (prefers-color-scheme: dark) {
+  .code-block .code-copy.copied {
+    color: #4ade80;
+    border-color: #14532d;
+    background: #0b1d12;
+  }
+  .tok-k {
+    color: #c084fc;
+  }
+  .tok-s {
+    color: #4ade80;
+  }
+  .tok-f {
+    color: #93c5fd;
+  }
 }
 .prose-foot {
   margin-top: 36px;
@@ -1175,6 +1250,12 @@ main:has(.prose-foot) + .footer {
   .pkgs {
     grid-template-columns: 1fr;
   }
+  /* Stacked, the featured Gateway card would land under the open source
+     card and lose its punch; it leads on small screens. DOM order (and the
+     desktop layout) is unchanged. */
+  .pkg.featured {
+    order: -1;
+  }
 }
 .pkg {
   display: flex;
@@ -1201,14 +1282,15 @@ main:has(.prose-foot) + .footer {
   font-variant-numeric: tabular-nums;
 }
 .pkg-pilot {
-  /* The entry offer sits between the annual anchor and the tagline: the
-     pilot figure reads as a price, its credit condition as small print. */
+  /* The pilot is the card's big .pkg-price; this block sits under it with
+     the annual license as the secondary price line and the pilot's credit
+     condition as small print. */
   margin: 2px 0 10px;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-.pkg-pilot-price {
+.pkg-annual {
   font-size: 16px;
   font-weight: 650;
   letter-spacing: -0.01em;
@@ -1254,7 +1336,7 @@ main:has(.prose-foot) + .footer {
   text-decoration: none;
 }
 .prose .pkg-cta:hover {
-  border-color: #c9c9c9;
+  border-color: var(--border-hover);
   background: var(--gray-100);
 }
 .prose .pkg.featured .pkg-cta {
@@ -1365,7 +1447,7 @@ main:has(.prose-foot) + .footer {
   margin: 12px 0;
   font-size: 15px;
   line-height: 1.65;
-  color: #2a2a2a;
+  color: var(--ink);
   counter-increment: step;
 }
 .how li::before {

@@ -140,6 +140,23 @@ export function Developers({ go }: { go: (view: View) => void }) {
             Node.
           </p>
 
+          <figure className="layers-fig">
+            <picture>
+              <source media="(prefers-color-scheme: dark)" srcSet="/layers-dark.svg" />
+              <img
+                src="/layers.svg"
+                width="1200"
+                height="640"
+                loading="lazy"
+                alt="Diagram över maskeras två lager: din text delas upp mellan regler för uppgifter med bestämt format och en svensk AI-modell för fri text, och slås samman till maskerad text."
+              />
+            </picture>
+            <figcaption>
+              Reglerna tar allt med bestämt format, AI-modellen tar fri text som namn och adresser —
+              vid överlapp vinner reglerna.
+            </figcaption>
+          </figure>
+
           <h2>Installera</h2>
           <InstallTabs />
           <p className="install-note">

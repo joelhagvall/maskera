@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" font-family="Geist, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <!-- DERIVED dark variant of layers.svg, hand-adapted for the demo's dark
+       palette (canvas #0a0a0a, text #ededed, surfaces #111111, hairlines
+       #262626, PII hues from the dark column of src/labels.ts). Re-derive
+       when layers.svg changes. -->
+  <title>maskera: two layers, rules first</title>
+  <desc>Input text forks into two layers: deterministic checksum-validated rules for structured PII like personnummer, and a 43 MB Swedish AI model for free text like names. Rules win on overlap, and the merged result is the masked output.</desc>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9" fill="none" stroke="#8f8f8f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="640" fill="#0a0a0a"/>
+
+  <!-- Header -->
+  <text x="48" y="64" font-size="26" font-weight="700" fill="#ededed">maskera</text>
+  <text x="48" y="94" font-size="16" fill="#a1a1a1">Two layers, one engine: deterministic rules first, and an AI model for the free text rules can never list.</text>
+
+  <!-- ============ Card: Your text ============ -->
+  <rect x="48" y="200" width="280" height="228" rx="10" fill="#0a0a0a" stroke="#262626" stroke-width="1.5"/>
+  <text x="68" y="239" font-size="16.5" font-weight="650" fill="#ededed">Your text</text>
+  <text x="68" y="264" font-size="12.2" fill="#a1a1a1">lowercase chat and all</text>
+
+  <rect x="68" y="280" width="240" height="96" rx="8" fill="#111111" stroke="#262626"/>
+  <!-- highlight: anna karlsson (NAMN, demoblå) -->
+  <rect x="81" y="315" width="107.4" height="21" rx="5" fill="#5e82e8" fill-opacity="0.16"/>
+  <line x1="84" y1="334" x2="185.4" y2="334" stroke="#5e82e8" stroke-width="2" stroke-linecap="round"/>
+  <!-- highlight: 991201-2391 (PERSONNUMMER, demoröd) -->
+  <rect x="117" y="341" width="91.8" height="21" rx="5" fill="#e55252" fill-opacity="0.16"/>
+  <line x1="120" y1="360" x2="205.8" y2="360" stroke="#e55252" stroke-width="2" stroke-linecap="round"/>
+
+  <g font-family="'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="13" fill="#d4d4d4" xml:space="preserve">
+    <text x="84" y="304" textLength="101.4" lengthAdjust="spacingAndGlyphs">hej jag heter</text>
+    <text x="84" y="330" textLength="101.4" lengthAdjust="spacingAndGlyphs" font-weight="600">anna karlsson</text>
+    <text x="185.4" y="330" textLength="7.8" lengthAdjust="spacingAndGlyphs">,</text>
+    <text x="84" y="356" textLength="23.4" lengthAdjust="spacingAndGlyphs">pnr</text>
+    <text x="120" y="356" textLength="85.8" lengthAdjust="spacingAndGlyphs" font-weight="600">991201-2391</text>
+  </g>
+
+  <rect x="84" y="384" width="14" height="10" rx="2.5" fill="#5e82e8" fill-opacity="0.16"/>
+  <line x1="85" y1="396" x2="97" y2="396" stroke="#5e82e8" stroke-width="2" stroke-linecap="round"/>
+  <text x="106" y="394" font-size="12" fill="#a1a1a1">no fixed shape → the AI model</text>
+  <rect x="84" y="406" width="14" height="10" rx="2.5" fill="#e55252" fill-opacity="0.16"/>
+  <line x1="85" y1="418" x2="97" y2="418" stroke="#e55252" stroke-width="2" stroke-linecap="round"/>
+  <text x="106" y="416" font-size="12" fill="#a1a1a1">exact shape → the rules</text>
+
+  <!-- ============ Card: Layer 1, rules ============ -->
+  <rect x="380" y="140" width="340" height="160" rx="10" fill="#0a0a0a" stroke="#262626" stroke-width="1.5"/>
+  <text x="400" y="172" font-size="16.5" font-weight="650" fill="#ededed">Layer 1 · Rules</text>
+  <text x="400" y="195" font-size="12.2" fill="#a1a1a1">@maskera/core · deterministic</text>
+  <text x="400" y="222" font-size="12.4" fill="#c9c9c9">personnummer, phone, cards, IBAN …</text>
+  <text x="400" y="240" font-size="12.4" fill="#c9c9c9">checksum-validated where one exists</text>
+
+  <rect x="397" y="257" width="91.8" height="21" rx="5" fill="#e55252" fill-opacity="0.16"/>
+  <rect x="524" y="257" width="117" height="21" rx="5" fill="#e55252" fill-opacity="0.10" stroke="#e55252" stroke-opacity="0.45"/>
+  <g font-family="'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="13" xml:space="preserve">
+    <text x="400" y="272" textLength="85.8" lengthAdjust="spacingAndGlyphs" font-weight="650" fill="#d4d4d4">991201-2391</text>
+    <text x="498" y="272" fill="#8f8f8f">→</text>
+    <text x="528" y="272" textLength="109.2" lengthAdjust="spacingAndGlyphs" font-weight="650" fill="#e55252">[PERSONNUMMER]</text>
+  </g>
+
+  <!-- ============ Card: Layer 2, AI model ============ -->
+  <rect x="380" y="340" width="340" height="160" rx="10" fill="#0a0a0a" stroke="#262626" stroke-width="1.5"/>
+  <text x="400" y="372" font-size="16.5" font-weight="650" fill="#ededed">Layer 2 · AI model</text>
+  <text x="400" y="395" font-size="12.2" fill="#a1a1a1">maskera-sv-ner · 43 MB · runs in the browser</text>
+  <text x="400" y="422" font-size="12.4" fill="#c9c9c9">catches what regex never can: names,</text>
+  <text x="400" y="440" font-size="12.4" fill="#c9c9c9">places, companies, street addresses …</text>
+
+  <rect x="397" y="457" width="107.4" height="21" rx="5" fill="#5e82e8" fill-opacity="0.16"/>
+  <rect x="540" y="457" width="54.6" height="21" rx="5" fill="#5e82e8" fill-opacity="0.10" stroke="#5e82e8" stroke-opacity="0.45"/>
+  <g font-family="'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="13" xml:space="preserve">
+    <text x="400" y="472" textLength="101.4" lengthAdjust="spacingAndGlyphs" font-weight="650" fill="#d4d4d4">anna karlsson</text>
+    <text x="514" y="472" fill="#8f8f8f">→</text>
+    <text x="544" y="472" textLength="46.8" lengthAdjust="spacingAndGlyphs" font-weight="650" fill="#5e82e8">[NAMN]</text>
+  </g>
+
+  <!-- ============ Merge pill ============ -->
+  <rect x="758" y="273" width="94" height="44" rx="22" fill="#ededed"/>
+  <text x="805" y="291" font-size="11.5" font-weight="600" fill="#0a0a0a" text-anchor="middle">Rules win</text>
+  <text x="805" y="306" font-size="11.5" font-weight="600" fill="#0a0a0a" text-anchor="middle">on overlap</text>
+
+  <!-- ============ Card: Masked output ============ -->
+  <rect x="890" y="200" width="262" height="228" rx="10" fill="#0a0a0a" stroke="#262626" stroke-width="1.5"/>
+  <text x="910" y="239" font-size="16.5" font-weight="650" fill="#ededed">Masked output</text>
+  <text x="910" y="264" font-size="12.2" fill="#a1a1a1">what gets sent onward</text>
+
+  <rect x="910" y="280" width="222" height="96" rx="8" fill="#111111" stroke="#262626"/>
+  <!-- chip: [NAMN] (demoblå) -->
+  <rect x="923" y="315" width="54.6" height="21" rx="5" fill="#5e82e8" fill-opacity="0.10" stroke="#5e82e8" stroke-opacity="0.45"/>
+  <!-- chip: [PERSONNUMMER] (demoröd) -->
+  <rect x="958.2" y="341" width="117" height="21" rx="5" fill="#e55252" fill-opacity="0.10" stroke="#e55252" stroke-opacity="0.45"/>
+
+  <g font-family="'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="13" fill="#d4d4d4" xml:space="preserve">
+    <text x="926" y="304" textLength="101.4" lengthAdjust="spacingAndGlyphs">hej jag heter</text>
+    <text x="926" y="330" textLength="46.8" lengthAdjust="spacingAndGlyphs" font-weight="650" fill="#5e82e8">[NAMN]</text>
+    <text x="972.8" y="330" textLength="7.8" lengthAdjust="spacingAndGlyphs">,</text>
+    <text x="926" y="356" textLength="23.4" lengthAdjust="spacingAndGlyphs">pnr</text>
+    <text x="962" y="356" textLength="109.2" lengthAdjust="spacingAndGlyphs" font-weight="650" fill="#e55252">[PERSONNUMMER]</text>
+  </g>
+
+  <text x="910" y="404" font-size="12" fill="#a1a1a1">the restore key stays on your device</text>
+
+  <!-- Arrows: input forks to both layers -->
+  <path d="M 328 292 H 352 V 220 H 366" fill="none" stroke="#8f8f8f" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M 328 336 H 352 V 420 H 366" fill="none" stroke="#8f8f8f" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Layers converge into the merge pill -->
+  <path d="M 720 220 H 728 V 295 H 754" fill="none" stroke="#8f8f8f" stroke-width="2"/>
+  <path d="M 720 420 H 728 V 295 H 754" fill="none" stroke="#8f8f8f" stroke-width="2"/>
+  <!-- Merge to output -->
+  <path d="M 856 295 H 884" fill="none" stroke="#8f8f8f" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Bottom chip -->
+  <rect x="350" y="536" width="500" height="36" rx="18" fill="#111111" stroke="#262626"/>
+  <text x="600" y="558" font-size="12.4" fill="#d4d4d4" text-anchor="middle">Regex for what regex is good at, ML only for what it is needed for</text>
+
+  <!-- Footer -->
+  <text x="600" y="612" font-size="12.5" fill="#8f8f8f" text-anchor="middle">https://maskera.dev</text>
+</svg>
