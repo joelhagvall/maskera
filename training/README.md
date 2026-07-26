@@ -1157,7 +1157,8 @@ Infra added this round, kept regardless: `distill.py`
 twice under memory pressure; 16 / accum-2 is the same effective batch at half
 the activation memory) and `MASKERA_RESUME=1`; `run_v14.sh` `SKIP_DISTILL=1` to
 resume the fast trim/onnx/q4/gate tail without re-distilling. Reproducibility
-note: v2's data was built before the fixture-identifier commit (4e27289)
+note: v2's data was built before the fixture-identifier commit ("chore: replace
+fixture identifiers with reserved test values, add fixture-safety check")
 swapped two hardcoded distractor numbers in `generate_data.mjs`, so a rebuild
 today differs in 11 O-tagged distractor rows; every entity row is identical.
 

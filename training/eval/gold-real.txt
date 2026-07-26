@@ -5,6 +5,13 @@
 # silver/noisy-label caveat. Domain is still encyclopedic (not the support/
 # healthcare PII domain maskera targets), so read as an independent floor.
 # Types: PER, LOC, ORG (no street addresses in this source).
+#
+# SOURCE AND LICENSE: the sentences come from the Swedish Wikipedia articles
+# "Stefan Löfven" and "Spotify" (https://sv.wikipedia.org/), by their
+# respective authors, licensed CC BY-SA 4.0
+# (https://creativecommons.org/licenses/by-sa/4.0/). This file is therefore
+# CC BY-SA 4.0, not MIT like the rest of the repository. The span labels
+# were added by the maskera project and are released under the same terms.
 
 [PER:Stefan Löfven] föddes i [LOC:Aspudden] i [LOC:Stockholm], men kom tio månader gammal som fosterbarn till [LOC:Sunnersta] i [LOC:Ådalen].
 Hans far [PER:Karl Hedberg] (1904–1959) avled tidigt utan att ha träffat sin yngste son.

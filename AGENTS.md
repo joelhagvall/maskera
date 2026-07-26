@@ -50,7 +50,9 @@ as a BENCHMARKS.md update. The full snapshot-carrier list: root README,
 package READMEs (also what npmjs shows; needs a patch release to update
 there), HF model card (`training/maskera-sv-ner-card/README.md`; needs
 `hf upload` to go live), whitepaper (rebuild the PDF), and
-`apps/demo/public/llms.txt`, `bench/README.md`, `docs/FORSTA_MODELLEN.md`.
+`apps/demo/public/llms.txt`, `bench/README.md`, and `docs/FORSTA_MODELLEN.md`
+(gitignored, so it only exists in a local checkout; sync it there when you
+have it).
 They have drifted before (llms.txt sat on 2026-07-03 numbers until
 2026-07-13; bench/README.md sat on pre-v13 numbers until 2026-07-18); grep
 for the old numbers when updating. Also: if an eval corpus file changes
