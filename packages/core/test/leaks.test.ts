@@ -108,6 +108,16 @@ const CASES: LeakCase[] = [
     input: "Mötet 2026-07-24 loggades vid 1753387200 utan fel.",
     mustKeep: ["2026-07-24", "1753387200"],
   },
+  // U+1680 OGHAM SPACE MARK (the space between "850601" and "2387" below)
+  // matches JS `\s` and renders as a space, but NFKC does not fold it to
+  // U+0020 — it is the one horizontal whitespace canonicalize() leaves behind.
+  // The digit-run gap class named only space/tab/NBSP, so one character split
+  // the run and the personnummer walked past the checksum detectors.
+  {
+    note: "canonical bypass: personnummer split by U+1680 ogham space",
+    input: "Inskriven med 850601 2387 i systemet.",
+    mustRedact: ["850601 2387"],
+  },
 ]
 
 describe("leak regression suite", () => {

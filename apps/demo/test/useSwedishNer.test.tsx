@@ -84,4 +84,36 @@ describe("useSwedishNer model activation", () => {
     expect(FakeWorker.instances[0].postMessage).not.toHaveBeenCalled()
     unmount()
   })
+
+  it("coalesces texts typed during a slow inference instead of queueing them", () => {
+    vi.useFakeTimers()
+    const { result, rerender, unmount } = renderHook(({ text }) => useSwedishNer(text, 1), {
+      initialProps: { text: "Anna Karlsson" },
+    })
+
+    act(() => vi.advanceTimersByTime(40))
+    const worker = FakeWorker.instances[0]
+    act(() => worker.emit({ type: "ready" }))
+    act(() => vi.advanceTimersByTime(250))
+    expect(worker.postMessage).toHaveBeenCalledTimes(1)
+
+    // Two edits while the first inference is still in flight: nothing queues.
+    rerender({ text: "Anna Karlsson bor i Stockholm" })
+    act(() => vi.advanceTimersByTime(250))
+    rerender({ text: "Anna Karlsson bor i Stockholm sedan 1990" })
+    act(() => vi.advanceTimersByTime(250))
+    expect(worker.postMessage).toHaveBeenCalledTimes(1)
+
+    // The stale result frees the worker: exactly one follow-up, with the
+    // latest text only.
+    const firstId = (worker.postMessage.mock.calls[0][0] as { id: number }).id
+    act(() => worker.emit({ type: "result", id: firstId, failed: true }))
+    expect(worker.postMessage).toHaveBeenCalledTimes(2)
+    expect(worker.postMessage).toHaveBeenLastCalledWith({
+      id: expect.any(Number),
+      text: "Anna Karlsson bor i Stockholm sedan 1990",
+    })
+    expect(result.current.analyzing).toBe(true)
+    unmount()
+  })
 })

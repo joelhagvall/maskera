@@ -176,4 +176,32 @@ describe("redactWithNer", () => {
     expect(text).toBe("Konto IBAN [IBAN_1] men ring [PER_1].")
     expect(redactions.map((r) => r.label).sort()).toEqual(["IBAN", "PER"])
   })
+
+  it("clips several rule spans out of one model span, keeping the gaps between", async () => {
+    const input = "Anna 070-174 06 58 Karlsson anna@example.com Berg"
+    // One model span over the whole sentence; the phone and e-mail rules take
+    // their parts, the three name fragments must survive as separate spans.
+    const recognizer = fakeRecognizer((t) => [{ start: 0, end: t.length, value: t, label: "NAMN" }])
+    const { text, restore } = await redactWithNer(input, { recognizer })
+    expect(text).toBe("[NAMN_1] [TELEFON_1] [NAMN_2] [EPOST_1] [NAMN_3]")
+    expect(restore(text)).toBe(input)
+  })
+
+  it("clips many rule spans out of wide model spans in linear time", async () => {
+    // Clipping used to re-walk the whole segment list for every rule span,
+    // and that list grows by one per overlapping rule: quadratic in the rule
+    // count under one model span. Measured before the fix on a 79 kB log with
+    // 4k e-mail detections and 50 document-wide model spans: 3.3 s of blocked
+    // event loop, quadrupling when the log doubled.
+    const input = Array.from({ length: 4000 }, (_, i) => `anv${i}@example.com`).join(" ")
+    const recognizer = fakeRecognizer((t) => [{ start: 0, end: t.length, value: t, label: "NAMN" }])
+    const started = performance.now()
+    const { text, restore } = await redactWithNer(input, { recognizer })
+    // ~30 ms after the fix, ~3.3 s before it (with 50 spans; one span here
+    // still forced the quadratic walk). A generous ceiling so this is a
+    // regression guard rather than a benchmark.
+    expect(performance.now() - started).toBeLessThan(2000)
+    expect(text).not.toContain("@example.com")
+    expect(restore(text)).toBe(input)
+  })
 })

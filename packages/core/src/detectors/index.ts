@@ -77,8 +77,14 @@ type MatchWithIndices = RegExpMatchArray & {
  * word boundary was fixed for. Newlines are NOT included, so two numbers in a
  * column never merge, and the whitespace run is bounded so the pattern cannot
  * backtrack over a long gap.
+ *
+ * The class names U+1680 OGHAM SPACE MARK explicitly: it is the one horizontal
+ * whitespace NFKC does not fold to U+0020 (canonicalize folds the rest, so the
+ * plain space covers them), yet it matches JS `\s` and renders as a space, so
+ * without it a single character split the run and walked a personnummer past
+ * the checksum detectors.
  */
-const DIGIT_RUN = /\d(?:[\d+-]|[ \t\u00a0]{1,2}(?=\d))*\d|\d/g
+const DIGIT_RUN = /\d(?:[\d+-]|[ \t\u00a0\u1680]{1,2}(?=\d))*\d|\d/g
 
 const isDigit = (code: number) => code >= 48 && code <= 57
 const WS = /\s/

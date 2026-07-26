@@ -1,5 +1,16 @@
 # maskera
 
+## 0.9.1
+
+### Patch Changes
+
+- core: Fix a redaction bypass where a U+1680 OGHAM SPACE MARK inside a digit run hid personnummer/samordningsnummer from the detectors. The character renders as whitespace but is untouched by Unicode canonicalization, so `850601\u{1680}2387` passed through unredacted while the same number with any other space was masked. The digit-run gap class now covers it.
+
+  ner: Fix a quadratic clipping loop in `redactWithNer` that re-walked the segment list once per rule detection for every model span, blocking the event loop for seconds on documents with thousands of rule hits (measured 3.3 s on a 79 KB input). Clipping now uses single-cursor interval subtraction against the rule spans sorted once, which is linear in practice (4 ms on the same input).
+
+- Updated dependencies
+  - @maskera/core@0.7.1
+
 ## 0.9.0
 
 ### Minor Changes

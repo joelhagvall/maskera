@@ -32,6 +32,11 @@ export function useSwedishNer(text: string, activation: number): SwedishNer {
   const [analyzing, setAnalyzing] = useState(false)
   const workerRef = useRef<Worker | null>(null)
   const requestIdRef = useRef(0)
+  // At most one inference is ever sent to the worker at a time. Without this
+  // gate, debounced keystrokes during a slow (large-document) inference queue
+  // full-text jobs in the worker faster than it can drain them, and it burns
+  // CPU on texts the main thread has already superseded.
+  const inFlightRef = useRef(false)
   // The text belonging to the latest request id, so a worker result can be
   // stored together with the text it was computed for.
   const requestTextRef = useRef("")
@@ -56,6 +61,7 @@ export function useSwedishNer(text: string, activation: number): SwedishNer {
 
     requestIdRef.current += 1
     requestTextRef.current = ""
+    inFlightRef.current = false
     setStatus("loading")
     setProgress(0)
     setAnalyzing(false)
@@ -82,7 +88,17 @@ export function useSwedishNer(text: string, activation: number): SwedishNer {
             setStatus("error")
           }
           if (msg.type === "result") {
-            if (msg.id !== requestIdRef.current) return // stale, a newer text is in flight
+            inFlightRef.current = false
+            if (msg.id !== requestIdRef.current) {
+              // Stale: a newer text superseded this one while the worker was
+              // busy. Send it now that the worker is free, instead of letting
+              // more debounced copies queue up behind a slow inference.
+              if (requestTextRef.current) {
+                inFlightRef.current = true
+                worker.postMessage({ id: requestIdRef.current, text: requestTextRef.current })
+              }
+              return
+            }
             setAnalyzing(false)
             if (msg.failed || !msg.text || !msg.map || !msg.redactions) return
             const map = msg.map
@@ -122,7 +138,14 @@ export function useSwedishNer(text: string, activation: number): SwedishNer {
     }
 
     setAnalyzing(true)
-    const timer = setTimeout(() => worker.postMessage({ id, text }), 250)
+    const timer = setTimeout(() => {
+      // Worker busy: skip this send. When the in-flight result arrives it is
+      // stale by definition (this effect already bumped the request id), and
+      // the result handler sends the latest text then.
+      if (inFlightRef.current) return
+      inFlightRef.current = true
+      worker.postMessage({ id, text })
+    }, 250)
     return () => clearTimeout(timer)
   }, [text, ready])
 
