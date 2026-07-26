@@ -93,6 +93,15 @@ keep downloading the old weights (or, worse, a sha that no longer resolves):
 
 ## Copy coupling with app.maskera.dev
 
+app.maskera.dev is built from the sibling repo `maskera-cloud` (private,
+checked out next to this one at `../maskera-cloud`). The two are coupled in
+both directions: this repo quotes prices, claims and self-service status that
+maskera-cloud owns, and maskera-cloud quotes this repo's benchmark numbers,
+model size and CPU baseline. So a change to either side is only half done
+until the other repo is grepped and updated in the same sitting. maskera-cloud
+has its own CLAUDE.md with the standing rules for that side; read it before
+touching anything that crosses the two.
+
 The "För företag" page (`apps/demo/src/components/Services.tsx`) repeats
 prices, the model size, the CPU baseline and the cloud claim wording
 ("bearbetning i minnet hos ett EU-ägt bolag i EU, ingen lagring av

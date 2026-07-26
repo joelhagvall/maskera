@@ -27,9 +27,10 @@ open-source package and the maskera.dev browser demo. Maskera Gateway is the
 commercial deployment for a customer's own servers: a signed OCI container
 with the 43 MB model built in. It runs on CPU without a database, GPU or
 separate model server, and masks routed AI traffic before the approved
-upstream receives it. Text sent to the demo and hosted API on app.maskera.dev
-is processed in memory at an EU-owned company in the EU with zero payload
-retention.
+upstream receives it. There is no hosted masking API on offer: the
+open-source packages and Gateway are the two deployments. Anything sent to
+app.maskera.dev, the customer portal, is processed in memory at an EU-owned
+company in the EU with zero payload retention.
 
 ## Docs
 
