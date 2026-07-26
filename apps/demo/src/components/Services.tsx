@@ -181,7 +181,7 @@ export function Services({ go }: { go: (view: View) => void }) {
                 <dd>Välj open source.</dd>
               </div>
               <div>
-                <dt>Text och återställningsnycklar måste stanna i er miljö</dt>
+                <dt>Text och återställningsnycklar får aldrig lämna er miljö</dt>
                 <dd>Välj Maskera Gateway.</dd>
               </div>
               {/* The Cloud row returns with the Cloud card above if hosted
