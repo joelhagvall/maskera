@@ -323,6 +323,11 @@ export function Transparency({ go }: { go: (view: View) => void }) {
               profilering, inga personuppgifter, och aldrig text du skriver i verktyget.
             </li>
             <li>
+              <strong>En inställning sparas lokalt:</strong> växlar du till mörkt läge sparas valet
+              i webbläsarens egen lagring (localStorage), så att det ligger kvar till nästa besök.
+              Det är ingen cookie, det lämnar aldrig din enhet och det går inte att koppla till dig.
+            </li>
+            <li>
               <strong>Vad verktyget behandlar:</strong> ingenting lämnar din enhet. Text du maskerar
               behandlas lokalt i din webbläsare och skickas aldrig till mig eller till tredje part.
               Se avsnitten ovan för detaljer.

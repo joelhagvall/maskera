@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" font-family="Geist, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
-  <!-- DERIVED dark variant of layers.svg, hand-adapted for the demo's dark
+  <!-- DERIVED dark variant of layers-sv.svg, hand-adapted for the demo's dark
        palette (canvas #0a0a0a, text #ededed, surfaces #111111, hairlines
        #262626, PII hues from the dark column of src/labels.ts). Re-derive
        when layers.svg changes. -->
-  <title>maskera: two layers, rules first</title>
-  <desc>Input text forks into two layers: deterministic checksum-validated rules for structured PII like personnummer, and a 43 MB Swedish AI model for free text like names. Rules win on overlap, and the merged result is the masked output.</desc>
+  <title>maskera: två lager, regler först</title>
+  <desc>Inkommande text delas upp i två lager: deterministiska regler med kontrollsiffervalidering för strukturerade personuppgifter som personnummer, och en svensk AI-modell på 43 MB för fri text som namn. Reglerna vinner vid överlapp, och det sammanslagna resultatet är den maskerade texten.</desc>
 
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -16,12 +16,12 @@
 
   <!-- Header -->
   <text x="48" y="64" font-size="26" font-weight="700" fill="#ededed">maskera</text>
-  <text x="48" y="94" font-size="16" fill="#a1a1a1">Two layers, one engine: deterministic rules first, and an AI model for the free text rules can never list.</text>
+  <text x="48" y="94" font-size="16" fill="#a1a1a1">Två lager, en motor: deterministiska regler först, och en AI-modell för fri text som regler aldrig kan lista.</text>
 
-  <!-- ============ Card: Your text ============ -->
+  <!-- ============ Card: Din text ============ -->
   <rect x="48" y="200" width="280" height="228" rx="10" fill="#0a0a0a" stroke="#262626" stroke-width="1.5"/>
-  <text x="68" y="239" font-size="16.5" font-weight="650" fill="#ededed">Your text</text>
-  <text x="68" y="264" font-size="12.2" fill="#a1a1a1">lowercase chat and all</text>
+  <text x="68" y="239" font-size="16.5" font-weight="650" fill="#ededed">Din text</text>
+  <text x="68" y="264" font-size="12.2" fill="#a1a1a1">chatt med små bokstäver och allt</text>
 
   <rect x="68" y="280" width="240" height="96" rx="8" fill="#111111" stroke="#262626"/>
   <!-- highlight: anna karlsson (NAMN, demoblå) -->
@@ -41,17 +41,17 @@
 
   <rect x="84" y="384" width="14" height="10" rx="2.5" fill="#5e82e8" fill-opacity="0.16"/>
   <line x1="85" y1="396" x2="97" y2="396" stroke="#5e82e8" stroke-width="2" stroke-linecap="round"/>
-  <text x="106" y="394" font-size="12" fill="#a1a1a1">no fixed shape → the AI model</text>
+  <text x="106" y="394" font-size="12" fill="#a1a1a1">inget fast mönster → AI-modellen</text>
   <rect x="84" y="406" width="14" height="10" rx="2.5" fill="#e55252" fill-opacity="0.16"/>
   <line x1="85" y1="418" x2="97" y2="418" stroke="#e55252" stroke-width="2" stroke-linecap="round"/>
-  <text x="106" y="416" font-size="12" fill="#a1a1a1">exact shape → the rules</text>
+  <text x="106" y="416" font-size="12" fill="#a1a1a1">fast mönster → reglerna</text>
 
-  <!-- ============ Card: Layer 1, rules ============ -->
+  <!-- ============ Card: Lager 1, regler ============ -->
   <rect x="380" y="140" width="340" height="160" rx="10" fill="#0a0a0a" stroke="#262626" stroke-width="1.5"/>
-  <text x="400" y="172" font-size="16.5" font-weight="650" fill="#ededed">Layer 1 · Rules</text>
-  <text x="400" y="195" font-size="12.2" fill="#a1a1a1">@maskera/core · deterministic</text>
-  <text x="400" y="222" font-size="12.4" fill="#c9c9c9">personnummer, phone, cards, IBAN …</text>
-  <text x="400" y="240" font-size="12.4" fill="#c9c9c9">checksum-validated where one exists</text>
+  <text x="400" y="172" font-size="16.5" font-weight="650" fill="#ededed">Lager 1 · Regler</text>
+  <text x="400" y="195" font-size="12.2" fill="#a1a1a1">@maskera/core · deterministisk</text>
+  <text x="400" y="222" font-size="12.4" fill="#c9c9c9">personnummer, telefon, kort, IBAN …</text>
+  <text x="400" y="240" font-size="12.4" fill="#c9c9c9">kontrollsiffervaliderat där det finns</text>
 
   <rect x="397" y="257" width="91.8" height="21" rx="5" fill="#e55252" fill-opacity="0.16"/>
   <rect x="524" y="257" width="117" height="21" rx="5" fill="#e55252" fill-opacity="0.10" stroke="#e55252" stroke-opacity="0.45"/>
@@ -61,12 +61,12 @@
     <text x="528" y="272" textLength="109.2" lengthAdjust="spacingAndGlyphs" font-weight="650" fill="#e55252">[PERSONNUMMER]</text>
   </g>
 
-  <!-- ============ Card: Layer 2, AI model ============ -->
+  <!-- ============ Card: Lager 2, AI-modell ============ -->
   <rect x="380" y="340" width="340" height="160" rx="10" fill="#0a0a0a" stroke="#262626" stroke-width="1.5"/>
-  <text x="400" y="372" font-size="16.5" font-weight="650" fill="#ededed">Layer 2 · AI model</text>
-  <text x="400" y="395" font-size="12.2" fill="#a1a1a1">maskera-sv-ner · 43 MB · runs in the browser</text>
-  <text x="400" y="422" font-size="12.4" fill="#c9c9c9">catches what regex never can: names,</text>
-  <text x="400" y="440" font-size="12.4" fill="#c9c9c9">places, companies, street addresses …</text>
+  <text x="400" y="372" font-size="16.5" font-weight="650" fill="#ededed">Lager 2 · AI-modell</text>
+  <text x="400" y="395" font-size="12.2" fill="#a1a1a1">maskera-sv-ner · 43 MB · körs i webbläsaren</text>
+  <text x="400" y="422" font-size="12.4" fill="#c9c9c9">fångar det regex aldrig kan: namn,</text>
+  <text x="400" y="440" font-size="12.4" fill="#c9c9c9">platser, företag, gatuadresser …</text>
 
   <rect x="397" y="457" width="107.4" height="21" rx="5" fill="#5e82e8" fill-opacity="0.16"/>
   <rect x="540" y="457" width="54.6" height="21" rx="5" fill="#5e82e8" fill-opacity="0.10" stroke="#5e82e8" stroke-opacity="0.45"/>
@@ -78,13 +78,13 @@
 
   <!-- ============ Merge pill ============ -->
   <rect x="758" y="273" width="94" height="44" rx="22" fill="#ededed"/>
-  <text x="805" y="291" font-size="11.5" font-weight="600" fill="#0a0a0a" text-anchor="middle">Rules win</text>
-  <text x="805" y="306" font-size="11.5" font-weight="600" fill="#0a0a0a" text-anchor="middle">on overlap</text>
+  <text x="805" y="291" font-size="11.5" font-weight="600" fill="#0a0a0a" text-anchor="middle">Regler vinner</text>
+  <text x="805" y="306" font-size="11.5" font-weight="600" fill="#0a0a0a" text-anchor="middle">vid överlapp</text>
 
-  <!-- ============ Card: Masked output ============ -->
+  <!-- ============ Card: Maskerad text ============ -->
   <rect x="890" y="200" width="262" height="228" rx="10" fill="#0a0a0a" stroke="#262626" stroke-width="1.5"/>
-  <text x="910" y="239" font-size="16.5" font-weight="650" fill="#ededed">Masked output</text>
-  <text x="910" y="264" font-size="12.2" fill="#a1a1a1">what gets sent onward</text>
+  <text x="910" y="239" font-size="16.5" font-weight="650" fill="#ededed">Maskerad text</text>
+  <text x="910" y="264" font-size="12.2" fill="#a1a1a1">det som skickas vidare</text>
 
   <rect x="910" y="280" width="222" height="96" rx="8" fill="#111111" stroke="#262626"/>
   <!-- chip: [NAMN] (demoblå) -->
@@ -100,7 +100,7 @@
     <text x="962" y="356" textLength="109.2" lengthAdjust="spacingAndGlyphs" font-weight="650" fill="#e55252">[PERSONNUMMER]</text>
   </g>
 
-  <text x="910" y="404" font-size="12" fill="#a1a1a1">the restore key stays on your device</text>
+  <text x="910" y="404" font-size="12" fill="#a1a1a1">återställningsnyckeln stannar hos dig</text>
 
   <!-- Arrows: input forks to both layers -->
   <path d="M 328 292 H 352 V 220 H 366" fill="none" stroke="#8f8f8f" stroke-width="2" marker-end="url(#arrow)"/>
@@ -113,7 +113,7 @@
 
   <!-- Bottom chip -->
   <rect x="350" y="536" width="500" height="36" rx="18" fill="#111111" stroke="#262626"/>
-  <text x="600" y="558" font-size="12.4" fill="#d4d4d4" text-anchor="middle">Regex for what regex is good at, ML only for what it is needed for</text>
+  <text x="600" y="558" font-size="12.4" fill="#d4d4d4" text-anchor="middle">Regex för det regex är bra på, ML bara där det behövs</text>
 
   <!-- Footer -->
   <text x="600" y="612" font-size="12.5" fill="#8f8f8f" text-anchor="middle">https://maskera.dev</text>

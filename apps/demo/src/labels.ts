@@ -51,8 +51,8 @@ export function labelMeta(label: string): LabelMeta {
 }
 
 // The style recipes below use light-dark(), which resolves against the
-// root's `color-scheme: light dark` (styles.css): the light value in light
-// mode, the dark value under `prefers-color-scheme: dark`. No JS involved.
+// color-scheme that <html> carries (styles.css: light by default, dark when
+// the theme toggle sets data-theme="dark"). No JS involved.
 
 /**
  * Underline-highlight recipe for marked text in the editors. Adds no width,

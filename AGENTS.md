@@ -128,10 +128,10 @@ change on either side, update the other in the same sitting.
   at `apps/demo/public/layers.svg` -> maskera.dev/layers.svg, which is what
   the npm `maskera` README and the HF model card embed. Keep the two files
   identical in the same commit; the external embeds update on deploy
-  without a release. `apps/demo/public/layers-dark.svg` is a hand-adapted
-  dark variant used only by the demo site's `<picture>` swap in dark mode;
-  it is DERIVED from layers.svg and must be re-derived when layers.svg
-  changes.
+  without a release. The demo site itself shows the Swedish pair
+  `apps/demo/public/layers-sv.svg` / `layers-sv-dark.svg` (light/dark,
+  swapped on the theme toggle's data-theme attribute); both are DERIVED
+  from layers.svg and must be re-derived when layers.svg changes.
 - LinkedIn drafts (`docs/LINKEDIN_POST*.md`) are gitignored on purpose;
   don't try to commit them.
 - Lint is biome: `pnpm lint`.

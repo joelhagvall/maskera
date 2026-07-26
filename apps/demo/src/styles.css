@@ -43,7 +43,10 @@
 }
 
 :root {
-  color-scheme: light dark;
+  /* Light is the default: only an explicit toggle choice (data-theme on
+     <html>, set by the head bootstrap script) switches to dark; the system
+     preference is not consulted. */
+  color-scheme: light;
   --bg: #ffffff;
   --fg: #000000;
   --gray-100: #fafafa;
@@ -63,27 +66,28 @@
   --sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* Dark mode: no toggle, the OS setting decides. Neutral near-black palette in
-   the same roles as the light one (gray-100/200 are raised surfaces, border-2
-   the stronger hairline). --muted/--muted-2 keep their light-mode ordering
-   (muted-2 the quieter of the two) and both clear 4.5:1 on every surface they
-   sit on, darkest included. PII hues have their own per-label dark values in
-   src/labels.ts, applied through light-dark(). */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0a0a0a;
-    --fg: #ededed;
-    --gray-100: #111111;
-    --gray-200: #1a1a1a;
-    --border: #262626;
-    --border-2: #333333;
-    --muted: #a1a1a1;
-    --muted-2: #8f8f8f;
-    --ink: #c9c9c9;
-    --border-hover: #4a4a4a;
-    --ok: #4ade80;
-    --warn: #fbbf24;
-  }
+/* Dark mode: opt-in via the header toggle, which sets data-theme="dark" on
+   <html> (persisted in localStorage by the head bootstrap script). Neutral
+   near-black palette in the same roles as the light one (gray-100/200 are
+   raised surfaces, border-2 the stronger hairline). --muted/--muted-2 keep
+   their light-mode ordering (muted-2 the quieter of the two) and both clear
+   4.5:1 on every surface they sit on, darkest included. PII hues have their
+   own per-label dark values in src/labels.ts, applied through light-dark(),
+   which follows this color-scheme swap. */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0a0a0a;
+  --fg: #ededed;
+  --gray-100: #111111;
+  --gray-200: #1a1a1a;
+  --border: #262626;
+  --border-2: #333333;
+  --muted: #a1a1a1;
+  --muted-2: #8f8f8f;
+  --ink: #c9c9c9;
+  --border-hover: #4a4a4a;
+  --ok: #4ade80;
+  --warn: #fbbf24;
 }
 
 * {
@@ -179,6 +183,17 @@ body {
 }
 .ghlink:hover {
   color: var(--fg);
+}
+/* The theme toggle carries both icons; the data-theme attribute decides
+   which one shows (moon in light mode = "switch to dark", sun in dark). */
+.theme-toggle .theme-sun {
+  display: none;
+}
+html[data-theme="dark"] .theme-toggle .theme-sun {
+  display: block;
+}
+html[data-theme="dark"] .theme-toggle .theme-moon {
+  display: none;
 }
 .title {
   margin: 56px 0 0;
@@ -1104,8 +1119,9 @@ main:has(.prose-foot) + .footer {
   font-size: 12px;
 }
 /* The two-layer architecture diagram, framed like the code blocks (bordered
-   card, gray-100 caption strip). The SVG carries its own background and is
-   swapped for a dark variant via <picture> under prefers-color-scheme. */
+   card, gray-100 caption strip). The SVG carries its own background; the
+   light and dark variants are two <img>s swapped on the data-theme attribute
+   (a <picture> media query would follow the OS setting, not the toggle). */
 .layers-fig {
   margin: 20px 0 28px;
   border: 1px solid var(--border);
@@ -1116,6 +1132,15 @@ main:has(.prose-foot) + .footer {
   display: block;
   width: 100%;
   height: auto;
+}
+.layers-fig img.layers-dark {
+  display: none;
+}
+html[data-theme="dark"] .layers-fig img.layers-dark {
+  display: block;
+}
+html[data-theme="dark"] .layers-fig img.layers-light {
+  display: none;
 }
 .layers-fig figcaption {
   padding: 8px 14px;
@@ -1141,21 +1166,19 @@ main:has(.prose-foot) + .footer {
 /* Dark-mode one-offs that are not palette variables: the copied state (a
    green-tinted confirmation pill) and the syntax hues, lightened to keep
    their 4.5:1 on the dark code surface. */
-@media (prefers-color-scheme: dark) {
-  .code-block .code-copy.copied {
-    color: #4ade80;
-    border-color: #14532d;
-    background: #0b1d12;
-  }
-  .tok-k {
-    color: #c084fc;
-  }
-  .tok-s {
-    color: #4ade80;
-  }
-  .tok-f {
-    color: #93c5fd;
-  }
+html[data-theme="dark"] .code-block .code-copy.copied {
+  color: #4ade80;
+  border-color: #14532d;
+  background: #0b1d12;
+}
+html[data-theme="dark"] .tok-k {
+  color: #c084fc;
+}
+html[data-theme="dark"] .tok-s {
+  color: #4ade80;
+}
+html[data-theme="dark"] .tok-f {
+  color: #93c5fd;
 }
 .prose-foot {
   margin-top: 36px;

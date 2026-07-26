@@ -1,6 +1,7 @@
 import { GITHUB } from "../constants"
 import { ArrowUpRightIcon, MaskeraMark } from "../icons"
 import { navClick, type View, viewPaths } from "../routing"
+import { ThemeToggle } from "./ThemeToggle"
 
 const NAV: { view: View; label: string }[] = [
   { view: "dev", label: "För utvecklare" },
@@ -27,6 +28,9 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
           maskera
         </a>
         <nav className="head-links">
+          {/* Toggle first, matching app.maskera.dev's header: same relative
+              position when a visitor clicks between the two sites. */}
+          <ThemeToggle />
           {NAV.filter((item) => item.view !== current).map((item) => (
             <a
               key={item.view}

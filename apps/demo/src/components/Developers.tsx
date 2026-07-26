@@ -141,16 +141,26 @@ export function Developers({ go }: { go: (view: View) => void }) {
           </p>
 
           <figure className="layers-fig">
-            <picture>
-              <source media="(prefers-color-scheme: dark)" srcSet="/layers-dark.svg" />
-              <img
-                src="/layers.svg"
-                width="1200"
-                height="640"
-                loading="lazy"
-                alt="Diagram över maskeras två lager: din text delas upp mellan regler för uppgifter med bestämt format och en svensk AI-modell för fri text, och slås samman till maskerad text."
-              />
-            </picture>
+            {/* Two imgs, not <picture>: the swap follows the theme toggle's
+                data-theme attribute (CSS), not the OS media query. The dark
+                one is aria-hidden decoration mirroring the first. */}
+            <img
+              className="layers-light"
+              src="/layers-sv.svg"
+              width="1200"
+              height="640"
+              loading="lazy"
+              alt="Diagram över maskeras två lager: din text delas upp mellan regler för uppgifter med bestämt format och en svensk AI-modell för fri text, och slås samman till maskerad text."
+            />
+            <img
+              className="layers-dark"
+              src="/layers-sv-dark.svg"
+              width="1200"
+              height="640"
+              loading="lazy"
+              alt=""
+              aria-hidden="true"
+            />
             <figcaption>
               Reglerna tar allt med bestämt format, AI-modellen tar fri text som namn och adresser —
               vid överlapp vinner reglerna.

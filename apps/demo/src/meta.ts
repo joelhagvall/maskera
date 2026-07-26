@@ -122,8 +122,29 @@ export function renderRouteHtml(view: RouteHtmlView): string {
     <title>${title}</title>
     <meta name="description" content="${description}" />
     <link rel="canonical" href="${url}" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0a" />
+    <!-- Light is the default: only an explicit toggle choice switches to
+         dark, the system preference is not consulted. One meta, not two
+         media-driven ones, or a system-dark visitor would get dark browser
+         chrome around a light page. -->
+    <meta name="theme-color" content="#ffffff" />
+    <!-- Sets the theme before first paint so there is no flash. -->
+    <script>
+      ;(function () {
+        try {
+          var d = localStorage.getItem("theme") === "dark"
+          var e = document.documentElement
+          e.dataset.theme = d ? "dark" : "light"
+          e.style.colorScheme = d ? "dark" : "light"
+          if (d) {
+            document
+              .querySelectorAll('meta[name="theme-color"]')
+              .forEach(function (m) {
+                m.setAttribute("content", "#0a0a0a")
+              })
+          }
+        } catch (_) {}
+      })()
+    </script>
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="maskera" />
