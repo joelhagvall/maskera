@@ -68,8 +68,11 @@ runner headers for full detail):
   batch (up to five documents). It pins the GA `2024-11-01` API, Swedish
   input, UTF-16 offsets and
   `loggingOptOut: true`; unrelated entity categories are dropped to match the
-  four-label gold space. Azure results are not added to the tables above until
-  the credentialed run has been completed and recorded.
+  four-label gold space. The credentialed Azure run (measured 2026-07-22, GA
+  API `2024-11-01`) is recorded in `out/*.azure-*.json` and published in the
+  comparison tables on app.maskera.dev/accuracy; it is deliberately not
+  duplicated in the tables above, so this file keeps one table set to
+  maintain.
 
 ## Gold sets
 
