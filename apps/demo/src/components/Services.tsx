@@ -60,7 +60,7 @@ const PRODUCTS: Product[] = [
     price: "149 000 kr/år",
     pilot: {
       price: "60 dagars pilot: 49\u00a0000 kr",
-      terms: "Hela beloppet avräknas mot årslicensen vid köp inom 30 dagar.",
+      terms: "Hela beloppet avräknas mot årslicensen vid köp inom 30 dagar efter pilotens slut.",
     },
     tagline: "För verksamheter som behöver köra i sin egen miljö.",
     featured: true,
@@ -226,9 +226,9 @@ export function Services({ go }: { go: (view: View) => void }) {
           <h2>Behöver ni hjälp med införandet?</h2>
           <section className="implementation-help">
             <p>
-              <strong>Teknisk onboarding och anpassad integration</strong> erbjuds separat, från
-              25&nbsp;000 kr exkl. moms. Jag hjälper ert team att koppla Maskera till rätt flöde och
-              lämnar över tester och dokumentation.
+              <strong>Teknisk onboarding och anpassad integration</strong> erbjuds separat. Jag
+              hjälper ert team att koppla Maskera till rätt flöde och lämnar över tester och
+              dokumentation.
             </p>
             <a className="pkg-cta" href={booking("implementation")}>
               Boka ett införandesamtal
