@@ -1,5 +1,29 @@
 # @maskera/core
 
+## 0.7.2
+
+### Patch Changes
+
+- Security fixes for detection bypasses and validator gaps:
+
+  - canonicalize() now also strips C0/C1 control characters (except \t \n \f \r),
+    enclosing combining marks (\p{Me}, e.g. keycap sequences), and blank-rendered
+    characters that NFKC does not fold (U+2800 braille blank, U+115F/U+1160/U+3164/
+    U+FFA0 hangul fillers). Each of these split a personnummer/card/IBAN into
+    pieces the detectors could not see while rendering as the real thing. The
+    ASCII fast path in the fold loop is restricted to printable ASCII so the new
+    ranges cannot slip through it.
+  - The email detector accepts any Unicode letter/number in both parts. A
+    diacritic (andré, zoë, münchen) or a Cyrillic confusable next to the @ or in
+    the domain previously left no match position and the address leaked.
+  - isPersonnummer/isSamordningsnummer validate the date as a real calendar date
+    (per-month days, leap years; exact Gregorian rule for the 12-digit form), and
+    isOrganisationsnummer requires the "16" prefix on the 12-digit form.
+  - maskera: fix a potential O(span^2) slice in the identifier-label-word trim in
+    reconstruct() (exported API) by searching only the 25-character tail window
+    the pattern can actually match, and count the single-character detection
+    filter in code points rather than UTF-16 units.
+
 ## 0.7.1
 
 ### Patch Changes

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   isOrganisationsnummer,
   isPersonnummer,
+  isSamordningsnummer,
   luhnValid,
   personnummer,
   redact,
@@ -14,6 +15,21 @@ import {
 // fictitious Kommun A in its Navet test certificate.
 const PNR = "19900101-2385"
 const ORGNR = "202100-4748"
+
+// The Luhn check digit is computed at runtime so that no complete identifier
+// literal lands in the repo: scripts/check-fixture-identifiers.mjs allows
+// owner-published test values only, and the calendrically impossible dates in
+// the validator tests below have no owner-published value (they can never be
+// issued, which is exactly what the tests assert).
+const withCheckDigit = (prefix9: string): string => {
+  for (let i = 0; i <= 9; i++) {
+    const candidate = `${prefix9}${i}`
+    if (luhnValid(candidate)) return candidate
+  }
+  throw new Error("unreachable: one of ten check digits is always valid")
+}
+/** A Luhn-valid 10-digit personnummer-shaped value for a YYMMDD date part. */
+const pnr = (yymmdd: string): string => withCheckDigit(`${yymmdd}001`)
 
 describe("validators", () => {
   it("validates Luhn checksums", () => {
@@ -28,9 +44,31 @@ describe("validators", () => {
     expect(isPersonnummer("991399-0017")).toBe(false) // bad month
   })
 
+  it("validates the personnummer date as a real calendar date", () => {
+    expect(isPersonnummer(pnr("840229"))).toBe(true) // Feb 29 in a leap year
+    expect(isPersonnummer(pnr("850229"))).toBe(false) // Feb 29, but 1985 was not leap
+    expect(isPersonnummer(pnr("850230"))).toBe(false) // Feb 30 never exists
+    expect(isPersonnummer(pnr("850431"))).toBe(false) // April has 30 days
+    // The 10-digit form has no century, so YY = 00 is accepted (2000 was leap);
+    // the 12-digit form gets the exact Gregorian rule.
+    expect(isPersonnummer(pnr("000229"))).toBe(true)
+    expect(isPersonnummer(`20${pnr("000229")}`)).toBe(true)
+    expect(isPersonnummer(`19${pnr("000229")}`)).toBe(false) // 1900 was not leap
+  })
+
+  it("validates the samordningsnummer date as a real calendar date", () => {
+    expect(isSamordningsnummer("700178-2395")).toBe(true) // Skatteverket open test data
+    expect(isSamordningsnummer(withCheckDigit("900290001"))).toBe(false) // "Feb 30" + 60
+  })
+
   it("validates organisationsnummer", () => {
     expect(isOrganisationsnummer(ORGNR)).toBe(true)
     expect(isOrganisationsnummer("123456-7890")).toBe(false)
+    // The 12-digit form must carry the "16" prefix; two arbitrary leading
+    // digits used to be sliced off unchecked. 162021004748 is the Navet test
+    // certificate's Kommun A, published by Skatteverket.
+    expect(isOrganisationsnummer("162021004748")).toBe(true)
+    expect(isOrganisationsnummer("992021004748")).toBe(false)
   })
 })
 

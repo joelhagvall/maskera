@@ -472,7 +472,9 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
       }
       // A single-character span is never meaningful PII on its own (the model
       // tags "Q" in "Q3" as ORG); masking it just mangles the word around it.
-      const detections = merged.filter((d) => d.value.length > 1)
+      // Counted in code points, not UTF-16 units: one astral symbol is still
+      // one character even though its .length is 2.
+      const detections = merged.filter((d) => [...d.value].length > 1)
       if (!denySet) return detections
       return detections.filter((d) => !denySet.has(d.value.toLowerCase()))
     },
@@ -648,9 +650,16 @@ export function reconstruct(
         // locateGroup caps the whitespace it skips between pieces, so such a
         // span can no longer reach here, but the bound stays as a second line
         // of defence. A real label separator is a comma and a space or two.
+        //
+        // The search runs against the TAIL of the span, not the whole slice:
+        // the longest match the pattern can produce is 16 separators +
+        // "personnr" + "." = 25 characters, so anything further from `end`
+        // can never participate. Slicing the full span made each iteration
+        // O(span), and a hostile token stream (reconstruct is exported) could
+        // chain one trim per label-word, i.e. O(span^2) on "org, org, org, …".
         for (;;) {
           const labelWord = text
-            .slice(start, end)
+            .slice(Math.max(start, end - LABEL_WORD_TAIL), end)
             .match(/[\s,;:(]{1,16}(?:org|orgnr|pnr|personnr|nr)\.?$/iu)
           if (!labelWord) break
           end -= labelWord[0].length
@@ -708,6 +717,12 @@ const DIGIT = /\p{N}/u
 const WHITESPACE = /\s/
 /** Max whitespace skipped between two pieces of one entity; see locateGroup. */
 const MAX_PIECE_GAP = 32
+/**
+ * How far back from a span's end an identifier-label word ("…, org.nr") can
+ * start: 16 separator chars + "personnr" (8) + a trailing dot. See the trim
+ * loop in reconstruct.
+ */
+const LABEL_WORD_TAIL = 25
 const STREET_ADDRESS_TAIL =
   /^(?:gata(?:n)?|väg(?:en)?|gränd(?:en)?|allé(?:n)?|torg(?:et)?|plan)\s+\p{N}/iu
 

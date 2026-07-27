@@ -205,12 +205,16 @@ export const organisationsnummer = regexDetector(
 
 // --- Contact details ------------------------------------------------------
 
-// åäö in both parts: addresses like "åsa.öberg@example.com" exist in the wild,
-// and a leading \b would never match before "å" (JS \b is ASCII-only).
+// Letters in both parts are ANY Unicode letter/number, not [A-ZÅÄÖ0-9]:
+// addresses like "andré@example.com" and "anna@münchen.se" exist in the wild,
+// and a diacritic or confusable (Cyrillic "а") sitting next to the @ or in the
+// domain used to leave no match position at all, walking the whole address
+// past the filter while rendering like an ordinary address. A leading \b is
+// still impossible (JS \b is ASCII-only), which is why there is none.
 //
 // The quantifiers are bounded to the RFC 5321 maxima (local part 64 octets,
 // domain 255, DNS label 63) rather than left open. Not for validation: it caps
-// backtracking. `[A-Z0-9._%+-]+@` is quadratic on any long unbroken run of
+// backtracking. `[\p{L}\p{N}._%+-]+@` is quadratic on any long unbroken run of
 // those characters, because every start position consumes the whole run and
 // then backs out one char at a time looking for an `@` that isn't there. A
 // hex digest, a base64url blob or a JWT segment is exactly such a run
@@ -219,7 +223,7 @@ export const organisationsnummer = regexDetector(
 // which is precisely why this could sit here unseen.
 export const email = regexDetector(
   "EPOST",
-  /[A-ZÅÄÖ0-9._%+-]{1,64}@[A-ZÅÄÖ0-9.-]{1,255}\.[A-Z]{2,63}\b/gi,
+  /[\p{L}\p{N}._%+-]{1,64}@[\p{L}\p{N}.-]{1,255}\.\p{L}{2,63}\b/giu,
 )
 
 /**

@@ -118,6 +118,67 @@ const CASES: LeakCase[] = [
     input: "Inskriven med 850601 2387 i systemet.",
     mustRedact: ["850601 2387"],
   },
+  // The blank-rendered characters that are neither \p{Cf} nor JS \s and that
+  // NFKC does not fold away: they render as an ordinary space (or nothing),
+  // so the split personnummer looked exactly like the canonical spaced form
+  // while every detector saw two unrelated numbers.
+  {
+    note: "canonical bypass: personnummer split by U+2800 braille blank",
+    input: "Inskriven med 850601⠀2387 i systemet.",
+    mustRedact: ["850601⠀2387"],
+  },
+  {
+    note: "canonical bypass: personnummer split by U+3164 hangul filler",
+    input: "Inskriven med 850601ㅤ2387 i systemet.",
+    mustRedact: ["850601ㅤ2387"],
+  },
+  // C0/C1 controls are invisible in most renderers. They were below 0x80, so
+  // the ASCII fast path in canonicalize() waved them straight through even
+  // after the strip set learned them — both paths had to close.
+  {
+    note: "canonical bypass: personnummer split by U+0001 control character",
+    input: "Inskriven med 850601-23\u000187 i systemet.",
+    mustRedact: ["850601-23\u000187"],
+  },
+  {
+    note: "canonical bypass: personnummer split by U+007F DEL",
+    input: "Inskriven med 850601-23\u007F87 i systemet.",
+    mustRedact: ["850601-23\u007F87"],
+  },
+  // Keycap sequences: "8" + U+20E3 renders as a boxed 8 but never composes
+  // under NFKC, so the run read as a perfect personnummer to the eye and as
+  // noise to the detectors. \p{Me} is now stripped from the detection view.
+  {
+    note: "canonical bypass: keycap-combining personnummer",
+    input: "Inskriven med 8⃣5⃣0⃣6⃣0⃣1⃣2⃣3⃣8⃣7⃣ i systemet.",
+    mustRedact: ["8⃣5⃣0⃣6⃣0⃣1⃣2⃣3⃣8⃣7⃣"],
+  },
+  // The e-mail detector's letter set was [A-ZÅÄÖ0-9]: any other diacritic
+  // (andré, zoë, münchen) or a Cyrillic confusable next to the @ or in the
+  // domain left no match position at all, and the address rendered like an
+  // ordinary one.
+  {
+    note: "email bypass: diacritic next to the @",
+    input: "Mejla anné@example.com i ärendet.",
+    mustRedact: ["anné@example.com"],
+  },
+  {
+    note: "email bypass: Cyrillic confusable in the local part",
+    input: "Mejla annа@example.com i ärendet.",
+    mustRedact: ["annа@example.com"],
+  },
+  {
+    note: "email bypass: non-ASCII domain",
+    input: "Mejla anna@münchen.se i ärendet.",
+    mustRedact: ["anna@münchen.se"],
+  },
+  // The separator policy is deliberate: line and page breaks do NOT fuse two
+  // number columns into a candidate, only the invisible/blank characters do.
+  {
+    note: "fusion guard: a form feed still separates two number columns",
+    input: "Belopp 850601\f2387 enligt tabellen.",
+    mustKeep: ["850601", "2387"],
+  },
 ]
 
 describe("leak regression suite", () => {

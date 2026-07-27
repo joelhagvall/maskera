@@ -32,6 +32,23 @@ describe("canonicalize", () => {
     expect(canonicalize(`850601${RLO}2387`).text).toBe("8506012387")
   })
 
+  it("drops blank-rendered spaces, enclosing marks and C0/C1 controls", () => {
+    // These render as a blank space (or nothing) but are neither \p{Cf} nor
+    // folded by NFKC: U+2800 braille blank, U+3164 hangul filler, and the
+    // keycap combining mark U+20E3 (\p{Me}).
+    expect(canonicalize("850601⠀2387").text).toBe("8506012387")
+    expect(canonicalize("850601ㅤ2387").text).toBe("8506012387")
+    expect(canonicalize("8⃣5⃣0⃣6⃣0⃣1⃣2⃣3⃣8⃣7⃣").text).toBe("8506012387")
+    // The C0/C1 controls are below 0x80, so the printable-ASCII fast path is
+    // what must not wave them through; \t \n \f \r stay, as separators.
+    expect(canonicalize("850601\u00012387").text).toBe("8506012387")
+    expect(canonicalize("850601\u007F2387").text).toBe("8506012387")
+    expect(canonicalize("8506012387").text).toBe("8506012387")
+    expect(canonicalize("850601\t2387").text).toBe("850601\t2387")
+    expect(canonicalize("850601\n2387").text).toBe("850601\n2387")
+    expect(canonicalize("850601\f2387").text).toBe("850601\f2387")
+  })
+
   it("folds compatibility digits and typographic spaces", () => {
     expect(canonicalize("８５０６０１２３８７").text).toBe("8506012387")
     expect(canonicalize(`850601${NNBSP}2387`).text).toBe("850601 2387")

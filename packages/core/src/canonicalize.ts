@@ -45,14 +45,31 @@ export interface CanonicalText {
  *
  * `\p{Cf}` is the bulk of them: U+00AD SOFT HYPHEN, U+200B ZERO WIDTH SPACE,
  * U+200C/U+200D the joiners, U+2060 WORD JOINER, U+FEFF, and the bidi controls
- * U+200E..U+200F / U+202A..U+202E (the Trojan Source family). The rest are the
- * invisible combining marks, which are `\p{M}` and therefore survive NFKC:
- * U+034F COMBINING GRAPHEME JOINER and the variation selectors.
+ * U+200E..U+200F / U+202A..U+202E (the Trojan Source family). Then:
+ *
+ * - `\p{Me}`, the enclosing combining marks. They are `\p{M}` and therefore
+ *   survive NFKC, but never compose with their starter: "8" + U+20E3 (keycap)
+ *   stays two code points that RENDER as a boxed 8, so a keycap sequence read
+ *   as a perfect personnummer while every detector saw noise.
+ * - The blank-rendered spaces that are neither `\p{Cf}` nor JS `\s` and that
+ *   NFKC does not fold away: U+2800 BRAILLE PATTERN BLANK and the Hangul
+ *   fillers U+115F / U+1160 / U+3164 / U+FFA0. "850601<U+2800>2387" renders
+ *   exactly like the canonical spaced form, and U+3164/U+FFA0 fold to U+1160,
+ *   which stays blank, so folding alone did not close this.
+ * - The C0/C1 control characters except \t \n \r \f: U+0000..U+0008, U+000B,
+ *   U+000E..U+001F and U+007F..U+009F. They are invisible in most renderers
+ *   and split every pattern, while \t \n \r \f stay as genuine separators
+ *   (DIGIT_RUN deliberately does not fuse numbers across line breaks).
+ *
+ * What remains of `\p{M}` is kept on purpose: U+034F and the variation
+ * selectors below are invisible combining marks that survive NFKC, while real
+ * marks (accents) must stay so they can compose with their starter.
  *
  * Dropping the joiners costs nothing here because this view is never rendered
  * and never restored from; it only decides where a detector matches.
  */
-const INVISIBLE_SOURCE = "[\\p{Cf}\\u034f\\ufe00-\\ufe0f\\u{e0100}-\\u{e01ef}]"
+const INVISIBLE_SOURCE =
+  "[\\p{Cf}\\p{Me}\\u034f\\ufe00-\\ufe0f\\u{e0100}-\\u{e01ef}\\u2800\\u115f\\u1160\\u3164\\uffa0\\u0000-\\u0008\\u000b\\u000e-\\u001f\\u007f-\\u009f]"
 const INVISIBLE = new RegExp(INVISIBLE_SOURCE, "u")
 const INVISIBLE_RUN = new RegExp(`${INVISIBLE_SOURCE}+`, "gu")
 const MARK = /\p{M}/u
@@ -119,16 +136,23 @@ export function canonicalize(input: string): CanonicalText {
 
   while (i < input.length) {
     const cp = input.codePointAt(i) as number
-    // ASCII is never invisible, never a mark and always NFKC-stable, and it is
-    // most of any document. Skipping the per-character work here is what keeps
-    // the folded path from costing more than the detection it feeds.
+    // PRINTABLE ASCII is never invisible, never a mark and always NFKC-stable,
+    // and it is most of any document. Skipping the per-character work here is
+    // what keeps the folded path from costing more than the detection it
+    // feeds. "Printable" is load-bearing: the C0/C1 controls are stripped
+    // (see INVISIBLE_SOURCE), and 0x00-0x1F / 0x7F are all below 0x80, so a
+    // plain `cp < 0x80` fast path smuggled them straight into the folded text
+    // and "850601-23<U+0001>87" still walked past every detector. \t \n \f \r
+    // are kept on the fast path explicitly: they are separators, not noise.
     //
     // Unless a combining mark follows it: "Åsa" arrives from PDF extraction and
     // from macOS paths as A + U+030A, and folding that pair is how it becomes
     // something `[A-ZÅÄÖ]` can match at all. Marks start at U+0300, so one
     // comparison keeps ordinary text (including å, ä and ö, which are far
     // below that) on the fast path.
-    if (cp < 0x80 && (i + 1 >= input.length || input.charCodeAt(i + 1) < 0x300)) {
+    const isPlainAscii =
+      (cp >= 0x20 && cp < 0x7f) || cp === 0x09 || cp === 0x0a || cp === 0x0c || cp === 0x0d
+    if (isPlainAscii && (i + 1 >= input.length || input.charCodeAt(i + 1) < 0x300)) {
       if (runStart < 0) runStart = i
       i++
       continue
