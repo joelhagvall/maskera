@@ -132,7 +132,7 @@ export function Developers({ go }: { go: (view: View) => void }) {
         <article className="prose">
           <h1>För utvecklare</h1>
           <p className="prose-lede">
-            Samma motor som på startsidan, ett kommando bort. Allt importeras från ett ställe,{" "}
+            Samma motor som på startsidan, ett kommando bort.{" "}
             <a href={HF_MODEL} target="_blank" rel="noreferrer">
               AI-modellen
             </a>{" "}
@@ -162,8 +162,8 @@ export function Developers({ go }: { go: (view: View) => void }) {
               aria-hidden="true"
             />
             <figcaption>
-              Reglerna tar allt med bestämt format, AI-modellen tar fri text som namn och adresser —
-              vid överlapp vinner reglerna.
+              Reglerna tar allt med bestämt format, AI-modellen tar fri text som namn och adresser.
+              Vid överlapp vinner reglerna.
             </figcaption>
           </figure>
 

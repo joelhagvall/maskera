@@ -77,9 +77,11 @@ const PRODUCTS: Product[] = [
     note: "Startnivå: 2 CPU-kärnor och 2\u00a0GB RAM. Priser exkl. moms.",
   },
   // Maskera Cloud is deliberately not offered while the product line is
-  // Gateway-first (decision 2026-07-25). Reinstate this card — and the Cloud
-  // row in the choice table below, plus the third .pkgs grid column in
-  // styles.css — if hosted demand materialises.
+  // Gateway-first (decision 2026-07-25). Reinstate this card, plus the third
+  // .pkgs grid column in styles.css, if hosted demand materialises. With
+  // three options a "which fits you" choice table earns its place again;
+  // one was removed 2026-07-29 (with its .choice-table CSS) for restating
+  // the two cards' taglines.
   // {
   //   name: "Maskera Cloud",
   //   price: "från 0 kr",
@@ -104,7 +106,7 @@ const GATEWAY_FLOW = [
 
 function ProductCard({ product, go }: { product: Product; go: (view: View) => void }) {
   const onClick = product.view ? navClick(() => go(product.view as View)) : undefined
-  // Cloud and Gateway leave for the customer portal on another subdomain.
+  // Gateway leaves for the customer portal on another subdomain.
   // The two sites deliberately share one visual identity, so each leaving
   // button says so itself: the same outbound arrow the GitHub link uses,
   // plus the destination right under the button. A single note below all
@@ -159,8 +161,7 @@ export function Services({ go }: { go: (view: View) => void }) {
             svenska maskering, två sätt att ta den till produktion.
           </p>
           <p className="prose-sub">
-            Open source-versionen kan ni börja med direkt. Gateway säljs via pilot — boka en
-            genomgång så kommer ni igång.
+            Gateway säljs via pilot: boka ett introduktionssamtal så kommer ni igång.
           </p>
 
           <div className="pkgs">
@@ -169,35 +170,10 @@ export function Services({ go }: { go: (view: View) => void }) {
             ))}
           </div>
 
-          <h2>Vilket alternativ passar er?</h2>
-          <div
-            className="choice-table"
-            role="region"
-            aria-label="Jämförelse av Maskeras driftformer"
-          >
-            <dl>
-              <div>
-                <dt>Ni vill ha full kontroll och kan drifta själva</dt>
-                <dd>Välj open source.</dd>
-              </div>
-              <div>
-                <dt>Text och återställningsnycklar får aldrig lämna er miljö</dt>
-                <dd>Välj Maskera Gateway.</dd>
-              </div>
-              {/* The Cloud row returns with the Cloud card above if hosted
-                  demand materialises.
-              <div>
-                <dt>Ni vill integrera snabbt och slippa egen drift</dt>
-                <dd>Välj Maskera Cloud.</dd>
-              </div>
-              */}
-            </dl>
-          </div>
-
           <h2>Så skyddar Gateway AI-flödet</h2>
           <p>
-            Varje AI-anrop som ni skickar genom Gateway maskeras före den godkända AI-tjänsten.
-            Originaltexten och återställningsnyckeln stannar i er miljö.
+            Varje AI-anrop maskeras innan det lämnar ert nätverk. Originaltexten och
+            återställningsnyckeln stannar i er miljö.
           </p>
           <div className="flow-band">
             <p className="flow-band-label">Dataflöde för Gateway</p>
@@ -220,7 +196,7 @@ export function Services({ go }: { go: (view: View) => void }) {
             <li>
               <strong>Maskering minskar risk, men är inte en garanti.</strong> Namn och platser i
               löpande text identifieras av en AI-modell som kan missa uppgifter. Träffsäkerheten
-              mäts öppet och löften om hundra procent undviks. Läs mer under{" "}
+              mäts öppet, och hundra procent utlovas aldrig. Läs mer under{" "}
               <a href={viewPaths.transparency}>integritet &amp; transparens</a>.
             </li>
             <li>
@@ -232,12 +208,12 @@ export function Services({ go }: { go: (view: View) => void }) {
           <h2>Behöver ni hjälp med införandet?</h2>
           <section className="implementation-help">
             <p>
-              <strong>Teknisk onboarding och anpassad integration</strong> erbjuds separat. Jag
+              <strong>Tekniskt införande och anpassad integration</strong> erbjuds separat. Jag
               hjälper ert team att koppla Maskera till rätt flöde och lämnar över tester och
               dokumentation.
             </p>
             <a className="pkg-cta" href={booking("implementation")}>
-              Boka ett införandesamtal
+              Boka ett introduktionssamtal
             </a>
           </section>
 

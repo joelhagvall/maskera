@@ -47,7 +47,7 @@ export function Footer({
         </ul>
       </nav>
       <p className="footer-row footer-help">
-        Vill ni köra själva, använda ett färdigt API eller installera Maskera Gateway? Se{" "}
+        Vill ni köra själva eller installera Maskera Gateway i er egen miljö? Se{" "}
         <a className="footer-link" href={viewPaths.services} onClick={navClick(onServices)}>
           Maskera för företag
         </a>
