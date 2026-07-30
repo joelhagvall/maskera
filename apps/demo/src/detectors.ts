@@ -46,6 +46,7 @@ const FIRST_NAMES = [
   "Amir",
   "Jonas",
   "Elin",
+  "Kent",
 ]
 const LAST_NAMES = [
   "Karlsson",
@@ -72,13 +73,18 @@ const LAST_NAMES = [
   "Bergman",
 ]
 
+// The gazetteer must stay case-sensitive: lowercase "berg", "ek" and "per"
+// are ordinary Swedish words. The ALL CAPS complaint scenario instead gets
+// exact uppercase entries, so the off-state demo masks it too.
+const UPPERCASE_NAMES = ["KENT PERSSON", "KENT"]
+
 function escapeRe(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 }
 
 // Full names first (longest match wins), then standalone first/last names.
 const fullNames = FIRST_NAMES.flatMap((f) => LAST_NAMES.map((l) => `${f} ${l}`))
-const nameAlternation = [...fullNames, ...FIRST_NAMES, ...LAST_NAMES]
+const nameAlternation = [...fullNames, ...FIRST_NAMES, ...LAST_NAMES, ...UPPERCASE_NAMES]
   .sort((a, b) => b.length - a.length)
   .map(escapeRe)
   .join("|")

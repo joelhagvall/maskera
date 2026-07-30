@@ -51,6 +51,11 @@ are.
   the round-by-round training journey and its caveats are in
   [`training/README.md`](../training/README.md), including that synthetic-eval F1
   is near-meaningless and that quality drops on out-of-domain text.
+- **Known weak spots**, verified against the live pipeline: table-like dumps
+  (e.g. scanned lists with surname-first columns) can leak names, and numbers
+  spelled out in words ("noll sju noll ...") are not caught at all, since the
+  rule detectors look for digits. ALL CAPS, lowercase text, misspellings,
+  chat-speak and sloppy number formats are handled.
 - **It is defense in depth, not a guarantee.** Structured PII (personnummer,
   org-nr, …) is caught deterministically by regex+checksum and is very reliable.
   Free-text names/places rely on a model and **will miss things.** Keep

@@ -74,7 +74,7 @@ const PRODUCTS: Product[] = [
     ],
     cta: "Läs om Gateway",
     href: cloud("/gateway", "business_gateway"),
-    note: "Startnivå: 2 CPU-kärnor och 2\u00a0GB RAM. Priser exkl. moms.",
+    note: "Kör i er miljö på så lite som 2 CPU-kärnor och 2\u00a0GB RAM. Priser exkl. moms.",
   },
   // Maskera Cloud is deliberately not offered while the product line is
   // Gateway-first (decision 2026-07-25). Reinstate this card, plus the third

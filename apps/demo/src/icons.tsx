@@ -86,6 +86,14 @@ export const SupportIcon = (p: IconProps) => (
   </Svg>
 )
 
+export const MailAlertIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3 6h13v12H3z" />
+    <path d="m3 7 6.5 5L16 7" />
+    <path d="M20 5v6M20 14v.5" />
+  </Svg>
+)
+
 export const LandmarkIcon = (p: IconProps) => (
   <Svg {...p}>
     <path d="M12 3 21 8H3z" />
@@ -166,6 +174,7 @@ export const DOMAIN_ICONS: Record<string, (p: IconProps) => ReactElement> = {
   juridik: LawIcon,
   hr: HrIcon,
   support: SupportIcon,
+  klagomal: MailAlertIcon,
   kommun: LandmarkIcon,
   fritext: PencilIcon,
 }

@@ -203,6 +203,13 @@ export function Transparency({ go }: { go: (view: View) => void }) {
               sjunker på text som ligger långt från det modellen tränats på.
             </li>
             <li>
+              <strong>Kända svaga punkter</strong>, verifierade mot samma pipeline som demon kör:
+              tabellartade dumpar, till exempel skannade listor med efternamnet först i kolumner,
+              kan läcka namn, och uppgifter skrivna med bokstäver ("noll sju noll ...") fångas inte
+              alls, eftersom reglerna letar efter siffror. Versaler, gemener, felstavningar,
+              chattspråk och slarviga nummerformat klarar den däremot. Prova själv i demon.
+            </li>
+            <li>
               <strong>Det är ett extra skyddslager, inte en garanti.</strong> Uppgifter med bestämt
               format, som personnummer och organisationsnummer, hittas av reglerna och är mycket
               pålitligt. Namn och platser i löpande text bygger på modellen och{" "}
@@ -223,13 +230,15 @@ export function Transparency({ go }: { go: (view: View) => void }) {
           <p className="prose-body">
             Personerna i exempeltexterna är påhittade, och varje uppgift med ett riktigt format är
             ett värde som den ansvariga aktören själv har reserverat för test och fiktion. Inget
-            exempel visar en verklig persons uppgifter. Här är varje värde, så att du kan
-            kontrollera själv:
+            exempel visar en verklig persons uppgifter. Några värden är med flit slarvigt skrivna i
+            exemplen (tolv siffror, mellanslag i stället för bindestreck, versaler), eftersom riktig
+            text ser ut så. Här är varje värde, så att du kan kontrollera själv:
           </p>
           <ul>
             <li>
               <strong>Personnummer:</strong> <code>991201-2391</code>, <code>850601-2387</code>,{" "}
-              <code>781101-2397</code> och <code>020301-2398</code> kommer alla ur{" "}
+              <code>781101-2397</code>, <code>020301-2398</code> och <code>640823-3234</code> kommer
+              alla ur{" "}
               <a
                 href="https://www.skatteverket.se/omoss/digitalasamarbeten/omvaraoppnadata/testpersonnummersomoppendata.4.5b35a6251761e6914202df9.html"
                 target="_blank"
@@ -252,8 +261,9 @@ export function Transparency({ go }: { go: (view: View) => void }) {
               .
             </li>
             <li>
-              <strong>Telefonnummer:</strong> <code>070-174 06 05</code>, <code>070-174 06 58</code>
-              , <code>070-174 06 71</code> och <code>08-465 004 12</code> ligger i{" "}
+              <strong>Telefonnummer:</strong> <code>070-174 06 05</code>, <code>070-174 06 32</code>
+              , <code>070-174 06 58</code>, <code>070-174 06 71</code> och{" "}
+              <code>08-465 004 12</code> ligger i{" "}
               <a
                 href="https://pts.se/internet-och-telefoni/telefonnummer-och-adressering/telefonnummer-till-bocker-och-filmer/"
                 target="_blank"

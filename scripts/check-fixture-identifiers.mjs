@@ -26,6 +26,7 @@ const SKIP_FILES = new Set(["pnpm-lock.yaml", "apps/demo/public/whitepaper.pdf"]
 // https://www.skatteverket.se/omoss/digitalasamarbeten/omvaraoppnadata/testpersonnummersomoppendata.4.5b35a6251761e6914202df9.html
 const TEST_PERSONNUMMER = new Set([
   "190001019801",
+  "196408233234",
   "197811012397",
   "198506012387",
   "198506232381",
