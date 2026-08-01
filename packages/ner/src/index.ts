@@ -903,7 +903,7 @@ export function isWholeWord(text: string, start: number, end: number): boolean {
  * inside the mask where the model's ADR span sometimes splits it. `regnummer`
  * stays opt-in even here: three letters + three digits is also the shape of
  * booking codes and case ids, exactly what support text is full of. The
- * synchronous rules-only `redact()` keeps the conservative checksum-validated
+ * synchronous rules-only `redact()` keeps the conservative structured
  * defaults.
  */
 export const hybridDefaultDetectors = [...defaultDetectors, adress, lagenhetsnummer]
@@ -912,8 +912,8 @@ export interface RedactWithNerOptions extends Pick<RedactOptions, "placeholder">
   recognizer: NerRecognizer
   /**
    * Rule-based detectors to combine with the model.
-   * Default: {@link hybridDefaultDetectors} (all checksum-validated built-ins
-   * plus the `adress` and `lagenhetsnummer` heuristics).
+   * Default: {@link hybridDefaultDetectors} (all structured built-ins plus
+   * the `adress` and `lagenhetsnummer` heuristics).
    */
   detectors?: RedactOptions["detectors"]
 }

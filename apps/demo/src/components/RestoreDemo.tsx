@@ -154,8 +154,9 @@ export function RestoreDemo({ result, scenarioId }: { result: RedactResult; scen
     <section className="restore">
       <h2 className="restore-title">Så fungerar återställningen</h2>
       <p className="restore-note">
-        AI:n arbetar bara med platshållare. När svaret kommer tillbaka återställer maskera dina
-        riktiga uppgifter lokalt. Återställningsnyckeln lämnar aldrig din enhet.
+        AI:n ser platshållare i stället för de uppgifter som maskera upptäckte. När svaret kommer
+        tillbaka återställer maskera uppgifterna lokalt. Återställningsnyckeln lämnar aldrig din
+        enhet.
       </p>
       <div className="flow">
         {/* Arrow and step share a no-wrap unit: when the band wraps on narrow

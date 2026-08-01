@@ -13,7 +13,7 @@ import { navClick, useRoute } from "../src/routing"
  * actually navigates.
  */
 
-const STATIC_TITLE = "maskera personuppgifter innan AI:n ser dem"
+const STATIC_TITLE = "Skydda personuppgifter innan texten skickas till AI"
 
 beforeEach(() => {
   document.head.innerHTML = `

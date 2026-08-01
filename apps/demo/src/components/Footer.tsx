@@ -17,7 +17,8 @@ export function Footer({
         <a href={HF_MODEL} target="_blank" rel="noreferrer">
           en egentränad svensk AI-modell
         </a>
-        , allt körs i din webbläsare. Texten du skriver skickas ingenstans.
+        . Den öppna demon kör modellen i din webbläsare. Texten och återställningsnyckeln skickas
+        inte för maskering.
       </p>
       <nav className="footer-nav" aria-label="Integritet och dokumentation">
         <ul>
@@ -47,7 +48,8 @@ export function Footer({
         </ul>
       </nav>
       <p className="footer-row footer-help">
-        Vill ni köra själva eller installera Maskera Gateway i er egen miljö? Se{" "}
+        Vill ni bygga en egen integration med npm-paketen eller välja Gateway som signerad
+        företagsleverans? Se{" "}
         <a className="footer-link" href={viewPaths.services} onClick={navClick(onServices)}>
           Maskera för företag
         </a>

@@ -1,7 +1,8 @@
 # maskera
 
 > Swedish-first, client-side PII redaction: mask personal data before text
-> reaches an LLM, restore it in the answer. Nothing leaves the device.
+> reaches an LLM, restore it in the answer. Text and restore maps stay with
+> the caller.
 > [Live demo: maskera.dev](https://maskera.dev) ·
 > [Repo on GitHub](https://github.com/joelhagvall/maskera).
 
@@ -12,7 +13,7 @@ places, organisations and street addresses** ("min granne Lars på våning 4").
 Everything runs **client-side** via Transformers.js (WASM/WebGPU in the
 browser, native ONNX in Node).
 
-![The two-layer design: input text forks into layer 1, deterministic checksum-validated rules that catch structured PII like personnummer, and layer 2, a 43 MB Swedish AI model that catches free text like names. Rules win on overlap, and the merged result is the masked output. The restore key stays on your device.](https://maskera.dev/layers.svg)
+![The two-layer design: input text forks into layer 1, deterministic rules for structured PII like personnummer, with checksum validation where the format supports it, and layer 2, a 43 MB Swedish AI model that catches free text like names. Rules win on overlap, and the merged result is the masked output. The restore key stays on your device.](https://maskera.dev/layers.svg)
 
 ```bash
 npm install maskera @huggingface/transformers
@@ -59,7 +60,7 @@ use (or when you await `ready`), and each `detect`/`redactWithNer` call after
 that is a few milliseconds of inference.
 
 The hybrid's default rule set (`hybridDefaultDetectors`) is core's
-checksum-validated defaults **plus** the low-risk free-text heuristics
+structured defaults **plus** the low-risk free-text heuristics
 `adress` and `lagenhetsnummer`: whoever calls `redactWithNer` has free text
 about people, and the address RULE guarantees the house number always ends up
 inside the mask where the model's span sometimes splits it. `regnummer` stays

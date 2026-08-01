@@ -63,8 +63,8 @@ redact(text, { detectors: [...defaultDetectors, ...heuristicDetectors] })
 
 Note: the model-hybrid `redactWithNer` in the `maskera` package enables
 `adress` and `lagenhetsnummer` by default (its callers have free text by
-definition); only the synchronous `redact()` here keeps the strictly
-checksum-validated default set.
+definition); only the synchronous `redact()` here keeps the structured
+default set.
 
 ## API
 

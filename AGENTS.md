@@ -105,11 +105,10 @@ has its own CLAUDE.md with the standing rules for that side; read it before
 touching anything that crosses the two.
 
 The "För företag" page (`apps/demo/src/components/Services.tsx`) repeats
-prices, the model size, the CPU baseline and the cloud claim wording
-("bearbetning i minnet hos ett EU-ägt bolag i EU, ingen lagring av
-innehållet" - never "lokalt" for Cloud; local claims belong to the open
-source library only) that app.maskera.dev owns. When prices or claims
-change on either side, update the other in the same sitting.
+Gateway prices, the model size, the CPU baseline and the self-hosted data-flow
+claims that app.maskera.dev owns. When prices or claims change on either side,
+update the other in the same sitting. Do not reintroduce hosted masking as a
+future, dormant or fallback offer.
 
 ## Misc
 

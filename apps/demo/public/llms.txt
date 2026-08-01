@@ -1,10 +1,10 @@
 # maskera
 
-> Swedish-first, client-side PII redaction for AI apps. maskera finds and masks Swedish personal data (names, personnummer, addresses, phone numbers, and more) before text reaches an LLM, a log, or analytics. Everything runs on-device (browser via WebGPU/WASM, or Node); your text is never sent anywhere. The packages contain no telemetry. The demo counts anonymous, cookieless page views, never your content. The default setup fetches the model weights and WASM runtime once as static assets (both can be self-hosted), never your content. Redactions are reversible via a restore map that stays with the caller.
+> Swedish-first, client-side PII redaction for AI apps. maskera finds and masks detected Swedish personal data (names, personnummer, addresses, phone numbers, and more) before text reaches an LLM, a log, or analytics. Everything runs on-device (browser via WebGPU/WASM, or Node); text and restore maps are not sent away for masking. The packages contain no telemetry. The demo counts anonymous, cookieless page views, never your content. The default setup fetches the model weights and WASM runtime once as static assets (both can be self-hosted), never your content. Redactions are reversible via a restore map that stays with the caller.
 
 Two layers, rules first:
 
-- `@maskera/core` (npm): deterministic, checksum-validated detectors for structured Swedish PII: personnummer, samordningsnummer, organisationsnummer, phone, email, postnummer, bankgiro, plusgiro, IBAN, cards, IP, URL. Zero dependencies, synchronous. Custom patterns join via `regexDetector`.
+- `@maskera/core` (npm): deterministic detectors for structured Swedish PII: personnummer, samordningsnummer, organisationsnummer, phone, email, postnummer, bankgiro, plusgiro, IBAN, cards, IP, URL. Checksums are verified when the format provides one. Zero dependencies, synchronous. Custom patterns join via `regexDetector`.
 - `maskera` (npm): everything in core plus `maskera-sv-ner`, my own Swedish NER model (KB-BERT fine-tuned, distilled to a 43 MB ONNX) that catches free-text names, places, organisations and street addresses, including all-lowercase chat text. On overlap, rules win. The hybrid also enables the low-risk free-text rule heuristics (street address, lägenhetsnummer) by default; `regnummer` is opt-in.
 
 Quick start:
@@ -28,9 +28,9 @@ commercial deployment for a customer's own servers: a signed OCI container
 with the 43 MB model built in. It runs on CPU without a database, GPU or
 separate model server, and masks routed AI traffic before the approved
 upstream receives it. There is no hosted masking API on offer: the
-open-source packages and Gateway are the two deployments. Anything sent to
-app.maskera.dev, the customer portal, is processed in memory at an EU-owned
-company in the EU with zero payload retention.
+open-source packages and Gateway are the two deployments. The customer portal
+at app.maskera.dev is limited to accounts, licensing, billing, and Gateway
+downloads. Customer text is not processed there.
 
 ## Docs
 
@@ -48,7 +48,7 @@ company in the EU with zero payload retention.
 ## Optional
 
 - [Live demo](https://maskera.dev/): paste Swedish text, watch it get masked in the browser
-- [For companies](https://maskera.dev/tjanster): compare open source and the private Gateway (Swedish)
+- [For companies](https://maskera.dev/tjanster): compare open source and Gateway (Swedish)
 - [Gateway pricing](https://app.maskera.dev/pricing): the canonical commercial plans and prices
-- [Private Gateway](https://app.maskera.dev/gateway): customer-hosted installation, security, and purchase flow
+- [Gateway](https://app.maskera.dev/gateway): customer-hosted installation, security, and purchase flow
 - [Source repository](https://github.com/joelhagvall/maskera): monorepo with packages, training pipeline, and CI that re-grades the published model against a gold corpus

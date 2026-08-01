@@ -4,15 +4,18 @@ maskera is a privacy tool, so it should be honest about its own workings. This i
 the short version of what it does, how the model was made, and where the limits
 are.
 
-## Where your data goes: nowhere
+## How your text is processed
 
 - **Redaction runs entirely on your device**: in the browser (WASM/WebGPU) or in
-  your Node process. Your text is **never sent anywhere** for redaction.
+  your Node process. Your text and restore map are not sent to Maskera or
+  another service for redaction.
 - **No telemetry in the packages, no phone-home.** maskera makes no network
-  calls with your content. You can verify this in the browser DevTools →
-  Network tab: type into the demo and watch: your text triggers zero requests.
-  (The demo page itself counts anonymous, cookieless page views via Vercel
-  Analytics; that request never contains anything you typed.)
+  calls with your content. The demo counts anonymous, cookieless page views
+  through Vercel Analytics. Analytics requests never contain anything you
+  typed.
+- **Hosting request data is separate from your text.** Vercel may process
+  technical request data such as an IP address to deliver and protect the
+  website. Your text and restore map are not included.
 - **The network calls that *do* exist** (full honesty): the NER **model file** is
   downloaded once (from the Hugging Face Hub, or your own host), and the
   Transformers.js **WASM runtime** loads from a CDN. Both are code/weights, fetched
@@ -53,19 +56,19 @@ are.
   is near-meaningless and that quality drops on out-of-domain text.
 - **Known weak spots**, verified against the live pipeline: table-like dumps
   (e.g. scanned lists with surname-first columns) can leak names, and numbers
-  spelled out in words ("noll sju noll ...") are not caught at all, since the
+  spelled out in words ("noll sju noll …") are not caught at all, since the
   rule detectors look for digits. ALL CAPS, lowercase text, misspellings,
   chat-speak and sloppy number formats are handled.
 - **It is defense in depth, not a guarantee.** Structured PII (personnummer,
-  org-nr, …) is caught deterministically by regex+checksum and is very reliable.
+  org-nr, …) is checked with patterns and, where available, checksums.
   Free-text names/places rely on a model and **will miss things.** Keep
   server-side controls; don't treat maskera as your only safeguard.
 
 ## FAQ
 
-**Does my text leave my device?**
-No. Redaction is local. Only model weights/runtime are fetched (once), never your
-content.
+**Is my text sent away for redaction?**
+No. Redaction is local. Only model weights and the runtime are fetched, never
+your content.
 
 **What was the model trained on?**
 Template-generated synthetic sentences (`training/generate_data.mjs`) plus six
@@ -93,5 +96,6 @@ Non-Swedish PII, unusual free-text formulations, and anything outside its four
 entity types (PER/LOC/ORG/ADR). Structured IDs are handled by rules, not the model.
 
 **Do you collect anything from the demo?**
-Anonymous, cookieless page-view counts (Vercel Analytics), nothing else. The
-demo is a static site with no backend, and your text never leaves the browser.
+The demo uses anonymous, cookieless page-view counts through Vercel Analytics.
+Vercel may also process technical request data to deliver and protect the site.
+Neither receives the text or restore map from the masking tool.

@@ -3,7 +3,7 @@
        original stays byte-coupled to docs/layers.svg for the npm/HF embeds).
        Re-derive when layers.svg changes. -->
   <title>maskera: två lager, regler först</title>
-  <desc>Inkommande text delas upp i två lager: deterministiska regler med kontrollsiffervalidering för strukturerade personuppgifter som personnummer, och en svensk AI-modell på 43 MB för fri text som namn. Reglerna vinner vid överlapp, och det sammanslagna resultatet är den maskerade texten.</desc>
+  <desc>Inkommande text delas upp i två lager: deterministiska regler för strukturerade personuppgifter som personnummer, med kontrollsiffervalidering där formatet har en kontrollsiffra, och en svensk AI-modell på 43 MB för fri text som namn. Reglerna vinner vid överlapp, och det sammanslagna resultatet är den maskerade texten.</desc>
 
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">

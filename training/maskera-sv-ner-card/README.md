@@ -28,7 +28,7 @@ a Swedish-first, client-side PII redaction toolkit. The deterministic stuff
 maskera's rule layer; this model only fills the gaps rules can't: names and
 places in running text.
 
-![Where this model fits: input text forks into layer 1, maskera's deterministic checksum-validated rules for structured PII like personnummer, and layer 2, this model, catching free text like names. Rules win on overlap, and the merged result is the masked output.](https://maskera.dev/layers.svg)
+![Where this model fits: input text forks into layer 1, maskera's deterministic rules for structured PII like personnummer, with checksum validation where the format supports it, and layer 2, this model, catching free text like names. Rules win on overlap, and the merged result is the masked output.](https://maskera.dev/layers.svg)
 
 All inference happens **on the device where the text is**, via
 [Transformers.js](https://huggingface.co/docs/transformers.js) / ONNX Runtime

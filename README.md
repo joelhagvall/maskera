@@ -2,7 +2,7 @@
 
 # maskera
 
-> **Swedish PII redaction, on-device. Names, personnummer, addresses are masked before your text reaches an LLM, a log, or analytics.**
+> **Swedish PII redaction, on-device. Detected names, personnummer, and addresses are masked before your text reaches an LLM, a log, or analytics.**
 
 <a href="https://maskera.dev"><img src="docs/demo.png" alt="maskera-demon: svensk text med markerade personuppgifter till vänster, samma text med platshållare som [NAMN_1] till höger" width="100%"></a>
 
@@ -26,8 +26,8 @@ text
 // "hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]"
 ```
 
-Everything runs client-side. Nothing is sent anywhere, no telemetry, and the
-restore map stays with you. `maskera` re-exports the whole rule layer,
+Masking runs client-side. Text and restore maps are not sent away for
+masking, and the packages contain no telemetry. `maskera` re-exports the whole rule layer,
 so one import covers rules and model alike. Rules only, zero dependencies:
 `npm install @maskera/core`. **[Live demo → maskera.dev](https://maskera.dev)**
 
@@ -36,7 +36,7 @@ so one import covers rules and model alike. Rules only, zero dependencies:
 This public repository and the demo are the free, local-processing option:
 your team owns the integration and operation. Companies that want the same
 masking as a ready-made, supported installation in their own environment can
-use the [private Gateway](https://app.maskera.dev/gateway). Gateway is delivered as a
+use [Maskera Gateway](https://app.maskera.dev/gateway). Gateway is delivered as a
 signed, digest-pinned OCI image with the same 43 MB model built in. It runs on
 CPU without a database, GPU or separate model server, and masks every AI call
 that the application routes through it before the approved upstream receives
@@ -78,7 +78,7 @@ model in CI against a gold corpus with an F1 floor and a leak-rate ceiling.
 
 ## Two layers, rules first
 
-<img src="docs/layers.svg" alt="The two-layer design: input text forks into layer 1, deterministic checksum-validated rules that catch structured PII like personnummer, and layer 2, a 43 MB Swedish AI model that catches free text like names. Rules win on overlap, and the merged result is the masked output. The restore key stays on your device." width="100%">
+<img src="docs/layers.svg" alt="The two-layer design: input text forks into layer 1, deterministic rules for structured PII like personnummer, with checksum validation where the format supports it, and layer 2, a 43 MB Swedish AI model that catches free text like names. Rules win on overlap, and the merged result is the masked output. The restore key stays on your device." width="100%">
 
 1. **`@maskera/core`**: deterministic detectors for structured Swedish PII.
    Personnummer, samordningsnummer, organisationsnummer, phone, email,
@@ -89,7 +89,7 @@ model in CI against a gold corpus with an F1 floor and a leak-rate ceiling.
    numbers) joins the same engine via `regexDetector`.
 2. **`maskera`** (the package): everything above plus the Swedish model,
    with core fully re-exported. In the hybrid, rules win on overlap:
-   structured PII is always handled deterministically, the model only fills
+   structured matches are handled deterministically, and the model only fills
    the free-text gap. Its default rule set also enables the low-risk
    free-text heuristics (street `adress`, `lagenhetsnummer`), since whoever
    loads the model has free text by definition; only `regnummer` stays

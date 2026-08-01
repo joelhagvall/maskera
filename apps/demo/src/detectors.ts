@@ -1,8 +1,8 @@
 import { type Detector, defaultDetectors, heuristicDetectors, regexDetector } from "@maskera/core"
 
 /**
- * The demo runs maskera's hybrid defaults (core's checksum-validated
- * detectors + adress + lägenhetsnummer) with `regnummer` added on top, i.e.
+ * The demo runs maskera's hybrid defaults (core's structured detectors +
+ * adress + lägenhetsnummer) with `regnummer` added on top, i.e.
  * what an npm user gets with `[...hybridDefaultDetectors, regnummer]`. The
  * only demo-only detector is the name gazetteer below: in production
  * free-text names come from maskera's model, but here it lets the demo

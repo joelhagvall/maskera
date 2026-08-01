@@ -23,7 +23,7 @@ export function Transparency({ go }: { go: (view: View) => void }) {
                 <a href="#hur-fungerar">Hur fungerar det?</a>
               </li>
               <li>
-                <a href="#dataflode">Var din data tar vägen</a>
+                <a href="#dataflode">Så behandlas din text</a>
               </li>
               <li>
                 <a href="#modelltraning">Hur modellen tränats</a>
@@ -43,15 +43,16 @@ export function Transparency({ go }: { go: (view: View) => void }) {
           <h2 id="hur-fungerar">Hur fungerar det?</h2>
           <ul>
             <li>
-              maskera läser texten och ersätter personuppgifter med platshållare, till exempel{" "}
-              <code>[NAMN_1]</code> eller <code>[PERSONNUMMER_1]</code>. AI-tjänsten får bara
-              platshållarna, och efteråt kan du sätta tillbaka originalen lokalt.
+              maskera läser texten och ersätter de personuppgifter som upptäcks med platshållare,
+              till exempel <code>[NAMN_1]</code> eller <code>[PERSONNUMMER_1]</code>. AI-tjänsten
+              ser platshållarna i stället för de upptäckta uppgifterna. Efteråt kan du sätta
+              tillbaka originalen lokalt.
             </li>
             <li>
-              <strong>Två skydd arbetar tillsammans.</strong> <strong>Regler</strong> hittar allt
-              som har ett bestämt format: personnummer, organisationsnummer, telefonnummer och
-              e-post. Det sker med matematisk säkerhet, till exempel via kontrollsiffran i ett
-              personnummer.
+              <strong>Två skydd arbetar tillsammans.</strong> <strong>Regler</strong> letar efter
+              personuppgifter med fasta format, som personnummer, organisationsnummer, telefonnummer
+              och e-post. Kontrollsiffror verifieras när formatet har dem. Andra uppgifter hittas
+              med mönster och rimlighetskontroller.
             </li>
             <li>
               <strong>En liten AI-modell</strong> tar hand om resten: namn, platser, organisationer
@@ -67,27 +68,29 @@ export function Transparency({ go }: { go: (view: View) => void }) {
             </li>
           </ul>
 
-          <h2 id="dataflode">Var din data tar vägen: ingenstans</h2>
+          <h2 id="dataflode">Så behandlas din text</h2>
           <ul>
             <li>
               <strong>All maskering sker på din enhet</strong>, i webbläsaren eller på din egen
-              server (för utvecklare: WASM/WebGPU eller Node). Din text skickas{" "}
-              <strong>aldrig</strong> någonstans för att maskeras.
+              server (för utvecklare: WASM/WebGPU eller Node). Texten och återställningsnyckeln
+              skickas inte till Maskera eller någon annan tjänst för att maskeras.
             </li>
             <li>
-              <strong>Ingen spårning av dig eller din text, inga cookies.</strong> Det enda sidan
-              mäter är anonyma sidvisningar (Vercel Analytics, cookiefritt), och det anropet
-              innehåller aldrig något du skrivit. Kontrollera själv i webbläsarens utvecklarverktyg
-              under Network: skriv något på startsidan och se att din text inte utlöser ett enda
-              anrop.
+              <strong>Webbstatistiken är anonym och cookiefri.</strong> Vercel Analytics räknar
+              sidvisningar utan att ta emot texten du skriver. Texten i verktyget utlöser inga
+              analysanrop.
+            </li>
+            <li>
+              <strong>Webbhotellet hanterar tekniska anropsuppgifter.</strong> Vercel kan behandla
+              uppgifter som IP-adress för att leverera och skydda webbplatsen. Texten du skriver och
+              återställningsnyckeln ingår inte i dessa anrop.
             </li>
             <li>
               <strong>De anrop som kan göras</strong>, för fullständighetens skull: med npm-paketets
               standardinställningar hämtas modellfilen en gång från Hugging Face och körmiljön från
               ett CDN. Båda är kod och modellvikter som hämtas en gång och cachas,{" "}
-              <strong>aldrig din text</strong>. Allt går att lägga på egen server, och{" "}
-              <strong>den här sidan gör precis det</strong>: modell, körmiljö och typsnitt ligger
-              lokalt, så sidan gör inga anrop till tredje part.
+              <strong>aldrig din text</strong>. Allt går att lägga på egen server. På den här sidan
+              levereras modell, körmiljö och typsnitt från samma webbplats.
             </li>
             <li>
               Själva regeldelen är vanlig kod utan AI-modell: den har{" "}
@@ -205,7 +208,7 @@ export function Transparency({ go }: { go: (view: View) => void }) {
             <li>
               <strong>Kända svaga punkter</strong>, verifierade mot samma pipeline som demon kör:
               tabellartade dumpar, till exempel skannade listor med efternamnet först i kolumner,
-              kan läcka namn, och uppgifter skrivna med bokstäver ("noll sju noll ...") fångas inte
+              kan läcka namn, och uppgifter skrivna med bokstäver ("noll sju noll …") fångas inte
               alls, eftersom reglerna letar efter siffror. Versaler, gemener, felstavningar,
               chattspråk och slarviga nummerformat klarar den däremot. Prova själv i demon.
             </li>
@@ -328,9 +331,14 @@ export function Transparency({ go }: { go: (view: View) => void }) {
               .
             </li>
             <li>
-              <strong>Vad den här webbplatsen samlar in:</strong> endast anonym, cookiefri
-              besöksstatistik (Vercel Analytics) för att räkna sidvisningar. Inga cookies, ingen
-              profilering, inga personuppgifter, och aldrig text du skriver i verktyget.
+              <strong>Webbstatistik:</strong> Vercel Analytics räknar sidvisningar med anonym,
+              cookiefri statistik utan profilering. Statistiken innehåller aldrig texten du skriver
+              i verktyget.
+            </li>
+            <li>
+              <strong>Hosting:</strong> Vercel kan behandla tekniska anropsuppgifter, som IP-adress,
+              för att leverera webbplatsen och skydda den mot angrepp. Texten och
+              återställningsnyckeln ingår inte.
             </li>
             <li>
               <strong>En inställning sparas lokalt:</strong> växlar du till mörkt läge sparas valet
@@ -338,14 +346,13 @@ export function Transparency({ go }: { go: (view: View) => void }) {
               Det är ingen cookie, det lämnar aldrig din enhet och det går inte att koppla till dig.
             </li>
             <li>
-              <strong>Vad verktyget behandlar:</strong> ingenting lämnar din enhet. Text du maskerar
-              behandlas lokalt i din webbläsare och skickas aldrig till mig eller till tredje part.
-              Se avsnitten ovan för detaljer.
+              <strong>Vad verktyget behandlar:</strong> texten och återställningsnyckeln behandlas
+              lokalt i din webbläsare. De skickas inte till mig eller någon annan tjänst för
+              maskering.
             </li>
             <li>
-              <strong>Dina rättigheter:</strong> eftersom jag varken lagrar eller kan koppla data
-              till dig finns inga personuppgifter att begära ut, rätta eller radera. Har du frågor,
-              hör av dig via länken ovan.
+              <strong>Dina rättigheter:</strong> har du frågor om webbplatsens behandling av
+              personuppgifter eller vill använda dina rättigheter, hör av dig via länken ovan.
             </li>
           </ul>
 

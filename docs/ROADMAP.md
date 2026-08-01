@@ -10,9 +10,9 @@ per-package history in the changelogs.
 
 ## Shipped
 
-- **Rules layer** (`@maskera/core`): checksum-validated structured detectors,
-  stable placeholders + restore map, deterministic overlap resolution, zero
-  dependencies.
+- **Rules layer** (`@maskera/core`): structured detectors with checksum
+  validation where supported, stable placeholders + restore map, deterministic
+  overlap resolution, zero dependencies.
 - **Hybrid model layer** (`maskera`): Transformers.js/ONNX, WASM + WebGPU,
   rules win on overlap, full `@maskera/core` re-export (one install, one import).
 - **Own Swedish model** (`maskera-sv-ner`): KB-BERT fine-tuned, distilled and

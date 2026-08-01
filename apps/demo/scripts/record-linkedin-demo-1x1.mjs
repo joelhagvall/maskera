@@ -28,11 +28,12 @@ const TYPE =
   process.env.DEMO_TEXT ??
   "Kund Anna Karlsson, personnummer 19900101-2385, ringde om sin faktura. Hon nås på 070-174 06 58 och bor på Påhittsgatan 12 i Uppsala. Sammanfatta ärendet."
 const CAPTION =
-  process.env.DEMO_CAPTION ?? "Allt sker direkt i din webbläsare. Ingenting lämnar din enhet."
-const END_TITLE = process.env.DEMO_END_TITLE ?? "Maskera personuppgifter\ninnan AI:n ser dem."
+  process.env.DEMO_CAPTION ?? "Texten och återställningsnyckeln behandlas direkt i din webbläsare."
+const END_TITLE =
+  process.env.DEMO_END_TITLE ?? "Skydda personuppgifter\ninnan texten skickas till AI."
 const END_SUBTITLE =
   process.env.DEMO_END_SUBTITLE ??
-  "Öppen källkod. Allt sker direkt i din webbläsare, ingenting lämnar din enhet."
+  "Öppen källkod. Texten och återställningsnyckeln behandlas direkt i din webbläsare."
 
 const sleep = (ms) => new Promise((resolvePromise) => setTimeout(resolvePromise, ms))
 

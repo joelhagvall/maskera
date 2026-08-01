@@ -37,7 +37,7 @@ installed it directly. Everything else is about doing it *well*.
 
 | Layer | Package | Catches | Character |
 | ----- | ------- | ------- | --------- |
-| Rules | `@maskera/core` | personnummer, samordningsnummer, org-nr, phone, email, postnummer, bankgiro, plusgiro, IBAN, card, IP, URL | deterministic, checksum-validated, instant |
+| Rules | `@maskera/core` | personnummer, samordningsnummer, org-nr, phone, email, postnummer, bankgiro, plusgiro, IBAN, card, IP, URL | deterministic; checksum-validated where supported; instant |
 | Model | `maskera` | names, places, organisations, street addresses in free text | best-effort ML, ~ms per sentence once warm |
 
 Use rules alone when your inputs are forms or structured-ish text. Add the

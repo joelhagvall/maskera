@@ -1263,8 +1263,6 @@ html[data-theme="dark"] .tok-f {
 }
 .pkgs {
   display: grid;
-  /* Two cards while the Cloud card is commented out in Services.tsx;
-     back to 3 columns when it returns. */
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin: 28px 0 0;
@@ -1370,9 +1368,7 @@ html[data-theme="dark"] .tok-f {
 .prose .pkg.featured .pkg-cta:hover {
   opacity: 0.85;
 }
-/* Destination caption under the outbound Cloud/Gateway CTAs: the cards
-   leave for the customer portal, and the button itself is where a reader
-   decides to click, so the site change is announced right there. */
+/* Destination caption for cards that lead to the customer portal. */
 .prose .pkg-dest {
   margin: 8px 0 0;
   font-size: 12px;

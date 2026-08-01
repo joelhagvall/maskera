@@ -234,7 +234,7 @@ function hostPage() {
         <div class="proof">
           <div class="proof-item"><div class="proof-kicker">Lokalt</div><div class="proof-value">Körs i webbläsaren</div></div>
           <div class="proof-item"><div class="proof-kicker">Privat</div><div class="proof-value">Originalet lämnar aldrig enheten</div></div>
-          <div class="proof-item"><div class="proof-kicker">Öppet</div><div class="proof-value">Open source för svenska flöden</div></div>
+          <div class="proof-item"><div class="proof-kicker">Öppet</div><div class="proof-value">Öppen källkod för svenska flöden</div></div>
         </div>
         <div class="footer"><span>AI-redigering för verkliga arbetsflöden</span><span>maskera.dev</span></div>
       </div>

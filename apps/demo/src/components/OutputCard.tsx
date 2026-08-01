@@ -40,8 +40,8 @@ function RestoreMap({ map }: { map: Record<string, string> }) {
   return (
     <div className="map" id="restore-map">
       <p className="map-note">
-        Nyckeln stannar på din enhet. AI-tjänsten ser bara platshållarna, och med nyckeln kan du
-        sätta tillbaka originalen i svaret efteråt.
+        Nyckeln stannar på din enhet. AI-tjänsten ser platshållare i stället för de uppgifter som
+        maskera upptäckte. Med nyckeln kan du sätta tillbaka originalen i svaret efteråt.
       </p>
       <table>
         <tbody>
