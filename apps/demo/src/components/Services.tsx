@@ -206,7 +206,7 @@ export function Services({ go }: { go: (view: View) => void }) {
           <h2>Behöver ni hjälp med införandet?</h2>
           <section className="implementation-help">
             <p>
-              <strong>Tekniskt införande och anpassad integration</strong> erbjuds separat. Vi
+              <strong>Tekniskt införande och anpassad integration</strong> erbjuds separat. Jag
               hjälper ert team att koppla Maskera till rätt flöde och lämnar över tester och
               dokumentation.
             </p>
