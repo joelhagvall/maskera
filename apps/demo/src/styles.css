@@ -1343,6 +1343,11 @@ html[data-theme="dark"] .tok-f {
   width: 4px;
   height: 4px;
 }
+.pkg-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 8px;
+}
 .prose .pkg-cta {
   display: inline-flex;
   justify-content: center;
@@ -1368,7 +1373,17 @@ html[data-theme="dark"] .tok-f {
 .prose .pkg.featured .pkg-cta:hover {
   opacity: 0.85;
 }
-/* Destination caption for cards that lead to the customer portal. */
+.prose .pkg.featured .pkg-cta-secondary {
+  color: var(--fg);
+  background: var(--bg);
+  border-color: var(--border-2);
+}
+.prose .pkg.featured .pkg-cta-secondary:hover {
+  opacity: 1;
+  border-color: var(--border-hover);
+  background: var(--gray-100);
+}
+/* Helper caption beneath the product actions. */
 .prose .pkg-dest {
   margin: 8px 0 0;
   font-size: 12px;

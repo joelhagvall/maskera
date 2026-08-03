@@ -1,3 +1,4 @@
+import copy from "../i18n/sv.json"
 import { ArrowUpRightIcon } from "../icons"
 import type { View } from "../routing"
 import { navClick, viewPaths } from "../routing"
@@ -36,6 +37,9 @@ type Product = {
   points: string[]
   cta: string
   href: string
+  secondaryCta?: string
+  secondaryHref?: string
+  destination?: string
   featured?: boolean
   view?: View
   note?: string
@@ -73,8 +77,11 @@ const PRODUCTS: Product[] = [
       "Ingen GPU eller databas; den svenska modellen på 43\u00a0MB ingår",
       "Gemensamma regler, företagsinloggning och säkerhetsuppdateringar",
     ],
-    cta: "Läs om Gateway",
-    href: portal("/gateway", "business_gateway"),
+    cta: copy.services.gatewayInterestCta,
+    href: mailto(copy.services.gatewayInterestSubject),
+    secondaryCta: copy.services.gatewayDocsCta,
+    secondaryHref: portal("/gateway", "business_gateway"),
+    destination: copy.services.gatewayContactNote,
     note: "Kör i er miljö på så lite som 2 CPU-kärnor och 2\u00a0GB RAM. Priser exkl. moms.",
   },
 ]
@@ -88,12 +95,10 @@ const GATEWAY_FLOW = [
 
 function ProductCard({ product, go }: { product: Product; go: (view: View) => void }) {
   const onClick = product.view ? navClick(() => go(product.view as View)) : undefined
-  // Gateway leaves for the customer portal on another subdomain.
-  // The two sites deliberately share one visual identity, so each leaving
-  // button says so itself: the same outbound arrow the GitHub link uses,
-  // plus the destination right under the button. A single note below all
-  // both cards would read as an afterthought and get missed.
+  // Gateway interest goes directly to email; only the secondary docs action
+  // leaves for the customer portal, marked by the outbound arrow.
   const external = product.href.startsWith("http")
+  const secondaryExternal = product.secondaryHref?.startsWith("http") ?? false
 
   return (
     <section className={`pkg${product.featured ? " featured" : ""}`}>
@@ -116,15 +121,24 @@ function ProductCard({ product, go }: { product: Product; go: (view: View) => vo
         ))}
       </ul>
       {product.note && <p className="pkg-note">{product.note}</p>}
-      <a className="pkg-cta" href={product.href} onClick={onClick}>
-        {product.cta}
-        {external && <ArrowUpRightIcon size={13} />}
-      </a>
-      {/* Ghost copy on the internal card keeps both CTA rows on one baseline;
-          without it the outbound card's caption pushes its button up relative
-          to the open source card's. */}
-      <p className={`pkg-dest${external ? "" : " pkg-dest-ghost"}`} aria-hidden={!external}>
-        Öppnas på app.maskera.dev, Maskeras kundportal
+      <div className="pkg-actions">
+        <a className="pkg-cta" href={product.href} onClick={onClick}>
+          {product.cta}
+          {external && <ArrowUpRightIcon size={13} />}
+        </a>
+        {product.secondaryCta && product.secondaryHref ? (
+          <a className="pkg-cta pkg-cta-secondary" href={product.secondaryHref}>
+            {product.secondaryCta}
+            {secondaryExternal && <ArrowUpRightIcon size={13} />}
+          </a>
+        ) : null}
+      </div>
+      {/* Ghost copy keeps both cards' CTA rows on one baseline. */}
+      <p
+        className={`pkg-dest${product.destination ? "" : " pkg-dest-ghost"}`}
+        aria-hidden={!product.destination}
+      >
+        {product.destination ?? copy.services.gatewayContactNote}
       </p>
     </section>
   )

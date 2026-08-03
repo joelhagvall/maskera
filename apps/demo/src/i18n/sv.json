@@ -1,0 +1,8 @@
+{
+  "services": {
+    "gatewayInterestCta": "Anmäl intresse",
+    "gatewayInterestSubject": "Intresse för Maskera Gateway",
+    "gatewayDocsCta": "Läs om Gateway",
+    "gatewayContactNote": "Öppnar ditt mejlprogram till hej@maskera.dev"
+  }
+}
