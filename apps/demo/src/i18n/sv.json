@@ -1,4 +1,68 @@
 {
+  "coverage": {
+    "heading": "Vad maskeras?",
+    "homeLink": "Se exakt vilka uppgifter som maskeras.",
+    "linkCta": "Se exakt vad som maskeras.",
+    "developersLink": "Modellens kategorier och regelmotorns standarddetektorer finns samlade kategori för kategori.",
+    "servicesLink": "Gateway använder samma svenska modell och grundregler. Registreringsnummer ingår dessutom i Gateways standardpolicy.",
+    "lede": "Det fullständiga npm-paketet maskera och Gateway kombinerar fasta regler med den svenska AI-modellen. Skillnaderna i standardval framgår nedan.",
+    "groups": [
+      {
+        "id": "model",
+        "title": "AI-modellen: fri text",
+        "description": "Identifieras utifrån sammanhanget. Det är sannolikhetsbaserat och modellen kan missa uppgifter.",
+        "items": [
+          { "label": "NAMN", "name": "Namn" },
+          { "label": "PLATS", "name": "Platser" },
+          { "label": "ORGANISATION", "name": "Organisationer" },
+          { "label": "ADRESS", "name": "Gatuadresser" }
+        ]
+      },
+      {
+        "id": "rules",
+        "title": "Regler: bestämda format",
+        "description": "Identifieras med formatkontroller och kontrollsummor där sådana finns.",
+        "items": [
+          { "label": "PERSONNUMMER", "name": "Personnummer" },
+          { "label": "SAMORDNINGSNUMMER", "name": "Samordningsnummer" },
+          { "label": "ORGANISATIONSNUMMER", "name": "Organisationsnummer" },
+          { "label": "EPOST", "name": "E-postadresser" },
+          { "label": "TELEFON", "name": "Svenska telefonnummer" },
+          { "label": "POSTNUMMER", "name": "Postnummer" },
+          { "label": "LAGENHETSNUMMER", "name": "Lägenhetsnummer" },
+          { "label": "BANKGIRO", "name": "Bankgiro" },
+          { "label": "PLUSGIRO", "name": "Plusgiro" },
+          { "label": "IBAN", "name": "Svenska IBAN" },
+          { "label": "KORTNUMMER", "name": "Betalkortsnummer" },
+          { "label": "IP_ADRESS", "name": "IPv4-adresser" },
+          { "label": "URL", "name": "Webblänkar (http, https eller www)" }
+        ]
+      },
+      {
+        "id": "optional",
+        "title": "Utöver npm-standarden",
+        "description": "Demon och Gateway maskerar också registreringsnummer. Egna verksamhetsformat kan läggas till.",
+        "items": [
+          { "label": "REGNUMMER", "name": "Registreringsnummer" },
+          { "label": "CUSTOM", "name": "Egna verksamhetsformat" }
+        ]
+      }
+    ],
+    "notes": [
+      {
+        "title": "Registreringsnummer",
+        "text": "Den färdiga regeln är aktiverad i demon och Gateways standardpolicy. I npm-paketets standard är den valbar, eftersom samma form också kan vara ett boknings- eller ärendenummer."
+      },
+      {
+        "title": "Egna format",
+        "text": "Kund-, order-, faktura- och ärendenummer kan läggas till som egna regler när verksamhetens format är känt."
+      },
+      {
+        "title": "Ingår inte automatiskt",
+        "text": "Maskera klassificerar inte all känslig information. Datum, ålder, användarnamn, diagnoser och annan känslig sakinformation maskeras inte enbart för att innehållet är känsligt. Telefonnummer skrivna med bokstäver fångas inte heller av nummerreglerna."
+      }
+    ]
+  },
   "services": {
     "gatewayInterestCta": "Anmäl intresse",
     "gatewayInterestSubject": "Intresse för Maskera Gateway",

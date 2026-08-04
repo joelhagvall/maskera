@@ -1,7 +1,9 @@
 import { type ReactNode, useState } from "react"
 import { GITHUB, HF_MODEL, NPM_NER } from "../constants"
+import copy from "../i18n/sv.json"
 import { ArrowUpRightIcon } from "../icons"
 import type { View } from "../routing"
+import { navClick, viewPaths } from "../routing"
 import { CopyButton } from "./CopyButton"
 import { TopBar } from "./TopBar"
 
@@ -123,7 +125,13 @@ function InstallTabs() {
   )
 }
 
-export function Developers({ go }: { go: (view: View) => void }) {
+export function Developers({
+  go,
+  onCoverage,
+}: {
+  go: (view: View) => void
+  onCoverage: () => void
+}) {
   return (
     <>
       <TopBar current="dev" go={go} />
@@ -163,7 +171,10 @@ export function Developers({ go }: { go: (view: View) => void }) {
             />
             <figcaption>
               Reglerna tar allt med bestämt format, AI-modellen tar fri text som namn och adresser.
-              Vid överlapp vinner reglerna.
+              Vid överlapp vinner reglerna. {copy.coverage.developersLink}{" "}
+              <a href={`${viewPaths.transparency}#vad-maskeras`} onClick={navClick(onCoverage)}>
+                {copy.coverage.linkCta}
+              </a>
             </figcaption>
           </figure>
 

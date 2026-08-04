@@ -144,7 +144,7 @@ function ProductCard({ product, go }: { product: Product; go: (view: View) => vo
   )
 }
 
-export function Services({ go }: { go: (view: View) => void }) {
+export function Services({ go, onCoverage }: { go: (view: View) => void; onCoverage: () => void }) {
   return (
     <>
       <TopBar current="services" go={go} />
@@ -166,6 +166,13 @@ export function Services({ go }: { go: (view: View) => void }) {
               <ProductCard key={product.name} product={product} go={go} />
             ))}
           </div>
+
+          <p className="coverage-link">
+            {copy.coverage.servicesLink}{" "}
+            <a href={`${viewPaths.transparency}#vad-maskeras`} onClick={navClick(onCoverage)}>
+              {copy.coverage.linkCta}
+            </a>
+          </p>
 
           <h2>Så skyddar Gateway AI-flödet</h2>
           <p>

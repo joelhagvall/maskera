@@ -1,6 +1,7 @@
 import { GITHUB, HF_MODEL } from "../constants"
 import { ArrowUpRightIcon } from "../icons"
 import type { View } from "../routing"
+import { Coverage } from "./Coverage"
 import { TopBar } from "./TopBar"
 
 export function Transparency({ go }: { go: (view: View) => void }) {
@@ -21,6 +22,9 @@ export function Transparency({ go }: { go: (view: View) => void }) {
             <ul>
               <li>
                 <a href="#hur-fungerar">Hur fungerar det?</a>
+              </li>
+              <li>
+                <a href="#vad-maskeras">Vad maskeras?</a>
               </li>
               <li>
                 <a href="#dataflode">Så behandlas din text</a>
@@ -67,6 +71,8 @@ export function Transparency({ go }: { go: (view: View) => void }) {
               för att analyseras.
             </li>
           </ul>
+
+          <Coverage />
 
           <h2 id="dataflode">Så behandlas din text</h2>
           <ul>

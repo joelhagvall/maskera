@@ -90,6 +90,10 @@ export function App() {
     setAnchor("testdata")
     navigate("transparency")
   }
+  const goCoverage = () => {
+    setAnchor("vad-maskeras")
+    navigate("transparency")
+  }
 
   return (
     <div className="app">
@@ -98,7 +102,7 @@ export function App() {
       </a>
       {view === "demo" && (
         <>
-          <Header go={go} />
+          <Header go={go} onCoverage={goCoverage} />
           <main id="main-content">
             <Controls
               activeId={active.id}
@@ -162,9 +166,9 @@ export function App() {
           </main>
         </>
       )}
-      {view === "dev" && <Developers go={go} />}
+      {view === "dev" && <Developers go={go} onCoverage={goCoverage} />}
       {view === "transparency" && <Transparency go={go} />}
-      {view === "services" && <Services go={go} />}
+      {view === "services" && <Services go={go} onCoverage={goCoverage} />}
       <Footer
         onTransparency={() => navigate("transparency")}
         onPolicy={goPolicy}
