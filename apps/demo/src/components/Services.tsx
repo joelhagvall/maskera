@@ -200,8 +200,11 @@ export function Services({ go, onCoverage }: { go: (view: View) => void; onCover
             <li>
               <strong>Maskering minskar risk, men är inte en garanti.</strong> Namn och platser i
               löpande text identifieras av en AI-modell som kan missa uppgifter. Träffsäkerheten
-              mäts öppet, och hundra procent utlovas aldrig. Läs mer under{" "}
-              <a href={viewPaths.transparency}>integritet &amp; transparens</a>.
+              mäts öppet, och hundra procent utlovas aldrig.{" "}
+              <a href={viewPaths.accuracy} onClick={navClick(() => go("accuracy"))}>
+                {copy.accuracy.servicesCta}
+              </a>
+              .
             </li>
             <li>
               <strong>Ingen inlåsning i kärnan.</strong> Paketen med öppen källkod är

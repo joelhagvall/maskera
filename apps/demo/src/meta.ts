@@ -1,12 +1,14 @@
 // Single source of truth for per-route metadata. Both consumers read from
 // here: applyViewMeta in routing.ts (SPA navigation) and vite.config.ts,
-// which generates the static developers/integritet/tjanster HTML shells at
-// config load. Editing a title or description here updates both; the shells
-// are gitignored so they cannot drift. index.html stays hand-authored: its
-// SEO title, og-description and JSON-LD @graph intentionally differ from the
-// bare in-app "maskera" title.
+// which generates the static HTML shell for every content route at config
+// load. Editing a title or description here updates both; the shells are
+// gitignored so they cannot drift. index.html stays hand-authored: its SEO
+// title, og-description and JSON-LD @graph intentionally differ from the bare
+// in-app "maskera" title.
 
-export type View = "demo" | "transparency" | "dev" | "services"
+import copy from "./i18n/sv.json"
+
+export type View = "demo" | "transparency" | "dev" | "services" | "accuracy" | "security"
 
 export const SITE_ORIGIN = "https://maskera.dev"
 
@@ -15,6 +17,8 @@ export const viewPaths: Record<View, string> = {
   dev: "/developers",
   transparency: "/integritet",
   services: "/tjanster",
+  accuracy: "/traffsakerhet",
+  security: "/sakerhet",
 }
 
 export function viewUrl(view: View): string {
@@ -48,9 +52,17 @@ export const viewMeta: Record<View, { title: string; description: string }> = {
     description:
       "Jämför npm-paket med öppen källkod och Maskera Gateway, som körs på CPU i er egen miljö före era AI-anrop.",
   },
+  accuracy: {
+    title: copy.accuracy.metaTitle,
+    description: copy.accuracy.metaDescription,
+  },
+  security: {
+    title: copy.security.metaTitle,
+    description: copy.security.metaDescription,
+  },
 }
 
-export const routeHtmlViews = ["dev", "transparency", "services"] as const
+export const routeHtmlViews = ["dev", "transparency", "services", "accuracy", "security"] as const
 export type RouteHtmlView = (typeof routeHtmlViews)[number]
 
 const jsonLd: Record<RouteHtmlView, object> = {
@@ -84,6 +96,24 @@ const jsonLd: Record<RouteHtmlView, object> = {
       "Npm-paket med öppen källkod och en signerad CPU-baserad Gateway för svensk personuppgiftsmaskering före AI-anrop.",
     inLanguage: "sv",
     isPartOf: { "@type": "WebSite", name: "maskera", url: `${SITE_ORIGIN}/` },
+  },
+  accuracy: {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: copy.accuracy.title,
+    url: viewUrl("accuracy"),
+    description: copy.accuracy.metaDescription,
+    inLanguage: "sv",
+    isPartOf: { "@type": "WebSite", name: "maskera", url: viewUrl("demo") },
+  },
+  security: {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: copy.security.title,
+    url: viewUrl("security"),
+    description: copy.security.metaDescription,
+    inLanguage: "sv",
+    isPartOf: { "@type": "WebSite", name: "maskera", url: viewUrl("demo") },
   },
 }
 

@@ -29,6 +29,8 @@ function viewFromPath(pathname: string): View {
   if (path === viewPaths.dev) return "dev"
   if (path === viewPaths.transparency) return "transparency"
   if (path === viewPaths.services) return "services"
+  if (path === viewPaths.accuracy) return "accuracy"
+  if (path === viewPaths.security) return "security"
   return "demo"
 }
 

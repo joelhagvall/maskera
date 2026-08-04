@@ -1,14 +1,19 @@
 import { HF_MODEL } from "../constants"
+import copy from "../i18n/sv.json"
 import { navClick, viewPaths } from "../routing"
 
 export function Footer({
   onTransparency,
   onPolicy,
   onServices,
+  onAccuracy,
+  onSecurity,
 }: {
   onTransparency: () => void
   onPolicy: () => void
   onServices: () => void
+  onAccuracy: () => void
+  onSecurity: () => void
 }) {
   return (
     <footer className="footer">
@@ -22,6 +27,16 @@ export function Footer({
       </p>
       <nav className="footer-nav" aria-label="Integritet och dokumentation">
         <ul>
+          <li>
+            <a className="footer-link" href={viewPaths.accuracy} onClick={navClick(onAccuracy)}>
+              {copy.navigation.accuracy}
+            </a>
+          </li>
+          <li>
+            <a className="footer-link" href={viewPaths.security} onClick={navClick(onSecurity)}>
+              {copy.navigation.security}
+            </a>
+          </li>
           <li>
             <a
               className="footer-link"

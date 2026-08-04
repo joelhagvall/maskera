@@ -8,6 +8,6 @@ export default defineConfig({
   sourcemap: true,
   treeshake: true,
   target: "es2021",
-  // Never bundle the heavy ML runtime — it's an optional peer dep.
+  // Never bundle the heavy ML runtime, it's an optional peer dep.
   external: ["@huggingface/transformers", "@maskera/core"],
 })

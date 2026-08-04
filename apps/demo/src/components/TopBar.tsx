@@ -1,11 +1,12 @@
 import { GITHUB } from "../constants"
+import copy from "../i18n/sv.json"
 import { ArrowUpRightIcon, MaskeraMark } from "../icons"
 import { navClick, type View, viewPaths } from "../routing"
 import { ThemeToggle } from "./ThemeToggle"
 
 const NAV: { view: View; label: string }[] = [
-  { view: "dev", label: "För utvecklare" },
-  { view: "services", label: "För företag" },
+  { view: "dev", label: copy.navigation.developers },
+  { view: "services", label: copy.navigation.services },
 ]
 
 /**

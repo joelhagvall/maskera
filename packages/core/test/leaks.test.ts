@@ -110,7 +110,7 @@ const CASES: LeakCase[] = [
   },
   // U+1680 OGHAM SPACE MARK (the space between "850601" and "2387" below)
   // matches JS `\s` and renders as a space, but NFKC does not fold it to
-  // U+0020 — it is the one horizontal whitespace canonicalize() leaves behind.
+  // U+0020 - it is the one horizontal whitespace canonicalize() leaves behind.
   // The digit-run gap class named only space/tab/NBSP, so one character split
   // the run and the personnummer walked past the checksum detectors.
   {
@@ -134,7 +134,7 @@ const CASES: LeakCase[] = [
   },
   // C0/C1 controls are invisible in most renderers. They were below 0x80, so
   // the ASCII fast path in canonicalize() waved them straight through even
-  // after the strip set learned them — both paths had to close.
+  // after the strip set learned them, both paths had to close.
   {
     note: "canonical bypass: personnummer split by U+0001 control character",
     input: "Inskriven med 850601-23\u000187 i systemet.",

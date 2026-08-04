@@ -68,7 +68,7 @@ const REPLIES: Record<string, (map: Record<string, string>) => string> = {
   },
 }
 
-/** "a, b och c" — comma-joined clauses with "och" before the last. */
+/** "a, b och c" - comma-joined clauses with "och" before the last. */
 function joinClauses(parts: string[]): string {
   if (parts.length <= 1) return parts[0]
   return `${parts.slice(0, -1).join(", ")} och ${parts[parts.length - 1]}`

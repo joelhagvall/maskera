@@ -1,7 +1,6 @@
 {
   "coverage": {
     "heading": "Vad maskeras?",
-    "homeLink": "Se exakt vilka uppgifter som maskeras.",
     "linkCta": "Se exakt vad som maskeras.",
     "developersLink": "Modellens kategorier och regelmotorns standarddetektorer finns samlade kategori för kategori.",
     "servicesLink": "Gateway använder samma svenska modell och grundregler. Registreringsnummer ingår dessutom i Gateways standardpolicy.",
@@ -19,9 +18,18 @@
         ]
       },
       {
+        "id": "optional",
+        "title": "Utöver npm-standarden",
+        "description": "Tillägg utöver npm-paketets standardval, förklarade i noterna nedan.",
+        "items": [
+          { "label": "REGNUMMER", "name": "Registreringsnummer" },
+          { "label": "CUSTOM", "name": "Egna verksamhetsformat" }
+        ]
+      },
+      {
         "id": "rules",
         "title": "Regler: bestämda format",
-        "description": "Identifieras med formatkontroller och kontrollsummor där sådana finns.",
+        "description": "Identifieras med formatkontroller och kontrollsummor där sådana finns. Webblänkar fångas när de börjar med http, https eller www.",
         "items": [
           { "label": "PERSONNUMMER", "name": "Personnummer" },
           { "label": "SAMORDNINGSNUMMER", "name": "Samordningsnummer" },
@@ -35,16 +43,7 @@
           { "label": "IBAN", "name": "Svenska IBAN" },
           { "label": "KORTNUMMER", "name": "Betalkortsnummer" },
           { "label": "IP_ADRESS", "name": "IPv4-adresser" },
-          { "label": "URL", "name": "Webblänkar (http, https eller www)" }
-        ]
-      },
-      {
-        "id": "optional",
-        "title": "Utöver npm-standarden",
-        "description": "Demon och Gateway maskerar också registreringsnummer. Egna verksamhetsformat kan läggas till.",
-        "items": [
-          { "label": "REGNUMMER", "name": "Registreringsnummer" },
-          { "label": "CUSTOM", "name": "Egna verksamhetsformat" }
+          { "label": "URL", "name": "Webblänkar" }
         ]
       }
     ],
@@ -62,6 +61,190 @@
         "text": "Maskera klassificerar inte all känslig information. Datum, ålder, användarnamn, diagnoser och annan känslig sakinformation maskeras inte enbart för att innehållet är känsligt. Telefonnummer skrivna med bokstäver fångas inte heller av nummerreglerna."
       }
     ]
+  },
+  "navigation": {
+    "developers": "För utvecklare",
+    "services": "För företag",
+    "accuracy": "Träffsäkerhet",
+    "security": "Säkerhet"
+  },
+  "accuracy": {
+    "metaTitle": "träffsäkerhet & testresultat · maskera",
+    "metaDescription": "Se hur många svenska personuppgifter Maskera och andra system hittade, hur många de missade och exakt hur testerna gjordes.",
+    "title": "Träffsäkerhet, öppet redovisad",
+    "lede": "Det viktigaste är hur många personuppgifter som står kvar efter maskeringen. Därför visar vi både rätt markeringar, hittad andel och fullständiga missar, med testtexter, metod och begränsningar öppna för granskning.",
+    "inlineCta": "sidan om träffsäkerhet",
+    "servicesCta": "Se testresultat och begränsningar",
+    "tocLabel": "På den här sidan",
+    "toc": [
+      { "href": "#matt", "label": "Vad måtten betyder" },
+      { "href": "#oberoende", "label": "Oberoende svenska texter" },
+      { "href": "#adresser", "label": "Svenska adresser" },
+      { "href": "#tolkning", "label": "Så ska resultaten tolkas" },
+      { "href": "#begransningar", "label": "Begränsningar" },
+      { "href": "#kallor", "label": "Källor och reproduktion" }
+    ],
+    "metricsTitle": "Missar är det viktigaste måttet",
+    "metricsBody": "En fullständig miss betyder att en personuppgift står kvar i klartext. Precision visar hur ofta en markering var rätt. Recall visar hur stor andel av alla personuppgifter som hittades. Ett hederligt test behöver visa båda.",
+    "independentTitle": "Oberoende svenska texter",
+    "independentCaption": "22 meningar skrivna av andra och aldrig använda i träningen. De innehåller 58 personuppgifter. Testet är litet, så resultatet visar en riktning och inte en slutlig vinnare.",
+    "addressesTitle": "Svenska adresser",
+    "addressesCaption": "41 texter med 60 personuppgifter, varav 35 gatuadresser. Testet innehåller också uttryck som liknar adresser men inte är det.",
+    "table": {
+      "system": "System",
+      "precision": "Rätt markeringar",
+      "recall": "Hittad andel",
+      "leaks": "Helt missade"
+    },
+    "independentRows": [
+      {
+        "system": "Maskera",
+        "precision": "96,4 %",
+        "recall": "93,1 %",
+        "leaks": "2 av 58",
+        "ours": true
+      },
+      {
+        "system": "Azure AI Language (PII + NER)",
+        "precision": "95,0 %",
+        "recall": "98,3 %",
+        "leaks": "1 av 58"
+      },
+      {
+        "system": "Microsoft Presidio (sv)",
+        "precision": "82,5 %",
+        "recall": "56,9 %",
+        "leaks": "19 av 58"
+      },
+      {
+        "system": "EU PII Safeguard",
+        "precision": "77,8 %",
+        "recall": "12,1 %",
+        "leaks": "49 av 58"
+      },
+      {
+        "system": "OpenAI Privacy Filter",
+        "precision": "83,3 %",
+        "recall": "8,6 %",
+        "leaks": "53 av 58"
+      },
+      {
+        "system": "Blindfold (regler)",
+        "precision": "100 %",
+        "recall": "0,0 %",
+        "leaks": "58 av 58"
+      }
+    ],
+    "addressRows": [
+      {
+        "system": "Maskera",
+        "precision": "100 %",
+        "recall": "100 %",
+        "leaks": "0 av 60",
+        "ours": true
+      },
+      {
+        "system": "Azure AI Language (PII + NER)",
+        "precision": "78,5 %",
+        "recall": "85,0 %",
+        "leaks": "1 av 60"
+      },
+      {
+        "system": "Microsoft Presidio (sv)",
+        "precision": "42,9 %",
+        "recall": "40,0 %",
+        "leaks": "4 av 60"
+      },
+      {
+        "system": "EU PII Safeguard",
+        "precision": "63,9 %",
+        "recall": "38,3 %",
+        "leaks": "24 av 60"
+      },
+      {
+        "system": "OpenAI Privacy Filter",
+        "precision": "23,1 %",
+        "recall": "10,0 %",
+        "leaks": "39 av 60"
+      },
+      {
+        "system": "Blindfold (regler)",
+        "precision": "100 %",
+        "recall": "0,0 %",
+        "leaks": "60 av 60"
+      }
+    ],
+    "interpretationTitle": "Så ska resultaten tolkas",
+    "interpretation": [
+      "I det lilla oberoende testet hittar Azure en personuppgift mer. Maskera gör något färre felmarkeringar. Underlaget är för litet för att utse en säker vinnare.",
+      "I adresstestet hittar Maskera alla 35 gatuadresser exakt. Azure hittar 28 av 35 exakt och missar en av testets 60 personuppgifter helt. Testets författare har också skapat Maskeras träningsgenerator. Resultatet visar därför en styrka på svenska adresser, inte att Maskera alltid är bäst.",
+      "Både Azures särskilda personuppgiftsanalys och dess allmänna analys av namn, platser och organisationer kördes. Det ger Azure den starkaste rättvisa konfigurationen för testet."
+    ],
+    "limitsTitle": "Det här visar testerna inte",
+    "limits": [
+      "I det egna större testet når Maskera 99,8 procent i det sammanvägda F1-måttet och noll fullständiga missar. Samma utvecklare har skapat både testgeneratorn och träningsgeneratorn. Därför används testet för att stoppa försämringar, inte som ett oberoende betyg.",
+      "Ingen automatisk maskering är perfekt. Ovanliga namn, OCR-brus och formuleringar långt från träningsdatan kan missas. Låt en människa kontrollera texten när ett fel kan få stora konsekvenser.",
+      "De här korpusarna mäter fri text. Strukturerade identifierare som personnummer och IBAN hanteras av regelmotorn och ingår inte i jämförelsen."
+    ],
+    "sourcesTitle": "Källor och reproduktion",
+    "provenance": [
+      "Maskera mättes 2026-07-19 på maskera 0.6.4 och maskera-sv-ner v18 (q4, cirka 43 MB).",
+      "Azure mättes 2026-07-22 med GA-API 2024-11-01, modell 2025-11-01, språk sv, UTF-16-index och loggingOptOut aktiverat."
+    ],
+    "sourcesBody": "Testtexter, metod, körskript och de fullständiga Maskera-resultaten finns i det öppna repot. BENCHMARKS.md är källan som gäller om en siffra någon annanstans skulle skilja sig.",
+    "benchmarksCta": "Läs benchmark-källan",
+    "scriptsCta": "Se jämförelsens data och skript",
+    "demoCta": "Prova samma modell i webbläsardemon"
+  },
+  "security": {
+    "metaTitle": "säkerhet · maskera",
+    "metaDescription": "Maskeras säkerhetsgränser, nätverksanrop, pinnade modellartefakter, säker återställning och privat rapportering av sårbarheter.",
+    "title": "Säkerhet i maskera",
+    "lede": "Säkerhet här handlar både om vad som aldrig ska lämna din miljö och om gränserna runt maskering och återställning. Här samlas den operativa säkerhetsbilden för npm-paketen och den öppna webbläsardemon.",
+    "tocLabel": "På den här sidan",
+    "toc": [
+      { "href": "#dataflode", "label": "Dataflöde och nätverk" },
+      { "href": "#artefakter", "label": "Pinnade artefakter" },
+      { "href": "#aterstallning", "label": "Säker återställning" },
+      { "href": "#omfattning", "label": "Vad räknas som en sårbarhet?" },
+      { "href": "#rapportera", "label": "Rapportera privat" },
+      { "href": "#produktion", "label": "Drift i produktion" }
+    ],
+    "dataFlowTitle": "Dataflöde och nätverk",
+    "dataFlow": [
+      "Texten och återställningsnyckeln skickas inte till Maskera för maskering. Regeldelen har inga nätverksberoenden. Modellvarianten kör inferensen lokalt i webbläsaren eller i din egen Node-process.",
+      "Npm-paketets standardkonfiguration hämtar modell och körmiljö första gången och cachar dem. Det är statiska program- och modellartefakter, aldrig texten som ska maskeras. För miljöer utan tillåten extern hämtning kan alla modellfiler ligga på egen server."
+    ],
+    "artifactsTitle": "Pinnade artefakter",
+    "artifacts": [
+      "Den publicerade npm-versionen pekar på en oföränderlig revision av modellen på Hugging Face. Samma paketversion kör därför samma vikter som benchmarken mättes på; nya vikter når användare genom en ny npm-version.",
+      "Demon verifierar modellfilerna med filspecifika SHA-256-värden under bygget. Ett oväntat eller ofullständigt modellpaket ska alltså stoppa bygget, inte tyst börja användas."
+    ],
+    "restoreTitle": "Återställning är en säkerhetsgräns",
+    "restore": [
+      "Återställningsnyckeln innehåller originalvärdena och ska behandlas som personuppgifter. Logga den inte och lagra den inte bredvid den maskerade texten.",
+      "restore() sätter tillbaka verkliga värden där platshållartokens förekommer. Återställ därför inte opålitlig utdata som sedan hämtas som en URL, renderas som HTML eller skrivs till logg. Maskering skyddar det som skickas; återställning är inte sanering av det som kommer tillbaka.",
+      "En platshållare som redan finns i indatan delas aldrig ut på nytt. Att plantera exempelvis [PERSONNUMMER_1] i källtexten kan därför inte fånga ett verkligt värde."
+    ],
+    "scopeTitle": "Vad räknas som en sårbarhet?",
+    "scopeIntro": "Rapportera privat om du hittar till exempel:",
+    "inScope": [
+      "att originalvärden eller återställningsnyckeln läcker till nätverk, lagring eller loggar i strid med den dokumenterade lokala behandlingen",
+      "oväntade nätverksanrop utöver de dokumenterade engångshämtningarna av modell och körmiljö",
+      "XSS eller injektion i demon på maskera.dev",
+      "en exploaterbar leveranskedjerisk i npm-paketen eller modellartefakterna",
+      "en avsiktlig konstruktion som döljer personuppgifter för detektorerna medan en människa eller språkmodell fortfarande kan läsa dem"
+    ],
+    "qualityBody": "Att modellen missar ett ovanligt namn eller att en regel saknar ett kantfall är normalt en kvalitetsfråga, inte en sårbarhet. Rapportera sådana exempel öppet så att de kan bli regressionsfall. Ett reproducerbart avsiktligt kringgående hör däremot hemma i en privat säkerhetsrapport.",
+    "reportTitle": "Rapportera en sårbarhet privat",
+    "reportBody": "Öppna inte ett publikt issue för en möjlig säkerhetsbrist. Använd GitHubs privata vulnerability reporting. Endast de senaste publicerade versionerna av maskera och @maskera/core får säkerhetsfixar, så uppdatera innan du rapporterar.",
+    "advisoryCta": "Skicka en privat säkerhetsrapport",
+    "issuesCta": "Rapportera ett kvalitetsproblem",
+    "productionTitle": "Drift i produktion",
+    "productionBody": "Produktionsguiden går igenom säker inkoppling, fallback till regler, loggning, egen hosting, domänspecifika testkorpusar och checklistan för drift. Maskera är ett lager för dataminimering, inte en garanti för regelefterlevnad eller fullständig upptäckt.",
+    "productionCta": "Läs produktionsguiden",
+    "gatewayBody": "Den här sidan gäller npm-paketen och den öppna demon. Gateway har dessutom egen autentisering, leverans och driftmodell som dokumenteras i kundportalen.",
+    "gatewayCta": "Läs om Maskera Gateway"
   },
   "services": {
     "gatewayInterestCta": "Anmäl intresse",

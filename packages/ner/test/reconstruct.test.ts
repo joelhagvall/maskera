@@ -139,7 +139,7 @@ describe("reconstruct", () => {
   })
 
   it("widens a leading tagged subword to the word boundary", () => {
-    // The model tagged only "##r" of "dr" — the whole word must be redacted,
+    // The model tagged only "##r" of "dr", the whole word must be redacted,
     // not silently dropped (which would leak "Svensson").
     const text = "träffade dr Svensson på sjukhuset"
     const out = reconstruct(

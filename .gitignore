@@ -19,6 +19,8 @@ apps/demo/public/ort/
 apps/demo/developers/
 apps/demo/integritet/
 apps/demo/tjanster/
+apps/demo/traffsakerhet/
+apps/demo/sakerhet/
 # recorded demo clips (scripts/record-demo.mjs output)
 apps/demo/*.mp4
 apps/demo/*.webm

@@ -317,8 +317,8 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
     nativeLocalProgress = false,
   } = options
 
-  // Scores are probabilities in [0, 1]. An invalid threshold — NaN above all,
-  // since `avg >= NaN` is always false — would silently drop EVERY model
+  // Scores are probabilities in [0, 1]. An invalid threshold (NaN above all,
+  // since `avg >= NaN` is always false) would silently drop EVERY model
   // detection, which is fail-open for PII. Reject bad config loudly instead.
   if (!Number.isFinite(minScore) || minScore < 0 || minScore > 1) {
     throw new Error(`maskera: minScore must be a finite number between 0 and 1, got ${minScore}`)

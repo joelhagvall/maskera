@@ -1,4 +1,5 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react"
+import { Accuracy } from "./components/Accuracy"
 import { Controls } from "./components/Controls"
 import { Developers } from "./components/Developers"
 import { Footer } from "./components/Footer"
@@ -6,6 +7,7 @@ import { Header } from "./components/Header"
 import { InputCard } from "./components/InputCard"
 import { OutputCard } from "./components/OutputCard"
 import { RestoreDemo } from "./components/RestoreDemo"
+import { Security } from "./components/Security"
 import { Services } from "./components/Services"
 import { Transparency } from "./components/Transparency"
 import { invalidPersonnummer } from "./hints"
@@ -102,7 +104,7 @@ export function App() {
       </a>
       {view === "demo" && (
         <>
-          <Header go={go} onCoverage={goCoverage} />
+          <Header go={go} />
           <main id="main-content">
             <Controls
               activeId={active.id}
@@ -169,10 +171,14 @@ export function App() {
       {view === "dev" && <Developers go={go} onCoverage={goCoverage} />}
       {view === "transparency" && <Transparency go={go} />}
       {view === "services" && <Services go={go} onCoverage={goCoverage} />}
+      {view === "accuracy" && <Accuracy go={go} />}
+      {view === "security" && <Security go={go} />}
       <Footer
         onTransparency={() => navigate("transparency")}
         onPolicy={goPolicy}
         onServices={() => navigate("services")}
+        onAccuracy={() => navigate("accuracy")}
+        onSecurity={() => navigate("security")}
       />
     </div>
   )

@@ -1,6 +1,7 @@
 import { GITHUB, HF_MODEL } from "../constants"
+import copy from "../i18n/sv.json"
 import { ArrowUpRightIcon } from "../icons"
-import type { View } from "../routing"
+import { navClick, type View, viewPaths } from "../routing"
 import { Coverage } from "./Coverage"
 import { TopBar } from "./TopBar"
 
@@ -208,8 +209,12 @@ export function Transparency({ go }: { go: (view: View) => void }) {
           <ul>
             <li>
               Öppet utvärderad mot både en handbyggd testuppsättning och ett oberoende publikt
-              dataset. Siffror och förbehåll finns på GitHub, bland annat att träffsäkerheten
-              sjunker på text som ligger långt från det modellen tränats på.
+              dataset. Siffror, metod och förbehåll finns på{" "}
+              <a href={viewPaths.accuracy} onClick={navClick(() => go("accuracy"))}>
+                {copy.accuracy.inlineCta}
+              </a>
+              , bland annat att träffsäkerheten sjunker på text som ligger långt från det modellen
+              tränats på.
             </li>
             <li>
               <strong>Kända svaga punkter</strong>, verifierade mot samma pipeline som demon kör:

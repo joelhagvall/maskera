@@ -40,6 +40,8 @@ describe("useRoute: initial view from pathname", () => {
     ["/developers", "dev"],
     ["/integritet", "transparency"],
     ["/tjanster", "services"],
+    ["/traffsakerhet", "accuracy"],
+    ["/sakerhet", "security"],
     ["/developers/", "dev"], // trailing slash
     ["/tjanster///", "services"], // repeated trailing slashes
     ["/okand-sida", "demo"], // unknown path falls back to home
@@ -65,6 +67,16 @@ describe("useRoute: document.title", () => {
     const { unmount } = mountAt("/developers")
     expect(document.title).toBe("för utvecklare · maskera")
     unmount()
+  })
+
+  it("sets the public-documentation titles on direct landings", () => {
+    const accuracy = mountAt("/traffsakerhet")
+    expect(document.title).toBe("träffsäkerhet & testresultat · maskera")
+    accuracy.unmount()
+
+    const security = mountAt("/sakerhet")
+    expect(document.title).toBe("säkerhet · maskera")
+    security.unmount()
   })
 
   it("navigating away from home sets the sub-page title", () => {
