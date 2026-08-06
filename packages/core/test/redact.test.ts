@@ -106,6 +106,17 @@ describe("redact", () => {
     expect(redactions.map((r) => r.label)).toEqual(["TELEFON"])
   })
 
+  it("prefers an explicit journal label over a checksum-shaped payment label", () => {
+    const journalId = "TEST-JOURNAL-01"
+    const genericPaymentShape = regexDetector("BANKGIRO", /(TEST-JOURNAL-01)/g)
+    const explicitJournalShape = regexDetector("JOURNALNUMMER", /(TEST-JOURNAL-01)/g)
+    const { text, redactions } = redact(`Journalnummer ${journalId}`, {
+      detectors: [genericPaymentShape, explicitJournalShape],
+    })
+    expect(text).toBe("Journalnummer [JOURNALNUMMER_1]")
+    expect(redactions.map((r) => r.label)).toEqual(["JOURNALNUMMER"])
+  })
+
   it("never maps two values to one token (index-ignoring placeholder throws)", () => {
     // A custom placeholder() that ignores the index would silently map two
     // values to the same token and corrupt restore(); it must throw instead.

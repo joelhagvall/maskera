@@ -28,8 +28,8 @@ per-package history in the changelogs.
 
 ## Shipped
 
-- **Rules layer** (`@maskera/core`): structured detectors with checksum
-  validation where supported, stable placeholders + restore map, deterministic
+- **Rules layer** (`@maskera/core`): format-aware structured detectors with
+  selective checksums, stable placeholders + restore map, deterministic
   overlap resolution, zero dependencies.
 - **Hybrid model layer** (`maskera`): Transformers.js/ONNX, WASM + WebGPU,
   rules win on overlap, full `@maskera/core` re-export (one install, one import).
@@ -221,8 +221,8 @@ LC_AUG-0.40 take 2 is graded in the journal and not selected):
   the size.
 - No new entity classes: the four-class scheme (PER/LOC/ORG/ADR) is what the
   placeholder layer and every eval are built around. Structured types keep
-  living in the rules layer, where checksums beat any model (Rampart's own
-  ML-side government-ID recall is ~68%; validated rules are the right tool).
+  living in the rules layer, where deterministic format logic beats any model
+  (Rampart's own ML-side government-ID recall is ~68%; rules are the right tool).
 
 ## Done: v18, the density-guard round (PUBLISHED 2026-07-19)
 

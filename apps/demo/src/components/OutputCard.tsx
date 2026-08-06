@@ -1,5 +1,6 @@
 import type { RedactResult } from "@maskera/core"
 import { useMemo } from "react"
+import copy from "../i18n/sv.json"
 import { EyeIcon } from "../icons"
 import { labelMeta, pillStyle } from "../labels"
 import { RedactedText } from "../segments"
@@ -96,9 +97,9 @@ export function OutputCard({
         <p className="checksum-note">
           <span className="mono">{invalidPnrs.join(", ")}</span>{" "}
           {invalidPnrs.length === 1
-            ? "ser ut som ett personnummer men kontrollsiffran stämmer inte, så det kan inte vara ett riktigt. Därför maskeras det inte."
-            : "ser ut som personnummer men kontrollsiffrorna stämmer inte, så de kan inte vara riktiga. Därför maskeras de inte."}{" "}
-          Testa med ett giltigt nummer, t.ex. 19900101-2385.
+            ? copy.outputCard.invalidPersonnummerSingular
+            : copy.outputCard.invalidPersonnummerPlural}{" "}
+          {copy.outputCard.testPersonnummerCta}
         </p>
       )}
 

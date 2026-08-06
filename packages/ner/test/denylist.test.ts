@@ -59,6 +59,20 @@ describe("createNerRecognizer denylist", () => {
     expect(await createNerRecognizer().detect("Cykeln stod olåst utanför.")).toEqual([])
   })
 
+  it.each([
+    "AW",
+    "Vd",
+    "dr",
+    "ekonomi",
+    "oss",
+    "vaken",
+    "penicillin",
+    "Dotter",
+  ])('drops the observed whole-word false positive "%s"', async (word) => {
+    rawTokens = [tok("B-ORG", word, 1)]
+    expect(await createNerRecognizer().detect(`${word} står här.`)).toEqual([])
+  })
+
   it("keeps a named multi-word entity containing a denylisted word", async () => {
     rawTokens = [tok("B-LOC", "Gamla", 1), tok("I-LOC", "Stan", 2)]
     expect(await createNerRecognizer().detect("Gamla Stan är en stadsdel.")).toEqual([

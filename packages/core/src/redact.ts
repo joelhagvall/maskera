@@ -6,12 +6,14 @@ function defaultPlaceholder(label: PiiLabel, index: number): string {
   return `[${label}_${index}]`
 }
 
-// A Swedish phone number can have the same ten-digit shape as a
-// samordningsnummer (for example `070174-0658`). When two detectors cover the
-// exact same span, prefer the phone label: it is the more specific lexical
-// format and avoids reclassifying an ordinary phone number as an identifier
+// Context-labeled identifiers outrank generic numeric shapes. A Swedish phone
+// number can also have the same ten-digit shape as a samordningsnummer (for
+// example `070174-0658`), so prefer the phone label there: it is the more
+// specific lexical format and avoids reclassifying an ordinary phone number
 // merely because personnummer detection is intentionally typo-tolerant.
 const SAME_SPAN_PRIORITY: Partial<Record<PiiLabel, number>> = {
+  JOURNALNUMMER: -10,
+  KONTONUMMER: -10,
   TELEFON: 0,
   PERSONNUMMER: 10,
   SAMORDNINGSNUMMER: 11,

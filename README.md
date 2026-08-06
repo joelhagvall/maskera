@@ -78,15 +78,16 @@ model in CI against a gold corpus with an F1 floor and a leak-rate ceiling.
 
 ## Two layers, rules first
 
-<img src="docs/layers.svg" alt="The two-layer design: input text forks into layer 1, deterministic rules for structured PII like personnummer, with checksum validation where the format supports it, and layer 2, a 43 MB Swedish AI model that catches free text like names. Rules win on overlap, and the merged result is the masked output. The restore key stays on your device." width="100%">
+<img src="docs/layers.svg" alt="The two-layer design: input text forks into layer 1, deterministic format-aware rules for structured PII like personnummer, and layer 2, a 43 MB Swedish AI model that catches free text like names. Rules win on overlap, and the merged result is the masked output. The restore key stays on your device." width="100%">
 
 1. **`@maskera/core`**: deterministic detectors for structured Swedish PII.
    Personnummer, samordningsnummer, organisationsnummer, phone, email,
-   postnummer, bankgiro, plusgiro, IBAN, cards, IP, URL. Checksum-validated
-   where a checksum exists, so `2019-2024` is not a bankgiro and
-   `123456-0000` is not a person. Zero dependencies, synchronous, runs
-   anywhere JavaScript runs. Anything you can regex (case ids, customer
-   numbers) joins the same engine via `regexDetector`.
+   postnummer, bankgiro, plusgiro, IBAN, cards, IP, URL. Format checks and
+   selective checksums keep look-alikes such as `2019-2024` from becoming a
+   bankgiro; personnummer detection is deliberately Luhn-typo tolerant after a
+   real-date check. Zero dependencies, synchronous, runs anywhere JavaScript
+   runs. Anything you can regex (case ids, customer numbers) joins the same
+   engine via `regexDetector`.
 2. **`maskera`** (the package): everything above plus the Swedish model,
    with core fully re-exported. In the hybrid, rules win on overlap:
    structured matches are handled deterministically, and the model only fills
@@ -98,6 +99,21 @@ model in CI against a gold corpus with an F1 floor and a leak-rate ceiling.
 Rules alone when inputs are structured-ish; add the model when users type
 free text. That split is the design: regex for what regex is good at, ML only
 for what it is needed for.
+
+For clinical text, select the built-in profile so measurements, medication
+doses and common care terms stay useful while deterministic PII rules remain
+active:
+
+```ts
+const result = await redactWithNer(journalText, {
+  recognizer,
+  profile: "clinical",
+})
+```
+
+Omit `profile` for the general default. The clinical profile is deliberately
+not global because domain precision policies trade some model recall for
+utility.
 
 ## Use it before an LLM call
 
@@ -173,6 +189,8 @@ pnpm build && pnpm test
 pnpm lint                  # biome
 pnpm smoke                 # pack tarballs, install fresh, test ESM+CJS
 pnpm eval                  # grade the published model against the gold corpus
+pnpm eval:domain           # hybrid pipeline on the tracked synthetic domain corpus
+pnpm eval:domain:clinical  # same corpus with the clinical precision profile
 ```
 
 CI runs all of the above on every push, plus a model eval gated on an F1

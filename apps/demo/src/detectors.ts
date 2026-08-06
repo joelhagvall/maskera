@@ -1,8 +1,15 @@
-import { type Detector, defaultDetectors, heuristicDetectors, regexDetector } from "@maskera/core"
+import {
+  contextualDetectors,
+  type Detector,
+  defaultDetectors,
+  heuristicDetectors,
+  regexDetector,
+} from "@maskera/core"
 
 /**
  * The demo runs maskera's hybrid defaults (core's structured detectors +
- * adress + lägenhetsnummer) with `regnummer` added on top, i.e.
+ * contextual account numbers + adress + lägenhetsnummer) with `regnummer`
+ * added on top, i.e.
  * what an npm user gets with `[...hybridDefaultDetectors, regnummer]`. The
  * only demo-only detector is the name gazetteer below: in production
  * free-text names come from maskera's model, but here it lets the demo
@@ -100,15 +107,24 @@ export const namn: Detector = regexDetector(
  * Off-state (no model): rules + the offline name gazetteer, so the demo still
  * redacts names instantly with zero download.
  */
-export const demoDetectors: Detector[] = [namn, ...heuristicDetectors, ...defaultDetectors]
+export const demoDetectors: Detector[] = [
+  namn,
+  ...contextualDetectors,
+  ...heuristicDetectors,
+  ...defaultDetectors,
+]
 
 /**
  * Model-state: drop the name gazetteer: the Swedish NER model handles names,
  * places and orgs. We keep the rule detectors, because the model is *worse*
  * at anything with a fixed shape: personnummer/org-nr/phone/IBAN
- * (regex+checksum) and street addresses with house numbers, where the model
+ * (format-aware rules with selective checksums) and street addresses with house numbers, where the model
  * can split the span and leave the number exposed. Rules win on overlap, so
  * the regex address always covers the full "Påhittsgatan 12".
  * This is the hybrid: rules for structured shapes, model for free text.
  */
-export const ruleDetectors: Detector[] = [...heuristicDetectors, ...defaultDetectors]
+export const ruleDetectors: Detector[] = [
+  ...contextualDetectors,
+  ...heuristicDetectors,
+  ...defaultDetectors,
+]

@@ -13,7 +13,7 @@ places, organisations and street addresses** ("min granne Provnamn på våning 4
 Everything runs **client-side** via Transformers.js (WASM/WebGPU in the
 browser, native ONNX in Node).
 
-![The two-layer design: input text forks into layer 1, deterministic rules for structured PII like personnummer, with checksum validation where the format supports it, and layer 2, a 43 MB Swedish AI model that catches free text like names. Rules win on overlap, and the merged result is the masked output. The restore key stays on your device.](https://maskera.dev/layers.svg)
+![The two-layer design: input text forks into layer 1, deterministic format-aware rules for structured PII like personnummer, and layer 2, a 43 MB Swedish AI model that catches free text like names. Rules win on overlap, and the merged result is the masked output. The restore key stays on your device.](https://maskera.dev/layers.svg)
 
 ```bash
 npm install maskera @huggingface/transformers
@@ -59,14 +59,14 @@ Create the recognizer **once** and reuse it: the model loads lazily on first
 use (or when you await `ready`), and each `detect`/`redactWithNer` call after
 that is a few milliseconds of inference.
 
-The hybrid's default rule set (`hybridDefaultDetectors`) is core's
-structured defaults **plus** the low-risk free-text heuristics
-`adress` and `lagenhetsnummer`: whoever calls `redactWithNer` has free text
-about people, and the address RULE guarantees the house number always ends up
-inside the mask where the model's span sometimes splits it. `regnummer` stays
-opt-in even here, three letters + three digits is also the shape of booking
-codes and case ids. Add it explicitly if plates matter (this is what the live
-demo runs):
+The hybrid's default rule set (`hybridDefaultDetectors`) is core's structured
+defaults **plus** the low-risk free-text heuristics `adress` and
+`lagenhetsnummer`, and context-labeled account/journal identifiers. Whoever calls
+`redactWithNer` has free text about people, and the address rule guarantees the
+house number always ends up inside the mask where the model's span sometimes
+splits it. `regnummer` stays opt-in even here: three letters + three digits is
+also the shape of booking codes and case ids. Add it explicitly if plates
+matter (this is what the live demo runs):
 
 ```ts
 import { hybridDefaultDetectors, redactWithNer, regnummer } from "maskera"
@@ -77,7 +77,41 @@ await redactWithNer(text, {
 })
 ```
 
+For clinical text, use the opt-in precision policy to keep common measurements,
+medication doses and unambiguous care terms available to a downstream assistant
+without weakening deterministic identifier rules:
+
+```ts
+import { redactWithNer } from "maskera"
+
+await redactWithNer(journalText, {
+  recognizer,
+  profile: "clinical",
+})
+```
+
+This policy is intentionally not global: domain filters trade a small amount
+of model recall for utility and should only be enabled for clinical workflows.
+`clinicalPrecisionFilter` remains exported for callers that want to compose the
+same policy manually with a custom pipeline.
+
 ### Options
+
+`redactWithNer(input, options)` accepts:
+
+| option | default | purpose |
+| ------ | ------- | ------- |
+| `recognizer` | required | Reusable recognizer created by `createNerRecognizer()` |
+| `profile` | `"general"` | Set `"clinical"` to retain common measurements, doses and care terms |
+| `detectors` | `hybridDefaultDetectors` | Override the deterministic rule set |
+| `placeholder` | `[LABEL_N]` | Customize generated placeholder tokens |
+| `detectionFilter` | none | Advanced custom policy, composed with the selected profile |
+
+The normal path needs only `{ recognizer }`. Prefer `profile: "clinical"` over
+wiring `clinicalPrecisionFilter` manually unless you are building a custom
+policy.
+
+Recognizer construction has these options:
 
 ```ts
 createNerRecognizer({
@@ -211,6 +245,19 @@ Run the eval yourself:
 pnpm -C packages/ner build
 MASKERA_REMOTE=1 node packages/ner/eval/run-eval.mjs
 ```
+
+For the complete hybrid path (rules plus v19), the repository also contains a
+tracked, privacy-safe 258-text Swedish domain regression corpus:
+
+```bash
+pnpm eval:domain
+pnpm eval:domain:clinical
+```
+
+These commands use the demo's local q4 model and enforce the corpus-specific
+full-hit floor. Set `MASKERA_REPORT=tmp/pii-domain.md` for an ignored detailed
+report; see [`docs/BENCHMARKS.md`](../../docs/BENCHMARKS.md) for scope and the
+dated baseline.
 
 Any other Transformers.js token-classification model id also works via
 `options.model` + `options.labelMap` if you need different language coverage.

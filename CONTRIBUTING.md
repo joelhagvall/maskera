@@ -19,6 +19,7 @@ Before opening a PR, also run what CI runs:
 ```bash
 pnpm smoke         # pack tarballs, install fresh, test ESM+CJS
 pnpm eval          # grade the published model against the gold corpus
+pnpm eval:domain   # run the tracked synthetic hybrid-domain regression corpus
 ```
 
 ## Repo layout
@@ -36,6 +37,9 @@ pnpm eval          # grade the published model against the gold corpus
   written in **English**; they become CHANGELOG entries verbatim.
 - New detectors need tests, including negative cases (look-alikes that must
   NOT fire); checksum-validate where a checksum exists.
+- Hybrid detector and profile changes should also run `pnpm eval:domain` and,
+  when clinical precision is affected, `pnpm eval:domain:clinical`. Keep the
+  safe corpus tracked; write optional detailed reports under ignored `tmp/`.
 - Follow the [safe test-data policy](docs/TEST_DATA.md). Positive identifier
   fixtures must come from an authority-published test or fictional-use set;
   `pnpm check:fixtures` enforces the approved values.

@@ -295,6 +295,33 @@ export const plusgiro = regexDetector("PLUSGIRO", /\b\d(?:\s?\d){1,6}-\d\b/g, (v
 /** Swedish IBAN: SE + 22 digits (spaces tolerated). */
 export const iban = regexDetector("IBAN", /\bSE\d{2}(?:\s?\d){20}\b/gi)
 
+/**
+ * Contextual domestic account number. Sweden has no single checksum-backed
+ * syntax for ordinary bank accounts, so the digit shape alone is much too
+ * broad: it also describes customer, order and journal identifiers. Requiring
+ * an explicit account label keeps this useful without turning every grouped
+ * number into PII. This detector is opt-in for rules-only callers and enabled
+ * by the hybrid pipeline, whose input is normally free-form customer text.
+ */
+export const kontonummer = regexDetector(
+  "KONTONUMMER",
+  /(?:^|[^\p{L}\p{N}])(?:bankkonto|kontonummer|utbetalningskonto|konto)(?:\s+nr\.?)?\s*[:#-]?\s*((?:\d[ -]?){6,19}\d)\b/giu,
+  (value) => {
+    const digits = value.replace(/\D/g, "")
+    return digits.length >= 7 && digits.length <= 20
+  },
+)
+
+/**
+ * Context-labeled journal identifier. The identifier format is provider-
+ * specific, but the explicit Swedish field label is strong evidence and keeps
+ * checksum-shaped values from being misclassified as payment identifiers.
+ */
+export const journalnummer = regexDetector(
+  "JOURNALNUMMER",
+  /(?:^|[^\p{L}\p{N}])(?:journalnummer|journalnr|journal-id|journalid)\s*[:#-]?\s*((?:[\p{L}\p{N}]{2,12}[-/]){1,3}[\p{L}\p{N}]{2,12}|\d{5,20})\b/giu,
+)
+
 // --- Generic / international ----------------------------------------------
 
 // Anchored on a digit at both ends so the captured value can't include a
@@ -337,7 +364,7 @@ export const url = regexDetector("URL", /\b(?:https?:\/\/|www\.)[^\s<>")]*[^\s<>
  */
 export const adress = regexDetector(
   "ADRESS",
-  /(?:^|[^A-Za-zÅÄÖåäö0-9])((?:(?:[A-ZÅÄÖ][a-zåäö]+\s)?[A-ZÅÄÖa-zåäö][a-zåäö]*(?:gatan|vägen|gränd|gränden|torget|stigen|backen|allén|plan|gata|väg)|[A-ZÅÄÖ]+(?:GATAN|VÄGEN|GRÄND|GRÄNDEN|TORGET|STIGEN|BACKEN|ALLÉN|PLAN|GATA|VÄG))\s?\d{1,3}[A-Za-z]?)\b/g,
+  /(?:^|[^A-Za-zÅÄÖåäö0-9])((?:(?:[A-ZÅÄÖ][a-zåäö]+\s)?[A-ZÅÄÖa-zåäö][a-zåäö]*(?:gatan|vägen|gränd|gränden|torget|stigen|backen|allén|gången|kajen|stranden|terrassen|leden|stråket|plan|gata|väg)|[A-ZÅÄÖ]+(?:GATAN|VÄGEN|GRÄND|GRÄNDEN|TORGET|STIGEN|BACKEN|ALLÉN|GÅNGEN|KAJEN|STRANDEN|TERRASSEN|LEDEN|STRÅKET|PLAN|GATA|VÄG))\s?\d{1,3}[A-Za-z]?)\b/g,
 )
 
 /** Apartment number: "lgh 1203", "lägenhet 42". */
@@ -366,6 +393,9 @@ export const regnummer = regexDetector(
  * `redact(text, { detectors: [...defaultDetectors, ...heuristicDetectors] })`.
  */
 export const heuristicDetectors: Detector[] = [adress, lagenhetsnummer, regnummer]
+
+/** Context-dependent formats that are safe only when their label is present. */
+export const contextualDetectors: Detector[] = [kontonummer, journalnummer]
 
 /**
  * Default detector set, ordered so that the most specific / highest-confidence

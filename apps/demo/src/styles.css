@@ -712,7 +712,7 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
   overflow-wrap: anywhere;
 }
 
-/* ---- checksum note (pnr-shaped input that failed validation) ---- */
+/* ---- invalid-date note (pnr-shaped input that failed shape validation) ---- */
 .checksum-note {
   margin: 10px 0 0;
   padding: 8px 10px;

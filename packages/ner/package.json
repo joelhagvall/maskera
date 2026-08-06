@@ -52,7 +52,8 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest run",
-    "eval": "node eval/run-eval.mjs"
+    "eval": "node eval/run-eval.mjs",
+    "eval:domain": "node eval/domain-regression/run.mjs"
   },
   "dependencies": {
     "@maskera/core": "workspace:^"

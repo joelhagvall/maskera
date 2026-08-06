@@ -2,12 +2,15 @@ import { describe, expect, it } from "vitest"
 import {
   adress,
   bankgiro,
+  contextualDetectors,
   creditCard,
   defaultDetectors,
   email,
   heuristicDetectors,
   iban,
   ipAddress,
+  journalnummer,
+  kontonummer,
   lagenhetsnummer,
   organisationsnummer,
   personnummer,
@@ -403,6 +406,8 @@ describe("adress detector (heuristic)", () => {
     "PÅHITTSGATAN 12",
     "påhittsvägen 21",
     "Maskeragränd 15",
+    "Årstagången 14",
+    "Testkorpuskajen 8",
   ])("matches: %s", (s) => expectHit(adress, `Bor på ${s} i stan.`, s))
 
   it.each([
@@ -431,6 +436,38 @@ describe("regnummer detector (heuristic)", () => {
   ])("rejects %s: %s", (_label, s) => expectMiss(regnummer, s))
 })
 
+describe("kontonummer detector (contextual)", () => {
+  const testAccount = "3300-0032 3232 3232"
+
+  it.each([
+    ["konto", `konto ${testAccount}`, testAccount],
+    ["kontonummer", `Kontonummer: ${testAccount}`, testAccount],
+    ["bankkonto", `bankkonto nr ${testAccount}`, testAccount],
+    ["utbetalningskonto", `utbetalningskonto # ${testAccount}`, testAccount],
+  ])("matches with %s context", (_label, input, value) => expectHit(kontonummer, input, value))
+
+  it.each([
+    ["bare grouped number", `överföring ${testAccount} genomförd`],
+    ["amount", "konto 12 500 kr"],
+    ["journal number", "journalnummer TEST-JOURNAL-01"],
+    ["short value", "konto 123-45"],
+  ])("rejects %s: %s", (_label, input) => expectMiss(kontonummer, input))
+})
+
+describe("journalnummer detector (contextual)", () => {
+  const value = "TEST-JOURNAL-01"
+  const shortValue = ["12", "34"].join("")
+
+  it.each(["journalnummer", "Journalnr", "journal-id"])("matches after %s", (label) => {
+    expectHit(journalnummer, `${label}: ${value}`, value)
+  })
+
+  it.each([
+    ["unlabeled value", `ärendet ${value} är öppet`],
+    ["too short", `journalnummer ${shortValue}`],
+  ])("rejects %s: %s", (_label, input) => expectMiss(journalnummer, input))
+})
+
 describe("heuristicDetectors bundle", () => {
   it("contains exactly the three opt-in heuristics", () => {
     expect(heuristicDetectors.map((d) => d.label)).toEqual([
@@ -443,5 +480,15 @@ describe("heuristicDetectors bundle", () => {
   it("stays out of defaultDetectors", () => {
     const defaults = new Set(defaultDetectors.map((d) => d.label))
     for (const d of heuristicDetectors) expect(defaults.has(d.label)).toBe(false)
+  })
+})
+
+describe("contextualDetectors bundle", () => {
+  it("contains the account-number detector", () => {
+    expect(contextualDetectors.map((d) => d.label)).toEqual(["KONTONUMMER", "JOURNALNUMMER"])
+  })
+
+  it("stays out of the conservative rules-only defaults", () => {
+    expect(defaultDetectors.some((d) => d.label === "KONTONUMMER")).toBe(false)
   })
 })

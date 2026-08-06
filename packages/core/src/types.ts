@@ -15,6 +15,8 @@ export type PiiLabel =
   | "IP_ADRESS"
   | "URL"
   | "KORTNUMMER"
+  | "KONTONUMMER"
+  | "JOURNALNUMMER"
   | "ADRESS"
   | "LAGENHETSNUMMER"
   | "REGNUMMER"

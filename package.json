@@ -13,6 +13,8 @@
     "smoke": "node scripts/pack-smoke.mjs",
     "typecheck": "for p in packages/core packages/ner apps/demo; do node node_modules/typescript-7/lib/tsc.js -p $p/tsconfig.json --noEmit || exit 1; done && node node_modules/typescript-7/lib/tsc.js -p packages/ner/tsconfig.runtime-test.json --noEmit",
     "eval": "node scripts/run-published-eval.mjs",
+    "eval:domain": "pnpm -C packages/core build && pnpm -C packages/ner build && pnpm -C packages/ner eval:domain",
+    "eval:domain:clinical": "pnpm -C packages/core build && pnpm -C packages/ner build && MASKERA_PROFILE=clinical pnpm -C packages/ner eval:domain",
     "demo": "pnpm -C apps/demo dev",
     "lint": "pnpm check:fixtures && pnpm check:training-privacy && biome check .",
     "format": "biome format --write .",

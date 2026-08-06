@@ -1,6 +1,7 @@
 import type { Detection } from "@maskera/core"
 import { describe, expect, it } from "vitest"
 import {
+  clinicalPrecisionFilter,
   defaultLabelMap,
   isWholeWord,
   type NerRecognizer,
@@ -69,6 +70,38 @@ function fakeRecognizer(detections: (text: string) => Detection[]): NerRecognize
   }
 }
 
+describe("clinicalPrecisionFilter", () => {
+  it.each([
+    "Blodtryck 180/110",
+    "temp 38",
+    "GCS 14",
+    "Kreatinin 88",
+    "puls 112",
+    "vårdas avd 6",
+    "Mottagning 2",
+    "troponin x3",
+    "Vfu huvudtrauma",
+    "dietist",
+    "pneumoni",
+  ])("drops the model false positive %s", (value) => {
+    const detection = { start: 0, end: value.length, value, label: "ADRESS" }
+    expect(clinicalPrecisionFilter(detection, value, "model")).toBe(false)
+  })
+
+  it("drops a medication plus dose only when a clinical unit follows", () => {
+    const value = "Metformin 500"
+    const detection = { start: 0, end: value.length, value, label: "ADRESS" }
+    expect(clinicalPrecisionFilter(detection, `${value} mg`, "model")).toBe(false)
+    expect(clinicalPrecisionFilter(detection, `${value} patienter`, "model")).toBe(true)
+  })
+
+  it("never suppresses a deterministic rule detection", () => {
+    const value = "temp 38"
+    const detection = { start: 0, end: value.length, value, label: "CUSTOM" }
+    expect(clinicalPrecisionFilter(detection, value, "rule")).toBe(true)
+  })
+})
+
 describe("redactWithNer", () => {
   it("merges NER detections with rule detectors", async () => {
     const input = "Min granne Lars mejlar lars@example.com."
@@ -108,6 +141,16 @@ describe("redactWithNer", () => {
     expect(text).toBe("Leverans till [ADRESS_1], [LAGENHETSNUMMER_1] imorgon.")
   })
 
+  it("hybrid default masks a context-labeled domestic account number", async () => {
+    const recognizer = fakeRecognizer(() => [])
+    const { text, redactions } = await redactWithNer(
+      "Utbetalning till konto 3300-0032 3232 3232 idag.",
+      { recognizer },
+    )
+    expect(text).toBe("Utbetalning till konto [KONTONUMMER_1] idag.")
+    expect(redactions.map((r) => r.label)).toEqual(["KONTONUMMER"])
+  })
+
   it("hybrid default does NOT include regnummer (booking-code shape stays opt-in)", async () => {
     const recognizer = fakeRecognizer(() => [])
     const { text } = await redactWithNer("Bokningskod ABC123 gäller fortfarande.", { recognizer })
@@ -124,6 +167,83 @@ describe("redactWithNer", () => {
     const { text, redactions } = await redactWithNer(input, { recognizer })
     expect(text).not.toContain("12")
     expect(redactions.some((r) => r.label === "ADRESS" && r.value === "Påhittsgatan 12")).toBe(true)
+  })
+
+  it("repairs a street-like PLATS span and includes its trailing house number", async () => {
+    const input = "Cykeln stod vid Årstagången 14."
+    const recognizer = fakeRecognizer((text) => {
+      const start = text.indexOf("Årstagången")
+      return [{ start, end: start + 11, value: "Årstagången", label: "PLATS" }]
+    })
+    const { text, redactions } = await redactWithNer(input, { recognizer, detectors: [] })
+    expect(text).toBe("Cykeln stod vid [ADRESS_1].")
+    expect(redactions).toEqual([
+      expect.objectContaining({ label: "ADRESS", value: "Årstagången 14" }),
+    ])
+  })
+
+  it("corrects a lowercase known locality mislabeled as an organisation", async () => {
+    const input = "dä ä Inga-Maj från skellefteå som ringer"
+    const recognizer = fakeRecognizer((text) => {
+      const start = text.indexOf("skellefteå")
+      return [{ start, end: start + 10, value: "skellefteå", label: "ORGANISATION" }]
+    })
+    const { redactions } = await redactWithNer(input, { recognizer, detectors: [] })
+    expect(redactions).toEqual([expect.objectContaining({ label: "PLATS", value: "skellefteå" })])
+  })
+
+  it('profile: "clinical" keeps names and rules but drops measurements and doses', async () => {
+    const journalId = "TEST-JOURNAL-01"
+    const input = `Patient Karl Bergström, tel 070-174 06 58. Blodtryck 180/110. Ordination Lisinopril 10 mg. Journalnummer ${journalId}.`
+    const recognizer = fakeRecognizer((text) => {
+      const detection = (value: string, label: string): Detection => {
+        const start = text.indexOf(value)
+        return { start, end: start + value.length, value, label }
+      }
+      return [
+        detection("Karl Bergström", "NAMN"),
+        detection("Blodtryck 180/110", "ADRESS"),
+        detection("Lisinopril 10", "ADRESS"),
+        detection(`Journalnummer ${journalId}`, "ADRESS"),
+      ]
+    })
+    const { text, redactions } = await redactWithNer(input, {
+      recognizer,
+      profile: "clinical",
+    })
+    expect(text).toContain("Patient [NAMN_1]")
+    expect(text).toContain("tel [TELEFON_1]")
+    expect(text).toContain("Blodtryck 180/110")
+    expect(text).toContain("Lisinopril 10 mg")
+    expect(text).toContain("Journalnummer [JOURNALNUMMER_1]")
+    expect(redactions.map((r) => r.label).sort()).toEqual(["JOURNALNUMMER", "NAMN", "TELEFON"])
+  })
+
+  it("keeps the general default unchanged when profile is omitted", async () => {
+    const value = "Blodtryck 180/110"
+    const recognizer = fakeRecognizer(() => [
+      { start: 0, end: value.length, value, label: "ADRESS" },
+    ])
+    const { text } = await redactWithNer(value, { recognizer, detectors: [] })
+    expect(text).toBe("[ADRESS_1]")
+  })
+
+  it("composes a custom detection filter with the selected profile", async () => {
+    const input = "Blodtryck 180/110 hos Karl Bergström"
+    const recognizer = fakeRecognizer((text) => {
+      const detection = (value: string): Detection => {
+        const start = text.indexOf(value)
+        return { start, end: start + value.length, value, label: "NAMN" }
+      }
+      return [detection("Blodtryck 180/110"), detection("Karl Bergström")]
+    })
+    const { text } = await redactWithNer(input, {
+      recognizer,
+      detectors: [],
+      profile: "clinical",
+      detectionFilter: (detection) => detection.value !== "Karl Bergström",
+    })
+    expect(text).toBe(input)
   })
 
   it("explicit detectors option still overrides the hybrid default entirely", async () => {

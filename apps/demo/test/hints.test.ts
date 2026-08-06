@@ -3,12 +3,12 @@ import { describe, expect, it } from "vitest"
 import { invalidPersonnummer } from "../src/hints"
 
 /**
- * Table-driven tests for the demo's checksum hint. The fixtures were derived
+ * Table-driven tests for the demo's invalid-date hint. The fixtures were derived
  * by running the core validators, not by hand: 19900101-2385 and 700178-2395
  * are official Skatteverket test identifiers, and 202100-4748 is the
  * organisationsnummer from Skatteverket's Navet test certificate.
- * The hint must fire ONLY for pnr-shaped strings that no validator accepts and
- * no other detector already masks.
+ * The hint must fire ONLY for pnr-shaped strings with an impossible date that
+ * no other detector already masks. A bad Luhn digit alone is maskable.
  */
 
 const none: Redaction[] = []
@@ -19,6 +19,9 @@ describe("invalidPersonnummer: valid identifiers are never hinted", () => {
     ["10-digit personnummer", "pnr 900101-2385 finns"],
     ["plus separator (100+ years)", "född 19000101+9801"],
     ["samordningsnummer (day+60)", "sam 700178-2395 ok"],
+    ["12-digit, checksum off by one", "pnr 19900101-2384 här"],
+    ["10-digit, random checksum", "pnr 900101-1234 här"],
+    ["plus separator, bad checksum", "född 19000101+2385"],
     ["organisationsnummer (Navet test)", "kommunen 202100-4748 äger"],
   ] as const
 
@@ -31,14 +34,11 @@ describe("invalidPersonnummer: valid identifiers are never hinted", () => {
 
 describe("invalidPersonnummer: invalid pnr-shaped strings are hinted", () => {
   const invalid = [
-    ["12-digit, checksum off by one", "pnr 19900101-2384 här", "19900101-2384"],
-    ["10-digit, random checksum", "pnr 900101-1234 här", "900101-1234"],
     ["impossible month 13", "pnr 19901301-2385 här", "19901301-2385"],
     ["impossible date feb 30", "pnr 20250230-1234 här", "20250230-1234"],
-    ["plus separator, bad checksum", "född 19000101+2385", "19000101+2385"],
-    ["start of text", "19900101-2384 inleder", "19900101-2384"],
-    ["end of text", "avslutas med 19900101-2384", "19900101-2384"],
-    ["followed by punctuation", "numret (19900101-2384).", "19900101-2384"],
+    ["start of text", "19901301-2385 inleder", "19901301-2385"],
+    ["end of text", "avslutas med 19901301-2385", "19901301-2385"],
+    ["followed by punctuation", "numret (19901301-2385).", "19901301-2385"],
   ] as const
 
   for (const [name, text, expected] of invalid) {
@@ -68,18 +68,18 @@ describe("invalidPersonnummer: shapes outside the hint's remit", () => {
 
 describe("invalidPersonnummer: aggregation", () => {
   it("deduplicates repeated occurrences", () => {
-    const text = "först 19900101-2384 och sen 19900101-2384 igen"
-    expect(invalidPersonnummer(text, none)).toEqual(["19900101-2384"])
+    const text = "först 19901301-2385 och sen 19901301-2385 igen"
+    expect(invalidPersonnummer(text, none)).toEqual(["19901301-2385"])
   })
 
   it("returns distinct hits in text order", () => {
-    const text = "a 900101-1234 b 19901301-2385 c"
-    expect(invalidPersonnummer(text, none)).toEqual(["900101-1234", "19901301-2385"])
+    const text = "a 20250230-1234 b 19901301-2385 c"
+    expect(invalidPersonnummer(text, none)).toEqual(["20250230-1234", "19901301-2385"])
   })
 
   it("hints the invalid number even next to a valid one", () => {
-    const text = "giltigt 19900101-2385 ogiltigt 19900101-2384"
-    expect(invalidPersonnummer(text, none)).toEqual(["19900101-2384"])
+    const text = "giltigt 19900101-2385 ogiltigt 19901301-2385"
+    expect(invalidPersonnummer(text, none)).toEqual(["19901301-2385"])
   })
 })
 
@@ -101,7 +101,7 @@ describe("invalidPersonnummer: suppression when another detector already masked 
   })
 
   it("redaction elsewhere in the text does not suppress", () => {
-    const text = "mejl a@example.com och 19900101-2384 kvar"
+    const text = "mejl a@example.com och 19901301-2385 kvar"
     const start = text.indexOf("a@example.com")
     const email: Redaction = {
       label: "EPOST",
@@ -110,7 +110,7 @@ describe("invalidPersonnummer: suppression when another detector already masked 
       end: start + "a@example.com".length,
       replacement: "[EPOST_1]",
     }
-    expect(invalidPersonnummer(text, [email])).toEqual(["19900101-2384"])
+    expect(invalidPersonnummer(text, [email])).toEqual(["19901301-2385"])
   })
 })
 

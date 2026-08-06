@@ -3,7 +3,7 @@
        original stays byte-coupled to docs/layers.svg for the npm/HF embeds).
        Re-derive when layers.svg changes. -->
   <title>maskera: två lager, regler först</title>
-  <desc>Inkommande text delas upp i två lager: deterministiska regler för strukturerade personuppgifter som personnummer, med kontrollsiffervalidering där formatet har en kontrollsiffra, och en svensk AI-modell på 43 MB för fri text som namn. Reglerna vinner vid överlapp, och det sammanslagna resultatet är den maskerade texten.</desc>
+  <desc>Inkommande text delas upp i två lager: deterministiska formatmedvetna regler för strukturerade personuppgifter som personnummer, och en svensk AI-modell på 43 MB för fri text som namn. Reglerna vinner vid överlapp, och det sammanslagna resultatet är den maskerade texten.</desc>
 
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -50,7 +50,7 @@
   <text x="400" y="172" font-size="16.5" font-weight="650" fill="#000000">Lager 1 · Regler</text>
   <text x="400" y="195" font-size="12.2" fill="#666666">@maskera/core · deterministisk</text>
   <text x="400" y="222" font-size="12.4" fill="#555555">personnummer, telefon, kort, IBAN …</text>
-  <text x="400" y="240" font-size="12.4" fill="#555555">kontrollsiffervaliderat där det finns</text>
+  <text x="400" y="240" font-size="12.4" fill="#555555">formatmedvetet · felskrivningståligt pnr</text>
 
   <rect x="397" y="257" width="91.8" height="21" rx="5" fill="#b91c1c" fill-opacity="0.16"/>
   <rect x="524" y="257" width="117" height="21" rx="5" fill="#b91c1c" fill-opacity="0.10" stroke="#b91c1c" stroke-opacity="0.45"/>

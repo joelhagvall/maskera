@@ -18,24 +18,26 @@ text // "Personnummer [PERSONNUMMER_1], tel [TELEFON_1]."
 
 ## Highlights
 
-- **Swedish-first**: personnummer, samordningsnummer, organisationsnummer,
-  date- and Luhn-validated, so `123456-0000` is *not* mistaken for a person.
+- **Swedish-first**: personnummer and samordningsnummer are date-shape checked
+  but deliberately typo-tolerant; strict Luhn validators remain available.
+  Organisationsnummer and payment identifiers keep checksum validation.
 - **Stable placeholders**: the same value reuses its token within a call.
 - **Restore map**: map LLM output back to real values, locally.
 - **Zero dependencies**, tree-shakeable, ESM + CJS + types.
 
 ## Built-in detectors
 
-All exported individually and as `defaultDetectors`. Checksum-validated where
-a checksum exists, so look-alikes (year ranges, reference numbers) don't fire.
+All exported individually and as `defaultDetectors`. Strong format checks and,
+where false negatives are not the larger privacy risk, checksums reject common
+look-alikes such as year ranges and reference numbers.
 
 | Label                  | Matches                                | Validation            |
 | ---------------------- | -------------------------------------- | --------------------- |
-| `PERSONNUMMER`         | `19900101-2385`, `900101-2385`         | date + Luhn           |
-| `SAMORDNINGSNUMMER`    | day + 60 variant                       | date + Luhn           |
+| `PERSONNUMMER`         | `19900101-2385`, `900101-2385`         | real date; Luhn-typo tolerant |
+| `SAMORDNINGSNUMMER`    | day + 60 variant                       | real date; Luhn-typo tolerant |
 | `ORGANISATIONSNUMMER`  | `202100-4748`                          | Luhn, third digit ≥ 2 |
 | `EPOST`                | `anna@example.com`                     | pattern               |
-| `TELEFON`              | `070-174 06 58`, `+46 8 465 004 12`       | Swedish mobile + landline |
+| `TELEFON`              | `070-174 06 58`, `+33 6 12 34 56 78`  | Swedish or explicit `+CC` |
 | `POSTNUMMER`           | `123 45`; compact `12345` only before a capitalized city or after `SE-` | pattern + context |
 | `BANKGIRO`             | `991-2346`                             | Luhn check digit      |
 | `PLUSGIRO`             | `92 01 00-5` (spaces tolerated)        | Luhn check digit      |
@@ -61,10 +63,17 @@ import { defaultDetectors, heuristicDetectors, redact } from "@maskera/core"
 redact(text, { detectors: [...defaultDetectors, ...heuristicDetectors] })
 ```
 
+`kontonummer` and `journalnummer` are separate contextual detectors. Ordinary
+Swedish bank accounts and provider-specific journal identifiers have no single
+checksum-backed shape, so they only match after explicit labels such as
+`konto`, `kontonummer`, `journalnummer` or `journal-id`. They are exported in
+`contextualDetectors`, stay out of conservative rules-only `defaultDetectors`,
+and are enabled by the hybrid pipeline.
+
 Note: the model-hybrid `redactWithNer` in the `maskera` package enables
-`adress` and `lagenhetsnummer` by default (its callers have free text by
-definition); only the synchronous `redact()` here keeps the structured
-default set.
+`adress`, `lagenhetsnummer` and the context-labeled account/journal identifiers
+by default (its callers have free text by definition); only the synchronous
+`redact()` here keeps the structured default set.
 
 ## API
 

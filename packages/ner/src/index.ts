@@ -1,6 +1,7 @@
 import type { Detection, PiiLabel, RedactOptions, RedactResult } from "@maskera/core"
 import {
   adress,
+  contextualDetectors,
   defaultDetectors,
   lagenhetsnummer,
   redactFromDetections,
@@ -127,6 +128,8 @@ export const DEFAULT_DENYLIST: ReadonlySet<string> = new Set([
   "motparten",
   "handläggare",
   "handläggaren",
+  "dotter",
+  "dottern",
   // unambiguous modifiers and generic service nouns. Named multi-word
   // entities such as "Gamla Stan" or "Testbyns vårdcentral" do not equal a
   // denylist entry and are therefore retained.
@@ -196,6 +199,14 @@ export const DEFAULT_DENYLIST: ReadonlySet<string> = new Set([
   "tåg",
   "tåget",
   "ip",
+  // short role/common words observed as high-confidence model false positives
+  "aw",
+  "dr",
+  "vd",
+  "ekonomi",
+  "oss",
+  "vaken",
+  "penicillin",
 ])
 
 /**
@@ -908,6 +919,153 @@ export function isWholeWord(text: string, start: number, end: number): boolean {
   return !LETTER.test(before) && !LETTER.test(after)
 }
 
+/** Whether a hybrid detection came from the deterministic or model layer. */
+export type HybridDetectionSource = "rule" | "model"
+
+/** Built-in hybrid policies. Omit `profile` for the general default. */
+export type RedactionProfile = "general" | "clinical"
+
+/**
+ * Optional final precision policy for the hybrid pipeline. Returning `false`
+ * drops the detection. The source is explicit because suppressing a
+ * deterministic rule has a very different privacy cost from suppressing a
+ * probabilistic model guess.
+ */
+export type HybridDetectionFilter = (
+  detection: Detection,
+  input: string,
+  source: HybridDetectionSource,
+) => boolean
+
+const CLINICAL_NON_PII = new Set([
+  "diabetes",
+  "dietist",
+  "hemrehab",
+  "ordinera hemrehab",
+  "penicillin",
+  "pneumoni",
+  "vaken",
+  "vfu huvudtrauma",
+])
+
+const CLINICAL_MEASUREMENT =
+  /^(?:af|blodtryck|bt|crp|gcs|glukos|hb|kalium|kreatinin|mottagning|na|natrium|p-glukos|puls|sat|saturation|spo2|temp|temperatur|troponin|vårdas\s+avd)\b[\s:=/-]*(?:x?\d)/iu
+const CLINICAL_IDENTIFIER_LABEL =
+  /^journal(?:nummer|nr)\b[\s:#-]*(?:(?:[\p{L}\p{N}]{2,12}[-/]){1,3}[\p{L}\p{N}]{2,12}|\d{5,20})$/iu
+const MEDICATION_WITH_DOSE = /^\p{L}[\p{L}'’-]*(?:\s+\p{L}[\p{L}'’-]*){0,2}\s+\d+(?:[.,]\d+)?$/u
+const CLINICAL_UNIT_AFTER = /^\s*(?:g|ie|mg|mg\/ml|mikrogram|ml|mmhg|mmol\/l|µg|μg)(?=$|[^\p{L}])/iu
+
+/**
+ * Opt-in precision policy for clinical text. It removes high-confidence model
+ * mistakes that are syntactically clinical measurements, medication doses or
+ * unambiguous care terms. Rule detections are retained: structured PII must
+ * never become dependent on a medical-language heuristic.
+ *
+ * Prefer `redactWithNer(text, { recognizer, profile: "clinical" })` for normal
+ * journal/clinical workflows. This exported filter is the advanced building
+ * block for callers composing their own policy. It is not the global default
+ * because a domain filter always trades some recall for utility.
+ */
+export const clinicalPrecisionFilter: HybridDetectionFilter = (detection, input, source) => {
+  if (source === "rule") return true
+  const value = detection.value.trim().toLowerCase()
+  if (CLINICAL_NON_PII.has(value)) return false
+  if (CLINICAL_MEASUREMENT.test(value)) return false
+  // The contextual rule still masks the identifier itself. Drop only the model's
+  // wider, wrongly typed "Journalnummer <identifier>" span so the label word and
+  // surrounding clinical prose stay readable.
+  if (CLINICAL_IDENTIFIER_LABEL.test(value)) return false
+  if (
+    MEDICATION_WITH_DOSE.test(detection.value.trim()) &&
+    CLINICAL_UNIT_AFTER.test(input.slice(detection.end, detection.end + 24))
+  ) {
+    return false
+  }
+  return true
+}
+
+// Lowercase town names are where q4 most often confuses LOC with ORG. Only
+// override known Swedish localities and only when the model emitted the whole
+// surface in lowercase; cased organisation names that share a city name keep
+// the model's label. This changes the placeholder label, never whether the
+// value is protected.
+const LOWERCASE_SWEDISH_LOCALITIES = new Set([
+  "alingsås",
+  "borlänge",
+  "borås",
+  "eskilstuna",
+  "falun",
+  "gävle",
+  "göteborg",
+  "halmstad",
+  "helsingborg",
+  "hudiksvall",
+  "härnösand",
+  "jönköping",
+  "kalmar",
+  "karlskrona",
+  "karlstad",
+  "kiruna",
+  "kristianstad",
+  "linköping",
+  "luleå",
+  "lund",
+  "malmö",
+  "motala",
+  "norrköping",
+  "nyköping",
+  "skellefteå",
+  "stockholm",
+  "sundsvall",
+  "södertälje",
+  "trollhättan",
+  "uddevalla",
+  "umeå",
+  "uppsala",
+  "visby",
+  "västerås",
+  "växjö",
+  "örebro",
+  "örnsköldsvik",
+  "östersund",
+])
+
+const STREET_NAME_SURFACE =
+  /(?:allén|backen|gata|gatan|gränd|gränden|gången|kajen|leden|plan|stigen|stranden|stråket|terrassen|torg|torget|väg|vägen)$/iu
+const HOUSE_NUMBER_AFTER = /^(\s+(?:nr\s+)?\d{1,4}(?:\s?[A-Da-d])?)(?=$|[^\p{L}\p{N}])/u
+
+/** Repair safe, surface-level q4 boundary/label errors before overlap merging. */
+function normalizeModelDetection(input: string, detection: Detection): Detection {
+  let normalized = detection
+  const lower = detection.value.toLowerCase()
+  if (
+    detection.label === "ORGANISATION" &&
+    detection.value === lower &&
+    LOWERCASE_SWEDISH_LOCALITIES.has(lower)
+  ) {
+    normalized = { ...normalized, label: "PLATS" }
+  }
+
+  if (
+    (normalized.label === "ADRESS" ||
+      normalized.label === "PLATS" ||
+      normalized.label === "ORGANISATION") &&
+    STREET_NAME_SURFACE.test(normalized.value)
+  ) {
+    const tail = input.slice(normalized.end).match(HOUSE_NUMBER_AFTER)?.[1]
+    if (tail) {
+      const end = normalized.end + tail.length
+      normalized = {
+        ...normalized,
+        end,
+        value: input.slice(normalized.start, end),
+        label: "ADRESS",
+      }
+    }
+  }
+  return normalized
+}
+
 /**
  * The hybrid entry point's default rule set. Whoever calls redactWithNer has
  * free text about people (nobody loads a 43 MB name model for server logs),
@@ -920,16 +1078,32 @@ export function isWholeWord(text: string, start: number, end: number): boolean {
  * synchronous rules-only `redact()` keeps the conservative structured
  * defaults.
  */
-export const hybridDefaultDetectors = [...defaultDetectors, adress, lagenhetsnummer]
+export const hybridDefaultDetectors = [
+  ...defaultDetectors,
+  ...contextualDetectors,
+  adress,
+  lagenhetsnummer,
+]
 
 export interface RedactWithNerOptions extends Pick<RedactOptions, "placeholder"> {
   recognizer: NerRecognizer
+  /**
+   * Named built-in policy. `clinical` preserves common measurements, doses
+   * and care terms; omit this option (or use `general`) for the default.
+   */
+  profile?: RedactionProfile
   /**
    * Rule-based detectors to combine with the model.
    * Default: {@link hybridDefaultDetectors} (all structured built-ins plus
    * the `adress` and `lagenhetsnummer` heuristics).
    */
   detectors?: RedactOptions["detectors"]
+  /**
+   * Additional custom precision policy applied to both layers before overlap
+   * resolution and composed with the selected profile. See
+   * {@link clinicalPrecisionFilter}.
+   */
+  detectionFilter?: HybridDetectionFilter
 }
 
 /**
@@ -945,11 +1119,20 @@ export async function redactWithNer(
   input: string,
   options: RedactWithNerOptions,
 ): Promise<RedactResult> {
+  const profileFilter = options.profile === "clinical" ? clinicalPrecisionFilter : undefined
+  const keepDetection = (detection: Detection, source: HybridDetectionSource): boolean =>
+    (profileFilter?.(detection, input, source) ?? true) &&
+    (options.detectionFilter?.(detection, input, source) ?? true)
+
   // Same folded view as the synchronous `redact()`, so a zero-width space
   // cannot hide a personnummer from the rule half of the hybrid either.
-  const ruleDetections = runDetectors(input, options.detectors ?? hybridDefaultDetectors)
+  const ruleDetections = runDetectors(input, options.detectors ?? hybridDefaultDetectors).filter(
+    (detection) => keepDetection(detection, "rule"),
+  )
 
-  const modelDetections = await options.recognizer.detect(input)
+  const modelDetections = (await options.recognizer.detect(input))
+    .map((detection) => normalizeModelDetection(input, detection))
+    .filter((detection) => keepDetection(detection, "model"))
 
   // Rules are authoritative on THEIR spans, but a model span that merely
   // touches a rule span must not be dropped wholesale: the model sometimes

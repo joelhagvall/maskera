@@ -11,7 +11,7 @@ published for testing or fictional use by the responsible authority.
 - Organisationsnummer: the `Kommun A` test certificate in [Skatteverket's Navet test documentation](https://www7.skatteverket.se/portal-wapi/open/apier-och-oppna-data/utvecklarportalen/v1/getFile/tjanstebeskrivning-folkbokforingsuppgifter-for-offentliga-aktorer-v3/pdf/1.0.3/tjanstebeskrivning-folkbokforingsuppgift-offentliga-aktorer-v3.pdf).
 - Swedish phone numbers: [PTS ranges reserved for books and films](https://pts.se/internet-och-telefoni/telefonnummer-och-adressering/telefonnummer-till-bocker-och-filmer/).
 - Postnummer: PostNord's published addressing example `123 45 Staden` in its [addressing guide](https://www.postnord.se/siteassets/-pdf/ovrigt/skicka-ratt-med-postnord-20260126.pdf).
-- Bankgiro: Bankgirot's [Bankgiro Link test files](https://www.bankgirot.se/kundservice/exempelfiler/), which state that their bankgiro and account numbers are test data, not authentic accounts.
+- Bankgiro and domestic account numbers: Bankgirot's [Bankgiro Link test files](https://www.bankgirot.se/kundservice/exempelfiler/), which state that their bankgiro and account numbers are test data, not authentic accounts. The tracked account fixture `3300003232323232` comes from the published Leverantörsbetalningar test file.
 - PlusGiro: Nordea's [Total IN example files](https://www.nordea.se/foretag/produkter/betala/total-in-bas.html).
 - Swedish IBAN: [Swedbank Validex test accounts](https://www.swedbank.se/foretag/betala-och-ta-betalt/betala/fakturahantering/betala-via-fil/mig.html).
 - Card numbers: [Stripe's published test cards](https://docs.stripe.com/testing).
@@ -30,6 +30,11 @@ release runner uses synthetic evaluation and non-record category probes. Optiona
 evaluation is a separate, aggregate-only measurement; raw downloads are deleted immediately and
 never become a release dependency. Never combine a real person's identity with a real identifier,
 contact route, record reference or residential address.
+
+The reusable hybrid domain corpus lives in
+[`packages/ner/eval/domain-regression/corpus/`](../packages/ner/eval/domain-regression/corpus/).
+Its author-composed prose and approved structured fixtures are tracked so detector and profile
+regressions can be reproduced; detailed run reports belong under ignored `tmp/`, not in Git.
 
 Deliberately invalid negative-test values are allowed when the test proves rejection; they must
 fail the applicable structural or checksum validation and therefore cannot be valid identifiers.

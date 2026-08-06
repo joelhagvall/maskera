@@ -112,7 +112,7 @@ const CASES: LeakCase[] = [
   // matches JS `\s` and renders as a space, but NFKC does not fold it to
   // U+0020 - it is the one horizontal whitespace canonicalize() leaves behind.
   // The digit-run gap class named only space/tab/NBSP, so one character split
-  // the run and the personnummer walked past the checksum detectors.
+  // the run and the personnummer walked past the format detectors.
   {
     note: "canonical bypass: personnummer split by U+1680 ogham space",
     input: "Inskriven med 850601 2387 i systemet.",

@@ -66,7 +66,9 @@ are.
   rule detectors look for digits. ALL CAPS, lowercase text, misspellings,
   chat-speak and sloppy number formats are handled.
 - **It is defense in depth, not a guarantee.** Structured PII (personnummer,
-  org-nr, …) is checked with patterns and, where available, checksums.
+  org-nr, …) is checked with deterministic format rules and selective
+  checksums. Personnummer remains masked after a mistyped Luhn digit when its
+  date shape is valid.
   Free-text names/places rely on a model and **will miss things.** Keep
   server-side controls; don't treat maskera as your only safeguard.
 

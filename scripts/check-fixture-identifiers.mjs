@@ -70,6 +70,10 @@ const FICTIONAL_PHONE_RANGES = [
 // https://docs.stripe.com/testing
 const TEST_IBANS = new Set(["SE4280000890119146168423"]) // Swedbank Validex test account
 const TEST_BANKGIRO = new Set(["9912346", "09912346"]) // Bankgirot test value + fixed-width padding
+// Bankgiro Link Leverantörsbetalningar test file; the containing page states
+// explicitly that its bankgiro and account numbers are non-authentic test data.
+// https://www.bankgirot.se/globalassets/dokument/exempelfiler/bankgiro-link/bankgirolink_leverantorsbetalning_lb_exempelfil_sv.txt
+const TEST_BANK_ACCOUNTS = new Set(["3300003232323232"])
 const TEST_PLUSGIRO = new Set(["9201005"]) // Nordea Total IN test file
 const TEST_CARDS = new Set(["4242424242424242"]) // Stripe test card
 
@@ -228,7 +232,12 @@ for (const file of repoFiles) {
   for (const match of identityMatches) {
     const value = match[0]
     const kind = dateKind(value) ?? (organisationCore(value) ? "organisationsnummer" : undefined)
-    if (kind && !approvedIdentity(value, kind)) report(file, text, match.index, kind, value)
+    // A compact PTS-reserved fictional phone can also be a valid
+    // samordningsnummer shape. Its authoritative phone allocation still makes
+    // it safe fixture data, so accept either approved source.
+    if (kind && !approvedIdentity(value, kind) && !approvedPhone(value)) {
+      report(file, text, match.index, kind, value)
+    }
   }
 
   const phoneSpans = []
@@ -280,6 +289,15 @@ for (const file of repoFiles) {
     const digits = match[0].replace(/\D/g, "")
     if (luhnValid(digits) && !TEST_BANKGIRO.has(digits)) {
       report(file, text, match.index, "bankgiro", match[0])
+    }
+  }
+
+  const accountPattern =
+    /\b(?:bankkontonummer|bankkonto|kontonummer|kontonr|utbetalningskonto|konto)(?:\s+nr\.?)?\s*[:#-]?\s*((?:\d(?:[ \t]|[-.,/][ \t]?)?){6,19}\d)\b/giu
+  for (const match of text.matchAll(accountPattern)) {
+    const digits = match[1].replace(/\D/g, "")
+    if (!TEST_BANK_ACCOUNTS.has(digits)) {
+      report(file, text, match.index + match[0].indexOf(match[1]), "bank account", match[1])
     }
   }
 

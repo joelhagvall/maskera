@@ -3,6 +3,7 @@ export {
   adress,
   // payment
   bankgiro,
+  contextualDetectors,
   // generic
   creditCard,
   defaultDetectors,
@@ -12,6 +13,8 @@ export {
   heuristicDetectors,
   iban,
   ipAddress,
+  journalnummer,
+  kontonummer,
   lagenhetsnummer,
   organisationsnummer,
   // structured Swedish identifiers

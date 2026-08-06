@@ -84,4 +84,12 @@ describe("detector sets", () => {
     expect(result.text).toContain("Anna Karlsson")
     expect(result.text).toContain("[PERSONNUMMER_1]")
   })
+
+  it("masks a context-labeled domestic account number in both demo states", () => {
+    const text = "Utbetalning till konto 3300-0032 3232 3232"
+    for (const detectors of [demoDetectors, ruleDetectors]) {
+      const result = redact(text, { detectors })
+      expect(result.text).toBe("Utbetalning till konto [KONTONUMMER_1]")
+    }
+  })
 })

@@ -1,4 +1,14 @@
 {
+  "outputCard": {
+    "invalidPersonnummerSingular": "har en personnummerlik form men inget giltigt födelse- eller samordningsdatum. Därför maskeras det inte.",
+    "invalidPersonnummerPlural": "har personnummerlika former men inga giltiga födelse- eller samordningsdatum. Därför maskeras de inte.",
+    "testPersonnummerCta": "Testa med Skatteverkets reserverade testnummer 19900101-2385."
+  },
+  "developerApi": {
+    "clinicalTitle": "Vårdtext utan onödig övermaskning",
+    "clinicalBody": "Standardläget passar blandad text. För journal- och vårdflöden aktiverar en namngiven profil skydd för klinisk sakinformation, medan regelbaserade personuppgifter fortfarande alltid maskeras.",
+    "clinicalCode": "const { text, restore } = await redactWithNer(journalText, {\n  recognizer,\n  profile: \"clinical\",\n})"
+  },
   "coverage": {
     "heading": "Vad maskeras?",
     "linkCta": "Se exakt vad som maskeras.",
@@ -29,7 +39,7 @@
       {
         "id": "rules",
         "title": "Regler: bestämda format",
-        "description": "Identifieras med formatkontroller och kontrollsummor där sådana finns. Webblänkar fångas när de börjar med http, https eller www.",
+        "description": "Identifieras med deterministiska formatkontroller och selektiva kontrollsummor. Personnummer maskeras även när kontrollsiffran är felskriven men datumformen är giltig. Webblänkar fångas när de börjar med http, https eller www.",
         "items": [
           { "label": "PERSONNUMMER", "name": "Personnummer" },
           { "label": "SAMORDNINGSNUMMER", "name": "Samordningsnummer" },
@@ -42,6 +52,8 @@
           { "label": "PLUSGIRO", "name": "Plusgiro" },
           { "label": "IBAN", "name": "Svenska IBAN" },
           { "label": "KORTNUMMER", "name": "Betalkortsnummer" },
+          { "label": "KONTONUMMER", "name": "Kontextmärkta kontonummer" },
+          { "label": "JOURNALNUMMER", "name": "Kontextmärkta journalnummer" },
           { "label": "IP_ADRESS", "name": "IPv4-adresser" },
           { "label": "URL", "name": "Webblänkar" }
         ]

@@ -71,29 +71,68 @@ quality claim.
 
 ## Structured-detector regression corpus (core rules + v19 hybrid)
 
-- **Measured:** 2026-08-06, after the Luhn-fallback and international-phone
-  detector changes in `@maskera/core`.
-- **Corpus:** 258 synthetic Swedish texts across 19 categories, with 949
-  annotated PII strings. This is local exploratory coverage, not an
-  independent benchmark or release gate; the generated files live under the
-  ignored `tmp/pii-test/` directory.
+- **Measured:** 2026-08-06, after the Luhn-fallback, international-phone,
+  address-boundary, contextual account and domain-precision changes.
+- **Corpus:** 258 synthetic Swedish texts across 19 categories, with 952
+  annotated PII strings. The privacy-safe corpus and its runner are tracked in
+  [`packages/ner/eval/domain-regression/`](../packages/ner/eval/domain-regression/);
+  structured values use the authority-published fixtures documented in
+  [`docs/TEST_DATA.md`](TEST_DATA.md), and the prose was never sourced from
+  customer, patient or case records.
 - **Pipeline:** `maskera-sv-ner-v19` q4 on CPU through `redactWithNer`, with the
   deterministic core rules and NER layer enabled.
+- **Scope:** author-coupled regression coverage, not an independent benchmark
+  or a universal quality claim. The 98.0% full-hit floor is a repository
+  regression gate for this corpus only.
 
 | run | full hits | partial leaks | clear-text misses | hit rate | classified junk redactions |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| before detector changes | 874 | 1 | 74 | 92.1% | 284 / 1,459 (19.5%) |
-| after detector changes | **937** | **1** | **11** | **98.7%** | 291 / 1,531 (19.0%) |
+| tracked privacy-safe baseline, general default | **940** | **1** | **11** | **98.7%** | 276 / 1,522 (18.1%) |
 
 The 63 recovered full hits are predominantly format-correct but Luhn-invalid
 personnummer/samordningsnummer, plus international phone numbers. The remaining
 11 misses are malformed/OCR identifiers and NER misses in code-switched or
-spoken-number text. This corpus must not be read as a universal precision claim;
-clinical language still produces the largest concentration of over-redaction.
+spoken-number text. Three contextual domestic-account examples that were
+previously unannotated are now explicit annotations backed by Bankgirot's
+published test file. Sanitizing and tracking the corpus changes its annotation
+and redaction totals, so the retired ignored-scratch results (874/1/74 before
+the detector work and 937/1/11 afterwards) are historical diagnostics, not
+rows directly comparable with this baseline. Clinical precision is measured
+separately because the `profile: "clinical"` policy is opt-in rather than part
+of this default-pipeline run.
+
+Reproduce locally with the bundled demo model (the commands build the packages
+first):
+
+```bash
+pnpm eval:domain
+pnpm eval:domain:clinical
+```
+
+Set `MASKERA_REPORT=tmp/pii-domain.md` to write an ignored detailed report.
+`MASKERA_MODEL_PATH`, `MASKERA_MODEL`, `MASKERA_DTYPE` and
+`MASKERA_HIT_FLOOR` override the documented defaults.
 
 The official v19 NER release eval was rerun against the bundled q4 artifact on
 the same date: curated span F1 **96.9%** (1/205 leaks), unchanged from the
 published snapshot.
+
+### Clinical profile comparison
+
+The same run was repeated with `profile: "clinical"` and compared on the three
+care categories (`sjukhus`, `vard-psyk`, `vard-remiss`): 165 annotated PII
+strings in total. The profile removed 20 model-only clinical false positives
+without changing masking recall on those annotations.
+
+| profile | full hits | partial leaks | clear-text misses | classified junk redactions |
+| --- | ---: | ---: | ---: | ---: |
+| general default | **165** | **0** | **0** | 112 |
+| `clinical` | **165** | **0** | **0** | **92** (−17.9%) |
+
+This is a synthetic, author-coupled regression comparison, not a clinical
+safety claim. “Classified junk” is the report's coarse heuristic for
+unannotated redactions; the result shows a useful direction but does not replace
+a domain-authored gold set.
 
 ## Curated corpus (upper bound, regression tracker)
 

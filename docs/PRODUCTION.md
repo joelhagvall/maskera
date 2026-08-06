@@ -37,7 +37,7 @@ installed it directly. Everything else is about doing it *well*.
 
 | Layer | Package | Catches | Character |
 | ----- | ------- | ------- | --------- |
-| Rules | `@maskera/core` | personnummer, samordningsnummer, org-nr, phone, email, postnummer, bankgiro, plusgiro, IBAN, card, IP, URL | deterministic; checksum-validated where supported; instant |
+| Rules | `@maskera/core` | personnummer, samordningsnummer, org-nr, phone, email, postnummer, bankgiro, plusgiro, IBAN, card, IP, URL | deterministic; format-aware with selective checksums; instant |
 | Model | `maskera` | names, places, organisations, street addresses in free text | best-effort ML, ~ms per sentence once warm |
 
 Use rules alone when your inputs are forms or structured-ish text. Add the
@@ -141,8 +141,10 @@ const caseId = regexDetector("ARENDENUMMER", /\bAR-\d{6}\b/g)
 redact(input, { detectors: [...defaultDetectors, caseId] })
 ```
 
-Pass a `validate` function to kill false positives, the same way the built-in
-personnummer/bankgiro/plusgiro detectors use checksums.
+Pass a `validate` function to kill false positives, the same way checksum-backed
+built-ins such as bankgiro and plusgiro do. Personnummer detection deliberately
+uses a real-date shape without requiring Luhn so a mistyped control digit is
+still protected; strict validators remain available separately.
 
 ### Model threshold (`minScore`)
 
@@ -150,6 +152,24 @@ Default 0.5. For a privacy tool the asymmetry matters: a false positive
 over-masks a word, a false negative leaks PII. Lean toward recall (lower
 threshold) unless over-masking demonstrably hurts your UX. Measure before
 changing: the eval harness (below) tells you what a threshold does to leaks.
+
+### Clinical precision profile
+
+Journal workflows can preserve common measurements, medication doses and
+unambiguous care terms without changing model weights. The opt-in filter never
+drops deterministic rule detections:
+
+```ts
+import { redactWithNer } from "maskera"
+
+await redactWithNer(journalText, {
+  recognizer,
+  profile: "clinical",
+})
+```
+
+Keep it domain-scoped. It deliberately trades some model recall for clinical
+utility and is therefore not the global default.
 
 ### Word denylist (`denylist`)
 

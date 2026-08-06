@@ -200,6 +200,10 @@ text
 // "hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]"`}
           </Code>
 
+          <h2>{copy.developerApi.clinicalTitle}</h2>
+          <p>{copy.developerApi.clinicalBody}</p>
+          <Code lang="ts">{copy.developerApi.clinicalCode}</Code>
+
           <h2>Skicka till AI-tjänsten och återställ svaret</h2>
           <Code lang="ts">
             {`// skicka den maskerade texten till valfri AI

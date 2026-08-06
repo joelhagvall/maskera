@@ -35,7 +35,7 @@ a Swedish-first, client-side PII redaction toolkit. The deterministic stuff
 maskera's rule layer; this model only fills the gaps rules can't: names and
 places in running text.
 
-![Where this model fits: input text forks into layer 1, maskera's deterministic rules for structured PII like personnummer, with checksum validation where the format supports it, and layer 2, this model, catching free text like names. Rules win on overlap, and the merged result is the masked output.](https://maskera.dev/layers.svg)
+![Where this model fits: input text forks into layer 1, maskera's deterministic format-aware rules for structured PII like personnummer, and layer 2, this model, catching free text like names. Rules win on overlap, and the merged result is the masked output.](https://maskera.dev/layers.svg)
 
 All inference happens **on the device where the text is**, via
 [Transformers.js](https://huggingface.co/docs/transformers.js) / ONNX Runtime
@@ -114,6 +114,20 @@ const { text, restore } = await redactWithNer(
 )
 // text -> "[NAMN_1] på [ORGANISATION_1] i [PLATS_1] ringde om fakturan."
 ```
+
+For clinical text, use the package's built-in precision profile rather than
+changing the model threshold globally:
+
+```ts
+const result = await redactWithNer(journalText, {
+  recognizer,
+  profile: "clinical",
+})
+```
+
+Omitting `profile` keeps the general default. The clinical policy never drops
+deterministic rule detections and is intentionally limited to workflows where
+retaining measurements, medication doses and care terms matters.
 
 ### With Transformers.js directly
 

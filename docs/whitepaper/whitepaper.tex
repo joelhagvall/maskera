@@ -36,7 +36,7 @@
 identifiable information in Swedish text locally, in the browser or in the
 caller's own server process, before text is sent anywhere. Structured identifiers (personnummer,
 organisation numbers, phone numbers, bank account references, and others) are
-caught by deterministic rules, checksum-validated where a checksum exists. Names, places,
+caught by deterministic, format-aware rules with selective checksums. Names, places,
 organisations, and street addresses in free text are caught by a purpose-built
 Swedish NER model of 43\,MB, small enough to run where the text already is,
 including inside a browser tab. The input text never leaves the caller's
@@ -119,7 +119,7 @@ placeholders are the final stored form.
 \node[box, fill=black!4, minimum height=16mm] (raw) at (0,0)
   {\textbf{Input text}\\``hej jag heter anna karlsson, pnr 19900101-2385''};
 \node[box, minimum height=14mm] (rules) at (5.0,1.2)
-  {\textbf{Layer 1: rules}\\deterministic, checksum-validated\\\texttt{19900101-2385} $\rightarrow$\\\texttt{[PERSONNUMMER]}};
+  {\textbf{Layer 1: rules}\\deterministic, format-aware\\\texttt{19900101-2385} $\rightarrow$\\\texttt{[PERSONNUMMER]}};
 \node[box, minimum height=14mm] (ner) at (5.0,-1.2)
   {\textbf{Layer 2: NER model}\\43\,MB Swedish model, free text\\\texttt{anna karlsson} $\rightarrow$ \texttt{[NAMN]}};
 \node[box, fill=black!4, minimum height=16mm] (out) at (10.0,0)
@@ -133,14 +133,16 @@ placeholders are the final stored form.
 
 \subsection{Layer 1: deterministic rules (\pkg{@maskera/core})}
 
-Structured Swedish identifiers are matched by patterns that are
-checksum-validated wherever a checksum exists: personnummer,
-samordningsnummer, organisation numbers, phone numbers, e-mail addresses,
-postcodes, bankgiro, plusgiro, IBAN, card numbers, IP addresses, and URLs.
-Validation is what makes the layer precise; ``2019-2024'' is not read as a
-bankgiro number, because its checksum fails. The layer is deterministic,
-synchronous, and has zero dependencies, and can be used entirely on its own,
-for example for log masking.
+Structured Swedish identifiers are matched by deterministic, format-aware
+patterns: personnummer, samordningsnummer, organisation numbers, phone numbers,
+e-mail addresses, postcodes, bankgiro, plusgiro, IBAN, card numbers, IP
+addresses, and URLs. Checksums are retained where they improve precision;
+``2019-2024'' is not read as a bankgiro number because its checksum fails.
+Personnummer and samordningsnummer instead require a real date shape but not a
+valid Luhn digit, so a mistyped control digit remains protected. Strict Luhn
+validators are still exposed for callers performing validation rather than
+redaction. The layer is synchronous, has zero dependencies, and can be used
+entirely on its own, for example for log masking.
 
 \subsection{Layer 2: a free-text NER model (\pkg{maskera})}
 
@@ -155,8 +157,8 @@ and in Node.
 \subsection{The hybrid rule: the deterministic layer always wins}
 
 When both layers run, any model detection that overlaps a rule detection is
-dropped. A personnummer is therefore always classified by checksum logic,
-never by a probabilistic guess. Within one call, the same value always
+dropped. A personnummer is therefore always classified by deterministic
+date-shape logic, never by a probabilistic guess. Within one call, the same value always
 receives the same placeholder, so a language model can reason about
 \texttt{[NAMN\_1]} consistently without ever seeing the underlying value.
 Restoration happens locally: the placeholder-to-value mapping never leaves

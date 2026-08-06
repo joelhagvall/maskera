@@ -39,6 +39,8 @@ const MAP: Record<string, LabelMeta> = {
   BANKGIRO: { sv: "Bankgiro", color: "#7e22ce", dark: "#aa66e6" }, // purple - 5.92 | 4.59
   PLUSGIRO: { sv: "Plusgiro", color: "#a21caf", dark: "#d23ee0" }, // fuchsia - 5.36 | 4.51
   KORTNUMMER: { sv: "Kortnummer", color: "#be185d", dark: "#e54889" }, // pink - 5.12 | 4.57
+  KONTONUMMER: { sv: "Kontonummer", color: "#6b21a8", dark: "#a965dc" }, // deep purple - 7.30 | 4.83
+  JOURNALNUMMER: { sv: "Journalnummer", color: "#4c1d95", dark: "#9c72df" }, // deep violet - 9.10 | 5.03
   REGNUMMER: { sv: "Reg.nummer", color: "#4338ca", dark: "#817adc" }, // indigo - 6.71 | 4.58
   IP_ADRESS: { sv: "IP-adress", color: "#334155", dark: "#7087a9" }, // slate - 8.76 | 4.57
   URL: { sv: "Länk", color: "#075985", dark: "#1d8dc9" }, // sky - 6.44 | 4.58
