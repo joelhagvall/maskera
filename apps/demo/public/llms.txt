@@ -5,7 +5,7 @@
 Two layers, rules first:
 
 - `@maskera/core` (npm): deterministic detectors for structured Swedish PII: personnummer, samordningsnummer, organisationsnummer, phone, email, postnummer, bankgiro, plusgiro, IBAN, cards, IP, URL. Checksums are verified when the format provides one. Zero dependencies, synchronous. Custom patterns join via `regexDetector`.
-- `maskera` (npm): everything in core plus `maskera-sv-ner`, my own Swedish NER model (KB-BERT fine-tuned, distilled to a 43 MB ONNX) that catches free-text names, places, organisations and street addresses, including all-lowercase chat text. On overlap, rules win. The hybrid also enables the low-risk free-text rule heuristics (street address, lägenhetsnummer) by default; `regnummer` is opt-in.
+- `maskera` (npm): everything in core plus the published `maskera-sv-ner` v19, my attested privacy-clean Swedish NER model (KB-BERT fine-tuned and distilled to a 43 MB ONNX) that catches free-text names, places, organisations and street addresses, including all-lowercase chat text. Its task-specific training uses 64,000 generated rows and 4,760 disjoint validation rows; on the revised synthetic ADR set its pipeline covers all 57 gold spans exactly with zero leaks, including all 35 marked addresses. One organisation is typed ADDRESS, so labeled F1 is 96.5%. On overlap, rules win. The hybrid also enables the low-risk free-text rule heuristics (street address, lägenhetsnummer) by default; `regnummer` is opt-in.
 
 Quick start:
 
@@ -14,13 +14,13 @@ import { createNerRecognizer, redactWithNer } from "maskera"
 
 const recognizer = createNerRecognizer()
 const { text, restore } = await redactWithNer(
-  "hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala",
+  "hej jag heter provnamn maskera, personnummer 19900101-2385, och bor i provbyn",
   { recognizer },
 )
 // "hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]"
 ```
 
-Benchmarks (exact-span F1, q4 quantized, measured 2026-07-19): 99.8% on the curated corpus (zero leaks), 94.7% on independent real text; leak rate 0.0% / 3.4%. Canonical table: https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md
+Published-v19 release gates (q4, measured 2026-08-06): curated span F1 96.9% with 1/205 leaks, revised synthetic ADR label-agnostic span F1 100.0% with 0/57 leaks, and rare-surname masked recall 96.94%. Historical v18 public-model comparisons remain separately labeled and do not automatically transfer to v19: https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md
 
 Deployment boundary: the local/on-device claims above apply to this
 open-source package and the maskera.dev browser demo. Maskera Gateway is the
@@ -38,6 +38,7 @@ downloads. Customer text is not processed there.
 - [Benchmarks](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md): the one canonical, dated, reproducible results table
 - [Production notes](https://github.com/joelhagvall/maskera/blob/main/docs/PRODUCTION.md): deployment and hardening guidance
 - [Transparency](https://github.com/joelhagvall/maskera/blob/main/docs/TRANSPARENCY.md): privacy posture, what runs where
+- [Training data protection](https://github.com/joelhagvall/maskera/blob/main/docs/TRAINING_DATA_PROTECTION.md): published v19's identifier rejection, attestation, and the KB-BERT boundary
 
 ## Packages and model
 

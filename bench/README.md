@@ -6,8 +6,25 @@ Swedish gold sets, with the same scorer the maskera CI gates run
 **leaks** = gold entities with zero overlapping prediction, the
 safety-critical number for redaction.
 
+> **Historical snapshot:** the tables below describe published v18. On
+> 2026-08-06 the local raw external gold copy, OSM address snapshots, exported
+> corpora and output files were removed. The ADR corpus was rewritten with
+> explicit synthetic street markers, so its replacement is not directly
+> comparable to the table below. `export-corpora.mjs` now exports only the
+> synthetic curated and ADR sets.
+
+> **Published v19 snapshot (2026-08-06):** the attested privacy-clean release
+> passed every defined gate. On the revised synthetic ADR
+> corpus its current q4 pipeline reaches 100.0% label-agnostic span precision,
+> recall and F1 with 0/57 leaks; all 35 marked addresses are exact and labeled
+> ADDRESS. One gold organisation is typed ADDRESS, yielding 96.5% labeled F1
+> and 35/36 ADDRESS-only precision. Curated span F1 is 96.9% with 1/205 leaks;
+> LinkedIn-style span F1 is 81.0% with 0/53 leaks. This is not a competitor
+> re-run; the full release snapshot and caveats are in
+> [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
+
 - **Measured:** 2026-07-19 (maskera rows; competitor rows 2026-07-18, their systems unchanged), Apple M4 Pro, all systems fully local.
-- maskera's own rows are the currently published pipeline
+- maskera's rows in the historical comparison tables are
   (`maskera@0.6.3` code, `joelhagvall/maskera-sv-ner` v18 weights, q4,
   ~43 MB; 0.6.4 and 0.6.5 are docs-only README patches, no code change),
   the same artifact [docs/BENCHMARKS.md](../docs/BENCHMARKS.md) describes.
@@ -80,20 +97,14 @@ Same provenance caveats as [docs/BENCHMARKS.md](../docs/BENCHMARKS.md):
 **curated** (149 sentences, 205 entities) and **adr** (41 sentences, 60
 entities incl. 35 street addresses) share an author with maskera's
 training-data generator, so read them as upper bounds for maskera but as
-neutral ground for the others; **gold-real** (22 Wikipedia sentences, 58
-entities, written and labeled by others, held out from all training) is the
-independent floor. A larger independent set is in progress
+neutral ground for the others. **gold-real** is retained below only as a dated
+aggregate; its 22-sentence raw copy is no longer in the checkout. This does not
+establish example-level absence from KB-BERT's earlier pretraining corpus. A
+larger independent set is in progress
 ([docs/GOLD_SET_PLAN.md](../docs/GOLD_SET_PLAN.md)).
 
-`osm-addresses` is a separate, generated stress test rather than part of the
-published snapshot above. It samples 500 real address points across twelve
-Swedish regions from OpenStreetMap, limits repeated street names, and inserts
-them into new chat-style wrappers with normal, lowercase and uppercase forms.
-The addresses are real; their surrounding conversations are synthetic and do
-not contain people. The generated corpus and metadata are git-ignored, and the
-metadata records source timestamps plus a corpus SHA-256 so a measured run can
-be tied to one exact snapshot. Data: © OpenStreetMap contributors, available
-under the Open Database License (ODbL) 1.0.
+The former optional OSM real-address stress-test artifacts are not retained and
+are not part of the privacy-clean release workflow.
 
 ## Results
 
@@ -142,9 +153,8 @@ rows:
 - **Presidio ORG recall:** 64.6% curated, 37.0% gold-real. `sv_core_news_lg`
   misses Ericsson, Spotify, Klarna, Migrationsverket, Skanska,
   Polismyndigheten. It also has no address concept (0% exact ADDRESS recall
-  on adr; its LOCATION tags cover most cased addresses, but "bondegatan 41",
-  "drottninggatan 29" and "SANKT PAULSGATAN 8" leak entirely) and misses
-  lowercase names ("astrid").
+  on the historical ADR set; several lowercase and saint-prefix address shapes
+  leaked entirely) and misses lowercase names.
 - **Privacy Filter on the class it does have:** PERSON recall 47.2% curated,
   27.8% gold-real; on adr its `private_address` leaves 26 of 35 Swedish
   street addresses with no overlapping prediction at all. Its model card
@@ -214,24 +224,8 @@ export AZURE_LANGUAGE_ENDPOINT AZURE_LANGUAGE_KEY
 node run-azure.mjs
 unset AZURE_LANGUAGE_ENDPOINT AZURE_LANGUAGE_KEY
 
-# independent real-address stress test (live OSM snapshot, git-ignored)
-node fetch-osm-addresses.mjs
-node run-maskera.mjs osm-addresses
-node run-azure.mjs osm-addresses
-node grade.mjs osm-addresses
-node analyze-address-coverage.mjs osm-addresses
-
-# After a candidate is locked, make an address-disjoint final holdout. Record
-# the random salt before fetching; do not tune after viewing this set.
-OSM_CORPUS_NAME=osm-addresses-holdout \
-OSM_ADDRESS_COUNT=1000 \
-OSM_ADDRESS_SALT="$HOLDOUT_SALT" \
-OSM_EXCLUDE_CORPUS=corpora/osm-addresses.json \
-OSM_REFRESH=1 \
-node fetch-osm-addresses.mjs
-
-# grade everything
-node grade.mjs curated && node grade.mjs gold-real && node grade.mjs adr
+# grade the currently exportable synthetic sets
+node grade.mjs curated && node grade.mjs adr
 ```
 
 ## Next

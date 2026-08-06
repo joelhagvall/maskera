@@ -5,7 +5,7 @@
 #
 # This assembles a clean staging directory in the Transformers.js layout
 # (root config/tokenizer + onnx/ with all three quantizations) plus the model
-# card and NOTICE, then uploads it. The HF CLI handles large files (LFS)
+# card, NOTICE and privacy attestation, then uploads it. The HF CLI handles large files (LFS)
 # automatically, no git-lfs needed.
 #
 # Prereqs (one-time):
@@ -37,6 +37,12 @@ mkdir -p "$STAGE/onnx"
 for f in config.json tokenizer.json tokenizer_config.json special_tokens_map.json vocab.txt; do
   cp "$SRC/$f" "$STAGE/$f"
 done
+test -f "$SRC/privacy-attestation.json" || {
+  echo "ERROR: $SRC has no privacy-attestation.json; refusing to publish legacy weights." >&2
+  exit 1
+}
+node "$ROOT/training/verify_attestation.mjs" "$SRC/privacy-attestation.json"
+cp "$SRC/privacy-attestation.json" "$STAGE/privacy-attestation.json"
 
 # ONNX weights: q4 (default), q8 (int8), fp32 (full precision).
 cp "$SRC/onnx/model_q4.onnx"        "$STAGE/onnx/model_q4.onnx"
@@ -46,6 +52,16 @@ cp "$SRC/onnx/model.onnx"           "$STAGE/onnx/model.onnx"
 # Model card + attribution.
 cp "$CARD/README.md" "$STAGE/README.md"
 cp "$CARD/NOTICE"    "$STAGE/NOTICE"
+
+# A real upload must never publish candidate wording as the live card. The
+# source intentionally stays marked candidate until every local gate and all
+# coupled release edits are ready. DRY_RUN may stage it for inspection.
+if [ "${DRY_RUN:-0}" != "1" ] &&
+  ! grep -qx '<!-- maskera-release-status: published -->' "$CARD/README.md"; then
+  echo "ERROR: model card is not marked published; refusing to upload stale candidate status." >&2
+  echo "Update its status block and marker in the coordinated release sitting, then rerun." >&2
+  exit 1
+fi
 
 echo "==> Staging contents:"
 ( cd "$STAGE" && find . -type f -exec du -h {} + | sort -k2 )

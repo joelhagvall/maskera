@@ -11,6 +11,8 @@ Runs on Apple Silicon (MPS), CUDA, or CPU automatically.
 
 import json
 import os
+import shutil
+import subprocess
 import sys
 
 import numpy as np
@@ -29,12 +31,22 @@ from transformers import (
 from transformers import set_seed
 
 BASE_MODEL = "KBLab/bert-base-swedish-cased"
+BASE_MODEL_REVISION = "ce7c3424687f042f1320e0528293d492c82918c4"
 OUT_DIR = sys.argv[1] if len(sys.argv) > 1 else "model"  # usage: train.py [out_dir]
 MAX_LEN = 128
 # Seeded so runs are comparable: an unseeded 2026-07-04 round produced students
 # whose ORG margins collapsed under quantization while a sibling run was fine.
 SEED = int(os.environ.get("MASKERA_SEED", "1337"))
 set_seed(SEED)
+
+# Every task-specific training run is fail-closed: the data must pass the
+# identifier audit and receive an exact synthetic-only attestation before a
+# model can be initialized. The base KB-BERT checkpoint is covered separately
+# by its CC0 provenance; this attestation covers maskera's fine-tuning data.
+subprocess.run(["node", "audit_data.mjs"], check=True)
+subprocess.run(
+    ["node", "privacy_attestation.mjs", "data/privacy-attestation.json"], check=True
+)
 
 LABELS = ["O", "B-PER", "I-PER", "B-LOC", "I-LOC", "B-ORG", "I-ORG", "B-ADR", "I-ADR"]
 label2id = {l: i for i, l in enumerate(LABELS)}
@@ -47,7 +59,7 @@ device = (
 )
 print(f"== device: {device}, seed: {SEED} ==")
 
-tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
+tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, revision=BASE_MODEL_REVISION)
 
 raw = load_dataset(
     "json",
@@ -85,6 +97,7 @@ tokenized = raw.map(align, batched=True, remove_columns=raw["train"].column_name
 
 model = AutoModelForTokenClassification.from_pretrained(
     BASE_MODEL,
+    revision=BASE_MODEL_REVISION,
     num_labels=len(LABELS),
     id2label=id2label,
     label2id=label2id,
@@ -162,9 +175,12 @@ print(classification_report(tl, tp))
 
 trainer.save_model(OUT_DIR)
 tokenizer.save_pretrained(OUT_DIR)
+shutil.copy2("data/privacy-attestation.json", os.path.join(OUT_DIR, "privacy-attestation.json"))
 print(f"== saved model to {OUT_DIR}/ ==")
 
-# Smoke test on real Swedish sentences the model never saw
+# Smoke test on explicitly synthetic Swedish sentences the model never saw.
+# Keep even post-training probes free from plausible real-world relationships;
+# their output is diagnostic only and never enters the weights.
 from transformers import pipeline  # noqa: E402
 
 nlp = pipeline(
@@ -175,9 +191,9 @@ nlp = pipeline(
     device=device,
 )
 for s in [
-    "Min granne Lars Nordström bor på Kungsholmen och jobbar på Spotify i Stockholm.",
-    "Patient Aisha Khan inkom till akuten i Malmö.",
-    "Handläggaren Per Holmberg bedömde ansökan från familjen Yilmaz på Storgatan 14.",
+    "I provdata bor testpersonen Alva Provnamn på Maskeragatan 14 och arbetar på Fiktiv Data AB i Provbyn.",
+    "Provpatienten Aisha Testnamn inkom till testkliniken i Provbyn.",
+    "Testhandläggaren Per Provnamn bedömde TEST-REF-001 för familjen Testnamn på Maskeragatan 14.",
 ]:
     print("\n>", s)
     for e in nlp(s):

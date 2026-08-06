@@ -1,6 +1,8 @@
 /** Fail fast on malformed, heavily duplicated or leaking BIO training data. */
 import { readFileSync } from "node:fs"
 
+import { assertSyntheticAddressSpans, assertTrainingRowPrivacy } from "./privacy_guard.mjs"
+
 const TRAIN = process.argv[2] ?? "data/train.jsonl"
 const VAL = process.argv[3] ?? "data/val.jsonl"
 const MAX_DUP_SHARE = Number(process.env.MAX_DUP_SHARE ?? 0.02)
@@ -29,6 +31,8 @@ const load = (path) => {
         `${path}:${lineIndex + 1}: ${row.tokens.length} tokens != ${row.tags.length} tags`,
       )
     }
+    assertTrainingRowPrivacy(row.tokens, `${path}:${lineIndex + 1}`)
+    assertSyntheticAddressSpans(row.tokens, row.tags, `${path}:${lineIndex + 1}`)
     let previous = "O"
     for (const [index, tag] of row.tags.entries()) {
       if (!VALID_TAG.test(tag)) throw new Error(`${path}:${lineIndex + 1}: invalid tag ${tag}`)

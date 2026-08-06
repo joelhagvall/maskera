@@ -47,7 +47,7 @@ describe("namn gazetteer: must not match", () => {
     ["name as lowercase substring", "jag plockade björnbär i skogen"],
     ["lowercase word that is also a name", "en gammal ek i parken"],
     ["lowercase berg", "uppför ett berg i norr"],
-    ["name glued into an identifier", "ordernummer ANNA123 skickades"],
+    ["name glued into an identifier", "ordernummer TEST-ANNA123 skickades"],
     ["genitive of a short name", "Pers cykel står kvar"],
     ["name as prefix of a word continuing with å", "stugan ligger på Bergåsen"],
     ["name as prefix of a word continuing with ä", "vi promenerade mot Ekängen"],

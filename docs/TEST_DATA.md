@@ -18,11 +18,18 @@ published for testing or fictional use by the responsible authority.
 - Email and web hosts: [IANA-reserved example domains](https://www.iana.org/help/example-domains) or the reserved `.test` top-level domain.
 - IP addresses: [IANA documentation networks](https://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml) `192.0.2.0/24`, `198.51.100.0/24` and `203.0.113.0/24`, or private/loopback ranges when the test specifically requires them.
 
-User-facing address examples use conspicuously fictional `Påhitt-` or `Maskera-` street names.
-Natural-language training and evaluation corpora may use public names, organisations and place
-vocabulary as model-quality probes, but must be synthetically composed and must never be sourced
-from private records. Never combine a real person's identity with a real identifier, contact route
-or residential address.
+User-facing and annotated task-evaluation addresses use conspicuous synthetic markers such as
+`Påhitt-`, `Maskera-`, `Provdata-`, `Fiktiv-`, `Syntet-` or `Testkorpus-`; an ordinary-looking
+street/number pair is rejected even when it was randomly composed.
+Case, customer, journal, order and property references must begin with an
+explicit `TEST-`, `PROV-`, `FIKTIV-`, `EXEMPEL-` or `SYNTET-` marker; a
+plausible numeric reference is not acceptable merely because it was invented.
+Task-training rows may use public names, organisations and place vocabulary as class exemplars,
+but must be synthetically composed and must never be sourced from records. The privacy-clean
+release runner uses synthetic evaluation and non-record category probes. Optional external prose
+evaluation is a separate, aggregate-only measurement; raw downloads are deleted immediately and
+never become a release dependency. Never combine a real person's identity with a real identifier,
+contact route, record reference or residential address.
 
 Deliberately invalid negative-test values are allowed when the test proves rejection; they must
 fail the applicable structural or checksum validation and therefore cannot be valid identifiers.
@@ -34,6 +41,7 @@ Run `pnpm check:fixtures`. It is also part of both `pnpm test` and `pnpm lint`.
 
 The check rejects unknown valid personnummer, samordningsnummer, organisationsnummer, Swedish
 phone and postnummer examples, emails, IBANs, card numbers, Bankgiro/PlusGiro values, public IP
-addresses and non-fictional street addresses in user-facing/unit-test fixtures. When adding a
-positive fixture, add its authoritative source beside the allowlist in
-`scripts/check-fixture-identifiers.mjs`.
+addresses, unmarked record references and non-fictional street addresses
+throughout the tracked repository and any unignored new text files. When
+adding a positive fixture, add its authoritative source beside the allowlist
+in `scripts/check-fixture-identifiers.mjs`.

@@ -210,7 +210,7 @@ describe("phone detector", () => {
     ["a year", "år 1995"],
     ["a year range", "perioden 2019 2024"],
     ["short number", "rum 123"],
-    ["inside a longer digit run", "kundnummer 100200-3000"],
+    ["inside a longer digit run", "kundnummer TEST-100200-3000"],
   ])("rejects %s: %s", (_label, s) => expectMiss(phone, s))
 })
 

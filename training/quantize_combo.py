@@ -9,7 +9,9 @@ transformer MatMuls. After vocab-trimming the embeddings are small, so now the
     uv run python quantize_combo.py
 """
 import os
+import subprocess
 import sys
+from pathlib import Path
 
 import onnx
 from onnxruntime.quantization import QuantType, quantize_dynamic
@@ -20,6 +22,11 @@ DIR = sys.argv[1] if len(sys.argv) > 1 else "student-trimmed-onnx"
 SRC = f"{DIR}/model.onnx"  # fp32 trimmed
 TMP = f"{DIR}/_embed_int8.onnx"
 OUT = f"{DIR}/onnx/model_q4.onnx"
+
+attestation_path = Path(DIR) / "privacy-attestation.json"
+if not attestation_path.is_file():
+    sys.exit(f"{DIR} has no privacy-attestation.json; refusing to quantize legacy weights")
+subprocess.run(["node", "verify_attestation.mjs", str(attestation_path)], check=True)
 
 
 def mb(p):

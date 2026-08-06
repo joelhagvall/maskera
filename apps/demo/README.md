@@ -25,31 +25,28 @@ text**: both run, neither is a single source of truth, and rules win on overlap.
 
 ## The model files (not committed)
 
-The model under `public/models/maskera-sv-ner-v18/` is ~43 MB and is **gitignored**.
+The model under `public/models/maskera-sv-ner-v19/` is ~43 MB and is **gitignored**.
 The quickest way to populate it is to fetch the published model from the Hub:
 
 ```bash
 hf download joelhagvall/maskera-sv-ner config.json tokenizer.json tokenizer_config.json \
   special_tokens_map.json vocab.txt onnx/model_q4.onnx \
-  --local-dir public/models/maskera-sv-ner-v18
+  --local-dir public/models/maskera-sv-ner-v19
 ```
 
-Or train and export it yourself from [`../../training`](../../training):
+To reproduce the published privacy-clean artifact, use the attested
+release runner. Do not invoke training/export stages independently: each stage
+must verify and forward the same privacy attestation.
 
 ```bash
 cd ../../training
-uv run python train.py                                      # fine-tune KB-BERT
-uv run python distill.py                                    # distill a smaller student
-uv run python trim_vocab.py                                 # 50k -> 20k vocab
-uv run python export_onnx.py student-trimmed student-trimmed-onnx
-uv run python quantize_combo.py                             # -> onnx/model_q4.onnx (~43 MB)
-
-# copy the browser-needed files into the demo
-D=../apps/demo/public/models/maskera-sv-ner-v18
-mkdir -p "$D/onnx"
-cp student-trimmed-onnx/{config.json,tokenizer.json,tokenizer_config.json,special_tokens_map.json,vocab.txt} "$D/"
-cp student-trimmed-onnx/onnx/model_q4.onnx "$D/onnx/"
+MASKERA_SEED=1337 CANDIDATE=v19-privacy-precision2 ./run_v14.sh
 ```
+
+The published demo directory is `maskera-sv-ner-v19`. Do not copy an
+unattested local candidate into it; releases upload the attested artifact,
+pin the resulting Hub revision and file hashes, and then fetch that exact
+version into the versioned demo directory.
 
 Without these files the demo still runs; the model load reports an error and the
 gazetteer fallback keeps working.

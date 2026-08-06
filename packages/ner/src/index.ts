@@ -14,14 +14,14 @@ export * from "@maskera/core"
 
 /**
  * Canonical Hugging Face id for maskera's own Swedish PII model: a 43 MB
- * (q4) distilled KB-BERT for PER / LOC / ORG / ADR, trained on synthetic +
- * real Swedish with casing augmentation. MIT weights, no attribution needed.
+ * (q4) distilled KB-BERT for PER / LOC / ORG / ADR, task-trained on
+ * privacy-audited synthetic Swedish with casing augmentation. MIT weights.
  * Change the owner to your own HF username if you host your own copy.
  */
 export const MASKERA_SV_NER_MODEL = "joelhagvall/maskera-sv-ner"
 
 /**
- * The exact Hub commit {@link MASKERA_SV_NER_MODEL} is pinned to (v18 weights).
+ * The exact Hub commit {@link MASKERA_SV_NER_MODEL} is pinned to (v19 weights).
  *
  * Without a pin, Transformers.js resolves `main`, so whatever sits on the Hub
  * at download time is what runs. That makes a compromised Hub account enough to
@@ -33,7 +33,7 @@ export const MASKERA_SV_NER_MODEL = "joelhagvall/maskera-sv-ner"
  *
  * Pass `revision: "main"` to opt back into always-latest.
  */
-export const MASKERA_SV_NER_REVISION = "aa273561ee25cc613acdb41cf328b10d187051f5"
+export const MASKERA_SV_NER_REVISION = "7ecd7a531c989d09ffb3d9ecf4168696786a204e"
 
 /**
  * The default model is maskera's own Swedish model. Pass any other
@@ -95,9 +95,10 @@ export const defaultLabelMap: LabelMap = (group) => {
 /**
  * Common Swedish words the model can tag as PII when they sit in a name-like
  * position ("Kund Maria ...", "Mail: ...", "betalning till bankgiro ...").
- * These are role words, contact-channel words and payment-rail words that are
- * never a name, place or organisation on their own, so a detection whose
- * WHOLE surface form (case-insensitively) is one of them is dropped.
+ * These are role words, contact-channel words, payment-rail words and
+ * unambiguous generic modifiers/service nouns that are never a name, place or
+ * organisation on their own, so a detection whose WHOLE surface form
+ * (case-insensitively) is one of them is dropped.
  * Multi-word detections ("Anna Ring", "Byggfirman AB") are never affected.
  */
 export const DEFAULT_DENYLIST: ReadonlySet<string> = new Set([
@@ -126,6 +127,19 @@ export const DEFAULT_DENYLIST: ReadonlySet<string> = new Set([
   "motparten",
   "handläggare",
   "handläggaren",
+  // unambiguous modifiers and generic service nouns. Named multi-word
+  // entities such as "Gamla Stan" or "Testbyns vårdcentral" do not equal a
+  // denylist entry and are therefore retained.
+  "gamla",
+  "olåst",
+  "butik",
+  "butiken",
+  "vårdcentral",
+  "vårdcentralen",
+  "ombud",
+  "ombudet",
+  "byrå",
+  "byrån",
   // contact channels
   "mail",
   "mailen",
@@ -568,7 +582,7 @@ export function reconstruct(
     // never sit on a word boundary and would be rejected wholesale). Keep a
     // trailing house number for ADR when the group already starts with a
     // street-name token: the model reliably emits `I-ADR 44`, and discarding
-    // it here used to turn "Sveavägen 44" into the partial span "Sveavägen".
+    // it here used to turn "Maskeragatan 44" into the partial span "Maskeragatan".
     // Numeric-only predictions still fail the LETTER check below, and digits
     // remain forbidden at the leading edge, so this does not revive the bare-
     // number false positives the precision guard was added to suppress.
@@ -615,7 +629,7 @@ export function reconstruct(
         // longer is a genuinely different word and still gets rejected.
         if ((text[end] === "s" || text[end] === "S") && !LETTER.test(text[end + 1] ?? "")) end++
         // Swedish apartment/entrance suffixes are commonly written as a
-        // detached A-D after the house number ("Sturegatan 46 C"). q4 can
+        // detached A-D after the house number ("Maskeragatan 46 C"). q4 can
         // confidently tag the street + number but leave that final letter O.
         // Restrict the extension to A-D and require a non-word boundary after
         // it, so ordinary following words such as "i Stockholm" are untouched.
@@ -625,7 +639,7 @@ export function reconstruct(
           if (suffixText) end += suffixText.length
         }
         // The complement: an ADR span that stops at the street words can leave
-        // the house number exposed ("Anna Lindhs plats" tagged, the "1"
+        // the house number exposed ("Maskeras plats" tagged, the "1"
         // leaked; the 2026-07-14 sweep found the same on saint-prefixed
         // streets). A bare number right after a street span narrows the
         // address materially, so widen to include it (and any detached A-D
@@ -644,7 +658,7 @@ export function reconstruct(
         // structured identifier (the rules layer's span), it is never part of
         // the name, so trim it plus the separators before it. Requiring a
         // separator keeps entities that ARE such a word ("Org" as a name)
-        // intact, and spans ending in a digit ("Storgatan nr 5") never match.
+        // intact, and spans ending in a digit ("Testgatan nr 5") never match.
         // The separator run is bounded rather than `+`: unanchored `[...]+$`
         // backtracks quadratically over a span that is mostly separators.
         // locateGroup caps the whitespace it skips between pieces, so such a

@@ -35,6 +35,7 @@ const MODEL =
   process.env.MASKERA_MODEL ?? (REMOTE ? "joelhagvall/maskera-sv-ner" : "maskera-sv-ner")
 const MODEL_PATH = process.env.MASKERA_MODEL_PATH
 const DTYPE = process.env.MASKERA_DTYPE ?? "q4"
+const AGGREGATE_ONLY = process.env.MASKERA_AGGREGATE_ONLY === "1"
 
 function skip(reason) {
   console.log(`\nbenchmark skipped: ${reason}`)
@@ -98,13 +99,17 @@ let total = 0
 let masked = 0
 let per = 0
 const leaks = []
+let leakCount = 0
 for (const doc of docs) {
   const pred = await recognizer.detect(doc.text)
   for (const g of doc.gold) {
     total++
     const hit = pred.filter((p) => overlaps(p, g))
     if (hit.length) masked++
-    else leaks.push(doc.text)
+    else {
+      leakCount++
+      if (!AGGREGATE_ONLY) leaks.push(doc.text)
+    }
     if (hit.some((p) => p.label === "PER")) per++
   }
 }
@@ -114,11 +119,11 @@ console.log("\n=== rare-surname chat register (decomposing, out-of-training) ===
 console.log(`gold surnames:            ${total}`)
 console.log(`masked at all (safety):   ${masked}  (${pct(masked)})`)
 console.log(`masked as PER (typed):    ${per}  (${pct(per)})`)
-console.log(`leaks:                    ${leaks.length}  (${pct(leaks.length)})`)
-if (leaks.length) {
+console.log(`leaks:                    ${leakCount}  (${pct(leakCount)})`)
+if (!AGGREGATE_ONLY && leaks.length) {
   console.log("--- leaked sentences (first 20) ---")
   for (const l of leaks.slice(0, 20)) console.log(`  ${l}`)
 }
 console.log(
-  `\nRESULT masked_recall=${(masked / total).toFixed(4)} per_recall=${(per / total).toFixed(4)} leaks=${leaks.length}/${total}`,
+  `\nRESULT masked_recall=${(masked / total).toFixed(4)} per_recall=${(per / total).toFixed(4)} leaks=${leakCount}/${total}`,
 )

@@ -8,6 +8,24 @@ Forward-looking only. Current numbers live in [`BENCHMARKS.md`](BENCHMARKS.md),
 the training journey in [`training/README.md`](../training/README.md), and
 per-package history in the changelogs.
 
+## Privacy-clean release line
+
+- [x] Public and pseudo-labelled corpora removed from the active training
+      recipe; the v11-v18 sections below remain as historical audit notes only.
+- [x] Task training is generator-only. A fail-closed identifier audit rejects
+      account, identity, contact, payment, network, and postal identifiers,
+      including reserved test values.
+- [x] Exact data, generator, audit-code, and pinned KB-BERT revision hashes
+      travel with every artifact in `privacy-attestation.json`; train,
+      distill, trim, export, and publish reject legacy weights.
+- [x] Every q4 quality gate passes and the v19 benchmark snapshot
+      carriers have been remeasured and synchronized.
+- [x] Publish the attested weights, update the source Hub/npm/demo pins and
+      switch every model-status marker from candidate to published.
+- [ ] Publish the versioned npm packages after the human completes the
+      interactive npm 2FA step. See
+      [TRAINING_DATA_PROTECTION.md](TRAINING_DATA_PROTECTION.md).
+
 ## Shipped
 
 - **Rules layer** (`@maskera/core`): structured detectors with checksum
@@ -17,6 +35,10 @@ per-package history in the changelogs.
   rules win on overlap, full `@maskera/core` re-export (one install, one import).
 - **Own Swedish model** (`maskera-sv-ner`): KB-BERT fine-tuned, distilled and
   quantized to ~43 MB, hosted on the Hugging Face Hub as the default.
+- **v19 privacy-clean model** (2026-08-06): task training rebuilt from the
+  pinned KB-BERT base using only attested generator-produced rows; published
+  with identifier rejection, exact provenance hashes and synchronized
+  Hub/npm/demo pins.
 - **v11 real-register round** (2026-07-10): trained on real informal Swedish
   (SUCX 3.0 sample, MASSIVE sv-SE chat register, SIC2 blogs; all CC BY 4.0).
   Lowercase leaks down 24.8% to 20.5%, the tracked chat misses ("fatima")
@@ -49,7 +71,7 @@ into v13.
 - [x] Best model so far on gold-real (94.7 F1), curated (97.0), klintan
       lowercase (80.6 F1, leaks 20.5% -> 19.2%).
 - [x] **Root-cause find of the round**: `trim_vocab.py` at 16k cut the
-      rare-name tail (bare "Löfven" regression); fixed by trimming at 20k
+      rare-name tail (bare "Provnamn" regression); fixed by trimming at 20k
       (+3.1 MB). Data-level fixes were tried and measurably rejected.
 - [ ] **Missed the round's cased-ORG aspiration**: klintan cased ORG recall
       fell 70.9% -> 67.7% (leaks 11.3% -> 12.5%), the third straight release
@@ -149,7 +171,7 @@ informal register lag.** Every number referenced lives in
 
 - [x] **Lowercase declarative-prose name frames** (partial). 10
       declarative/encyclopedic frames added to the generator; the probe
-      shape is fixed at the weight level ("löfven har varit engagerad ..."
+      shape is fixed at the weight level ("provnamn har varit engagerad ..."
       tags PER) and gold-real forced-lowercase coverage moved 48 -> 50/58,
       but the FULL fix (>= 51) did not land: both v14 takes leak the same
       bare-lowercase-surname declarative core, and an LC_AUG 0.40 take
@@ -190,7 +212,7 @@ LC_AUG-0.40 take 2 is graded in the journal and not selected):
 3. [x] klintan leaks: cased <= 8.7%, lowercase <= 15.5%. **PASS: 7.0% /
    15.2%, cased is a release best.**
 4. [x] ADR eval stays a clean sweep. **PASS: 100.0 F1, 0 leaks, 0 flags.**
-5. [x] Standing CI gates. **PASS: curated 99.5 span F1, 1 leak (Klarna).**
+5. [x] Standing CI gates. **PASS: curated 99.5 span F1, 1 leak (Fiktivbolaget).**
 
 ### Explicitly NOT this round
 
@@ -217,9 +239,9 @@ cased leaks 7.0% (equal best), ADR a true 35/35 clean sweep with the
 `Festen` over-redaction FIXED, curated 0 leaks again, LinkedIn 0 leaks
 ("KTH" fixed). Documented costs, all ungated: klintan lowercase 14.2% (vs
 13.8; 30 new / 25 fixed, ordinary churn, not v17's famous-entity pattern),
-a second gold-real leak (sentence-initial bare "Löfven" in declarative
+a second gold-real leak (sentence-initial bare "Provnamn" in declarative
 prose, the standing residue in cased form, weighed explicitly in the
-publish decision), and the ALL-CAPS "RING LÖFVEN OMGÅENDE" spot probe
+publish decision), and the ALL-CAPS "RING PROVNAMN OMGÅENDE" spot probe
 regressed to missed. Numbers: [BENCHMARKS.md](BENCHMARKS.md); full round:
 the training journal.
 
@@ -248,7 +270,7 @@ candidate `student-v15-balanced2-onnx` (5-way dose: bare-PER / LOC / ORG /
 ADR / common-word negative, 240 each) delivers **G2 = 51/58** (the v11 level,
 retiring v14's documented exception), best-ever rare-surname masking (99.3% /
 2 leaks) WITH best-ever PER-typing (71.4%), the first zero-leak curated run
-(sentence-initial "Klarna" fixed after ten releases), and klintan-lowercase
+(sentence-initial "Fiktivbolaget" fixed after ten releases), and klintan-lowercase
 leaks at 13.8% (best ever). Its one documented exception: the ordinary word
 `Festen` is tagged PERSON in one ADR-corpus distractor sentence, a harmless
 over-redaction (0 leaks; every address metric stays a 100% clean sweep). A
@@ -262,8 +284,8 @@ exception needs a different idea; see the journal.
 - [x] **The G2 residue, shipped as a documented exception, has now had both
       isolated v15 levers tested and rejected** (gold-real
       forced-lowercase 50/58 vs the 51/58 bar; v11 had 51, v13 shipped 48).
-      The remaining leaks are 3x bare "löfven" in declarative shapes
-      ("löfven har varit engagerad i ...") plus rare LOC/ORG. v14
+      The remaining leaks are 3x bare "provnamn" in declarative shapes
+      ("provnamn har varit engagerad i ...") plus rare LOC/ORG. v14
       established two facts the next attempt must respect: full-name
       declarative frames fix the PROBE shape but do not transfer to bare
       surnames, and the residue is NOT augmentation-limited (take 2 at
@@ -275,8 +297,8 @@ exception needs a different idea; see the journal.
       declarative frames, behind a
       proper sweep: v12c poisoned via prepositional "till {bare}" shapes,
       and the sweep must show gold-real recall and curated precision hold --
-      tested at 240/20; it recovers one `Löfven` span but loses `Vita huset`
-      and `socialdemokraterna`, so G2 falls to 49/58 and precision also
+      tested at 240/20; it recovers one `Provnamn` span but loses `Provhuset`
+      and `fiktivpartiet`, so G2 falls to 49/58 and precision also
       regresses. Do not continue either one-sided PER lever.
 - [ ] **PER-typing of rare names in unseen frames**, still lagging: v14a
       types 66.3% on the rotated primary vs v13's 68.7% (masking, the
@@ -310,11 +332,11 @@ exception needs a different idea; see the journal.
 - [ ] **Test a cheap teacher-only dose screen before another full student
       run.** Pair each new bare-PER declarative positive with LOC and ORG
       positives in analogous syntax plus capitalized common-word negatives.
-      The goal is to preserve the local `Löfven` gain without shifting the
-      boundary away from `Vita huset`, organizations, or ordinary words such
+      The goal is to preserve the local `Provnamn` gain without shifting the
+      boundary away from `Provhuset`, organizations, or ordinary words such
       as `Festen`.
 - [ ] **Keep the experiment independent of the rulers.** Do not train exact
-      G2 names, `Festen`, `Klarna`, or strict-corpus sentences; use category
+      G2 names, `Festen`, `Fiktivbolaget`, or strict-corpus sentences; use category
       analogues and reserve new held-out frames before generation.
 - [ ] **Only distill a student if a small dose clears the teacher screen.**
       Require no loss on per-class validation F1 and no new false positives on
@@ -330,28 +352,30 @@ exception needs a different idea; see the journal.
       v18 density guard + news scrub recovered the class (14.2%, ordinary
       churn instead of systematic famous-entity leaks) while taking the
       encyclopedic-lowercase G2 to its best (53/58). The pseudo-pool lever
-      is now fully harvested: the pool yields ~15k entity rows and the
-      sample already takes them all. What remains is real annotated
-      support/chat text (see data section below).
+      is now a legacy result: public pseudo-labelled rows are not eligible for
+      the privacy-clean line. What remains is broader generator coverage,
+      checked against independently authored fictional evaluation and optional
+      partner-side aggregate validation.
 - [ ] **Bare-surname declaratives, now in CASED form too**: v18's
       accepted cost is a second gold-real leak, sentence-initial bare
-      "Löfven" in "Löfven är gift med ...". The lowercase variant is the
+      "Provnamn" in "Provnamn är gift med ...". The lowercase variant is the
       long-standing G2 residue; the cased surfacing is new. Both v15
       one-sided levers failed on this class and the balanced-replay
       dose-ratio game is played out (v5 teacher-screen reject), so the
-      next attempt needs a new idea (real declarative-register data, or a
-      targeted eval-far frame family swept against every precision gate).
+      next attempt needs a new privacy-clean idea (a targeted synthetic
+      category family swept against every precision gate, without copying
+      evaluation strings).
 - [ ] **Short brand names** (Voi, Northmill, Knowit): the one ORG subclass
       the v12-v14 gazetteer arc did not dent; a LENGTH problem. Candidate
       ideas unchanged: context weighting or a rules-layer assist in
       `@maskera/core`.
-- [ ] **The published known misses**: gold-real metonymic "Vita huset"
+- [ ] **The published known misses**: gold-real metonymic "Provhuset"
       (since v13) and, new in v18, gold-real sentence-initial bare
-      "Löfven" in declarative prose (the bare-surname residue in cased
+      "Provnamn" in declarative prose (the bare-surname residue in cased
       form; see the entry above). v15's "Festen" over-redaction is FIXED
-      by v18. The ALL-CAPS spot probe "RING LÖFVEN OMGÅENDE" regressed to
+      by v18. The ALL-CAPS spot probe "RING PROVNAMN OMGÅENDE" regressed to
       missed in v18 (v15 caught it; v11-v14 missed it; a journal spot
-      check, not part of a graded corpus). The curated "Klarna" classic
+      check, not part of a graded corpus). The curated "Fiktivbolaget" classic
       stays fixed (second zero-leak curated run in a row). Nothing here is
       gated; the graded entries are documented in BENCHMARKS.md's
       known-misses table.
@@ -364,66 +388,38 @@ exception needs a different idea; see the journal.
       "regionchef Syd", departments as ORG) is the negative-frame dose
       candidate list; full findings in training/README.md.
 - [x] **Swedish address robustness: RESOLVED at the pipeline level 2026-07-16**
-      (the v16 round). The five broken categories are now 14 gold sentences in
-      the ADR eval; shipped v15 passes 33/35 exact with 0 leaks (the v15 ADR
-      replay had fixed most of the sweep as a side effect), and a
-      reconstruct() house-number widening covers the one material residue
-      ("Anna Lindhs plats 1" leaving the number exposed). The v16
-      weight-level candidate hit every address target but taxed G1/G2 and
-      was HELD (journal); the generator categories stay for a future round
-      at a smaller share. Remaining cosmetic residue: ALL-CAPS "SANKT"
-      typed ORG in a split span (fully masked). Original sweep detail:
-      ROBUST already: directional/size prefixes (Östra/Gamla/Stora, both
-      casings), genitive person streets ("Olof Palmes gata 5", "Gustav
-      Adolfs torg 1"), letter/range numbers (7A, 12-14), c/o, lgh/tr
-      tails, most suffix families. BROKEN, by category:
-      (1) saint prefixes: bare "Sankt Göransgatan 153" fragments with the
-      number leaking, "S:t Eriksgatan 45" barely detects (the colon breaks
-      the word), "SANKT" leaks in ALL CAPS; zero Sankt/S:t stems in the
-      generator. Same colon class: "Karl XII:s gata 3".
-      (2) streets ending in a FREE word: "Lilla Torg 4", "Norr Mälarstrand
-      24", "kungsholms strand 12", "Anna Lindhs plats 1": street part read
-      as LOC/PER, house number leaks.
-      (3) rural/farm addresses: "Näsby Gård 2" detects NOTHING, "Berga 12,
-      Vreta Kloster" leaks the number, "Sörgården Ekeby 3" half-covers.
-      Entirely absent from training.
-      (4) abbreviations: "Storg. 5" total miss ("Sveav. 44" happens to
-      work), "Storgatan nr 5" leaks "nr 5".
-      (5) one suffix gap: "-kajen" ("Skeppsbrokajen 8" total miss).
-      Fix is data-side in the address builder (saint stems, free-word
-      endings, farm/village shapes, abbreviated stems, nr-form, -kajen)
-      plus a reconstruct() widening check for the colon forms (compare the
-      v7 possessive-s widening), and every category goes into the ADR eval
-      (corpus-adr.mjs) so it stays fixed. Note: several leaks are
-      number-only (street covered), but a bare house number next to a
-      masked street still narrows the address materially.
+      (the v16 round). Historical failures covered saint/colon prefixes,
+      free-word endings, rural/farm shapes, abbreviations, detached letters,
+      number ranges and the quay suffix family. Reconstruction widening fixed
+      the material house-number boundary; the weight-level candidate was held
+      for unrelated gate regressions. On 2026-08-06 every ordinary
+      street/number surface was removed from active training/eval and replaced
+      with explicit synthetic markers. Historical aggregates remain. Published
+      v19 was re-measured on the revised corpus on 2026-08-06:
+      100.0% label-agnostic span precision/recall/F1, 0/57 leaks, and all 35
+      addresses exact and labeled ADDRESS. One organisation is typed ADDRESS,
+      so labeled F1 is 96.5%.
 
 ### Unlocked but not started
 
-- [ ] **The ~15 MB student**: the v14 pseudo-label pool
-      (`training/.benchmark/pseudo-labeled.jsonl`, 400k double-labeled
-      rows; ~18k consumed by v14, ~22k by the shipped v18 round's
-      density-guarded 66k request, which already takes every entity row
-      the pool yields) was built as
-      its prerequisite. Still
-      waiting on a use case that demands the size (per "Explicitly NOT
-      this round", which stands).
+- [ ] **The ~15 MB student**: requires an architecture/quantization experiment
+      on the attested synthetic-only recipe. The old public-text pseudo-label
+      pool was deleted and is not an eligible prerequisite.
 
-## Next: data beyond v12 (the real lever)
+## Next: independent evaluation and generator coverage
 
-- [ ] **Larger independent gold set.** gold-real is ~22 sentences, and training
-      on the Swedish NER Corpus made its test split in-distribution, so a fresh
-      held-out set is needed just to measure honestly. Plan +
+- [ ] **Larger source-isolated synthetic gold set.** The old raw external set
+      was removed. Privacy-clean v19 also excludes Swedish NER
+      Corpus from task training, but a fresh independently authored fictional
+      target-register set is still needed to measure honestly. Plan +
       writer brief ready: [GOLD_SET_PLAN.md](GOLD_SET_PLAN.md),
       [GOLD_SET_STAGE2_PROMPTS.md](GOLD_SET_STAGE2_PROMPTS.md).
-- [ ] **Real target-domain data** (support / healthcare / legal): 300-500
-      annotated support/chat messages beats any public corpus from here. The
-      ingestion path is ready and validated
-      (`training/convert_domain_jsonl.mjs` + `training/audit_data.mjs`,
-      format in `training/domain-data.example.jsonl`); what is missing is the
-      text itself. Legal, GDPR-safe starting points: donated/invented
-      messages, public court rulings (Domstolsverket open data since 2025-03,
-      pre-anonymized so weak for PER), municipal records.
+- [ ] **Target-domain evaluation** (support / healthcare / legal): collect
+      300-500 independently authored, fully fictional annotated messages for
+      held-out evaluation, plus optional private aggregate-only partner runs.
+      Do not retain consented real messages or append eval rows to task
+      training. Error families may inspire generator templates, but exact
+      strings and identifiers must not be copied.
 - [ ] **A messier eval** to match: tickets, email, chat, OCR noise, lowercase,
       slang, misspellings, so the numbers reflect the target domain, not clean prose.
       Two domain corpora exist: `packages/ner/eval/corpus-linkedin.mjs`
@@ -432,10 +428,13 @@ exception needs a different idea; see the journal.
       demo's industry registers: HR, kundtjänst, vård, juridik, kommun,
       bank; v15 baseline 91.2 span F1 / 1 leak). Both graded via
       `CORPUS_FILE=`. Remaining: OCR noise and misspellings.
-- [ ] **Model-assisted annotation** to make the above affordable: pre-label with
-      the current model or an LLM, human-correct (5-10x faster than from scratch).
-      `training/convert_klintan.mjs` is the reusable CoNLL-to-BIO ingestion path.
-- [ ] **Design-partner data** under a DPA (pseudonymised) once a pilot exists.
+- [ ] **Model-assisted evaluation annotation** to make the above affordable:
+      pre-label with the current model or an LLM, then human-correct. Keep the
+      resulting corpus outside the training path.
+- [ ] **Design-partner evaluation** once a pilot exists. Run the fixed artifact
+      inside the partner's environment and export aggregate metrics only; do
+      not receive partner text, identifiers, predictions, missed values or
+      customer-specific facit, and never move them into model weights.
 
 ## Next: coverage & DX
 

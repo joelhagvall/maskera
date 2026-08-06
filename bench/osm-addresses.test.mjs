@@ -20,8 +20,8 @@ test("normalizeElements keeps usable address tags and drops ambiguous or malform
       id: 1,
       tags: { "addr:street": "  Södra   Vägen ", "addr:housenumber": "12B" },
     },
-    { type: "way", id: 2, tags: { "addr:street": "Storgatan", "addr:housenumber": "1;3" } },
-    { type: "node", id: 3, tags: { "addr:street": "Storgatan", "addr:housenumber": "A" } },
+    { type: "way", id: 2, tags: { "addr:street": "Testgatan", "addr:housenumber": "1;3" } },
+    { type: "node", id: 3, tags: { "addr:street": "Testgatan", "addr:housenumber": "A" } },
     { type: "node", id: 4, tags: { "addr:street": "<script>", "addr:housenumber": "4" } },
   ]
 
@@ -44,7 +44,7 @@ test("selection is deterministic, region-balanced and caps repeated streets", ()
         osmType: "node",
         osmId: `${region.id}-${index}`,
         region: region.name,
-        street: index <= 4 ? `${region.name} Storgatan` : `${region.name} Gata ${index}`,
+        street: index <= 4 ? `${region.name} Testgatan` : `${region.name} Testgata ${index}`,
         houseNumber: String(index),
       })
     }
@@ -55,7 +55,7 @@ test("selection is deterministic, region-balanced and caps repeated streets", ()
   assert.deepEqual(first, second)
   assert.equal(first.filter((address) => address.region === "A").length, 6)
   assert.equal(first.filter((address) => address.region === "B").length, 6)
-  assert.ok(first.filter((address) => address.street.endsWith("Storgatan")).length <= 4)
+  assert.ok(first.filter((address) => address.street.endsWith("Testgatan")).length <= 4)
 })
 
 test("salted selection can exclude every address from an earlier corpus", () => {
@@ -86,15 +86,15 @@ test("salted selection can exclude every address from an earlier corpus", () => 
 
 test("buildCorpus emits exact UTF-16 gold spans in varied chat casing", () => {
   const addresses = [
-    { osmType: "node", osmId: 1, region: "A", street: "Södra Vägen", houseNumber: "12B" },
-    { osmType: "node", osmId: 2, region: "B", street: "Ågatan", houseNumber: "4" },
-    { osmType: "way", osmId: 3, region: "B", street: "Björkvägen", houseNumber: "7A" },
+    { osmType: "node", osmId: 1, region: "A", street: "Södra Provdatavägen", houseNumber: "12B" },
+    { osmType: "node", osmId: 2, region: "B", street: "Testkorpusgatan", houseNumber: "4" },
+    { osmType: "way", osmId: 3, region: "B", street: "Maskerabjörkvägen", houseNumber: "7A" },
   ]
   const corpus = buildCorpus(addresses)
 
-  assert.equal(corpus[0].gold[0].value, "Södra Vägen 12B")
-  assert.equal(corpus[1].gold[0].value, "ågatan 4")
-  assert.equal(corpus[2].gold[0].value, "BJÖRKVÄGEN 7A")
+  assert.equal(corpus[0].gold[0].value, "Södra Provdatavägen 12B")
+  assert.equal(corpus[1].gold[0].value, "testkorpusgatan 4")
+  assert.equal(corpus[2].gold[0].value, "MASKERABJÖRKVÄGEN 7A")
   for (const doc of corpus) {
     const gold = doc.gold[0]
     assert.equal(doc.text.slice(gold.start, gold.end), gold.value)

@@ -58,7 +58,7 @@ export const corpus = [
     collected: "2026-07-10",
   },
   {
-    text: "jag flyttar till en ny lägenhet på storgatan 148 i solna, kan ni uppdatera",
+    text: "jag flyttar till en ny lägenhet på maskeragatan 148 i solna, kan ni uppdatera",
     entities: [{ value: "solna", label: "LOCATION" }],
     writer: "W1",
     register: "authority",

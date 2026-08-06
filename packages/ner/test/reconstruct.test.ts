@@ -282,14 +282,14 @@ describe("reconstruct", () => {
   })
 
   it("keeps the 'nr' inside an ADR span that ends with the house number", () => {
-    const text = "Hyresgästen på Storgatan nr 5 har sagt upp avtalet."
+    const text = "Hyresgästen på Testgatan nr 5 har sagt upp avtalet."
     const out = reconstruct(
       text,
-      [tok("B-ADR", "Storgatan", 3), tok("I-ADR", "nr", 4), tok("I-ADR", "5", 5)],
+      [tok("B-ADR", "Testgatan", 3), tok("I-ADR", "nr", 4), tok("I-ADR", "5", 5)],
       labelMap,
       0.5,
     )
-    expect(out).toEqual([{ start: 15, end: 29, value: "Storgatan nr 5", label: "ADR" }])
+    expect(out).toEqual([{ start: 15, end: 29, value: "Testgatan nr 5", label: "ADR" }])
   })
 
   it("keeps an entity that IS a label-like word intact (no separator, no trim)", () => {
@@ -299,28 +299,28 @@ describe("reconstruct", () => {
   })
 
   it("widens an ADR span that stopped before the house number", () => {
-    // "Anna Lindhs plats 1": the model tagged the street words but left the
+    // "Testby plats 1": the model tagged the street words but left the
     // house number outside the span, materially narrowing the address.
-    const text = "Konferensen hålls på Lindhs plats 1 imorgon."
+    const text = "Konferensen hålls på Testby plats 1 imorgon."
     const out = reconstruct(
       text,
-      [tok("B-ADR", "Lindhs", 4), tok("I-ADR", "plats", 5)],
+      [tok("B-ADR", "Testby", 4), tok("I-ADR", "plats", 5)],
       labelMap,
       0.5,
     )
-    expect(out).toEqual([{ start: 21, end: 35, value: "Lindhs plats 1", label: "ADR" }])
+    expect(out).toEqual([{ start: 21, end: 35, value: "Testby plats 1", label: "ADR" }])
   })
 
   it("widens across the 'nr' form and a detached letter", () => {
-    const text = "Returen går till Hamngatan nr 5 b enligt avtalet."
-    const out = reconstruct(text, [tok("B-ADR", "Hamngatan", 4)], labelMap, 0.5)
-    expect(out).toEqual([{ start: 17, end: 33, value: "Hamngatan nr 5 b", label: "ADR" }])
+    const text = "Returen går till Testgatan nr 5 b enligt avtalet."
+    const out = reconstruct(text, [tok("B-ADR", "Testgatan", 4)], labelMap, 0.5)
+    expect(out).toEqual([{ start: 17, end: 33, value: "Testgatan nr 5 b", label: "ADR" }])
   })
 
   it("does not widen an ADR span across ordinary following words", () => {
-    const text = "Vi ses på Storgatan klockan sex."
-    const out = reconstruct(text, [tok("B-ADR", "Storgatan", 3)], labelMap, 0.5)
-    expect(out).toEqual([{ start: 10, end: 19, value: "Storgatan", label: "ADR" }])
+    const text = "Vi ses på Testgatan klockan sex."
+    const out = reconstruct(text, [tok("B-ADR", "Testgatan", 3)], labelMap, 0.5)
+    expect(out).toEqual([{ start: 10, end: 19, value: "Testgatan", label: "ADR" }])
   })
 
   // locateGroup caps the whitespace it skips between two pieces of one

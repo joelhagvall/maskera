@@ -108,100 +108,36 @@ export function Transparency({ go }: { go: (view: View) => void }) {
           <h2 id="modelltraning">Hur modellen tränats</h2>
           <ul>
             <li>
-              <strong>Inga insamlade personuppgifter i träningen.</strong> Modellen tränades på
-              maskingenererade meningar plus sex publika, öppet licensierade korpusar (CC BY 4.0)
-              med redan publicerad text:
-              <ul>
-                <li>
-                  <a
-                    href="https://github.com/klintan/swedish-ner-corpus"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Swedish NER Corpus
-                  </a>{" "}
-                  (nyheter)
-                </li>
-                <li>
-                  <a
-                    href="https://huggingface.co/datasets/KBLab/sucx3_ner"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    SUCX 3.0
-                  </a>{" "}
-                  (blandade genrer, KBLab)
-                </li>
-                <li>
-                  <a
-                    href="https://huggingface.co/datasets/AmazonScience/massive"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    MASSIVE
-                  </a>{" "}
-                  (chattmeningar)
-                </li>
-                <li>
-                  <a
-                    href="https://spraakbanken.gu.se/resurser/sic2"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    SIC2
-                  </a>{" "}
-                  (bloggtext)
-                </li>
-                <li>
-                  <a
-                    href="https://huggingface.co/datasets/MultiCoNER/multiconer_v2"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    MultiCoNER v2
-                  </a>{" "}
-                  (uppslagstext)
-                </li>
-                <li>
-                  foruminlägg ur Språkbankens{" "}
-                  <a
-                    href="https://spraakbanken.gu.se/resurser/flashback"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Flashback
-                  </a>
-                  - och{" "}
-                  <a
-                    href="https://spraakbanken.gu.se/resurser/familjeliv"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Familjeliv
-                  </a>
-                  -korpusar
-                </li>
-              </ul>
-              <strong>Inga användardata, ingenting insamlat för det här projektet.</strong> Exakta
-              urval och andelar finns på{" "}
-              <a href={HF_MODEL} target="_blank" rel="noreferrer">
-                modellkortet
+              <strong>{copy.transparency.training.syntheticTitle}</strong>{" "}
+              {copy.transparency.training.syntheticBody}{" "}
+              <a
+                href={`${GITHUB}/blob/main/docs/TRAINING_DATA_PROTECTION.md`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {copy.transparency.training.policyCta}
               </a>
-              , och generatorn ligger öppen på GitHub.
-            </li>
-            <li>
-              <strong>Basmodell:</strong> KB-BERT från Kungliga biblioteket, fri att använda (CC0).
-              Jag har vidaretränat den för att hitta personuppgifter och sedan komprimerat den till
-              en mindre modell, som ligger öppet på{" "}
+              . {copy.transparency.training.attestationBody}{" "}
               <a href={HF_MODEL} target="_blank" rel="noreferrer">
-                Hugging Face
+                {copy.transparency.training.modelCardCta}
               </a>
               .
             </li>
             <li>
-              <strong>Hela kedjan går att göra om från grunden.</strong> Data, träning,
-              komprimering, export och utvärdering är skript som ligger öppet på GitHub. Inget är
-              gömt.
+              <strong>{copy.transparency.training.baseTitle}</strong>{" "}
+              {copy.transparency.training.baseBody}{" "}
+              <a
+                href="https://huggingface.co/KBLab/bert-base-swedish-cased"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {copy.transparency.training.baseCta}
+              </a>
+              . {copy.transparency.training.baseBoundary}
+            </li>
+            <li>
+              <strong>{copy.transparency.training.reproTitle}</strong>{" "}
+              {copy.transparency.training.reproBody}
             </li>
           </ul>
 

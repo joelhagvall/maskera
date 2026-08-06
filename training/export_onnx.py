@@ -11,7 +11,10 @@ Produces a Transformers.js-compatible layout so it can drop into @maskera/ner:
 """
 import os
 import shutil
+import subprocess
 import sys
+import json
+from pathlib import Path
 
 import torch
 from optimum.onnxruntime import ORTModelForTokenClassification, ORTQuantizer
@@ -21,6 +24,15 @@ from transformers import AutoTokenizer, pipeline
 SRC = sys.argv[1] if len(sys.argv) > 1 else "model"
 OUT = sys.argv[2] if len(sys.argv) > 2 else "onnx-model"
 print(f"== exporting {SRC} -> {OUT} ==")
+
+attestation_path = Path(SRC) / "privacy-attestation.json"
+if not attestation_path.is_file():
+    sys.exit(f"{SRC} has no privacy-attestation.json; refusing to export a legacy model")
+subprocess.run(["node", "verify_attestation.mjs", str(attestation_path)], check=True)
+with attestation_path.open(encoding="utf-8") as handle:
+    attestation = json.load(handle)
+if attestation.get("dataPolicy") != "synthetic-task-data-only":
+    sys.exit(f"{SRC} does not carry the synthetic-only training policy")
 
 
 def mb(path):
@@ -32,6 +44,7 @@ print("== exporting to ONNX ==")
 ort_model = ORTModelForTokenClassification.from_pretrained(SRC, export=True)
 ort_model.save_pretrained(OUT)
 AutoTokenizer.from_pretrained(SRC).save_pretrained(OUT)
+shutil.copy2(attestation_path, Path(OUT) / "privacy-attestation.json")
 
 # 2. Dynamic int8 quantization (no calibration data needed)
 print("== quantizing (int8 dynamic) ==")
@@ -61,11 +74,13 @@ q_model = ORTModelForTokenClassification.from_pretrained(OUT, file_name="model_q
 tok = AutoTokenizer.from_pretrained(OUT)
 nlp = pipeline("token-classification", model=q_model, tokenizer=tok,
                aggregation_strategy="simple", device=device)
+probe_counts = {}
 for s in [
-    "Min granne Lars Nordström bor på Kungsholmen och jobbar på Spotify i Stockholm.",
-    "Kontakta Thorbjörn Fägerquist på Bromma innan fredag.",
-    "Wei Zhang börjar på Northvolt i Skellefteå.",
+    "I provdata bor Alva Provnamn i Provbyn och arbetar på Fiktiv Data AB.",
+    "Kontakta testpersonen Thorbjörn Testnamn i Testköping innan fredag.",
+    "Wei Exempelnamn börjar på Syntet Teknik AB i Fiktivstad.",
 ]:
-    print("\n>", s)
     for e in nlp(s):
-        print(f"   {e['entity_group']:4} {e['word']!r:28} {e['score']:.2f}")
+        label = e["entity_group"]
+        probe_counts[label] = probe_counts.get(label, 0) + 1
+print("synthetic quality-probe detections:", dict(sorted(probe_counts.items())))

@@ -66,9 +66,9 @@ breaking change. `restore()` is sync (string replacement over a local map).
 ```ts
 const session = guard.session()
 
-const m1 = await session.protect("Hej, Anna Lindqvist här igen")
-const m2 = await session.protect("Anna vill ändra sin adress")
-// both messages: "Anna Lindqvist" -> [NAMN_1], and the bare "Anna" in m2
+const m1 = await session.protect("Hej, Provnamn Maskera här igen")
+const m2 = await session.protect("Provnamn vill ändra sin adress")
+// both messages: "Provnamn Maskera" -> [NAMN_1], and bare "Provnamn" in m2
 // maps to the same [NAMN_1] because the session remembers values it has
 // seen (exact match first, then case-insensitive prefix/subset match for
 // name parts).
@@ -83,7 +83,7 @@ Design decisions:
 - The session keeps a value-to-placeholder index so repeated entities get
   repeated placeholders. This is what "stabil pseudonymisering över en hel
   konversation" means concretely, and no competitor's local tier does it.
-- The subset-matching rule (bare "Anna" after "Anna Lindqvist") ships behind
+- The subset-matching rule (bare "Provnamn" after "Provnamn Maskera") ships behind
   `sessionMatching: "strict" | "names"` (default `"names"`) because it is a
   heuristic and must be switch-off-able.
 - `session.map` is plain JSON on purpose: the caller decides where it lives

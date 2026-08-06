@@ -1,5 +1,14 @@
 # @maskera/core
 
+## 0.7.3
+
+### Patch Changes
+
+- Harden structured-identifier redaction and replace the default Swedish NER
+  weights with the attested v19 artifact trained on generator-produced task data.
+  The release documents the separate KB-BERT pretraining boundary and keeps
+  customer and partner text outside the training pipeline.
+
 ## 0.7.2
 
 ### Patch Changes
@@ -161,7 +170,7 @@
 
 ### Patch Changes
 
-- The postnummer detector now requires context for the compact five-digit form (a following capitalized word as in "85231 Sundsvall", or an SE- prefix). The spaced "NNN NN" form matches as before. This stops over-masking of case numbers, order numbers, and prices ("Ärende 48213" was previously masked as a postal code).
+- The postnummer detector now requires context for the compact five-digit form (a following capitalized word as in "12345 Staden", or an SE- prefix). The spaced "NNN NN" form matches as before. This stops over-masking of case numbers, order numbers, and prices ("Ärende TEST-48213" was previously masked as a postal code).
 - The url detector no longer swallows trailing sentence punctuation into the redacted value: "se www.foretaget.se." now masks `www.foretaget.se` and keeps the full stop in the text. Previously the stored value was the wrong URL (`...se.`) and the masked text lost its punctuation. Dots, commas and question marks inside a path or query string still match as before.
 - The url detector now catches scheme-less www addresses (`www.foretaget.se`), common in email signatures where the domain would otherwise leak the organization. Bare domains without `https://` or `www.` are still not guessed.
 
@@ -220,7 +229,7 @@
 
 ### Patch Changes
 
-- 42577d2: Three detector fixes found by stress-testing with real user input: the `EMAIL` regex now matches addresses with å/ä/ö ("åsa.öberg@example.com" was previously split and partially leaked), the `PHONE` regex no longer starts matching inside a longer digit run ("kundnummer 100200-3000" fired a false phone match), and the `ADRESS` heuristic covers all-caps and all-lowercase addresses ("PÅHITTSGATAN 12", "påhittsvägen 21") so the house number is no longer left exposed when the NER model only catches the street name.
+- 42577d2: Three detector fixes found by stress-testing with real user input: the `EMAIL` regex now matches addresses with å/ä/ö ("åsa.öberg@example.com" was previously split and partially leaked), the `PHONE` regex no longer starts matching inside a longer digit run ("kundnummer TEST-100200-3000" fired a false phone match), and the `ADRESS` heuristic covers all-caps and all-lowercase addresses ("PÅHITTSGATAN 12", "påhittsvägen 21") so the house number is no longer left exposed when the NER model only catches the street name.
 
 ## 0.2.1
 

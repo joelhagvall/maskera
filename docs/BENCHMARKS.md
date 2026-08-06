@@ -5,26 +5,69 @@ Other documents link here and some carry dated summary snapshots or copied
 tables. If a number elsewhere disagrees with this file, this file wins and the
 other document has drifted.
 
-- **Measured:** 2026-07-19
+- **Published:** 2026-08-06
 - **Artifact:** [`joelhagvall/maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner),
   `onnx/model_q4.onnx` (`dtype: "q4"`, the default and what the demo ships),
-  sha256 `110442cc1143e0543f41a5b111c22af34b0bba9d5c30758b4824d9aa114ac5f4`
-  (**new weights: the v18 density-guard round**, see
-  [training/README.md](../training/README.md); 42,705,681 bytes, same size
-  and architecture as v13-v15. First release whose publish battery passes
-  all five gates with **no documented gate exception**: forced-lowercase
-  coverage 53/58 (best measured), rare-surname PER-typing 78.2% (best
-  measured), and the v15 "Festen" over-redaction is gone. The known-miss
-  table gains one entry in exchange: a second gold-real leak,
-  sentence-initial bare "Löfven" in declarative prose; see
-  [Known misses](#known-misses-published-on-purpose))
+  sha256 `6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66`,
+  Hub revision `7ecd7a531c989d09ffb3d9ecf4168696786a204e`, 42,705,681 bytes.
+  This is the attested privacy-clean v19 release; see
+  [training/README.md](../training/README.md).
 - **Pipeline:** the shipped `maskera` path (model + `reconstruct()`
-  post-processing), measured on `maskera@0.6.4` (whose `reconstruct()`
-  code is 0.6.3's, verified unchanged; 0.6.4 was a docs-only README
-  patch), graded by
+  post-processing), graded by
   [`packages/ner/eval/run-eval.mjs`](../packages/ner/eval/run-eval.mjs)
 - **Matching:** exact character span. This is the strict harness CI gates on;
   see [method notes](#method-notes) for why older overlap-based numbers read higher.
+
+> **Comparison boundary:** the dated public-model comparison tables below still
+> describe historical v18 and must not be attributed to v19. Published v19 has
+> its own release snapshot immediately below. Raw external eval copies and the
+> earlier real-looking address surfaces remain excluded from the checkout.
+> Those historical comparison rows used `maskera@0.6.4`; the current v19 npm
+> release is versioned separately and does not relabel them.
+
+## Published privacy-clean v19 release
+
+- **Measured:** 2026-08-06.
+- **Artifact:** `student-v19-privacy-precision2-onnx`, published as Hub revision
+  `7ecd7a531c989d09ffb3d9ecf4168696786a204e`; q4,
+  42,705,681 bytes, evaluated through the current packaged reconstruction and
+  default whole-word precision guard.
+- **Release state:** every defined gate passes; the Hub, npm source pin and demo
+  checksum map all target this exact artifact.
+
+| synthetic release set | precision | recall | span F1 | labeled F1 | leaks |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| curated, 149 documents / 205 entities | 95.3% | 98.5% | 96.9% | 95.9% | 1/205 (0.5%) |
+| synthetic ADR, 41 documents / 57 entities | 100.0% | 100.0% | **100.0%** | 96.5% | **0/57 (0.0%)** |
+| LinkedIn-style, 32 documents / 53 entities | 74.6% | 88.7% | 81.0% | 77.6% | **0/53 (0.0%)** |
+
+The synthetic ADR set contains 35 marked street-address spans. All 35 are
+found, labeled ADDRESS, and matched exactly, including the house number. One
+gold organisation is covered at the exact span but typed ADDRESS, so
+ADDRESS-only precision is 35/36 (97.2%) and whole-corpus labeled F1 is 96.5%
+even though label-agnostic span precision, recall and F1 are all 100.0%. The
+curated miss is one broad public geographic region, not a person, contact,
+identifier, or street address.
+
+Two additional aggregate gates also pass:
+
+| gate | v19 result | release floor |
+| --- | ---: | ---: |
+| synthetic gold, type F1 | 92.89% | 90.0% |
+| synthetic gold, type recall | 94.07% | 92.0% |
+| synthetic gold, masked recall | 98.31% | 97.0% |
+| decomposing rare surnames, masked recall | 96.94% (285/294; 9 leaks) | >94.9% |
+| decomposing rare surnames, PER-typed recall | 82.65% | reported, not gated |
+
+This release fixes the initial privacy-clean run's over-masking on the ADR
+set. The clean sweep is a pipeline result: before the current narrow runtime
+precision guard, the same q4 weights scored 98.3% span F1 there. The guard
+drops only configured whole-word surfaces; multi-word entities containing the
+same words are unaffected. v19 does not improve every aggregate:
+rare-surname masked recall is lower than the initial privacy-clean attempt but
+still clears its historical safety floor. Treat the figures as release
+gates on synthetic or author-coupled data, not as an independent universal
+quality claim.
 
 ## Curated corpus (upper bound, regression tracker)
 
@@ -44,7 +87,7 @@ so read it as an **upper bound and regression tracker**, not a universal score.
 | leaks      | 0.0%  | entities missed entirely, 0 of 205 (the safety number) |
 
 Second consecutive zero-leak release on this corpus (v15 fixed the
-sentence-initial "Klarna" classic; v18 keeps the sweep on the extended
+sentence-initial "Fiktivbolaget" classic; v18 keeps the sweep on the extended
 149-sentence set including the org.nr gate).
 
 Reproduce (downloads the published model from the Hub):
@@ -57,9 +100,11 @@ MASKERA_REMOTE=1 node packages/ner/eval/run-eval.mjs
 ## Independent gold set (honest floor)
 
 22 verbatim sentences of real Swedish Wikipedia prose, 58 entities, written by
-others and held out from all training data. Small, and encyclopedic rather
-than the support/healthcare/legal text maskera targets, so read it as a
-**directional independent floor**.
+others and excluded from Maskera's task training and vocabulary selection.
+Small, and encyclopedic rather than the support/healthcare/legal text maskera
+targets, so read it as a **directional independent floor**. As with any
+pretrained base model, this does not prove that related text was absent from
+KB-BERT's earlier third-party pretraining corpus.
 
 | metric     | score | meaning                                        |
 | ---------- | ----- | ---------------------------------------------- |
@@ -73,21 +118,16 @@ Up 0.8 exact-span F1 from the previous artifact (93.9) with precision up
 1.7pp at the same recall, and forced-lowercase coverage is UP again
 (51/58 -> **53/58**, the best measured). The honest cost, weighed
 explicitly in the publish decision: leaks went 1 -> 2 of 58. The standing
-metonymic "Vita huset" miss is joined by sentence-initial bare "Löfven"
-in one declarative-prose sentence (the surrounding "Ulla Löfven" is
-caught): the documented bare-surname declarative residue, now surfacing
+metonymic-location miss is joined by a sentence-initial bare surname in one
+declarative-prose sentence (the adjacent full-name form is caught): the
+documented bare-surname declarative residue, now surfacing
 once in cased form. The designed 294-sentence rare-surname gate built to
 measure exactly this class reads its best value ever (99.3% masked, 2
 leaks); see [Known misses](#known-misses-published-on-purpose).
 
-Reproduce:
-
-```bash
-pnpm install && pnpm build
-node packages/ner/eval/convert-gold-real.mjs        # prints the corpus path
-CORPUS_FILE=<printed path> MASKERA_REMOTE=1 MASKERA_F1_FLOOR=0 MASKERA_LEAK_CEIL=1 \
-  node packages/ner/eval/run-eval.mjs
-```
+The raw 22-sentence copy was intentionally removed from this checkout on
+2026-08-06. These v18 aggregates remain for historical transparency; they are
+not a dependency of the privacy-clean build or release runner.
 
 ## Address (ADR) eval (the one class the other sets miss)
 
@@ -100,13 +140,11 @@ So `ADR` was the one shipped class with no independent number. This set closes
 that gap. 41 sentences, 35 street-address spans, authored for this eval and
 held out of training (the original 21-address set plus the v16 round's 14
 harder categories: saint/S:t prefixes, free-word endings, farm/rural shapes,
-abbreviations, -kajen); street names were picked to **avoid** the training
-generator's stem list (real streets like Sveavägen, Hornsgatan, Renstiernas
-gata), so the surface forms are out-of-distribution, not memorised. It shares
-our annotation style, so read it like the curated corpus, not like the
-independent Wikipedia set. Distractor sentences (a bare house number, a PO
-box, a postcode, a phone number) measure whether the model over-flags
-addresses.
+abbreviations, -kajen). These are the historical v18 results. On 2026-08-06
+the corpus's ordinary street/number surfaces were replaced by explicit
+synthetic markers so no example can accidentally resolve to a real property.
+That revision is not directly comparable and the table below must not be
+relabelled as a result on the replacement corpus.
 
 | metric | score | meaning |
 | ------ | ----- | ------- |
@@ -134,7 +172,7 @@ CORPUS_FILE="./corpus-adr.mjs" MASKERA_MODEL=joelhagvall/maskera-sv-ner \
 
 With a local copy of the model (e.g. the demo's gitignored
 `apps/demo/public/models/`), point at it instead:
-`MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v18`.
+`MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v19`.
 
 ## Public-term retention (over-redaction on PII-free text)
 
@@ -179,12 +217,10 @@ MASKERA_REMOTE=1 node packages/ner/eval/benchmark-retention.mjs
 2453 sentences, 1280 PER/LOC/ORG entities, from the public Swedish NER Corpus
 (klintan / Webbnyheter 2012) **test** split. Authored and labeled by others, so
 it is not anchored to our own annotation style, and the sentences are held out
-(disjoint from training). **But** the shipped model trained on this corpus's
-**train** split (see [What the model was trained on](#what-the-model-was-trained-on)),
-so test and train share source, domain, register and annotation guidelines. Read
-this as a **large in-distribution held-out** number: honest about memorisation
-(the exact sentences were never seen) but *not* a clean independent or
-out-of-domain measure. It is the most reliable per-type breakdown we have.
+(disjoint from training). The published v18 model did train on this corpus's
+train split, so test and train share source, domain, register and annotation
+guidelines. Read this as a large in-distribution held-out number, not a clean
+independent or out-of-domain measure.
 
 | metric     | score | meaning                                        |
 | ---------- | ----- | ---------------------------------------------- |
@@ -252,8 +288,8 @@ and LOCATION recall are both up; lowercase ORG carries the churn.
 22-sentence independent gold set forced lowercase (encyclopedic prose, 58
 entities), the shipped artifact now covers **53 of 58** (redaction recall
 0.91), the best measured: 48 (v13) -> 50 (v14) -> 51 (v15) -> 53. The
-remaining five misses are three bare lowercase "löfven" declaratives plus
-the standing "vita huset" / "usa" metonym sentence.
+remaining five misses are three bare lowercase "provnamn" declaratives plus
+the standing "provhuset" / "usa" metonym sentence.
 
 ### Homograph first names (the sharpest lowercase hole, measured 2026-07-21)
 
@@ -540,35 +576,28 @@ MASKERA_REMOTE=1 node packages/ner/eval/bench-latency.mjs
 # The demo's model dir is gitignored; fetch the published model into it first:
 hf download joelhagvall/maskera-sv-ner config.json tokenizer.json tokenizer_config.json \
   special_tokens_map.json vocab.txt onnx/model_q4.onnx \
-  --local-dir apps/demo/public/models/maskera-sv-ner-v18
+  --local-dir apps/demo/public/models/maskera-sv-ner-v19
 BENCH=1 pnpm --filter demo build
 npm --prefix /tmp/bench install puppeteer-core
 cd apps/demo && NODE_PATH=/tmp/bench/node_modules node scripts/bench-browser.mjs
 DEVICE=webgpu NODE_PATH=/tmp/bench/node_modules node scripts/bench-browser.mjs
 ```
 
-## Known misses (published, on purpose)
+## Known misses (aggregate categories)
 
-The sentences the published artifact is known to get wrong, graded honestly
-in the tables above. Publishing them is part of the trust model: the eval
-harness prints every leak verbatim, nothing is filtered. Provenance:
-hand-authored test cases plus verbatim, already-published Wikipedia prose
-about public figures. No user data and no real private persons appear here.
+The raw external sentences and entity values were removed from this checkout
+on 2026-08-06. The dated v18 aggregate retains two genuine miss categories:
 
-| Corpus | Input | Expected | Status |
-| ------ | ----- | -------- | ------ |
-| gold-real | "Den 6 mars 2018 besökte Löfven Vita huset och hade sitt första officiella möte med …" | `Vita huset` LOCATION | known miss (metonymic building-as-institution; `Löfven` and the rest are caught) |
-| gold-real | "Löfven är gift med kyrkopolitikern (S) Ulla Löfven sedan 2003." | bare `Löfven` PERSON | known miss, new in v18 (sentence-initial bare surname in declarative prose; `Ulla Löfven` is caught). The documented bare-surname declarative residue in cased form; weighed explicitly in the publish decision against the release-best rare-surname gate (99.3% masked, the 294-sentence eval built for this class) |
+| Category | Type | Status |
+| -------- | ---- | ------ |
+| metonymic building used as an institution name | LOCATION | one complete miss |
+| sentence-initial bare surname in declarative prose | PERSON | one complete miss; adjacent full-name form covered |
 
-Metonymic `Vita huset` regressed into the table in v13 and stays. The v15
-`Festen` over-redaction (an ordinary word tagged PERSON in one ADR
-distractor) is FIXED in v18, removing that release's documented exception.
-One ungated journal spot probe regressed alongside: ALL CAPS "RING LÖFVEN
-OMGÅENDE" is missed again (v15 caught it; v11-v14 missed it too).
-Historical fixes: bare `Löfven` in chat frames and ALL CAPS "RING LARS
-NORDSTRÖM" (v13); sentence-initial `Klarna`, the curated classic since v5,
-and the lowercase-encyclopedic below-bar gate carried by v14, both fixed
-by v15's balanced replay.
+The first category regressed in v13 and remained in v18. The second was new in
+v18 and was weighed against the 294-sentence rare-surname aggregate, which
+measured 99.3% masked. The earlier ordinary-word ADR-corpus over-redaction was
+fixed in v18. Historical raw spot-probe strings are intentionally not repeated
+here; the training journal retains category-level lessons and aggregate scores.
 
 ## Metric definitions
 
@@ -593,41 +622,26 @@ Two things make numbers in older documents read higher than this file:
    against raw teacher output. That guard is why the 43 MB student can read
    higher than the 440 MB teacher in those tables.
 
-## What the model was trained on
+## Published task-data history
 
-- ~25k synthetic template-generated Swedish sentences (generator in the repo,
-  no real personal data; from v13 the distillation also trains the student on
-  the trimmed inference vocabulary's subword decompositions with continuation
-  labels, so rare names that decompose after vocabulary trimming are learned
-  rather than lucked into; from v15 this includes a 1,200-row balanced
-  class-replay dose: sentence-initial bare-surname declarative positives
-  paired one-for-one with LOC and ORG positives and capitalised common-word
-  negatives in the same syntax), plus six public, openly licensed real corpora
-  (all CC BY 4.0; nothing was scraped or collected for this project, and no
-  user data is involved):
-- the **Swedish NER Corpus** train split, ~8.6k real news sentences (incl.
-  lowercase augmentation duplicates). Consequence: its **test** split is
-  in-distribution and is not usable as an independent benchmark.
-- a 25% sample of **SUCX 3.0 NER** (KBLab, scrambled-sentence SUC 3.0), ~14.6k
-  gold sentences across balanced 1990s genres, the same data behind KBLab's
-  case-robust lowermix model.
-- **MASSIVE sv-SE** (Amazon), ~4.9k professionally localized lowercase
-  chat-register utterances (its test split is untouched).
-- **SIC2** (Språkbanken), ~1k manually annotated informal blog sentences.
-- a class-audited 50% sample of **MultiCoNER v2 sv** (SemEval-2023), ~4.9k
-  all-lowercase wiki sentences; org-name-polluted classes dropped wholesale
-  (see `training/convert_multiconer.mjs`).
-- from v14: a register-targeted sample of **Flashback / Familjeliv** forum
-  sentences (Språkbanken exports), pseudo-labeled by a two-model ensemble
-  with a measured confidence/agreement policy and hard filters (rows
-  containing gate-eval surnames dropped; see `training/convert_pseudo.mjs`
-  and the training journal). From v18 the sample is ~19.7k train rows,
-  density-guarded (empty rows capped at 30% of the actual sample, so an
-  exhausted entity pool cannot be padded with entity-free rows) and
-  news-register-scrubbed (rows where a famous lowercase entity appears
-  untagged are dropped as label poison). Pseudo-labels, not gold: they
-  amplify the informal register, and every number in this file is still
-  measured on human-labeled sets.
+- Synthetic template-generated Swedish plus six openly licensed public source
+  families: Swedish NER Corpus, SUCX 3.0 NER, MASSIVE sv-SE, SIC2,
+  MultiCoNER v2 sv, and pseudo-labelled Flashback/Familjeliv forum samples.
+  The exact historical recipe is preserved in `training/README.md` and the v18
+  model card. No customer data was used.
+
+Published privacy-clean v19 instead uses 64,000 generated rows
+and 4,760 disjoint validation rows, including 2,800/560 all-`O` hard-negative
+rows. It rejects structured identifiers and ordinary street/number pairs and
+carries exact data/code hashes in `privacy-attestation.json`. The train SHA-256
+is `5c6ad83e7b4e3b200d18dca49cd6603482c1d53e330de28ac095ef4e043786e3`,
+the validation SHA-256 is
+`b7b4a3886ab31218ed368ba8e20fbe2446cffe100b54c0115ef2286ee50faf1a`,
+and the generator SHA-256 is
+`6b800e1748245a4296626d582585f9814c7a6bd383f87b3e3f290f231585eff5`.
+It is the artifact measured in the v19 release section above; the dated public
+comparison tables remain historical v18 evidence. See
+[`TRAINING_DATA_PROTECTION.md`](TRAINING_DATA_PROTECTION.md).
 
 ## Continuous gates
 
@@ -639,18 +653,17 @@ Two things make numbers in older documents read higher than this file:
 
 ## Known gaps
 
-- The largest held-out number (span F1 91.9% on the 2453-sentence Swedish NER
-  Corpus test split) is **in-distribution**: the model trained on that corpus's
-  train split. It confirms the model generalises to unseen sentences of the
-  training distribution, but it is not clean independence.
-- The only **clean independent** set (different distribution, held out from all
-  training) is the 22-sentence Wikipedia set: enough for a direction, not a
-  grade. A larger clean-independent gold set is the top measurement TODO; the
-  staged plan to build one is in [GOLD_SET_PLAN.md](GOLD_SET_PLAN.md).
-- No eval set covers the actual target domain (support / healthcare / legal
-  text); the true target-domain number is unknown until real annotated text
-  from those domains exists. That is exactly what GOLD_SET_PLAN.md stage 2
-  (donated support/chat text) is designed to produce.
+- The 2453-sentence Swedish NER Corpus test split is the largest held-out v18
+  measure, but it is in-distribution because v18 trained on that corpus's train
+  split.
+- The 22-sentence Wikipedia set adds a different distribution and was held out
+  of v18 task training, but it is enough for a direction, not a grade. It also
+  cannot prove example-level independence from KB-BERT pretraining. Its local
+  raw copy has been removed.
+- No eval set fully covers the actual target domain (support / healthcare /
+  legal text); the true target-domain number remains uncertain until the
+  independently authored fictional stage-2 set is larger and partner-side
+  aggregate validation exists. No real or donated message enters the corpus.
 - **ORG recall is the biggest quality gap** (75.1% cased / 60.1% lowercased on
   the 2453-sentence set, down ~2pp from the v15 release bests). Multiword
   authorities and the municipal suffix families are fixed at the weight level
@@ -658,15 +671,16 @@ Two things make numbers in older documents read higher than this file:
   Northmill, Knowit), a length problem that needs its own idea (see
   [ROADMAP.md](ROADMAP.md)).
 - **Lowercase still trails cased text** (leak rate 14.2% vs 7.0%; the
-  four-release improvement streak paused, the churn is documented above);
-  real annotated support/chat text remains the lever that closes it.
+  four-release improvement streak paused, the churn is documented above).
+  The privacy-clean levers are broader generated register coverage and
+  independently authored fictional evaluation, not retained customer text.
 - **Lowercase given names that are also ordinary words leak 25.6%** vs 1.4%
   for names with no word sense (`dag`, `bror`, `bo`, `liv`, `juni`, `lova`;
   measured 2026-07-21, table above). Precision on the word sense is perfect
   today (0/31), so the fix is training data carrying both roles of each word,
   not a gazetteer. Nothing ships against this yet.
 - **This release's accepted cost is a second gold-real leak**:
-  sentence-initial bare "Löfven" in one declarative-prose sentence (2 of
+  sentence-initial bare "Provnamn" in one declarative-prose sentence (2 of
   58 leak there now, see [Known misses](#known-misses-published-on-purpose)).
   It is the documented bare-surname declarative residue in cased form, on
   the eval axis the 294-sentence rare-surname gate was built to measure at

@@ -2,8 +2,8 @@
 
 > Send this file (or just the parts below the line) to each of the 3-5 writers.
 > It implements stage 2 of [GOLD_SET_PLAN.md](GOLD_SET_PLAN.md): a
-> support/chat-register independent gold set, written by others, with invented
-> but realistic personal data. **Do not** show writers the training-data
+> source-isolated support/chat set, written by others, with wholly fictional
+> entity combinations. **Do not** show writers the training-data
 > generator's templates or `corpus.mjs`, only the scenario prompts below. That
 > is what keeps the set independent.
 
@@ -12,9 +12,8 @@
 Our biggest measurement gap: every large number we have is either our own
 writing style (curated corpus) or the news domain the model trained on (Swedish
 NER Corpus). We have **no** independent number for the register that matters
-most in production: real people typing support/chat messages, lowercase, with
-typos, in the first person. This set fills that, legally, because the PII is
-invented, not scraped.
+most in production: lowercase support/chat style with typos and first-person
+phrasing. This set fills that without retaining real messages or sourced PII.
 
 ## After collection (maintainer steps)
 
@@ -25,13 +24,17 @@ invented, not scraped.
 3. Grade with the existing harness, no code change:
    ```bash
    CORPUS_FILE="./corpus-stage2.mjs" \
-   MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v18 \
+   MASKERA_MODEL_PATH="$PWD/training" \
+   MASKERA_MODEL=student-v19-privacy-precision2-onnx \
    MASKERA_F1_FLOOR=0 MASKERA_LEAK_CEIL=1 \
    node packages/ner/eval/run-eval.mjs
    ```
+   Record the exact artifact and its attestation hash with the result; do not
+   silently switch model versions during a frozen evaluation.
 4. Report it as its own register row in `docs/BENCHMARKS.md` (never blended
    into one average, per the plan), and once ~200 sentences exist across
-   writers, retire the 22-sentence Wikipedia set into it.
+   writers, keep it as the new source-isolated synthetic benchmark. Do not
+   reconstruct or merge the removed Wikipedia raw set.
 
 ---
 
@@ -46,7 +49,7 @@ realistiska meddelanden** från dig.
 Skriv som en riktig person skriver i en chatt, ett supportmejl eller en
 SMS-konversation. Alltså:
 
-- **Gemener och slarv är bra.** Skriv "hej jag heter anna" hellre än perfekt
+- **Gemener och slarv är bra.** Skriv "hej jag heter provnamn" hellre än perfekt
   svenska. Hoppa över kommatecken. Gör naturliga stavfel. Det är precis den
   sortens text vi vill mäta på.
 - **Första person, vardagligt.** "hörru kan du kolla mitt ärende", inte
@@ -65,8 +68,9 @@ verklig persons uppgifter, inte din egen, inte en kändis, ingen du känner.
 - **Gator:** använd tydligt påhittade gatunamn och påhittade nummer
   (t.ex. "Påhittsgatan 148" eller "Maskeravägen 7"). Orter och stadsdelar
   får vara riktiga.
-- **Företag/organisationer:** blanda kända (ICA, Klarna, Skatteverket) med
-  påhittade ("Nordvik Bygg AB").
+- **Företag/organisationer:** använd bara tydligt påhittade namn, gärna med en
+  markör som "Provdata", "Fiktiv" eller "Testbolaget". Nämn inte verkliga
+  företag, myndigheter, skolor eller vårdgivare.
 - **Strukturerade identifierare:** skriv inte personnummer, telefonnummer,
   kontonummer eller andra identifierare som kan råka vara giltiga. Det här
   setet mäter fritextentiteter. Om ett scenario behöver ett sådant värde
@@ -81,7 +85,8 @@ att täcka flera olika, inte 30 varianter av samma.
 **Support och kundtjänst**
 1. Du klagar argt på en försenad leverans och uppger namn och adress.
 2. Du vill boka om en tid och nämner en handläggare vid namn.
-3. Du har inte fått din faktura och undrar varför, nämner ditt ärendenummer.
+3. Du har inte fått din faktura och undrar varför; använd bara en markerad
+   referens som `TEST-ÄRENDE-001`, aldrig en ensam sifferföljd.
 4. Du byter adress och ber dem uppdatera dina uppgifter.
 5. Du frågar en namngiven person på supporten om ditt gamla ärende.
 

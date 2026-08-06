@@ -9,7 +9,7 @@
 Two layers, one import. Deterministic rule detectors handle *structured* PII
 (personnummer, org-nr, IBAN, card, phone, ...), and a small Swedish
 token-classification model handles the part regex can't do: **free-text names,
-places, organisations and street addresses** ("min granne Lars på våning 4").
+places, organisations and street addresses** ("min granne Provnamn på våning 4").
 Everything runs **client-side** via Transformers.js (WASM/WebGPU in the
 browser, native ONNX in Node).
 
@@ -46,13 +46,13 @@ await recognizer.ready
 // Hybrid: rule detectors + NER, merged through core's placeholder engine.
 // Rules win on overlap: structured PII is deterministic and authoritative.
 const result = await redactWithNer(
-  "Min granne Lars bor på Kungsholmen, personnummer 19900101-2385.",
+  "Min granne Provnamn bor i Provbyn, personnummer 19900101-2385.",
   { recognizer },
 )
 result.text
-// "Min granne [NAMN_1] bor på [PLATS_1], personnummer [PERSONNUMMER_1]."
+// "Min granne [NAMN_1] bor i [PLATS_1], personnummer [PERSONNUMMER_1]."
 result.restore("Jag har meddelat [NAMN_1].")
-// "Jag har meddelat Lars."
+// "Jag har meddelat Provnamn."
 ```
 
 Create the recognizer **once** and reuse it: the model loads lazily on first
@@ -155,7 +155,7 @@ yourself (they're static files) and point the recognizer at them:
 
 ```ts
 createNerRecognizer({
-  model: "maskera-sv-ner-v18", // version the folder name: the browser caches by URL
+  model: "maskera-sv-ner-v19", // version the folder name: the browser caches by URL
   localModelPath: "/models/",   // same-origin path (or a CDN reverse-proxied here)
   allowLocalModels: true,
   allowRemoteModels: false,     // never touch the Hub
@@ -164,7 +164,7 @@ createNerRecognizer({
 
 Copy the files from the
 [Hub repo](https://huggingface.co/joelhagvall/maskera-sv-ner) (config,
-tokenizer, `onnx/model_q4.onnx`) into `public/models/maskera-sv-ner-v18/`
+tokenizer, `onnx/model_q4.onnx`) into `public/models/maskera-sv-ner-v19/`
 (version the folder name, the browser caches model files by URL). This is
 exactly how the maskera demo runs, fully offline after first load. Use a
 same-origin path such as `/models/`; Transformers.js 4.2's tokenizer metadata
@@ -193,11 +193,18 @@ highlighting.
 The default (and only bundled default) model is
 [maskera-sv-ner](https://huggingface.co/joelhagvall/maskera-sv-ner)
 (`MASKERA_SV_NER_MODEL`, MIT, 43 MB q4): PER/LOC/ORG/ADR, distilled from
-KB-BERT, trained on synthetic + real Swedish with lowercase/ALL CAPS/genitive
-augmentation (chat users type lowercase). On the packaged gold corpus it
-scores 99.8% span-F1 with a 0.0% leak rate; on independent real text, 94.7%
-and 3.4% (measured 2026-07-19). The canonical, dated tables live in
+KB-BERT. Published v19 uses only 64,000 attested generator-produced task rows
+plus 4,760 disjoint validation rows and has passed every defined release gate.
+On its revised synthetic ADR set the current pipeline covers all 57
+gold spans exactly with zero leaks, including all 35 marked addresses; one
+organisation is typed ADDRESS, so labeled F1 is 96.5%. On the packaged gold
+corpus historical v18 scored 99.8% span-F1 with a 0.0% leak rate; on independent
+real text, 94.7% and 3.4% (measured 2026-07-19). Those historical comparisons
+do not automatically transfer to v19. The canonical, dated release tables live in
 [docs/BENCHMARKS.md](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md).
+v19's training-data scope, identifier rejection, provenance hashes,
+and separate KB-BERT pretraining caveat are documented in
+[TRAINING_DATA_PROTECTION.md](https://github.com/joelhagvall/maskera/blob/main/docs/TRAINING_DATA_PROTECTION.md).
 Run the eval yourself:
 
 ```bash

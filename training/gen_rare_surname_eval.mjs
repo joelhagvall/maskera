@@ -279,13 +279,9 @@ for (const name of CANDIDATES) {
 console.log(`decomposition filter: ${decomposing.length}/${CANDIDATES.length} kept`)
 
 // --- filter 2: must not exist anywhere the model trains on -----------------
-const SOURCES = [
-  "data/train.jsonl",
-  "data/val.jsonl",
-  "generate_data.mjs",
-  "eval/gold.txt",
-  "eval/gold-real.txt",
-].map((p) => resolve(HERE, p))
+const SOURCES = ["data/train.jsonl", "data/val.jsonl", "generate_data.mjs", "eval/gold.txt"].map(
+  (p) => resolve(HERE, p),
+)
 const haystacks = SOURCES.filter((p) => existsSync(p)).map((p) => ({
   p,
   text: readFileSync(p, "utf8").toLowerCase(),
@@ -293,11 +289,11 @@ const haystacks = SOURCES.filter((p) => existsSync(p)).map((p) => ({
 const collisions = []
 const kept = decomposing.filter((name) => {
   const hit = haystacks.find((h) => h.text.includes(name.toLowerCase()))
-  if (hit) collisions.push(`${name} (in ${hit.p})`)
+  if (hit) collisions.push(hit.p)
   return !hit
 })
 console.log(`collision filter: ${kept.length}/${decomposing.length} kept`)
-if (collisions.length) for (const c of collisions) console.log(`  dropped: ${c}`)
+if (collisions.length) console.log(`collision exclusions: ${collisions.length}`)
 
 if (CHECK_ONLY) {
   // Guard for run scripts: verify no surname in the CURRENT eval file leaked
@@ -309,7 +305,13 @@ if (CHECK_ONLY) {
   }
   const bad = [...inEval].filter((n) => haystacks.some((h) => h.text.includes(n.toLowerCase())))
   if (bad.length) {
-    console.error(`CHECK FAIL: eval surnames found in training sources: ${bad.join(", ")}`)
+    console.error(`CHECK FAIL: ${bad.length} eval surnames found in training sources`)
+    process.exit(1)
+  }
+  const decomposingLower = new Set(decomposing.map((name) => name.toLowerCase()))
+  const notDecomposing = [...inEval].filter((name) => !decomposingLower.has(name.toLowerCase()))
+  if (notDecomposing.length) {
+    console.error(`CHECK FAIL: ${notDecomposing.length} eval surnames do not decompose`)
     process.exit(1)
   }
   console.log(`CHECK PASS: ${inEval.size} eval surnames absent from all training sources`)

@@ -1,15 +1,12 @@
 #!/usr/bin/env node
 /**
- * LARGE HELD-OUT benchmark: grade maskera-sv-ner against the public Swedish NER
+ * LARGE EXTERNAL benchmark: grade maskera-sv-ner against the public Swedish NER
  * Corpus (klintan / Webbnyheter 2012) test split, authored and labeled by
- * others. The sentences are held out (disjoint from training), so this is not a
- * memorisation check. But it is NOT clean independence: the shipped model
- * trained on this corpus's TRAIN split (see docs/BENCHMARKS.md "What the model
- * was trained on"), so test and train share source, domain and annotation
- * style. Read it as a large in-distribution held-out number and the most
- * reliable per-type breakdown; for a clean independent number use the
- * 22-sentence Wikipedia gold set (convert-gold-real.mjs), and see
- * docs/GOLD_SET_PLAN.md for the plan to build a larger independent one.
+ * others. Privacy-clean artifacts exclude this corpus from fine-tuning,
+ * distillation, and vocabulary selection. That makes it an external measure of
+ * Maskera's task-specific recipe, but not proof that related text was absent
+ * from KB-BERT's earlier third-party pretraining. Always verify the evaluated
+ * artifact's privacy-attestation.json before assigning it that interpretation.
  *
  * Data: CoNLL-style "token  TAG" lines, blank line between sentences, tags
  * PER / LOC / ORG / MISC and "0" for outside. Non-BIO: consecutive same-tag
@@ -194,7 +191,7 @@ const m = aggregate(results)
 const pct = (x) => `${(x * 100).toFixed(1)}%`
 
 console.log(
-  `\n=== Swedish NER Corpus test split (large held-out, in-distribution)${LOWERCASE ? " [LOWERCASED]" : ""} ===`,
+  `\n=== Swedish NER Corpus test split (large external benchmark)${LOWERCASE ? " [LOWERCASED]" : ""} ===`,
 )
 console.log(`sentences:        ${subset.length}`)
 console.log(`gold entities:    ${m.support}`)

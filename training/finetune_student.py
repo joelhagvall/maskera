@@ -15,7 +15,10 @@ Example: finetune_student.py student-v5 student-v6 2 1e-5
 
 import json
 import os
+import shutil
+import subprocess
 import sys
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -49,6 +52,32 @@ device = (
 )
 print(f"== device: {device}, src: {SRC}, epochs: {EPOCHS}, lr: {LR} ==")
 set_seed(SEED)
+
+source_attestation_path = Path(SRC) / "privacy-attestation.json"
+if not source_attestation_path.is_file():
+    sys.exit(
+        f"{SRC} has no privacy-attestation.json; do not continue-train a legacy model "
+        "on the privacy-clean release line"
+    )
+subprocess.run(
+    ["node", "verify_attestation.mjs", str(source_attestation_path)], check=True
+)
+with source_attestation_path.open(encoding="utf-8") as handle:
+    source_attestation = json.load(handle)
+if source_attestation.get("dataPolicy") != "synthetic-task-data-only":
+    sys.exit(f"{SRC} does not carry the synthetic-only training policy")
+subprocess.run(["node", "audit_data.mjs"], check=True)
+subprocess.run(
+    ["node", "privacy_attestation.mjs", "data/privacy-attestation.json"], check=True
+)
+with Path("data/privacy-attestation.json").open(encoding="utf-8") as handle:
+    current_attestation = json.load(handle)
+for split in ("train", "validation"):
+    if current_attestation.get(split) != source_attestation.get(split):
+        sys.exit(
+            f"Current {split} data does not match {SRC}'s attested training data; "
+            "retrain from KB-BERT instead of merging data lineages"
+        )
 
 tokenizer = AutoTokenizer.from_pretrained(SRC)
 
@@ -159,4 +188,5 @@ print(classification_report(tl, tp))
 
 trainer.save_model(OUT_DIR)
 tokenizer.save_pretrained(OUT_DIR)
+shutil.copy2("data/privacy-attestation.json", os.path.join(OUT_DIR, "privacy-attestation.json"))
 print(f"== saved model to {OUT_DIR}/ ==")

@@ -7,6 +7,9 @@
  * Teaches the FREE-TEXT entities a rule layer can't catch — names (PER), places
  * (LOC), organisations (ORG), street addresses (ADR). Structured PII
  * (personnummer, org-nr, phone, IBAN…) stays with @maskera/core's detectors.
+ * Every generated street address carries an explicit synthetic marker in its
+ * street surface. This avoids pairing a plausible person with a street/number
+ * that could accidentally resolve to a real property.
  *
  * v2 widens diversity to improve generalisation: ~90 templates, much larger
  * gazetteers, entities in varied positions, light augmentation (lowercase start,
@@ -15,7 +18,8 @@
  *
  * Usage: node generate_data.mjs [trainCount] [valCount]
  */
-import { appendFileSync, writeFileSync } from "node:fs"
+import { createHash } from "node:crypto"
+import { appendFileSync, readFileSync, writeFileSync } from "node:fs"
 
 let seed = Number(process.env.DATA_SEED ?? 1337) >>> 0
 if (!Number.isInteger(Number(process.env.DATA_SEED ?? 1337))) {
@@ -57,6 +61,12 @@ const BARE_DECLARATIVE_VAL_ROWS = Number(process.env.BARE_DECLARATIVE_VAL_ROWS ?
 // rows, so a zero-row run stays byte-identical to v14.
 const BALANCED_REPLAY_TRAIN_ROWS = Number(process.env.BALANCED_REPLAY_TRAIN_ROWS ?? 0)
 const BALANCED_REPLAY_VAL_ROWS = Number(process.env.BALANCED_REPLAY_VAL_ROWS ?? 0)
+// v19 precision repair: balanced all-O families that teach the model to reject
+// generic nouns, ordinal floors and short number phrases which superficially
+// resemble PER/LOC/ORG/ADR spans. These are constructed examples, never rows
+// copied from the held-out ADR corpus.
+const HARD_NEGATIVE_TRAIN_ROWS = Number(process.env.HARD_NEGATIVE_TRAIN_ROWS ?? 0)
+const HARD_NEGATIVE_VAL_ROWS = Number(process.env.HARD_NEGATIVE_VAL_ROWS ?? 0)
 
 for (const [name, value] of [
   ["LC_AUG", LC_AUG],
@@ -74,9 +84,21 @@ for (const [name, value] of [
   ["BARE_DECLARATIVE_VAL_ROWS", BARE_DECLARATIVE_VAL_ROWS],
   ["BALANCED_REPLAY_TRAIN_ROWS", BALANCED_REPLAY_TRAIN_ROWS],
   ["BALANCED_REPLAY_VAL_ROWS", BALANCED_REPLAY_VAL_ROWS],
+  ["HARD_NEGATIVE_TRAIN_ROWS", HARD_NEGATIVE_TRAIN_ROWS],
+  ["HARD_NEGATIVE_VAL_ROWS", HARD_NEGATIVE_VAL_ROWS],
 ]) {
   if (!Number.isInteger(value) || value < 0) {
     throw new Error(`${name} must be a non-negative integer; got ${value}`)
+  }
+}
+for (const [name, value] of [
+  ["HARD_NEGATIVE_TRAIN_ROWS", HARD_NEGATIVE_TRAIN_ROWS],
+  ["HARD_NEGATIVE_VAL_ROWS", HARD_NEGATIVE_VAL_ROWS],
+]) {
+  if (value % 7 !== 0) {
+    throw new Error(
+      `${name} must be divisible by 7 (one row per hard-negative family); got ${value}`,
+    )
   }
 }
 for (const [name, value] of [
@@ -433,47 +455,20 @@ const DISTRICTS = [
   "Bromma",
   "Liljeholmen",
 ]
+// No ordinary Swedish street stem is allowed here: a random house number on
+// a real-looking street can still resolve to a real property. The explicit
+// markers are enforced independently by audit_data.mjs.
 const STREET_STEMS = [
-  "Stor",
-  "Lill",
-  "Norr",
-  "Söder",
-  "Öster",
-  "Väster",
-  "Kyrk",
-  "Skol",
-  "Park",
-  "Berg",
-  "Sjö",
-  "Strand",
-  "Ängs",
-  "Björk",
-  "Ek",
-  "Gran",
-  "Linde",
-  "Ros",
-  "Kungs",
-  "Drottning",
-  "Vasa",
-  "Karla",
-  "Industri",
-  "Hamn",
-  "Torg",
-  "Brunns",
-  "Köpman",
-  "Fiskar",
-  "Smedje",
-  "Bro",
-  "Kvarn",
-  "Pil",
-  "Lärk",
-  "Apel",
-  "Tall",
-  "Häll",
-  "Klockare",
-  "Bagar",
-  "Repslagar",
-  "Skomakar",
+  "Maskera",
+  "Provdata",
+  "Fiktiv",
+  "Exempeldata",
+  "Syntet",
+  "Testkorpus",
+  "Dataskyddstest",
+  "Nollpost",
+  "Testadress",
+  "Provtext",
 ]
 const STREET_SUFFIX = [
   "gatan",
@@ -485,29 +480,21 @@ const STREET_SUFFIX = [
   "allén",
   "plan",
   "gränden",
-  // v16: the quay family ("Skeppsbrokajen 8" was a total miss in the
+  // v16: the synthetic quay family ("Maskerakajen 8" was a total miss in the
   // 2026-07-14 address sweep).
   "kajen",
 ]
-// v16 address categories, from the 38-case sweep (ROADMAP "Swedish address
-// robustness"). Category-level surfaces only: the ADR eval's own streets
-// (Sankt Göransgatan, S:t Eriksgatan, Sankt Paulsgatan, Anna Lindhs plats,
-// Näsby Gård, Berga/Vreta Kloster, Sörgården Ekeby) are deliberately absent
-// so the eval keeps measuring generalisation.
-const SAINT_NAMES = ["Olof", "Per", "Lars", "Måns", "Hans", "Johannes", "Botvid", "Sigfrid"]
+// Shape variants remain, but every surface contains the same unmistakable
+// synthetic markers as the classic stem+suffix family.
+const SAINT_NAMES = ["Testolof", "Provper", "Maskerlars", "Fiktivmåns"]
 const FARM_NAMES = [
-  "Norrgården",
-  "Västergården",
-  "Östergården",
-  "Solbacka",
-  "Ekbacka",
-  "Björklunda",
-  "Hagalund",
-  "Fridhem",
-  "Rosenlund",
-  "Lugnet",
+  "Maskeragården",
+  "Provdatagården",
+  "Fiktivgården",
+  "Exempeldatagården",
+  "Syntetgården",
 ]
-const VILLAGES = ["Hulta", "Tuna", "Vallby", "Åkarp", "Stensjö", "Locknevi", "Skärlöv", "Härad"]
+const VILLAGES = ["Testbyn", "Provbyn", "Maskerabyn", "Fiktivbyn", "Syntetbyn"]
 const ORGS = [
   "Volvo",
   "Ericsson",
@@ -800,7 +787,8 @@ const hyphenFirst = () =>
 // v12c tried a RARE_LAST decomposing-surname gazetteer + 8% bare-surname share
 // here to fix the trim-vocab tokenization mismatch at the data level. It made
 // the gate WORSE (gold-real recall 0.90 -> 0.86, curated P 0.96 -> 0.93, new
-// LOC misses from "till {bare surname}" shapes) without fixing bare "Löfven".
+// LOC misses from "till {bare surname}" shapes) without fixing the held-out
+// bare-surname probe.
 // The mismatch is fixed in trim_vocab TARGET instead (16k -> 20k keeps the
 // name tail); do not reintroduce bare-surname slots without a sweep.
 // v14: short-form chat nicknames, a tracked leak class ("micke o bettan
@@ -853,11 +841,10 @@ const bareLoc = () => place()
 const bareOrg = () => org()
 const commonWord = () => pick(COMMON_WORDS)
 // v15 balanced replay v2: ADR reinforcement. v15-balanced (PER/LOC/ORG/O only)
-// fixed G2 but truncated one street span ("Hamngatan 10" -> "Hamngatan"): the
+// fixed G2 but truncated one historical street span before its number: the
 // dose starved ADR of its share, so street+number cohesion drifted. This keeps
 // the full "street number" as one span, sentence-initial like the other
-// positives. address() avoids the ADR eval's street stems, so it stays
-// out-of-distribution from the gate.
+// positives. Every current address surface is explicitly synthetic.
 const bareAddress = () => address()
 const nickname = () => pick(NICKNAMES)
 const FOREIGN = [
@@ -876,23 +863,19 @@ const place = () => {
   if (r < 0.8) return pick(DISTRICTS)
   return pick(FOREIGN)
 }
-// v16: ~a quarter of addresses come from the sweep's five broken categories
-// (saint prefixes, genitive-person and free-word endings, farm/village
-// shapes, abbreviated stems, the "nr" form); the rest keep the classic
-// stem+suffix shape. Note genitive() below handles the possessive s.
+// Address-shape variety is retained without ordinary real-world street names.
+// Each branch must contain a marker accepted by assertSyntheticAddressSpans.
 const address = () => {
   const n = 1 + Math.floor(rand() * 119)
   const r = rand()
   if (r < 0.05) {
-    // Genitive compound: "Sankt Olofsgatan"; names already ending in s
-    // ("Hans") take no extra s ("Sankt Hansgatan").
     const saint = pick(SAINT_NAMES)
     return `${pick(["Sankt", "S:t"])} ${saint}${/s$/i.test(saint) ? "" : "s"}gatan ${n}`
   }
   if (r < 0.1)
-    return `${genitive(`${pick(FIRST)} ${pick(LAST)}`)} ${pick(["plats", "torg", "gata"])} ${n}`
+    return `${pick(["Maskeras", "Provdatans", "Fiktivets", "Syntetens"])} ${pick(["plats", "torg", "gata"])} ${n}`
   if (r < 0.14)
-    return `${pick(["Stora", "Lilla", "Gamla", "Norra", "Södra"])} ${pick(["Torg", "Strand", "Plan"])} ${n}`
+    return `${pick(["Stora", "Lilla", "Gamla", "Norra", "Södra"])} ${pick(["Testtorget", "Provstranden", "Fiktivplan"])} ${n}`
   if (r < 0.18)
     return chance(0.5) ? `${pick(FARM_NAMES)} ${pick(VILLAGES)} ${n}` : `${pick(VILLAGES)} ${n}`
   if (r < 0.22) return `${pick(STREET_STEMS)}${pick(["g.", "v."])} ${n}`
@@ -1129,6 +1112,146 @@ const genitive = (name) => (/[sxz]$/i.test(name) ? name : `${name}s`)
 const personGenitive = () => genitive(chance(0.35) ? pick(FIRST) : `${pick(FIRST)} ${pick(LAST)}`)
 const orgGenitive = () => genitive(pick(ORGS))
 
+const syntheticNumberExcept = (max, excluded) => {
+  let value
+  do value = 1 + Math.floor(rand() * max)
+  while (excluded.includes(value))
+  return value
+}
+const hardNumeric = () => {
+  const family = Math.floor(rand() * 6)
+  if (family === 0) return `vecka ${syntheticNumberExcept(52, [28])}`
+  if (family === 1) return `nummer ${syntheticNumberExcept(199, [148])}`
+  if (family === 2) return `kilometer ${syntheticNumberExcept(120, [42])}`
+  if (family === 3) return `sida ${syntheticNumberExcept(199, [])}`
+  if (family === 4) return `punkt ${syntheticNumberExcept(99, [])}`
+  return `version ${syntheticNumberExcept(30, [])}`
+}
+const hardFloor = () =>
+  `${pick(["första", "tredje", "femte", "sjätte", "sjunde", "åttonde", "nionde", "tionde"])} ${pick(["våningen", "planet", "trappsteget"])}`
+const hardGenericOrg = () =>
+  pick([
+    "leverantören",
+    "kundtjänsten",
+    "agenturen",
+    "expeditionen",
+    "representanten",
+    "budfirman",
+    "verkstaden",
+    "föreningen",
+    "kontoret",
+    "mottagningen",
+    "servicegruppen",
+    "arbetslaget",
+    "receptionen",
+    "supportgruppen",
+    "projektgruppen",
+    "testkontoret",
+    "provmiljöns postfack",
+    "syntetflödets mottagare",
+    "övningens kontaktpunkt",
+    "testets samordnare",
+  ])
+const hardGenericLoc = () =>
+  pick([
+    "kajen",
+    "torget",
+    "stranden",
+    "stationen",
+    "terminalen",
+    "centrum",
+    "väntrummet",
+    "receptionen",
+    "gården",
+    "parken",
+    "hallen",
+    "entrén",
+    "korridoren",
+    "lastzonen",
+    "testområdet",
+    "övningsplatsen",
+    "provhallen",
+    "syntetzonen",
+    "maskerarummet",
+    "fiktivfältet",
+  ])
+const hardCommonNoun = () =>
+  pick([
+    "Affären",
+    "Cykeln",
+    "Lokalen",
+    "Fordonet",
+    "Förrådet",
+    "Restaurangen",
+    "Mottagningen",
+    "Leveransen",
+    "Fakturan",
+    "Dörren",
+    "Hissen",
+    "Kontrollen",
+    "Övningen",
+    "Rapporten",
+    "Väskan",
+    "Kartongen",
+    "Maskinen",
+    "Bussen",
+    "Mötet",
+    "Provet",
+    "Vårdcentralen",
+  ])
+const hardAdjective = () =>
+  pick([
+    "stängd",
+    "öppen",
+    "trasig",
+    "försenad",
+    "tom",
+    "låst",
+    "ledig",
+    "ofärdig",
+    "parkerad",
+    "avstängd",
+    "bortkopplad",
+    "förseglad",
+    "släckt",
+    "markerad",
+    "flyttad",
+    "bokad",
+    "kontrollerad",
+    "registrerad",
+    "rensad",
+    "testad",
+    "olåst",
+  ])
+const hardMarker = () => {
+  const surface = pick([
+    "teststräckan",
+    "provsträckan",
+    "provleden",
+    "fiktivmiljön",
+    "syntetprovet",
+    "maskeratestet",
+    "exempeldatafältet",
+    "dataskyddstestområdet",
+    "nollpostflödet",
+    "provscenariot",
+    "testkorridoren",
+    "fiktivövningen",
+    "syntetkontrollen",
+    "maskeraflödet",
+    "exempeldataprovet",
+    "dataskyddstestet",
+    "nollpostövningen",
+    "provstationen",
+    "testterminalen",
+    "fiktivzonen",
+    "syntetfältet",
+  ])
+  return chance(0.65)
+    ? `${surface} ${pick(["norr", "väster", "öster", "norrut", "söderut"])}`
+    : surface
+}
+
 const SLOTS = {
   PER: person,
   LOC: place,
@@ -1142,6 +1265,13 @@ const SLOTS = {
   BAREORG: bareOrg,
   BAREADR: bareAddress,
   COMMON: commonWord,
+  HARDNUM: hardNumeric,
+  HARDFLOOR: hardFloor,
+  HARDORG: hardGenericOrg,
+  HARDLOC: hardGenericLoc,
+  HARDNOUN: hardCommonNoun,
+  HARDADJ: hardAdjective,
+  HARDMARKER: hardMarker,
 }
 // Slot name -> BIO tag type, for slots that are surface variants of a base type.
 // COMMON maps to "O": the balanced-replay negative is a capitalised ordinary
@@ -1155,6 +1285,13 @@ const SLOT_TAG = {
   BAREORG: "ORG",
   BAREADR: "ADR",
   COMMON: "O",
+  HARDNUM: "O",
+  HARDFLOOR: "O",
+  HARDORG: "O",
+  HARDLOC: "O",
+  HARDNOUN: "O",
+  HARDADJ: "O",
+  HARDMARKER: "O",
 }
 const TEMPLATES = [
   "Patient {PER} inkom akut med bröstsmärta.",
@@ -1244,15 +1381,15 @@ const TEMPLATES = [
   "En björn sågs i skogen utanför byn i tisdags.",
   // number distractors — digit groups are NOT addresses/entities
   "Beloppet 12 345 kr betalades i tid.",
-  "Ring 070-174 06 58 vid frågor.",
-  "Referensnummer 2024-1187 noterades i akten.",
+  "Ring det reserverade testnumret vid frågor.",
+  "Referensnummer TEST-REF-001 noterades i akten.",
   // v16: the "org.nr" frame. The ORG span must stop at the name; the label
-  // word and the identifier stay O (the rules layer owns the number, which is
-  // Skatteverket's Navet test organisationsnummer). Found live in the demo:
+  // word and the following prose stay O (the rules layer owns identifiers).
+  // No structured identifier is needed in model training. Found live in the demo:
   // an ORG span swallowed ", org" out of "org.nr".
-  "Avtalet tecknades med {ORG}, org.nr 202100-4748, i december.",
-  "Motparten {ORG} (org.nr 202100-4748) bestrider kravet i sin helhet.",
-  "Fakturan ställs till {ORG}, org.nr 202100-4748.",
+  "Avtalet tecknades med {ORG}, org.nr anges separat, i december.",
+  "Motparten {ORG} (org.nr finns i bilagan) bestrider kravet i sin helhet.",
+  "Fakturan ställs till {ORG}, org.nr enligt avtalet.",
   "Summan 1 299 kronor drogs felaktigt.",
   "Fakturanummer 5567 och 8890 är betalda.",
   "Klockan 14 30 öppnar receptionen.",
@@ -1298,7 +1435,7 @@ const TEMPLATES = [
   "Sätt in provsvaren i journalen och maila sammanfattningen.",
   "Kan du maila {PER} på {ORG} om mötet?",
   "Glöm inte att mejla protokollet till styrelsen.",
-  "Betalning sker till bankgiro 991-2346 senast förfallodagen.",
+  "Betalning sker till angivet testbankgiro senast förfallodagen.",
   "Ange bankgiro eller plusgiro på fakturan.",
   "Beloppet dras från ditt konto den 25:e varje månad.",
   // v9: casing/chat round. Stress testing v5 found: capitalized full-name
@@ -1372,7 +1509,7 @@ const TEMPLATES = [
   "fråga {NICK} om han hinner förbi ikväll",
   "{NICK} och {NICK} kör gemensam present i år",
   // v14: declarative/encyclopedic name frames, the accepted v13 regression
-  // (gold-real forced lowercase: "löfven har varit engagerad i ..." leaks
+  // (the external forced-lowercase bare-surname declarative shape leaks
   // while chat phrasings of the same names are caught). Declarative prose
   // shapes so LC_AUG produces the lowercase variant; full/first names only
   // (bare-surname slots stay banned, the v12c poison).
@@ -1408,8 +1545,8 @@ if (BARE_DECLARATIVE_TEMPLATES.some((template) => !template.startsWith("{BAREPER
 }
 
 // v15 balanced class replay. The isolated bare-surname dose (v15 data round)
-// recovered one lowercase "Löfven" span but pushed the sentence-initial
-// boundary off LOC ("Vita huset"), ORG ("socialdemokraterna") and ordinary
+// recovered one lowercase bare-surname span but pushed the sentence-initial
+// boundary off a metonymic LOC, a political ORG and ordinary
 // capitalised words ("Festen" -> PER). That was class competition, not a
 // shortage of PER examples: all the new evidence lived in one class and one
 // position. This family pairs every bare-PER positive with a LOC positive, an
@@ -1418,9 +1555,9 @@ if (BARE_DECLARATIVE_TEMPLATES.some((template) => !template.startsWith("{BAREPER
 // declarative sentence" stops predicting PER on its own and the model has to
 // read the word. Constraints kept from the bare family: subject is always the
 // first token, never after a preposition, and tails never copy the gold-real /
-// strict-corpus sentences verbatim. Held out on purpose: G2's own "Löfven",
-// "Festen" and "Klarna" (they are the probes that measure this), so the screen
-// still tests generalisation, not memorisation.
+// strict-corpus sentences verbatim. G2's bare-surname, common-word and
+// organization probes remain held out, so the screen still tests
+// generalisation, not memorisation.
 const BALANCED_LOC_TEMPLATES = [
   "{BARELOC} ligger en bit från de större tätorterna.",
   "{BARELOC} har vuxit stadigt under de senaste årtiondena.",
@@ -1440,7 +1577,8 @@ const BALANCED_ORG_TEMPLATES = [
 // Neuter/common-gender event and object nouns in the definite form, so they
 // look like a sentence-initial capitalised token but are ordinary words.
 // Verbs are past tense and gender-neutral, so any noun fits and nothing needs
-// adjective agreement. "Festen" and "Klarna" are deliberately absent.
+// adjective agreement. The tracked common-word and organization probes are
+// deliberately absent.
 const COMMON_WORDS = [
   "Mötet",
   "Beslutet",
@@ -1505,6 +1643,76 @@ for (const [templates, slot] of [
     throw new Error(`Every balanced-replay template in this group must start with ${slot.trim()}`)
   }
 }
+
+// Seven equally replayed all-O families. Full held-out sentences and address
+// surfaces remain absent. Ordinary category lexemes may occur in unrelated
+// contexts, so the eval measures composition and context rather than requiring
+// every generic Swedish word to be unseen vocabulary.
+const HARD_NUMERIC_NEG_TEMPLATES = [
+  "Planeringen gäller {HARDNUM} men kan fortfarande ändras.",
+  "Protokollet hänvisar till {HARDNUM} i den syntetiska bilagan.",
+  "Mätningen avslutades vid {HARDNUM} enligt testplanen.",
+  "Kontrollen fortsätter från {HARDNUM} efter lunch.",
+  "Testledaren antecknade {HARDNUM} i sammanställningen.",
+  "Övningen pausades kort vid {HARDNUM}.",
+]
+const HARD_FLOOR_NEG_TEMPLATES = [
+  "Hissen stannar på {HARDFLOOR} innan den går vidare.",
+  "Mötet hålls på {HARDFLOOR} i testbyggnaden.",
+  "Lokalen finns på {HARDFLOOR} men saknar skyltning.",
+  "Kontrollen börjar på {HARDFLOOR} efter lunch.",
+  "Övningsgruppen samlas på {HARDFLOOR} i provhuset.",
+  "Kartongen lämnades på {HARDFLOOR} under testet.",
+]
+const HARD_GENERIC_ORG_NEG_TEMPLATES = [
+  "Fråga {HARDORG} om provpaketet finns kvar.",
+  "Dokumenten ligger hos {HARDORG} till imorgon.",
+  "Testbeslutet skickades via {HARDORG} i övningsflödet.",
+  "Vi väntar på svar från {HARDORG} innan kontrollen fortsätter.",
+  "Provleveransen hämtas senare av {HARDORG}.",
+  "Det syntetiska ärendet ligger fortfarande hos {HARDORG}.",
+]
+const HARD_GENERIC_LOC_NEG_TEMPLATES = [
+  "Vi väntar vid {HARDLOC} tills testet börjar.",
+  "Cykeln stod nära {HARDLOC} hela natten.",
+  "Personalen samlades utanför {HARDLOC} efter övningen.",
+  "Provpaketet lämnades innanför {HARDLOC} under kontrollen.",
+  "Testgruppen gick förbi {HARDLOC} före lunch.",
+  "Skyltningen saknades runt {HARDLOC} i övningsmiljön.",
+]
+const HARD_COMMON_NOUN_NEG_TEMPLATES = [
+  "{HARDNOUN} var kvar under det syntetiska testet.",
+  "{HARDNOUN} stod tom när övningen började.",
+  "{HARDNOUN} kontrollerades under våren.",
+  "{HARDNOUN} flyttades innan provet startade.",
+  "{HARDNOUN} nämndes i den aggregerade rapporten.",
+  "{HARDNOUN} ingick inte i nästa kontroll.",
+]
+const HARD_ADJECTIVE_NEG_TEMPLATES = [
+  "Cykeln stod {HARDADJ} under hela testet.",
+  "Lokalen var {HARDADJ} när kontrollen började.",
+  "Dörren lämnades {HARDADJ} efter övningen.",
+  "Provutrustningen verkade {HARDADJ} vid inspektionen.",
+  "Kartongen blev {HARDADJ} innan testet avslutades.",
+  "Testytan var fortfarande {HARDADJ} efter lunch.",
+]
+const HARD_MARKER_NEG_TEMPLATES = [
+  "Kontrollen fortsatte längs {HARDMARKER} efter lunch.",
+  "Resultatet från {HARDMARKER} sparades enbart som aggregat.",
+  "Deltagarna lämnade {HARDMARKER} när övningen var klar.",
+  "Mätningen genomfördes inom {HARDMARKER} under förmiddagen.",
+  "Provgruppen arbetade nära {HARDMARKER} hela dagen.",
+  "Ingen adress registrerades i {HARDMARKER} under testet.",
+]
+const HARD_NEGATIVE_SUBFAMILIES = [
+  HARD_NUMERIC_NEG_TEMPLATES,
+  HARD_FLOOR_NEG_TEMPLATES,
+  HARD_GENERIC_ORG_NEG_TEMPLATES,
+  HARD_GENERIC_LOC_NEG_TEMPLATES,
+  HARD_COMMON_NOUN_NEG_TEMPLATES,
+  HARD_ADJECTIVE_NEG_TEMPLATES,
+  HARD_MARKER_NEG_TEMPLATES,
+]
 
 function tokenizeFiller(str) {
   const out = []
@@ -1607,8 +1815,8 @@ function appendBareSet(path, n) {
   return attempts - n
 }
 
-// v15 balanced replay: n rows round-robined across the four subfamilies, so a
-// count divisible by four is exactly n/4 per class. Appended after the base +
+// v15 balanced replay: n rows round-robined across the five subfamilies, so a
+// count divisible by five is exactly n/5 per class. Appended after the base +
 // bare rows; shares usedExamples so nothing duplicates earlier rows.
 function appendBalancedSet(path, n) {
   const lines = []
@@ -1630,6 +1838,26 @@ function appendBalancedSet(path, n) {
   return attempts - n
 }
 
+function appendHardNegativeSet(path, n) {
+  const lines = []
+  let attempts = 0
+  while (lines.length < n) {
+    const templates = HARD_NEGATIVE_SUBFAMILIES[lines.length % HARD_NEGATIVE_SUBFAMILIES.length]
+    const line = JSON.stringify(buildExample(templates))
+    attempts++
+    if (usedExamples.has(line)) continue
+    usedExamples.add(line)
+    lines.push(line)
+    if (attempts > n * 100) {
+      throw new Error(
+        `Could not generate ${n} unique hard-negative examples after ${attempts} attempts`,
+      )
+    }
+  }
+  if (lines.length) appendFileSync(path, `${lines.join("\n")}\n`)
+  return attempts - n
+}
+
 const dir = new URL("./data/", import.meta.url)
 const trainPath = new URL("train.jsonl", dir)
 const valPath = new URL("val.jsonl", dir)
@@ -1639,21 +1867,65 @@ const bareTrainDuplicates = appendBareSet(trainPath, BARE_DECLARATIVE_TRAIN_ROWS
 const bareValDuplicates = appendBareSet(valPath, BARE_DECLARATIVE_VAL_ROWS)
 const balancedTrainDuplicates = appendBalancedSet(trainPath, BALANCED_REPLAY_TRAIN_ROWS)
 const balancedValDuplicates = appendBalancedSet(valPath, BALANCED_REPLAY_VAL_ROWS)
+const hardNegativeTrainDuplicates = appendHardNegativeSet(trainPath, HARD_NEGATIVE_TRAIN_ROWS)
+const hardNegativeValDuplicates = appendHardNegativeSet(valPath, HARD_NEGATIVE_VAL_ROWS)
 
-const sample = buildExample()
+function fileDescription(path, rows) {
+  const bytes = readFileSync(path)
+  return { rows, sha256: createHash("sha256").update(bytes).digest("hex") }
+}
+
+// This manifest binds the claimed provenance to the exact generated bytes.
+// privacy_attestation.mjs refuses to attest data after any converter, manual
+// edit, or append operation has changed either JSONL file.
+const sourceManifest = {
+  schemaVersion: 1,
+  dataPolicy: "synthetic-task-data-only",
+  addressPolicy: "explicit-synthetic-marker",
+  generatedBy: "training/generate_data.mjs",
+  generatorSha256: createHash("sha256")
+    .update(readFileSync(new URL(import.meta.url)))
+    .digest("hex"),
+  seed: Number(process.env.DATA_SEED ?? 1337),
+  configuration: {
+    baseTrainRows: trainCount,
+    baseValidationRows: valCount,
+    bareDeclarativeTrainRows: BARE_DECLARATIVE_TRAIN_ROWS,
+    bareDeclarativeValidationRows: BARE_DECLARATIVE_VAL_ROWS,
+    balancedReplayTrainRows: BALANCED_REPLAY_TRAIN_ROWS,
+    balancedReplayValidationRows: BALANCED_REPLAY_VAL_ROWS,
+    hardNegativeTrainRows: HARD_NEGATIVE_TRAIN_ROWS,
+    hardNegativeValidationRows: HARD_NEGATIVE_VAL_ROWS,
+    lowercaseAugmentation: LC_AUG,
+    uppercaseAugmentation: UC_AUG,
+  },
+  train: fileDescription(
+    trainPath,
+    trainCount +
+      BARE_DECLARATIVE_TRAIN_ROWS +
+      BALANCED_REPLAY_TRAIN_ROWS +
+      HARD_NEGATIVE_TRAIN_ROWS,
+  ),
+  validation: fileDescription(
+    valPath,
+    valCount + BARE_DECLARATIVE_VAL_ROWS + BALANCED_REPLAY_VAL_ROWS + HARD_NEGATIVE_VAL_ROWS,
+  ),
+}
+writeFileSync(new URL("source-manifest.json", dir), `${JSON.stringify(sourceManifest, null, 2)}\n`)
+
 console.log(
   `Wrote ${trainCount} base + ${BARE_DECLARATIVE_TRAIN_ROWS} bare-declarative + ` +
-    `${BALANCED_REPLAY_TRAIN_ROWS} balanced-replay train; ` +
+    `${BALANCED_REPLAY_TRAIN_ROWS} balanced-replay + ${HARD_NEGATIVE_TRAIN_ROWS} hard-negative train; ` +
     `${valCount} base + ${BARE_DECLARATIVE_VAL_ROWS} bare-declarative + ` +
-    `${BALANCED_REPLAY_VAL_ROWS} balanced-replay val examples`,
+    `${BALANCED_REPLAY_VAL_ROWS} balanced-replay + ${HARD_NEGATIVE_VAL_ROWS} hard-negative val examples`,
 )
 console.log(
   `Uniqueness: skipped ${trainDuplicates} duplicate train + ${valDuplicates} duplicate/overlapping val + ` +
     `${bareTrainDuplicates} duplicate bare train + ${bareValDuplicates} duplicate/overlapping bare val + ` +
-    `${balancedTrainDuplicates} duplicate balanced train + ${balancedValDuplicates} duplicate/overlapping balanced val rows`,
+    `${balancedTrainDuplicates} duplicate balanced train + ${balancedValDuplicates} duplicate/overlapping balanced val + ` +
+    `${hardNegativeTrainDuplicates} duplicate hard-negative train + ${hardNegativeValDuplicates} duplicate/overlapping hard-negative val rows`,
 )
 console.log(
   `Gazetteers: ${FIRST.length} first, ${LAST.length} last, ${CITIES.length} cities, ${ORGS.length} orgs, ${TEMPLATES.length} templates`,
 )
 console.log(`Casing augmentation: lowercase ${LC_AUG}, ALL CAPS ${UC_AUG} (LC_AUG/UC_AUG env)`)
-console.log("Sample:", sample.tokens.join(" "))

@@ -1,8 +1,23 @@
 # maskera
 
+## 0.9.3
+
+### Patch Changes
+
+- Harden structured-identifier redaction and replace the default Swedish NER
+  weights with the attested v19 artifact trained on generator-produced task data.
+  The release documents the separate KB-BERT pretraining boundary and keeps
+  customer and partner text outside the training pipeline.
+- Updated dependencies
+  - @maskera/core@0.7.3
+
 ## 0.9.2
 
 ### Patch Changes
+
+- Extend the default NER whole-word denylist with unambiguous Swedish generic
+  modifiers and service nouns that q4 can otherwise over-mask. Named
+  multi-word entities containing those words remain unaffected.
 
 - Security fixes for detection bypasses and validator gaps:
 
@@ -141,7 +156,7 @@
 
   Long input is split into overlapping chunks, so the same entity is scored twice with the model seeing different context each time, and the two spans can differ at both edges. That is what the overlap is for. The dedupe kept whichever span was longer and discarded the other wholesale, but the list is sorted by ascending start, so a longer span can still begin later. Replacing the earlier span then dropped its head.
 
-  A name cut by a seam is exactly that shape: the left chunk tags `Anna Karlsson`, the right one tags the longer `Karlsson Bergström`, and the first name was left in the output unmasked.
+  A name cut by a seam is exactly that shape: the left chunk tags `Provnamn Maskera`, the right one tags the longer `Maskera Testson`, and the first name was left in the output unmasked.
 
   Overlapping spans are now merged to cover their union instead of one replacing the other, which is safe because they touch by definition. Gold-corpus eval is unchanged at 99.8 span-F1 with zero leaks.
 
@@ -220,7 +235,7 @@
     placeholder ("Kommun A, org.nr 202100-4748"). Entities that ARE such a word
     ("Org") stay intact, and spans ending in a digit never match.
   - Widen an ADDRESS span that stops at the street words to cover a bare house
-    number right after it ("Anna Lindhs plats 1" previously left the "1"
+    number right after it ("Testby plats 1" previously left the "1"
     exposed), including the `nr` form and a detached A-D staircase letter.
 
   Verified against the shipped v15 model: extended ADR eval 35/35 masked with
@@ -305,7 +320,7 @@
 
 - 5246c2d: New v11 model weights on the Hub (real informal-register training round:
   SUCX 3.0, MASSIVE sv-SE, SIC2) and smarter span reconstruction: ADR spans now
-  widen over a trailing house number ("Sveavägen 44", not just "Sveavägen") and
+  widen over a trailing house number ("Maskeragatan 44", not just "Maskeragatan") and
   PER spans over a trailing possessive s. Address eval is now a clean sweep
   (21/21 exact spans, 100% precision, 0 leaks), lowercase chat text leaks 4.3pp
   less, and the previously known "fatima" lowercase miss is fixed. Measured
@@ -353,10 +368,10 @@
 ### Patch Changes
 
 - Leak fix: `reconstruct()` widens a span over a trailing possessive s, so a
-  capitalized full-name genitive ("Anna Karlssons journal") is masked instead
+  capitalized full-name genitive ("Provnamn Maskeras journal") is masked instead
   of dropped. The vocab-trimmed model stops one character short of the s and
   the whole-word guard used to reject the whole span. Prefixes of genuinely
-  different words ("Lars" inside "Larssons") are still rejected.
+  different words ("Provnamn" inside "Provnamnssons") are still rejected.
 - `DEFAULT_DENYLIST` gains greetings and sign-offs (hej, hejhej, hejsan,
   tjena, tjenare, halloj, goddag, mvh, hälsningar): chat text puts them in
   name position and the model can tag them as PERSON.
@@ -370,7 +385,7 @@
 
 ### Patch Changes
 
-- 42577d2: Three detector fixes found by stress-testing with real user input: the `EMAIL` regex now matches addresses with å/ä/ö ("åsa.öberg@example.com" was previously split and partially leaked), the `PHONE` regex no longer starts matching inside a longer digit run ("kundnummer 100200-3000" fired a false phone match), and the `ADRESS` heuristic covers all-caps and all-lowercase addresses ("PÅHITTSGATAN 12", "påhittsvägen 21") so the house number is no longer left exposed when the NER model only catches the street name.
+- 42577d2: Three detector fixes found by stress-testing with real user input: the `EMAIL` regex now matches addresses with å/ä/ö ("åsa.öberg@example.com" was previously split and partially leaked), the `PHONE` regex no longer starts matching inside a longer digit run ("kundnummer TEST-100200-3000" fired a false phone match), and the `ADRESS` heuristic covers all-caps and all-lowercase addresses ("PÅHITTSGATAN 12", "påhittsvägen 21") so the house number is no longer left exposed when the NER model only catches the street name.
 - Updated dependencies [42577d2]
 - Updated dependencies [42577d2]
   - @maskera/core@0.3.0

@@ -4,8 +4,9 @@
  * kundtjänst, vård, juridik, kommun/socialtjänst, bank/försäkring) plus the
  * informal chat register. First graded against v15 on 2026-07-16.
  *
- * All people, companies and case numbers are invented; structured identifiers
- * are officially reserved test values (see docs/TEST_DATA.md). Structured
+ * All people and companies are invented combinations. Case references carry
+ * an explicit TEST marker; structured identifiers are owner-published test
+ * values (see docs/TEST_DATA.md). Structured
  * values (personnummer, telefon, IBAN, kort ...) appear as realistic context
  * but are the rules layer's job and are NOT annotated: entities list only
  * what the model layer must catch (PERSON/LOCATION/ORGANIZATION/ADDRESS).
@@ -18,7 +19,7 @@
  * Grade with:
  *   CORPUS_FILE="./corpus-freetext.mjs" \
  *   MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" \
- *   MASKERA_MODEL=maskera-sv-ner-v18 \
+ *   MASKERA_MODEL=maskera-sv-ner-v19 \
  *   node packages/ner/eval/run-eval.mjs
  */
 
@@ -65,7 +66,7 @@ export const corpus = [
   },
   // --- kundtjänst ---
   {
-    text: "Kund Seija Korhonen (kundnr KND-48291) vill flytta abonnemanget till Påhittsvägen 3B lgh 1202, 123 45 Västerås.",
+    text: "Kund Seija Korhonen (kundnr TEST-KUND-001) vill flytta abonnemanget till Påhittsvägen 3B i Västerås.",
     entities: [
       { value: "Seija Korhonen", label: "PERSON" },
       { value: "Påhittsvägen 3B", label: "ADDRESS" },
@@ -73,14 +74,14 @@ export const corpus = [
     ],
   },
   {
-    text: "Ärende 88213: Amir Haddad ringde från 070-174 06 58 om en dubbeldragning på kortet 4242 4242 4242 4242.",
+    text: "Ärende TEST-ÄRENDE-002: Amir Haddad ringde från 070-174 06 58 om en dubbeldragning på kortet 4242 4242 4242 4242.",
     entities: [{ value: "Amir Haddad", label: "PERSON" }],
   },
   {
-    text: "Mejl från arg kund: ni har fakturerat fel person, jag heter INTE lars-göran öberg och bor inte på ringvägen 14 i katrineholm.",
+    text: "Mejl från arg kund: ni har fakturerat fel person, jag heter INTE lars-göran öberg och bor inte på maskeravägen 14 i katrineholm.",
     entities: [
       { value: "lars-göran öberg", label: "PERSON" },
-      { value: "ringvägen 14", label: "ADDRESS" },
+      { value: "maskeravägen 14", label: "ADDRESS" },
       { value: "katrineholm", label: "LOCATION" },
     ],
   },
@@ -125,16 +126,16 @@ export const corpus = [
     ],
   },
   {
-    text: "Fastigheten Videboda 2:17 i Hultsfreds kommun överlåts från dödsboet efter P. Sjöqvist.",
+    text: "Testfastigheten TEST:1 i Hultsfreds kommun överlåts från dödsboet efter P. Sjöqvist.",
     entities: [
       { value: "Hultsfreds kommun", label: "LOCATION" },
       { value: "P. Sjöqvist", label: "PERSON" },
     ],
   },
   {
-    text: "Testamente: min bostadsrätt på Sankt Olofsgatan 11B i Uppsala tillfaller systerdottern Linnea Vikström-Blad.",
+    text: "Testamente: min bostadsrätt på Sankt Testolofsgatan 11B i Uppsala tillfaller systerdottern Linnea Vikström-Blad.",
     entities: [
-      { value: "Sankt Olofsgatan 11B", label: "ADDRESS" },
+      { value: "Sankt Testolofsgatan 11B", label: "ADDRESS" },
       { value: "Uppsala", label: "LOCATION" },
       { value: "Linnea Vikström-Blad", label: "PERSON" },
     ],
@@ -149,7 +150,7 @@ export const corpus = [
     ],
   },
   {
-    text: "Försörjningsstöd beviljas för Jonas Wikström, 20020301-2398, boende Maskeragränd 2, 123 45 Eskilstuna.",
+    text: "Försörjningsstöd beviljas för Jonas Wikström, 20020301-2398, boende Maskeragränd 2 i Eskilstuna.",
     entities: [
       { value: "Jonas Wikström", label: "PERSON" },
       { value: "Maskeragränd 2", label: "ADDRESS" },
@@ -162,10 +163,10 @@ export const corpus = [
   },
   // --- bank / försäkring ---
   {
-    text: "Skadeanmälan: Fatima Al-Rashid, vattenskada på Trollbergsvägen 8 i Sandviken, ersättning till IBAN SE42 8000 0890 1191 4616 8423.",
+    text: "Skadeanmälan: Fatima Al-Rashid, vattenskada på Provdatavägen 8 i Sandviken, ersättning till IBAN SE42 8000 0890 1191 4616 8423.",
     entities: [
       { value: "Fatima Al-Rashid", label: "PERSON" },
-      { value: "Trollbergsvägen 8", label: "ADDRESS" },
+      { value: "Provdatavägen 8", label: "ADDRESS" },
       { value: "Sandviken", label: "LOCATION" },
     ],
   },

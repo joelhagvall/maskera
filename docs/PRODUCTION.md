@@ -42,7 +42,7 @@ installed it directly. Everything else is about doing it *well*.
 
 Use rules alone when your inputs are forms or structured-ish text. Add the
 model when users type free text (chat, support tickets, journal notes),
-because that's where "min granne Lars på våning 4" lives. In the hybrid,
+because that's where "min granne Provnamn på våning 4" lives. In the hybrid,
 **rules win on overlap**: a model detection that overlaps a rule detection is
 dropped, so the deterministic layer is always authoritative.
 
@@ -154,11 +154,12 @@ changing: the eval harness (below) tells you what a threshold does to leaks.
 ### Word denylist (`denylist`)
 
 The model can confidently tag a common word that sits where a name usually
-sits ("Kund Maria ...", "Mail: ...", "betalning till bankgiro ..."), and a
+sits ("Kund Provnamn ...", "Mail: ...", "betalning till bankgiro ..."), and a
 score threshold does nothing against a 0.99 false positive. The recognizer
 therefore drops any detection whose whole surface form (case-insensitive) is
-on a denylist of Swedish role/contact/payment words. Multi-word entities are
-never affected. Extend it with the vocabulary of your own domain:
+on a denylist of Swedish role/contact/payment words and unambiguous generic
+modifiers/service nouns. Multi-word entities are never affected. Extend it
+with the vocabulary of your own domain:
 
 ```ts
 createNerRecognizer({ denylist: [...DEFAULT_DENYLIST, "boende", "vårdnadshavare"] })
@@ -182,7 +183,7 @@ serve them from your own origin and forbid remote fetches:
 
 ```ts
 createNerRecognizer({
-  model: "maskera-sv-ner-v18", // version the folder name: the browser caches by URL
+  model: "maskera-sv-ner-v19", // version the folder name: the browser caches by URL
   localModelPath: "/models/",   // same-origin path (or a CDN reverse-proxied here)
   allowLocalModels: true,
   allowRemoteModels: false,
@@ -192,7 +193,7 @@ createNerRecognizer({
 Copy `config.json`, `tokenizer.json`, `tokenizer_config.json`,
 `special_tokens_map.json`, `vocab.txt` and `onnx/model_q4.onnx` from the
 [Hub repo](https://huggingface.co/joelhagvall/maskera-sv-ner) into
-`public/models/maskera-sv-ner-v18/`. Version the folder name; Transformers.js
+`public/models/maskera-sv-ner-v19/`. Version the folder name; Transformers.js
 caches by URL in the browser and never revalidates, so a renamed folder is
 what gets returning visitors onto a new model. After that, nothing leaves your
 infrastructure, which is the whole point of the tool. Keep `localModelPath`

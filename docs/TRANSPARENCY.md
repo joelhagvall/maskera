@@ -26,30 +26,36 @@ are.
 
 ## How the model was trained (honestly)
 
-- **No collected personal data in training.** The Swedish NER model was trained
-  on template-generated synthetic sentences (`training/generate_data.mjs`) plus
-  six public, openly licensed (CC BY 4.0) corpora of already-published text:
-  the [Swedish NER Corpus](https://github.com/klintan/swedish-ner-corpus)
-  (news), [SUCX 3.0 NER](https://huggingface.co/datasets/KBLab/sucx3_ner)
-  (balanced genres),
-  [MASSIVE sv-SE](https://huggingface.co/datasets/AmazonScience/massive)
-  (chat-register utterances),
-  [SIC2](https://spraakbanken.gu.se/resurser/sic2) (informal blog text),
-  [MultiCoNER v2 sv](https://huggingface.co/datasets/MultiCoNER/multiconer_v2)
-  (lowercase wiki sentences) and a pseudo-labeled sample of Flashback /
-  Familjeliv forum text ([Språkbanken](https://spraakbanken.gu.se/resurser)
-  research corpora): **no user data, nothing scraped by us, nothing collected
-  for this project.** All corpus text was previously published under an open
-  license; the synthetic generator is in the repo, so you can read exactly
-  what it produces.
+- **Published v19 is the privacy-clean artifact.** Its task-specific training
+  uses 64,000 generated rows and 4,760 disjoint validation rows. Historical v18
+  used generated sentences plus documented, openly licensed public Swedish
+  corpora; its dated comparison tables remain for transparency.
+- **Structured identifiers fail closed.** Every row is rejected if it contains
+  an IBAN/account-shaped value, identity or organisation number, phone, e-mail,
+  URL, public IP, payment identifier, long account/card-like number, or postal
+  code. Even officially reserved detector-test values are excluded from model
+  training. The scanner reports categories, not the matched value.
+- **Exact provenance is bound to published v19.** The data row
+  counts and SHA-256 hashes are bound to the generator's code hash. Training, trimming,
+  distillation, ONNX export, and publication require the resulting
+  `privacy-attestation.json`; a converter append or manual edit breaks the
+  manifest. See the full
+  [training-data protection policy](TRAINING_DATA_PROTECTION.md).
 - **Base model:** `KBLab/bert-base-swedish-cased` (National Library of Sweden),
-  public domain (CC0). Fine-tuned, then distilled to a smaller student.
+  published under CC0. The privacy attestation covers Maskera's task-specific
+  data, not the third-party checkpoint's earlier pretraining corpus. CC0 grants
+  copyright permissions; it is not a GDPR determination.
 - **The whole pipeline is reproducible**: data → train → distill → ONNX → eval are
   all scripts in [`training/`](../training). Nothing is hidden.
 
 ## How good is it, really
 
-- Benchmarked openly on a hand-authored set **and** independent real text.
+- The public-comparison tables describe historical v18, while the current v19
+  release snapshot records 100.0%
+  label-agnostic span F1 and 0/57 leaks on the revised synthetic ADR set,
+  96.9% span F1 and 1/205 leaks on curated, and 81.0% span F1 with 0/53
+  leaks on the LinkedIn-style set. All defined gates pass, but these are
+  synthetic or author-coupled checks, not independent universal estimates.
   The canonical, dated numbers live in [`docs/BENCHMARKS.md`](BENCHMARKS.md);
   the round-by-round training journey and its caveats are in
   [`training/README.md`](../training/README.md), including that synthetic-eval F1
@@ -71,12 +77,10 @@ No. Redaction is local. Only model weights and the runtime are fetched, never
 your content.
 
 **What was the model trained on?**
-Template-generated synthetic sentences (`training/generate_data.mjs`) plus six
-public, openly licensed (CC BY 4.0) corpora of already-published text: news,
-balanced genres, chat-register utterances, blog and forum text (see the full
-sourced list above and on the
-[model card](https://huggingface.co/joelhagvall/maskera-sv-ner)). No user
-data, nothing collected for this project.
+Published v19 uses only generated task sentences in Maskera's task-specific
+training and ships exact data/audit-code hashes with its weights. The separate
+KB-BERT pretraining boundary is documented in the
+[training-data protection policy](TRAINING_DATA_PROTECTION.md).
 
 **Is this GDPR-compliant?**
 maskera is a **data-minimisation tool** that helps you avoid sending PII to third

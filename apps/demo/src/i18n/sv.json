@@ -78,7 +78,7 @@
     "tocLabel": "På den här sidan",
     "toc": [
       { "href": "#matt", "label": "Vad måtten betyder" },
-      { "href": "#oberoende", "label": "Oberoende svenska texter" },
+      { "href": "#oberoende", "label": "Externa svenska texter" },
       { "href": "#adresser", "label": "Svenska adresser" },
       { "href": "#tolkning", "label": "Så ska resultaten tolkas" },
       { "href": "#begransningar", "label": "Begränsningar" },
@@ -86,10 +86,10 @@
     ],
     "metricsTitle": "Missar är det viktigaste måttet",
     "metricsBody": "En fullständig miss betyder att en personuppgift står kvar i klartext. Precision visar hur ofta en markering var rätt. Recall visar hur stor andel av alla personuppgifter som hittades. Ett hederligt test behöver visa båda.",
-    "independentTitle": "Oberoende svenska texter",
-    "independentCaption": "22 meningar skrivna av andra och aldrig använda i träningen. De innehåller 58 personuppgifter. Testet är litet, så resultatet visar en riktning och inte en slutlig vinnare.",
+    "independentTitle": "Externa svenska texter",
+    "independentCaption": "22 meningar skrivna av andra och uteslutna ur Maskeras finträning, destillering och vokabulärurval. De innehåller 58 personuppgifter. Testet är litet och bevisar inte frånvaro ur KB-BERTs tidigare förträning, så resultatet visar en riktning och inte en slutlig vinnare.",
     "addressesTitle": "Svenska adresser",
-    "addressesCaption": "41 texter med 60 personuppgifter, varav 35 gatuadresser. Testet innehåller också uttryck som liknar adresser men inte är det.",
+    "addressesCaption": "Det daterade v18-resultatet gäller den tidigare korpusen. Publicerade v19 har mätts separat på 41 texter med 35 explicit syntetiska gatuadresser: alla adresser hittas exakt och ingen av korpusens 57 entiteter läcker.",
     "table": {
       "system": "System",
       "precision": "Rätt markeringar",
@@ -176,25 +176,26 @@
     ],
     "interpretationTitle": "Så ska resultaten tolkas",
     "interpretation": [
-      "I det lilla oberoende testet hittar Azure en personuppgift mer. Maskera gör något färre felmarkeringar. Underlaget är för litet för att utse en säker vinnare.",
-      "I adresstestet hittar Maskera alla 35 gatuadresser exakt. Azure hittar 28 av 35 exakt och missar en av testets 60 personuppgifter helt. Testets författare har också skapat Maskeras träningsgenerator. Resultatet visar därför en styrka på svenska adresser, inte att Maskera alltid är bäst.",
+      "I det lilla externa testet hittar Azure en personuppgift mer. Maskera gör något färre felmarkeringar. Underlaget är för litet för att utse en säker vinnare.",
+      "I den historiska v18-mätningen hittade Maskera alla 35 gatuadresser exakt. Azure hittade 28 av 35 exakt och missade en av testets 60 personuppgifter helt. Publicerade v19 har ommätts på ersättningskorpusen med tydligt syntetiska adresser: alla 35 adresser hittas exakt och ingen av korpusens 57 entiteter läcker. Det är inte en ny jämförelse med Azure.",
       "Både Azures särskilda personuppgiftsanalys och dess allmänna analys av namn, platser och organisationer kördes. Det ger Azure den starkaste rättvisa konfigurationen för testet."
     ],
     "limitsTitle": "Det här visar testerna inte",
     "limits": [
-      "I det egna större testet når Maskera 99,8 procent i det sammanvägda F1-måttet och noll fullständiga missar. Samma utvecklare har skapat både testgeneratorn och träningsgeneratorn. Därför används testet för att stoppa försämringar, inte som ett oberoende betyg.",
+      "I den historiska v18-mätningens större egna test nådde Maskera 99,8 procent i det sammanvägda F1-måttet och noll fullständiga missar. Samma utvecklare skapade både testgeneratorn och träningsgeneratorn. Därför används testet för att stoppa försämringar, inte som ett oberoende betyg.",
       "Ingen automatisk maskering är perfekt. Ovanliga namn, OCR-brus och formuleringar långt från träningsdatan kan missas. Låt en människa kontrollera texten när ett fel kan få stora konsekvenser.",
       "De här korpusarna mäter fri text. Strukturerade identifierare som personnummer och IBAN hanteras av regelmotorn och ingår inte i jämförelsen."
     ],
     "sourcesTitle": "Källor och reproduktion",
     "provenance": [
-      "Maskera mättes 2026-07-19 på maskera 0.6.4 och maskera-sv-ner v18 (q4, cirka 43 MB).",
+      "Publicerade maskera-sv-ner v19 (q4, cirka 43 MB) mättes på de syntetiska releasegrindarna 2026-08-06.",
+      "De jämförande tabellerna mättes 2026-07-19 på maskera 0.6.4 och historiska maskera-sv-ner v18.",
       "Azure mättes 2026-07-22 med GA-API 2024-11-01, modell 2025-11-01, språk sv, UTF-16-index och loggingOptOut aktiverat."
     ],
     "sourcesBody": "Testtexter, metod, körskript och de fullständiga Maskera-resultaten finns i det öppna repot. BENCHMARKS.md är källan som gäller om en siffra någon annanstans skulle skilja sig.",
     "benchmarksCta": "Läs benchmark-källan",
     "scriptsCta": "Se jämförelsens data och skript",
-    "demoCta": "Prova samma modell i webbläsardemon"
+    "demoCta": "Prova den aktuella modellen i webbläsardemon"
   },
   "security": {
     "metaTitle": "säkerhet · maskera",
@@ -245,6 +246,21 @@
     "productionCta": "Läs produktionsguiden",
     "gatewayBody": "Den här sidan gäller npm-paketen och den öppna demon. Gateway har dessutom egen autentisering, leverans och driftmodell som dokumenteras i kundportalen.",
     "gatewayCta": "Läs om Maskera Gateway"
+  },
+  "transparency": {
+    "training": {
+      "syntheticTitle": "Publicerade v19 är den integritetsrena modellen.",
+      "syntheticBody": "v19 klarade alla releasegrindar med 64 000 genererade träningsrader och 4 760 separerade valideringsrader. Där stoppas IBAN, person- och organisationsnummer, telefonnummer, e-post, konto- och betalningsidentifierare, publika IP-adresser, postnummer och verklighetsnära gatuadresspar före träning. Historiska v18 använde även dokumenterade, öppet licensierade svenska korpusar och redovisas separat.",
+      "policyCta": "Läs den tekniska dataskyddspolicyn",
+      "attestationBody": "Varje publicerad v19-artefakt bär samma attestering med radantal och SHA-256 för exakt data, generator och granskningskod. Den publicerade proveniensen sammanfattas i",
+      "modelCardCta": "modellkortet",
+      "baseTitle": "Basmodell:",
+      "baseBody": "KB-BERT från Kungliga biblioteket, publicerad under CC0.",
+      "baseCta": "Se KB-BERT",
+      "baseBoundary": "Attesteringen gäller Maskeras egen finträning. Den gör inget absolut påstående om vilken offentlig text som kan ha ingått när KB-BERT ursprungligen förtränades.",
+      "reproTitle": "Hela kedjan går att göra om från grunden.",
+      "reproBody": "Generering, integritetsgranskning, träning, destillering, komprimering, export och utvärdering är öppna skript. Ändras en träningsrad, försvinner en syntetisk adressmarkör eller läggs en korpus till bryts manifestet och pipelinen vägrar fortsätta."
+    }
   },
   "services": {
     "gatewayInterestCta": "Anmäl intresse",

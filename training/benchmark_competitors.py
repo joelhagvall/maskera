@@ -96,8 +96,9 @@ def score(docs, nlp):
     return red_rec, typ_prec, typ_rec, typ_f1
 
 
+MASKERA_MODEL = os.environ.get("MASKERA_COMPETITOR_MODEL", "student-v19-privacy-trimmed")
 MODELS = [
-    ("maskera (student-v18-trimmed, fp32)", "student-v18-trimmed"),
+    (f"maskera ({MASKERA_MODEL}, fp32)", MASKERA_MODEL),
     ("RecordedFuture Swedish-NER", "RecordedFuture/Swedish-NER"),
     ("KB-NER (full BERT)", "KB/bert-base-swedish-cased-ner"),
     ("KBLab neriob (IOB head)", "KBLab/bert-base-swedish-cased-neriob"),
@@ -107,7 +108,7 @@ MODELS = [
     ("sbx PII general", "sbx/KB-bert-swedish_PI-detection-general-iob"),
     ("sbx PII detailed", "sbx/KB-bert-swedish_PI-detection-detailed-iob"),
 ]
-SETS = [("gold-real (independent)", "eval/gold-real.txt"), ("our set (maskera-favouring)", "eval/gold.txt")]
+SETS = [("synthetic hand-authored set", "eval/gold.txt")]
 
 
 # Chat users type without capitalisation; casing robustness is a differentiator
@@ -125,7 +126,7 @@ if not os.path.isdir(MODELS[0][1]):
     )
 
 RUNS = [(n, load_gold(p)) for n, p in SETS]
-RUNS.append(("gold-real LOWERCASED (chat style)", lower_docs(load_gold("eval/gold-real.txt"))))
+RUNS.append(("synthetic hand-authored set LOWERCASED", lower_docs(load_gold("eval/gold.txt"))))
 for set_name, docs in RUNS:
     print(f"\n=== {set_name}: {len(docs)} sentences, {sum(len(s) for _, s in docs)} PER/LOC/ORG entities ===")
     print(f"{'model':<30} {'redaction recall':>16} {'typed P':>9} {'typed R':>9} {'typed F1':>9}")

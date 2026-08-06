@@ -10,6 +10,7 @@
 import { resolveSpans } from "./score.mjs"
 
 const CORPUS_FILE = process.env.CORPUS_FILE ?? "./corpus-adr.mjs"
+const AGGREGATE_ONLY = process.env.MASKERA_AGGREGATE_ONLY === "1"
 const { corpus } = await import(CORPUS_FILE)
 
 const { createNerRecognizer } = await import("maskera")
@@ -38,12 +39,45 @@ let adrLabeled = 0 // masked AND labeled ADDRESS
 let adrLeak = 0
 const adrFalsePos = [] // predicted ADDRESS not overlapping any gold ADDRESS
 const spanDump = []
+const falsePositiveByRegister = new Map()
+const falsePositiveByKind = new Map()
+const affectedDocuments = new Set()
+const allFalsePositiveByLabel = new Map()
+const allFalsePositiveByKind = new Map()
+const allFalsePositiveByRegister = new Map()
+const allFalsePositiveByDocument = new Map()
+const allAffectedDocuments = new Set()
+const allFalseSpans = []
 
-for (const doc of corpus) {
+const increment = (map, key) => map.set(key, (map.get(key) ?? 0) + 1)
+
+for (const [documentIndex, doc] of corpus.entries()) {
   const gold = resolveSpans(doc.text, doc.entities)
   const pred = await recognizer.detect(doc.text)
   const goldAdr = gold.filter((g) => g.label === "ADDRESS")
   const predAdr = pred.filter((p) => p.label === "ADDRESS")
+
+  const usedGold = new Set()
+  for (const p of pred) {
+    const exactGoldIndex = gold.findIndex((g, index) => !usedGold.has(index) && sameSpan(g, p))
+    if (exactGoldIndex >= 0) {
+      usedGold.add(exactGoldIndex)
+      continue
+    }
+    const overlappingGold = gold.find((g) => overlaps(g, p))
+    const span = doc.text.slice(p.start, p.end)
+    const kind = overlappingGold
+      ? `boundary:${p.label}:gold-${overlappingGold.label}`
+      : /\d/u.test(span)
+        ? `extra:${p.label}:numeric`
+        : `extra:${p.label}:text`
+    increment(allFalsePositiveByLabel, p.label)
+    increment(allFalsePositiveByKind, kind)
+    increment(allFalsePositiveByRegister, doc.register ?? "unspecified")
+    increment(allFalsePositiveByDocument, `${documentIndex + 1}:${p.label}:${kind}`)
+    allAffectedDocuments.add(doc.text)
+    allFalseSpans.push({ document: documentIndex + 1, span, label: p.label })
+  }
 
   for (const g of goldAdr) {
     adrGold++
@@ -63,7 +97,17 @@ for (const doc of corpus) {
   // ADR false positives: model said ADDRESS where no gold ADDRESS overlaps.
   for (const p of predAdr) {
     if (!goldAdr.some((g) => overlaps(g, p))) {
-      adrFalsePos.push({ text: doc.text, span: doc.text.slice(p.start, p.end) })
+      const span = doc.text.slice(p.start, p.end)
+      const overlapsOtherGold = gold.find((g) => g.label !== "ADDRESS" && overlaps(g, p))
+      const kind = overlapsOtherGold
+        ? `label-confusion:${overlapsOtherGold.label}`
+        : /\d/u.test(span)
+          ? "unannotated:numeric"
+          : "unannotated:text"
+      adrFalsePos.push({ text: doc.text, span })
+      increment(falsePositiveByRegister, doc.register ?? "unspecified")
+      increment(falsePositiveByKind, kind)
+      affectedDocuments.add(doc.text)
     }
   }
 }
@@ -81,12 +125,44 @@ console.log(
   `ADDRESS precision:         ${adrLabeled}/${adrPredTotal}  ${pct(adrLabeled, adrPredTotal)}  (${adrFalsePos.length} false ADDRESS flags)`,
 )
 
-console.log("\n--- gold ADDRESS  ->  what the model predicted over that span ---")
-for (const s of spanDump) console.log(`  "${s.gold}"  ->  ${s.pred}`)
+console.log(`documents with false ADDRESS flags: ${affectedDocuments.size}/${corpus.length}`)
+for (const [kind, count] of [...falsePositiveByKind].sort()) {
+  console.log(`false ADDRESS category ${kind}: ${count}`)
+}
+for (const [register, count] of [...falsePositiveByRegister].sort()) {
+  console.log(`false ADDRESS register ${register}: ${count}`)
+}
+console.log(`documents with any false span: ${allAffectedDocuments.size}/${corpus.length}`)
+for (const [label, count] of [...allFalsePositiveByLabel].sort()) {
+  console.log(`false span predicted label ${label}: ${count}`)
+}
+for (const [kind, count] of [...allFalsePositiveByKind].sort()) {
+  console.log(`false span category ${kind}: ${count}`)
+}
+for (const [register, count] of [...allFalsePositiveByRegister].sort()) {
+  console.log(`false span register ${register}: ${count}`)
+}
+for (const [document, count] of [...allFalsePositiveByDocument].sort(
+  ([left], [right]) => Number(left.split(":", 1)[0]) - Number(right.split(":", 1)[0]),
+)) {
+  console.log(`false span document ${document}: ${count}`)
+}
 
-if (adrFalsePos.length) {
-  console.log("\n--- false ADDRESS flags (should be none) ---")
-  for (const f of adrFalsePos) console.log(`  "${f.span}"  in: ${f.text}`)
-} else {
-  console.log("\n--- no false ADDRESS flags on the distractor set ---")
+if (!AGGREGATE_ONLY) {
+  console.log("\n--- gold ADDRESS  ->  what the model predicted over that span ---")
+  for (const s of spanDump) console.log(`  "${s.gold}"  ->  ${s.pred}`)
+
+  if (adrFalsePos.length) {
+    console.log("\n--- false ADDRESS flags (should be none) ---")
+    for (const f of adrFalsePos) console.log(`  "${f.span}"  in: ${f.text}`)
+  } else {
+    console.log("\n--- no false ADDRESS flags on the distractor set ---")
+  }
+
+  if (allFalseSpans.length) {
+    console.log("\n--- all false spans by synthetic document index ---")
+    for (const item of allFalseSpans) {
+      console.log(`  document ${item.document}: "${item.span}" [${item.label}]`)
+    }
+  }
 }

@@ -9,9 +9,8 @@
  * Sources (single source of truth, never copied):
  *   - curated:   packages/ner/eval/corpus.mjs
  *   - adr:       packages/ner/eval/corpus-adr.mjs
- *   - gold-real: training/eval/gold-real.txt via the existing converter
+ * External/raw prose is deliberately not exported by this command.
  */
-import { execFileSync } from "node:child_process"
 import { mkdirSync, writeFileSync } from "node:fs"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -26,15 +25,6 @@ const sets = [
   { name: "curated", file: join(ROOT, "packages/ner/eval/corpus.mjs") },
   { name: "adr", file: join(ROOT, "packages/ner/eval/corpus-adr.mjs") },
 ]
-
-// gold-real goes through the existing converter; its last stdout line is the
-// path of the generated corpus module.
-const convLines = execFileSync("node", [join(ROOT, "packages/ner/eval/convert-gold-real.mjs")], {
-  encoding: "utf8",
-})
-  .trim()
-  .split("\n")
-sets.push({ name: "gold-real", file: convLines[convLines.length - 1] })
 
 for (const { name, file } of sets) {
   const { corpus } = await import(file)

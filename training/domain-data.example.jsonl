@@ -1,3 +1,3 @@
 {"id":"support-example-001","text":"hej jag heter nadia saleh och bor i malmö","entities":[{"start":14,"end":25,"label":"PERSON","value":"nadia saleh"},{"start":36,"end":41,"label":"LOCATION","value":"malmö"}]}
 {"id":"support-example-002","text":"tack då väntar jag på svar","entities":[]}
-{"id":"support-example-003","text":"paketet ska till Sveavägen 144","entities":[{"start":17,"end":30,"label":"ADDRESS","value":"Sveavägen 144"}]}
+{"id":"support-example-003","text":"paketet ska till Maskeragatan 144","entities":[{"start":17,"end":33,"label":"ADDRESS","value":"Maskeragatan 144"}]}

@@ -15,10 +15,17 @@ tags:
   - onnx
   - transformers.js
 widget:
-  - text: "Jag heter Anna Lindqvist och jobbar på Volvo i Göteborg."
+  - text: "Jag heter Provnamn Maskera och jobbar på Fiktivbolaget i Provbyn."
 ---
 
+<!-- maskera-release-status: published -->
+
 # maskera-sv-ner
+
+> **Repository status (2026-08-06):** the weights served under this id are the
+> attested, privacy-clean v19 release. The dated public-comparison tables below
+> remain historical v18 metrics and are explicitly separated from v19's
+> synthetic release-gate results.
 
 A small Swedish token-classification model that finds **free-text PII**
 (people, places and organisations) so it can be redacted before text is sent to
@@ -36,14 +43,15 @@ All inference happens **on the device where the text is**, via
 small enough to run **directly in a browser tab**, which is exactly how the
 maskera demo ships: try it live at [maskera.dev](https://maskera.dev).
 
-Benchmarked against the public Swedish NER alternatives in the dated
-comparison (KB-NER,
+The published v18 artifact was benchmarked against the public Swedish NER
+alternatives in the dated comparison (KB-NER,
 RecordedFuture, KBLab reallysimple/lowermix/neriob, scandi-ner, the sbx
-PI-detection pair), it **holds the best typed F1 on independent Swedish text at under a
+PI-detection pair). It **held the best typed F1 on independent Swedish text at under a
 tenth of their size** (0.96 vs 0.94 for the closest full-size model); on
 lowercase text its strength is the chat/support register it targets, while
 KBLab's lowermix still leads on lowercased encyclopedic prose; see
-[How it compares](#how-it-compares).
+[How it compares](#how-it-compares). Those historical comparisons do not
+automatically transfer to v19.
 
 - **Base model:** [KBLab/bert-base-swedish-cased](https://huggingface.co/KBLab/bert-base-swedish-cased) (KB-BERT, CC0), 6 transformer layers
 - **Task:** token classification (BIO), entity types `PER`, `LOC`, `ORG`, `ADR`
@@ -69,7 +77,11 @@ Note: the PER / LOC / ORG benchmark sets below contain no street addresses, so
 saint-prefix, free-word-ending, farm and abbreviated forms, held out of
 training). Measured 2026-07-19 on the shipped q4 artifact: **redaction recall
 100%**, **0% leaks**, **ADDRESS precision 100%**, **exact-span recall 100%**,
-house numbers included (`Sveavägen 44`, not just `Sveavägen`). The previous
+house numbers included. The earlier real-looking street/number surfaces were
+removed from the repository on 2026-08-06 and replaced with conspicuously
+synthetic markers; the dated v18 address result is therefore historical. v19
+has been measured separately on the replacement set (all 35 addresses exact,
+0/57 corpus leaks) and does not relabel the v18 result. The previous
 release's documented over-redaction on this corpus's distractor set (the
 ordinary word "Festen" tagged PERSON) is fixed. Full breakdown:
 [BENCHMARKS.md → Address (ADR) eval](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md#address-adr-eval-the-one-class-the-other-sets-miss).
@@ -97,7 +109,7 @@ const recognizer = createNerRecognizer({
 })
 
 const { text, restore } = await redactWithNer(
-  "Anna Lindqvist på Volvo i Göteborg ringde om fakturan.",
+  "Provnamn Maskera på Fiktivbolaget i Provbyn ringde om fakturan.",
   { recognizer },
 )
 // text -> "[NAMN_1] på [ORGANISATION_1] i [PLATS_1] ringde om fakturan."
@@ -111,7 +123,7 @@ import { pipeline } from "@huggingface/transformers"
 const ner = await pipeline("token-classification", "joelhagvall/maskera-sv-ner", {
   dtype: "q4",
 })
-const out = await ner("Anna Lindqvist bor i Göteborg.")
+const out = await ner("Provnamn Maskera bor i Provbyn.")
 ```
 
 ## Intended use & limitations
@@ -150,8 +162,9 @@ tracker. Second consecutive release with zero leaks on this set:
 | leaks     | 0.0%  | entities missed entirely (the safety number) |
 
 Independent gold set (22 sentences of real Swedish Wikipedia prose,
-hand-labelled, held out from all training data). Small, so read it as a
-directional independent floor:
+hand-labelled and excluded from Maskera's task training and vocabulary
+selection). Small, so read it as a directional independent floor; this does
+not prove example-level absence from KB-BERT's earlier pretraining corpus:
 
 | metric    | score | meaning                                  |
 | --------- | ----- | ---------------------------------------- |
@@ -160,35 +173,59 @@ directional independent floor:
 | span F1   | 94.7% | harmonic mean, label-agnostic            |
 | leaks     | 3.4%  | entities missed entirely, 2 of 58 (both listed in BENCHMARKS.md's known-miss table) |
 
-The model is trained on synthetic Swedish (with whole-sentence lowercase,
-ALL CAPS and genitive augmentation, since chat users type lowercase; the
-current round also trains the student on the trimmed inference vocabulary's
-subword decompositions, so rare surnames like "tjulander" stay caught in the
-chat register) plus six public, openly licensed real corpora (all
-CC BY 4.0): the
-[**Swedish NER Corpus**](https://github.com/klintan/swedish-ner-corpus)
-(news) train split, a weighted sample of
-[**SUCX 3.0 NER**](https://huggingface.co/datasets/KBLab/sucx3_ner)
-(KBLab, balanced genres, the data behind KBLab's case-robust lowermix
-recipe),
-[**MASSIVE sv-SE**](https://huggingface.co/datasets/AmazonScience/massive)
-(Amazon, lowercase chat-register utterances),
-[**SIC2**](https://spraakbanken.gu.se/resurser/sic2) (Språkbanken, informal
-blog text) and a class-audited sample of
-[**MultiCoNER v2 sv**](https://huggingface.co/datasets/MultiCoNER/multiconer_v2)
-(SemEval-2023, lowercase wiki sentences); from the v14 round also a
-register-targeted, ensemble pseudo-labeled sample of
-**Flashback / Familjeliv** forum text
-([Språkbanken](https://spraakbanken.gu.se/resurser); pseudo-labels amplify
-the informal register, every published number is still measured on
-human-labeled sets). The v15 round added a synthetic balanced
-class-replay dose (sentence-initial bare-surname declaratives paired with
-LOC / ORG / ADR positives and capitalised common-word negatives); the v18
-round density-guards the forum sample (empty rows capped against the actual
-sample) and scrubs rows where famous lowercase entities are untagged (label
-poison), the fix the v17 hold prescribed. That also means the Swedish NER Corpus
-test split is in-distribution and is NOT used as the independent measure. A
-larger independent gold set is the top data TODO. Harnesses live in the
+### Published privacy-clean v19
+
+The published v19 artifact's task-specific fine-tuning and distillation data
+is generated by `training/generate_data.mjs`: 64,000 training rows and 4,760
+disjoint validation rows, with whole-sentence lowercase, ALL CAPS, genitive,
+balanced-class, all-`O` hard-negative, and trimmed-vocabulary subword variants.
+It does not use customer data, logs, forum posts, news, scraped text, public NER
+corpora, or pseudo-labels from those sources. Its active release battery also
+uses only synthetic/task-authored sets and non-record category probes. The 20k
+vocabulary ranks pieces by the attested synthetic splits and fills unused
+capacity from the pinned KB-BERT tokenizer's native id order.
+Common name, place, and organisation fragments are randomly composed as class
+exemplars rather than copied records or factual claims; a chance collision with
+an ordinary real name cannot be ruled out. Every address span contains an
+explicit synthetic marker, so a random street/number pair cannot silently
+become a plausible real property address.
+
+Every task row is rejected if it contains an IBAN/account-shaped value,
+identity or organisation number, phone, e-mail, URL, public IP, payment
+identifier, long account/card-like number, or postal code. This includes
+officially reserved test values: those are useful for the separate rule-engine
+tests but unnecessary for NER weights. The exact train/validation row counts
+and SHA-256 hashes, the generator code hash, and audit-code hashes are in
+`privacy-attestation.json` beside the weights. Training, distillation, vocabulary
+trimming, ONNX export, and publication all refuse legacy or incomplete
+attestations.
+
+The exact published-v19 provenance is:
+
+- generator SHA-256:
+  `6b800e1748245a4296626d582585f9814c7a6bd383f87b3e3f290f231585eff5`;
+- train SHA-256:
+  `5c6ad83e7b4e3b200d18dca49cd6603482c1d53e330de28ac095ef4e043786e3`;
+- validation SHA-256:
+  `b7b4a3886ab31218ed368ba8e20fbe2446cffe100b54c0115ef2286ee50faf1a`;
+- KB-BERT revision:
+  `ce7c3424687f042f1320e0528293d492c82918c4`.
+
+Measured on the published q4 artifact plus the packaged runtime precision
+guard: curated span F1 96.9% with 1/205 leaks; revised synthetic ADR span
+precision/recall/F1 100.0% with 0/57 leaks; LinkedIn-style span F1 81.0% with
+0/53 leaks; decomposing rare-surname masked recall 96.94% (285/294). All 35
+marked address spans are exact and labeled ADDRESS. One gold organisation is
+typed ADDRESS, so whole-corpus ADR labeled F1 is 96.5% and ADDRESS-only
+precision is 35/36. These are synthetic release-gate results, not the historical
+v18 comparison metrics or an independent universal quality estimate.
+
+This attestation covers Maskera's task-specific processing. It does not claim
+that the third-party KB-BERT checkpoint was originally pretrained on
+synthetic-only data; CC0 is a copyright permission, not a GDPR determination.
+Full scope and verification commands:
+[TRAINING_DATA_PROTECTION.md](https://github.com/joelhagvall/maskera/blob/main/docs/TRAINING_DATA_PROTECTION.md).
+Harnesses live in the
 [maskera repo](https://github.com/joelhagvall/maskera) (`packages/ner/eval`
 and `training/`); run them yourself before relying on the numbers.
 
@@ -249,10 +286,12 @@ mismatch on PER/LOC/ORG rather than general quality.
 - **Base model:** KB-BERT (`KBLab/bert-base-swedish-cased`) is released CC0 by the
   National Library of Sweden (Kungliga biblioteket). No obligations attach, but
   I acknowledge it gratefully; see `NOTICE`.
-- **Training data:** includes the Swedish NER Corpus, SUCX 3.0 NER
-  (KBLab/Språkbanken Text), MASSIVE sv-SE (Amazon Science), SIC2, MultiCoNER
-  v2 sv and pseudo-labeled Flashback/Familjeliv forum text (Språkbanken
-  Text), all CC BY 4.0; full attributions in `NOTICE`.
+- **Published v18 task data:** generated Swedish plus the openly licensed
+  public corpora listed in the v18 release history.
+- **Published v19 task data:** generated locally by the public Maskera
+  generator; no third-party text corpus is used. The artifact carries the exact
+  provenance hashes above in `privacy-attestation.json`; that file ships
+  unchanged with its weights.
 
 ## Citation
 

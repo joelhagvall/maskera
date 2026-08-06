@@ -50,7 +50,7 @@ describe("invalidPersonnummer: invalid pnr-shaped strings are hinted", () => {
 
 describe("invalidPersonnummer: shapes outside the hint's remit", () => {
   const skipped = [
-    ["bare 10 digits, no separator", "ordernummer 9001012384 skickad"],
+    ["bare 10 digits, no separator", "ordernummer TEST-9001012384 skickad"],
     ["space instead of separator", "pnr 19900101 2385 kanske"],
     ["too few digits before separator", "id 90011-2384 nej"],
     ["too many digits after separator", "ref 900101-23845 nej"],

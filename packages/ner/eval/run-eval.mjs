@@ -31,6 +31,7 @@
  *   MASKERA_LEAK_CEIL   maximum acceptable leak rate, the share of gold entities
  *                       with zero overlapping prediction (default: 0.08)
  *   MASKERA_DTYPE       quantization dtype (default: q4)
+ *   MASKERA_AGGREGATE_ONLY=1  suppress entity values and complete sentences
  */
 
 import { evaluate } from "./score.mjs"
@@ -48,6 +49,7 @@ const MODEL =
 const MODEL_PATH = process.env.MASKERA_MODEL_PATH
 const DTYPE = process.env.MASKERA_DTYPE ?? "q4"
 const REVISION = process.env.MASKERA_REVISION
+const AGGREGATE_ONLY = process.env.MASKERA_AGGREGATE_ONLY === "1"
 
 function skip(reason) {
   console.log(`\n⏭  eval skipped: ${reason}`)
@@ -132,7 +134,7 @@ console.log(`leaks (missed):   ${metrics.leakCount}  (${pct(metrics.leakRate)} o
 
 // Show the worst offenders to make failures actionable.
 const leaky = perDoc.filter((d) => d.result.leaks.length > 0)
-if (leaky.length) {
+if (!AGGREGATE_ONLY && leaky.length) {
   console.log("\nMissed entities (leaks):")
   for (const d of leaky) {
     for (const l of d.result.leaks) {

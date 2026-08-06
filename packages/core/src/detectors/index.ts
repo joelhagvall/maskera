@@ -231,7 +231,7 @@ export const email = regexDetector(
  * e-mail-signature style "+46(0)70-174 06 58" where the trunk zero rides
  * along in parentheses. The consumed left guard (capture group carries the
  * value) stops the match from starting inside a longer digit run like
- * "kundnummer 100200-3000".
+ * "kundnummer TEST-100200-3000".
  */
 export const phone = regexDetector(
   "TELEFON",

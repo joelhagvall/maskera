@@ -17,6 +17,7 @@
 \usepackage{url}
 \usepackage{parskip}
 \setlength{\parskip}{0.34\baselineskip}
+\setlength{\emergencystretch}{1em}
 
 \newcommand{\pkg}[1]{\texttt{#1}}
 
@@ -25,7 +26,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{July 20, 2026 \quad\textperiodcentered\quad Whitepaper v1.14}
+\date{August 6, 2026 \quad\textperiodcentered\quad Whitepaper v1.16}
 
 \begin{document}
 \maketitle
@@ -42,7 +43,7 @@ including inside a browser tab. The input text never leaves the caller's
 environment, the packages collect no telemetry, and the mapping that restores
 masked values is held locally by the caller. In the default setup the browser
 downloads the static assets once from a public host; self-hosting those
-assets makes zero external requests. Measured on a small independent Swedish gold set, the
+assets makes zero external requests. Measured on a small external Swedish gold set, the
 pipeline flagged 98\% of PII entities and achieved the highest typed $F_1$
 among the public Swedish NER models tested, at less than a tenth of their size. maskera is a
 data-minimisation and data-protection-by-design tool, not a compliance
@@ -222,32 +223,46 @@ model trained on, and can the answer be checked? For \pkg{maskera-sv-ner},
 both answers are public.
 
 \begin{itemize}
-  \item \textbf{Base model:} \pkg{KBLab/}\allowbreak\pkg{bert-base-swedish-cased},
+  \item \textbf{Base model:} \pkg{KBLab/bert-base-}\allowbreak\pkg{swedish-cased},
         the National Library of Sweden's BERT, released under CC0. It was
         fine-tuned for entity recognition, then distilled into a smaller
         student model quantised to a 43\,MB ONNX artifact.
-  \item \textbf{Training data:} approximately 25{,}000 synthetic,
-        template-generated Swedish sentences (the generator is public in the
-        repository and contains no real personal data), plus six public,
-        openly licensed (CC~BY~4.0) corpora of already-published text
-        (approximately 52{,}000 sentences in total): real news sentences
-        from the Swedish NER Corpus, a weighted sample of SUCX~3.0
-        (Spr\aa kbanken/KBLab, balanced genres), the Swedish subset of
-        Amazon's MASSIVE corpus (lowercase chat-register utterances,
-        professionally localised), SIC2 (Spr\aa kbanken, informal blog
-        text), a class-audited sample of MultiCoNER~v2 Swedish (lowercase
-        encyclopedic sentences), and an ensemble pseudo-labelled sample of
-        Flashback/Familjeliv forum text (Spr\aa kbanken research corpora;
-        pseudo-labels broaden the informal register, while every published
-        quality number is measured on human-labelled sets).
-  \item \textbf{No user data:} nothing was scraped or collected for this
-        project, and no data from people who use maskera enters training (no
-        such collection exists).
+  \item \textbf{Published v18 training data:} template-generated Swedish plus
+        documented, openly licensed public Swedish corpora. No customer data
+        was used. The dated sources remain in the v18 model card and training
+        journal.
+  \item \textbf{Published privacy-clean v19:} the current release passed
+        every defined release gate using 64,000 generated training rows
+        and 4,760 disjoint validation rows. Customer data, logs,
+        forum posts, news, scraped text, public NER corpora and pseudo-labels
+        are excluded from its task-specific training.
+  \item \textbf{v19 identifier exclusion:} a fail-closed scanner rejects every
+        row containing an IBAN or account-shaped string, identity or
+        organisation number, phone, e-mail, URL, public IP, payment
+        identifier, long account/card-like number or postal code. Every ADR
+        span also requires an explicit synthetic marker, so a random
+        street/number pair cannot resolve silently to a plausible real
+        property. Reserved test identifiers remain only in the separate
+        deterministic-rule test suite.
+  \item \textbf{No user data:} nothing from people who use maskera enters
+        training; no such collection exists.
+  \item \textbf{Attested v19 provenance:} exact train/validation row counts and
+        SHA-256 hashes are bound to the generator code hash. The audit-code
+        hashes and data hashes travel with the published weights in
+        \pkg{privacy-attestation.json}. Training, trimming, distillation,
+        ONNX export and publication refuse artifacts without a complete
+        synthetic-only attestation.
   \item \textbf{Reproducibility:} the entire chain, from data generation
         through training, distillation, ONNX export, and evaluation, exists
         as runnable scripts in the repository. An outside auditor can follow
         and re-create every step.
 \end{itemize}
+
+The v19 attestation covers Maskera's task-specific data. It does not assert that
+the third-party KB-BERT checkpoint was itself pretrained on synthetic-only
+text. CC0 grants copyright permissions but is not a GDPR determination; that
+base-model boundary is documented explicitly in the repository's training
+data protection policy.
 
 This openness supports the caller's own GDPR assessment of the component
 and their vendor-risk and EU AI Act documentation where applicable; it does
@@ -255,15 +270,45 @@ not determine which obligations apply.
 
 \section{Measured quality}
 
-All numbers below were measured on \textbf{2026-07-19} against the published
-artifact (\pkg{maskera@0.6.5}, whose \pkg{reconstruct()} code is unchanged
-since 0.6.3; q4 quantisation, the v18 training round) using
+The public-model comparison tables below were measured on \textbf{2026-07-19}
+against historical v18 and \pkg{maskera} version \pkg{0.6.4}. Its \pkg{reconstruct()} code is
+unchanged since 0.6.3; the measurements use q4 quantisation from v18 and
 \textbf{exact character spans}, the strict criterion under which both start
-and end offsets must match. The canonical, always-current document is \pkg{docs/BENCHMARKS.md} in
+and end offsets must match. The canonical, always-current document is
+\pkg{docs/}\allowbreak\pkg{BENCHMARKS.md} in
 the repository; this section is a dated snapshot, and where the two disagree,
 \pkg{BENCHMARKS.md} wins. In a privacy setting the number to weigh most
 heavily is \textbf{leakage}: the share of entities missed entirely and thus
-left unmasked. Every leaked entity is listed verbatim in the appendix.
+left unmasked. The appendix retains category-level failure modes only; raw
+external sentences were removed from the checkout.
+
+\subsection{Published v19 release snapshot}
+
+On \textbf{2026-08-06}, the attested q4 release plus the current packaged
+runtime passed every defined release gate. The published artifact is
+42,705,681 bytes. These synthetic or author-coupled checks are a release
+battery, not an independent universal quality estimate:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrrr}
+\toprule
+Set & Precision & Recall & Span $F_1$ & Labeled $F_1$ & Leaks \\
+\midrule
+Curated (205) & 95.3\% & 98.5\% & 96.9\% & 95.9\% & 1 \\
+Synthetic ADR (57) & 100.0\% & 100.0\% & 100.0\% & 96.5\% & 0 \\
+LinkedIn-style (53) & 74.6\% & 88.7\% & 81.0\% & 77.6\% & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All 35 explicitly marked address spans in the revised ADR set are exact and
+labeled ADDRESS. One gold organisation is covered at the exact span but typed
+ADDRESS, which makes ADDRESS-only precision 35/36 and explains the lower
+labeled score. The rare-surname safety gate reaches 96.94\% masked recall
+(285/294), above its historical 94.9\% floor. The Hub artifact and source
+package pin target revision
+\pkg{7ecd7a531c989d09ffb3d9ecf4168696786a204e}.
 
 \subsection{Curated corpus (upper bound, regression tracker)}
 
@@ -286,11 +331,13 @@ Leakage & 0.0\% & entities missed entirely, 0 of 205 \\
 \end{tabular}
 \end{table}
 
-\subsection{Independent gold corpus (honest floor)}
+\subsection{External gold corpus (directional floor)}
 
 22 verbatim sentences of Swedish Wikipedia prose, 58 entities, written by
-others and held out of all training data. A small sample; read it as a
-directional independent floor.
+others and excluded from Maskera's fine-tuning, distillation, and vocabulary
+selection. A small sample; read it as a directional external floor for the
+task-specific recipe, not proof of example-level absence from KB-BERT's
+earlier pretraining corpus.
 
 \begin{table}[H]
 \centering
@@ -317,14 +364,18 @@ Measured \textbf{2026-07-19} on the same q4 artifact: redaction recall is
 \textbf{100\%} (every address masked) with \textbf{zero leaks}, address
 precision is \textbf{100\%} (no false ADDRESS flags on the distractor set),
 and the exact span including the house number is recovered on \textbf{35 of
-35} addresses (\emph{Sveavägen 44}, not just \emph{Sveavägen}). The
-previous release's one documented exception (the ordinary word \emph{Festen}
+35} addresses. These are historical v18 results. The earlier ordinary
+street/number surfaces were replaced on 2026-08-06 by explicit synthetic
+markers, so the historical result does not transfer to the replacement. That
+replacement has been measured separately in the published v19 snapshot above; it
+does not relabel this historical v18 table. The previous release's
+one documented exception (the ordinary word \emph{Festen}
 over-redacted in one distractor sentence) is fixed in this release, which
 carries no gate exception at all.
 
 \subsection{Comparison with public Swedish NER models}
 
-Same independent gold corpus, same harness, overlap matching, labels mapped
+Same external gold corpus, same harness, overlap matching, labels mapped
 to person, location, and organisation. ``Flagged'' is the share of entities
 marked at all, under any label, i.e.\ the safety number.
 
@@ -409,6 +460,7 @@ the repository's CI.
 \emph{This section describes how maskera relates to the regulatory
 frameworks; it is not legal advice.}
 
+\par\medskip
 \begin{itemize}
   \item \textbf{Data minimisation (Art.\ 5(1)(c) GDPR).} maskera's function
         is that less personal data reaches third parties: what is masked
@@ -446,15 +498,15 @@ all, so the limitations are reported as plainly as the results.
         highly reliable for structured identifiers, but free-text recognition
         is probabilistic. Unusual names, heavy misspellings, and OCR noise
         will sometimes slip through, and all-lowercase text still trails
-        cased text (see the appendix). On independent text the leakage is
+        cased text (see the appendix). On the external gold text the leakage is
         low (2 of 58 entities) but not zero.
   \item \textbf{Four entity types, one language.} The model recognises
         persons, locations, organisations, and street addresses in Swedish
         text. Data outside those types, and PII in other languages, is not
         caught by the model (structured identifiers are caught by the rules
         regardless).
-  \item \textbf{The independent test set is small.} 22 sentences give a
-        direction, not a final grade. A larger independent gold set is the
+  \item \textbf{The external test set is small.} 22 sentences give a
+        direction, not a final grade. A larger task-training-independent gold set is the
         project's top measurement priority, and no annotated test set yet
         exists for the target domains of support, healthcare, and legal
         text. The staged plan for closing this gap is public
@@ -514,11 +566,9 @@ For production use, the project's operations guide
         text; restoration happens only inside the caller's environment.
   \item Self-host the model files if the Hugging Face Hub is not an
         acceptable dependency; zero external requests are then made.
-  \item Evaluate against your own text: build a small domain corpus of real
-        (internal, consented) sentences and run it in your CI. The metric
-        that matters is leakage. Sentences the model misses in production are
-        added to the corpus, so every future model update is graded against
-        your own failures.
+  \item Evaluate against your own text inside your environment. Keep the
+        customer-specific corpus and missed values there; share only approved
+        aggregate metrics outside it. The metric that matters is leakage.
   \item Human review remains in place for high-stakes flows (legal,
         healthcare, financial decisions).
 \end{itemize}
@@ -537,8 +587,8 @@ review:
         false} is set); zero external requests confirmed in the network tab.
   \item[$\square$] On model failure the system fails closed to the rule
         layer, never open to raw text.
-  \item[$\square$] A domain eval corpus of real (consented) sentences runs in
-        CI, gated on leakage.
+  \item[$\square$] A customer-controlled domain eval runs inside the customer
+        environment, gated on leakage, with no payload exported.
   \item[$\square$] Human review remains in place for high-stakes flows.
 \end{itemize}
 
@@ -552,55 +602,42 @@ Everything claimed in this document can be checked without asking us:
   \item \textbf{The model:} published openly on Hugging Face
         (\pkg{joelhagvall/maskera-sv-ner}) with a model card. The shipped
         artifact is \pkg{onnx/model\_q4.onnx}, SHA-256\\
-        {\footnotesize\texttt{110442cc1143e0543f41a5b111c22af34b0bba9d5c30758b4824d9aa114ac5f4}};\\
+        {\footnotesize\texttt{6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66}};\\
         the current hash always lives in \pkg{docs/BENCHMARKS.md}.
   \item \textbf{The numbers:} canonical in \pkg{docs/BENCHMARKS.md},
         dated and reproducible.
   \item \textbf{The training:} the whole pipeline exists as runnable scripts
         in \pkg{training/}.
   \item \textbf{The network claims:} verifiable in the browser's developer
-        tools at \url{https://maskera.dev}.
+        tools at \href{https://maskera.dev}{\pkg{maskera.dev}}.
 \end{itemize}
 
-\section*{Appendix: the sentences the model is known to miss}
+\section*{Appendix: aggregate known-miss categories}
 
-The evaluation harness prints every leak verbatim and nothing is filtered.
-As of the artifact above, two gold entities have no overlapping detection
-(genuine misses) and no ordinary word is over-redacted; the misses are
-published here deliberately, and in each sentence every other real entity
-is caught. Provenance: both sentences are verbatim, already-published
-Wikipedia prose about public figures. No user data and no real private
-persons appear below.
+In the historical published-v18 snapshot, two gold entities had no overlapping
+detection (genuine misses) and no ordinary word was over-redacted. The raw
+external sentences and entity values are deliberately not retained here;
+only the failure categories needed to interpret the aggregate remain.
 
 \begin{table}[H]
 \centering
-\begin{tabular}{p{55mm}llp{41mm}}
+\begin{tabular}{p{52mm}p{84mm}}
 \toprule
-Input & Missed & Type & Reading \\
+Failure category & Reading \\
 \midrule
-``Den 6 mars 2018 bes\"okte L\"ofven Vita huset och hade sitt f\"orsta
-officiella m\"ote med [\dots]'' & Vita huset & LOC &
-metonymic building-as-institution \\
-``L\"ofven \"ar gift med kyrkopolitikern (S) Ulla L\"ofven sedan 2003.''
-& L\"ofven & PER & sentence-initial bare surname in declarative prose; the
-full name \emph{Ulla L\"ofven} is caught \\
+Metonymic location & A building used as the name of an institution was not
+covered as a location. \\
+Bare surname & A sentence-initial surname in declarative prose was not covered;
+the adjacent full-name form was covered. \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The metonymic ``Vita huset'', fixed in v11, regressed back in v13 and
-stays. The bare-``L\"ofven'' declarative miss is new in v18 and was weighed
-explicitly in the publish decision: it is the documented bare-surname
-declarative residue surfacing once in cased form, on the axis the dedicated
-294-sentence rare-surname eval measures at its best value ever. In exchange
-v15's \emph{Festen} over-redaction is fixed and the release carries no gate
-exception. Historically: bare ``L\"ofven'' in chat frames and the all-caps
-``VIKTIGT: RING LARS NORDSTR\"OM OMG\AA ENDE IDAG.'' were fixed by v13;
-the sentence-initial ``Klarna'' (the curated classic since v5) and the
-lowercase-encyclopedic register gap carried by v14 (independent corpus
-forced lowercase, now 53 of 58 covered, the best measured) were fixed by
-v15's balanced class replay and improved again by v18; see
-\pkg{BENCHMARKS.md}. These misses
+The metonymic-location miss had regressed in v13 and remained in v18. The
+sentence-initial bare-surname miss was new in v18 and was weighed explicitly
+against the dedicated 294-sentence rare-surname aggregate. Earlier chat-frame,
+all-caps, sentence-initial organisation and lowercase-encyclopedic categories
+are documented as aggregate history in \pkg{BENCHMARKS.md}. These misses
 are why leakage, not $F_1$, is the gated metric: every failure mode is
 visible and tracked in the public regression corpus.
 
@@ -610,8 +647,8 @@ visible failure modes.
 
 \vfill
 \noindent\rule{\textwidth}{0.4pt}\par\smallskip
-{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.14
-\textperiodcentered{} July 20, 2026 \textperiodcentered{} Joel H\"agvall
+{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.16
+\textperiodcentered{} August 6, 2026 \textperiodcentered{} Joel H\"agvall
 \textperiodcentered{} maskera.dev. Current numbers live in
 \pkg{docs/BENCHMARKS.md}; where this document disagrees, that file wins.
 Not legal advice.\par}

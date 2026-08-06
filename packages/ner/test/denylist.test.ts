@@ -48,6 +48,24 @@ describe("createNerRecognizer denylist", () => {
     expect(out).toEqual([])
   })
 
+  it("drops unambiguous modifiers and generic service nouns", async () => {
+    rawTokens = [tok("B-LOC", "Gamla", 1), tok("B-PER", "Butiken", 2)]
+    expect(await createNerRecognizer().detect("Gamla Butiken renoveras.")).toEqual([])
+
+    rawTokens = [tok("B-ORG", "Vårdcentralen", 1)]
+    expect(await createNerRecognizer().detect("Vårdcentralen är öppen.")).toEqual([])
+
+    rawTokens = [tok("B-PER", "olåst", 3)]
+    expect(await createNerRecognizer().detect("Cykeln stod olåst utanför.")).toEqual([])
+  })
+
+  it("keeps a named multi-word entity containing a denylisted word", async () => {
+    rawTokens = [tok("B-LOC", "Gamla", 1), tok("I-LOC", "Stan", 2)]
+    expect(await createNerRecognizer().detect("Gamla Stan är en stadsdel.")).toEqual([
+      { start: 0, end: 10, value: "Gamla Stan", label: "PLATS" },
+    ])
+  })
+
   it("only drops whole-value matches, never words inside a longer entity", async () => {
     rawTokens = [tok("B-ORG", "Bankgiro", 1), tok("I-ORG", "##centralen", 2), tok("I-ORG", "AB", 3)]
     const out = await createNerRecognizer().detect("Avtal med Bankgirocentralen AB idag.")

@@ -65,7 +65,7 @@ describe("Transformers runtime integration", () => {
     const events: NerProgressEvent[] = []
 
     await createNerRecognizer({
-      model: "maskera-sv-ner-v18",
+      model: "maskera-sv-ner-v19",
       localModelPath: "/models/",
       allowRemoteModels: false,
       onProgress: (event) => events.push(event),
@@ -75,8 +75,8 @@ describe("Transformers runtime integration", () => {
     const pipelineOptions = transformers.pipeline.mock.calls[0]?.[2]
     expect(pipelineOptions?.progress_callback).toBeUndefined()
     expect(events).toEqual([
-      { status: "initiate", name: "maskera-sv-ner-v18", progress: 0 },
-      { status: "ready", name: "maskera-sv-ner-v18", progress: 100 },
+      { status: "initiate", name: "maskera-sv-ner-v19", progress: 0 },
+      { status: "ready", name: "maskera-sv-ner-v19", progress: 100 },
     ])
   })
 

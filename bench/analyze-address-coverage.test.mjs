@@ -2,9 +2,13 @@ import assert from "node:assert/strict"
 import test from "node:test"
 import { classifyAddressCoverage, summarizeAddressCoverage } from "./analyze-address-coverage.mjs"
 
-const text = "skicka till Storgatan 12-14 idag"
-const start = text.indexOf("Storgatan")
-const gold = { start, end: start + "Storgatan 12-14".length, label: "ADDRESS" }
+const street = "Maskeragatan"
+const address = street + " 12-14"
+const partialAddress = street + " 12"
+const sensitiveLength = address.replace(/[^\p{L}\p{N}]/gu, "").length
+const text = "skicka till " + address + " idag"
+const start = text.indexOf(street)
+const gold = { start, end: start + address.length, label: "ADDRESS" }
 
 test("classifies exact, split, partial and missing address coverage", () => {
   assert.deepEqual(classifyAddressCoverage(text, gold, [{ ...gold }]), {
@@ -13,18 +17,18 @@ test("classifies exact, split, partial and missing address coverage", () => {
     fullCoverage: true,
     partialCoverage: false,
     fullLeak: false,
-    coveredCharacters: 13,
-    sensitiveCharacters: 13,
+    coveredCharacters: sensitiveLength,
+    sensitiveCharacters: sensitiveLength,
   })
 
   const split = [
-    { start, end: start + 9, label: "LOCATION" },
-    { start: start + 10, end: gold.end, label: "ADDRESS" },
+    { start, end: start + street.length, label: "LOCATION" },
+    { start: start + street.length + 1, end: gold.end, label: "ADDRESS" },
   ]
   assert.equal(classifyAddressCoverage(text, gold, split).fullCoverage, true)
   assert.equal(classifyAddressCoverage(text, gold, split).exact, false)
 
-  const partial = [{ start, end: start + "Storgatan 12".length, label: "ADDRESS" }]
+  const partial = [{ start, end: start + partialAddress.length, label: "ADDRESS" }]
   assert.equal(classifyAddressCoverage(text, gold, partial).partialCoverage, true)
   assert.equal(classifyAddressCoverage(text, gold, partial).fullLeak, false)
 
@@ -35,7 +39,7 @@ test("summarizes material misses and validates text alignment", () => {
   const corpus = [
     {
       text,
-      gold: [{ ...gold, value: "Storgatan 12-14" }],
+      gold: [{ ...gold, value: address }],
       source: { casing: "original", region: "Test" },
     },
   ]

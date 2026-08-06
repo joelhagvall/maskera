@@ -19,7 +19,7 @@ import { createNerRecognizer, redactWithNer } from "maskera"
 
 const recognizer = createNerRecognizer() // my 43 MB Swedish model, runs in the browser
 const { text, restore } = await redactWithNer(
-  "hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala",
+  "hej jag heter provnamn maskera, personnummer 19900101-2385, och bor i provbyn",
   { recognizer },
 )
 text
@@ -51,27 +51,27 @@ option and clear starting prices.
 ## The model is the point
 
 [`maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner) is our
-own Swedish NER model: KB-BERT fine-tuned on synthetic + real Swedish,
-distilled and shrunk to a **43 MB** ONNX that runs in the browser
+own Swedish NER model. The published v19 artifact is rebuilt from the pinned
+KB-BERT checkpoint using only 64,000 attested generator-produced task rows and
+4,760 disjoint validation rows, then distilled and shrunk to a **43 MB** ONNX that runs in the browser
 (WebGPU/WASM) and in Node. It catches what regex never can: free-text names,
 places, organisations and street addresses, including all-lowercase chat text
-("hej jag heter anna karlsson"), ALL CAPS and genitive forms, because that is
+("hej jag heter provnamn maskera"), ALL CAPS and genitive forms, because that is
 how people actually type.
 
-> **Benchmarks:** span F1 **99.8%** on the curated corpus (zero leaks), **94.7%** on
-> independent real text, leak rate 0.0% / 3.4% (exact-span, q4, measured
-> 2026-07-19). One canonical, dated, reproducible table:
+> **v19 release gates:** span F1 **96.9%** on curated (1/205 leaks), **100.0%**
+> label-agnostic span F1 on the revised synthetic ADR set (0/57 leaks), and
+> **96.94%** rare-surname masked recall (q4, measured 2026-08-06). One
+> canonical, dated, reproducible table:
 > **[docs/BENCHMARKS.md](docs/BENCHMARKS.md)**; every other number in this
 > repo defers to it.
 
-Measured against the public Swedish NER alternatives in the dated comparison
-table, it leads the best ~500 MB models on independent text (typed F1 0.96 vs
-0.94) at a tenth of their size, and in the lowercase chat/support register it
-targets, it masks 99.3% of rare out-of-training surnames and now types 78.2%
-of them correctly as PERSON (previous release: 71.4%); on lowercased
-encyclopedic prose the gap to the case-robust KBLab lowermix has nearly
-closed (redaction recall 0.95 vs 0.97), documented honestly. Tables, model
-scope, method and caveats: [docs/BENCHMARKS.md](docs/BENCHMARKS.md). The
+The dated public-model comparison belongs to v18: it led the tested ~500 MB
+models on typed F1 on the small independent set, but those figures do not
+automatically transfer to v19. v19 instead publishes its synthetic release
+gates separately and is not described as an across-the-board quality upgrade.
+Tables, model scope, method and caveats:
+[docs/BENCHMARKS.md](docs/BENCHMARKS.md). The
 training pipeline and the round-by-round journey are fully reproducible: see
 [`training/`](training/). Every push to this repo re-grades the published
 model in CI against a gold corpus with an F1 floor and a leak-rate ceiling.
@@ -146,10 +146,17 @@ perfect. The canonical numbers and their caveats live in
 [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md), and
 [`docs/TRANSPARENCY.md`](docs/TRANSPARENCY.md) documents exactly what runs
 where: 100% on-device, the only network calls are one-time fetches of the
-model and the WASM runtime (never your text), self-hostable, trained without
-collecting anyone's data
-(synthetic sentences plus six public, openly licensed corpora of
-already-published text).
+model and the WASM runtime (never your text), and self-hostable. The published
+v18 training sources remain documented as historical provenance. Published
+v19 passed every defined release gate using 64,000 generated training rows and
+4,760 disjoint validation rows, with
+structured-identifier rejection and exact data/code hashes in a privacy
+attestation. On the revised synthetic ADR set it covers all 57 gold spans
+exactly with zero leaks, including all 35 marked addresses; one organisation is
+typed ADDRESS, so labeled F1 is 96.5%. The complete release snapshot,
+scope, and separate KB-BERT pretraining caveat are documented in
+[`docs/BENCHMARKS.md`](docs/BENCHMARKS.md) and
+[`docs/TRAINING_DATA_PROTECTION.md`](docs/TRAINING_DATA_PROTECTION.md).
 
 For DPOs, security teams and legal reviewers there is a whitepaper covering
 architecture, privacy model, training data, measured quality and GDPR

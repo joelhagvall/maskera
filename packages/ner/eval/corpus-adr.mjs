@@ -12,16 +12,16 @@
  *
  * PROVENANCE (be honest, per GOLD_SET_PLAN.md "Reporting"):
  *   - Authored for this eval; NONE of these sentences appear in training.
- *   - Street names were chosen to AVOID the training generator's stem list
- *     (training/generate_data.mjs STREET_STEMS) — real Swedish streets like
- *     Sveavägen, Odengatan, Hornsgatan, Renstiernas gata — so the surface forms
- *     are out-of-distribution, not memorised.
+ *   - Every street name contains an explicit synthetic marker. No plausible
+ *     street/number pair is retained, because it could accidentally resolve to
+ *     a real property. The shapes remain varied but are not a real-address
+ *     benchmark.
  *   - It shares our annotation style (curated, one author), so read it like the
  *     "curated maskera corpus" row, not like the independent Wikipedia set.
  *
  * ANNOTATION GUIDELINE (matches how the model was trained to span an address):
  *   - The ADR span is the street name + house number (+ optional letter):
- *     "Sveavägen 44", "Odengatan 12B". NOT the postal code, city, floor ("3 tr"),
+ *     "Maskeragatan 44", "Provdatavägen 12B". NOT the postal code, city, floor ("3 tr"),
  *     or apartment ("lgh 1201") — those are separate tokens the model should
  *     leave for the rule/LOC layers.
  *   - PER / LOC / ORG in the same sentence are annotated too, so mislabels
@@ -30,7 +30,8 @@
  *     DEFAULT_LABEL_MAP in packages/ner/src/index.ts), so labeled matches line up.
  *   - Every `value` must appear verbatim in `text` or the harness throws on load.
  *   - Address-free sentences (entities: []) and near-miss distractors keep ADR
- *     precision honest: a bare "148", "Box 1203", "112 21", "070-174 06 58" must
+ *     precision honest: a bare "148", a box label, the owner-published test
+ *     postcode "123 45" and reserved phone "070-174 06 58" must
  *     NOT be flagged ADDRESS.
  *
  * RUN IT (no code change to the harness):
@@ -49,47 +50,47 @@
 export const corpus = [
   // --- Addresses in formal / authority prose ---------------------------------
   {
-    text: "Beslutet expedierades till Karin Sjögren, Sveavägen 44, 113 59 Stockholm.",
+    text: "Beslutet expedierades till Karin Sjögren, Maskeragatan 44, Stockholm.",
     entities: [
       { value: "Karin Sjögren", label: "PERSON" },
-      { value: "Sveavägen 44", label: "ADDRESS" },
+      { value: "Maskeragatan 44", label: "ADDRESS" },
       { value: "Stockholm", label: "LOCATION" },
     ],
     register: "authority",
   },
   {
-    text: "Ansökan om bygglov avser fastigheten på Odengatan 12B i Uppsala.",
+    text: "Ansökan om bygglov avser fastigheten på Provdatavägen 12B i Uppsala.",
     entities: [
-      { value: "Odengatan 12B", label: "ADDRESS" },
+      { value: "Provdatavägen 12B", label: "ADDRESS" },
       { value: "Uppsala", label: "LOCATION" },
     ],
     register: "authority",
   },
   {
-    text: "Folkbokföringen visar att Anders Ek är skriven på Hornsgatan 108.",
+    text: "Folkbokföringen visar att Anders Ek är skriven på Fiktivgränd 108.",
     entities: [
       { value: "Anders Ek", label: "PERSON" },
-      { value: "Hornsgatan 108", label: "ADDRESS" },
+      { value: "Fiktivgränd 108", label: "ADDRESS" },
     ],
     register: "authority",
   },
   {
-    text: "Föreläggandet skickades till Renstiernas gata 22, andra våningen.",
-    entities: [{ value: "Renstiernas gata 22", label: "ADDRESS" }],
+    text: "Föreläggandet skickades till Exempeldatas gata 22, andra våningen.",
+    entities: [{ value: "Exempeldatas gata 22", label: "ADDRESS" }],
     register: "authority",
   },
   {
-    text: "Verksamheten bedrivs på Regementsgatan 5 i Malmö enligt tillståndet.",
+    text: "Verksamheten bedrivs på Syntetgatan 5 i Malmö enligt tillståndet.",
     entities: [
-      { value: "Regementsgatan 5", label: "ADDRESS" },
+      { value: "Syntetgatan 5", label: "ADDRESS" },
       { value: "Malmö", label: "LOCATION" },
     ],
     register: "authority",
   },
   {
-    text: "Bostaden på Timmermansgatan 19 A ägs av Petra och Johan Wallin.",
+    text: "Bostaden på Testkorpusgatan 19 A ägs av Petra och Johan Wallin.",
     entities: [
-      { value: "Timmermansgatan 19 A", label: "ADDRESS" },
+      { value: "Testkorpusgatan 19 A", label: "ADDRESS" },
       { value: "Petra", label: "PERSON" },
       { value: "Johan Wallin", label: "PERSON" },
     ],
@@ -98,64 +99,64 @@ export const corpus = [
 
   // --- Deliveries / logistics ------------------------------------------------
   {
-    text: "Paketet kunde inte lämnas på Folkungagatan 87 så det ligger kvar hos ombudet.",
-    entities: [{ value: "Folkungagatan 87", label: "ADDRESS" }],
+    text: "Paketet kunde inte lämnas på Dataskyddstestgatan 87 så det ligger kvar hos ombudet.",
+    entities: [{ value: "Dataskyddstestgatan 87", label: "ADDRESS" }],
     register: "delivery",
   },
   {
-    text: "Leveransen till Nybrogatan 3 hanteras av PostNord under vecka 28.",
+    text: "Leveransen till Nollpostgatan 3 hanteras av PostNord under vecka 28.",
     entities: [
-      { value: "Nybrogatan 3", label: "ADDRESS" },
+      { value: "Nollpostgatan 3", label: "ADDRESS" },
       { value: "PostNord", label: "ORGANIZATION" },
     ],
     register: "delivery",
   },
   {
-    text: "Chauffören ringer när han är framme vid Sturegatan 46 C i Sundbyberg.",
+    text: "Chauffören ringer när han är framme vid Provtextgatan 46 C i Sundbyberg.",
     entities: [
-      { value: "Sturegatan 46 C", label: "ADDRESS" },
+      { value: "Provtextgatan 46 C", label: "ADDRESS" },
       { value: "Sundbyberg", label: "LOCATION" },
     ],
     register: "delivery",
   },
   {
-    text: "Ny leveransadress är Götgatan 15, gamla var Kungsholmsgatan 2.",
+    text: "Ny leveransadress är Testadressgatan 15, gamla var Maskerastigen 2.",
     entities: [
-      { value: "Götgatan 15", label: "ADDRESS" },
-      { value: "Kungsholmsgatan 2", label: "ADDRESS" },
+      { value: "Testadressgatan 15", label: "ADDRESS" },
+      { value: "Maskerastigen 2", label: "ADDRESS" },
     ],
     register: "delivery",
   },
 
   // --- Support / chat register (lowercase, sloppy — the hard register) --------
   {
-    text: "hej jag har flyttat till upplandsgatan 63 kan ni ändra mina uppgifter",
-    entities: [{ value: "upplandsgatan 63", label: "ADDRESS" }],
+    text: "hej jag har flyttat till provdatagatan 63 kan ni ändra mina uppgifter",
+    entities: [{ value: "provdatagatan 63", label: "ADDRESS" }],
     register: "support",
   },
   {
-    text: "hörru fakturan gick till fel adress, jag bor på bondegatan 41 numera",
-    entities: [{ value: "bondegatan 41", label: "ADDRESS" }],
+    text: "hörru fakturan gick till fel adress, jag bor på fiktivgatan 41 numera",
+    entities: [{ value: "fiktivgatan 41", label: "ADDRESS" }],
     register: "support",
   },
   {
-    text: "min mamma astrid bor kvar på tegnérgatan 8 men jag flyttade till lund",
+    text: "min mamma astrid bor kvar på exempeldatavägen 8 men jag flyttade till lund",
     entities: [
       { value: "astrid", label: "PERSON" },
-      { value: "tegnérgatan 8", label: "ADDRESS" },
+      { value: "exempeldatavägen 8", label: "ADDRESS" },
       { value: "lund", label: "LOCATION" },
     ],
     register: "support",
   },
   {
-    text: "kan hantverkaren komma till skånegatan 74 b imorgon, jag är hemma efter tre",
-    entities: [{ value: "skånegatan 74 b", label: "ADDRESS" }],
+    text: "kan hantverkaren komma till syntetgränd 74 b imorgon, jag är hemma efter tre",
+    entities: [{ value: "syntetgränd 74 b", label: "ADDRESS" }],
     register: "support",
   },
   {
-    text: "vi har öppnat ny butik på drottninggatan 29 i norrköping, välkomna",
+    text: "vi har öppnat ny butik på testkorpusvägen 29 i norrköping, välkomna",
     entities: [
-      { value: "drottninggatan 29", label: "ADDRESS" },
+      { value: "testkorpusvägen 29", label: "ADDRESS" },
       { value: "norrköping", label: "LOCATION" },
     ],
     register: "support",
@@ -163,41 +164,41 @@ export const corpus = [
 
   // --- Everyday / mixed ------------------------------------------------------
   {
-    text: "Mormor Greta bodde länge på Vasagatan 17 innan hon flyttade till Örebro.",
+    text: "Mormor Greta bodde länge på Maskeravägen 17 innan hon flyttade till Örebro.",
     entities: [
       { value: "Greta", label: "PERSON" },
-      { value: "Vasagatan 17", label: "ADDRESS" },
+      { value: "Maskeravägen 17", label: "ADDRESS" },
       { value: "Örebro", label: "LOCATION" },
     ],
     register: "everyday",
   },
   {
-    text: "Festen är hemma hos Oskar på Linnégatan 52, fjärde våningen.",
+    text: "Festen är hemma hos Oskar på Provdatagränd 52, fjärde våningen.",
     entities: [
       { value: "Oskar", label: "PERSON" },
-      { value: "Linnégatan 52", label: "ADDRESS" },
+      { value: "Provdatagränd 52", label: "ADDRESS" },
     ],
     register: "everyday",
   },
   {
-    text: "Vårdcentralen på Fleminggatan 22 tog över patienterna från den gamla mottagningen.",
-    entities: [{ value: "Fleminggatan 22", label: "ADDRESS" }],
+    text: "Vårdcentralen på Fiktivvägen 22 tog över patienterna från den gamla mottagningen.",
+    entities: [{ value: "Fiktivvägen 22", label: "ADDRESS" }],
     register: "everyday",
   },
   {
-    text: "Cykeln stod olåst utanför Swedbank på Hamngatan 10 hela natten.",
+    text: "Cykeln stod olåst utanför Swedbank på Exempeldataallén 10 hela natten.",
     entities: [
       { value: "Swedbank", label: "ORGANIZATION" },
-      { value: "Hamngatan 10", label: "ADDRESS" },
+      { value: "Exempeldataallén 10", label: "ADDRESS" },
     ],
     register: "everyday",
   },
   {
-    text: "Emma och Daniel Lindqvist köpte huset på Ynglingavägen 4 D förra året.",
+    text: "Emma och Daniel Lindqvist köpte huset på Syntetstigen 4 D förra året.",
     entities: [
       { value: "Emma", label: "PERSON" },
       { value: "Daniel Lindqvist", label: "PERSON" },
-      { value: "Ynglingavägen 4 D", label: "ADDRESS" },
+      { value: "Syntetstigen 4 D", label: "ADDRESS" },
     ],
     register: "everyday",
   },
@@ -211,14 +212,14 @@ export const corpus = [
   },
   // PO box is not a street address.
   {
-    text: "Skicka handlingarna till Box 1203, 751 42 Uppsala, inte till kontoret.",
-    entities: [{ value: "Uppsala", label: "LOCATION" }],
+    text: "Skicka handlingarna till testmiljöns boxadress, inte till kontoret.",
+    entities: [],
     register: "authority",
   },
   // Postal code + city, no street.
   {
-    text: "Postnumret är 112 21 och orten är Stockholm, gatan minns jag inte.",
-    entities: [{ value: "Stockholm", label: "LOCATION" }],
+    text: "Postnumret är det publicerade testvärdet 123 45 och orten är Staden.",
+    entities: [],
     register: "support",
   },
   // Phone number, not an address.
@@ -244,98 +245,90 @@ export const corpus = [
   },
   // A kilometre marker looks numeric but is not an address.
   {
-    text: "Olyckan skedde vid kilometer 42 på E4:an söder om Jönköping.",
+    text: "Testhändelsen placerades vid kilometer 42 på provsträckan söder om Jönköping.",
     entities: [{ value: "Jönköping", label: "LOCATION" }],
     register: "everyday",
   },
-  // --- v16 additions: the five categories the 2026-07-14 38-case sweep found
-  // broken against shipped v14 (see ROADMAP "Swedish address robustness").
-  // Real Swedish street SHAPES that the training generator could not produce
-  // at the time of authoring (saint prefixes, free-word endings, farm/village
-  // forms, abbreviations, the "nr" form, -kajen); the generator's v16 category
-  // fixes use DIFFERENT surface forms so this stays a generalisation measure.
-  // Baseline 2026-07-16 against shipped v15: 33/35 exact, 0 leaks; the two
-  // open cases are "SANKT PAULSGATAN 8" (SANKT mistyped ORG) and
-  // "Anna Lindhs plats 1" (the house number is left uncovered).
+  // --- Shape variants retained with conspicuous synthetic markers: saint
+  // prefixes, free-word endings, farm/village forms, abbreviations, "nr" and
+  // -kajen. Historical numbers against the replaced real-looking surfaces are
+  // not comparable and must not be reused for this corpus revision.
   // (1) Saint prefixes and colon forms.
   {
-    text: "Paketet levererades till Sankt Göransgatan 153 under förmiddagen.",
-    entities: [{ value: "Sankt Göransgatan 153", label: "ADDRESS" }],
+    text: "Paketet levererades till Sankt Testolofsgatan 153 under förmiddagen.",
+    entities: [{ value: "Sankt Testolofsgatan 153", label: "ADDRESS" }],
     register: "authority",
   },
   {
-    text: "Mottagningen har flyttat till S:t Eriksgatan 45 på Kungsholmen.",
+    text: "Mottagningen har flyttat till S:t Provpersgatan 45 på Kungsholmen.",
     entities: [
-      { value: "S:t Eriksgatan 45", label: "ADDRESS" },
+      { value: "S:t Provpersgatan 45", label: "ADDRESS" },
       { value: "Kungsholmen", label: "LOCATION" },
     ],
     register: "authority",
   },
   {
-    text: "SKICKA FAKTURAN TILL SANKT PAULSGATAN 8 OMGÅENDE.",
-    entities: [{ value: "SANKT PAULSGATAN 8", label: "ADDRESS" }],
+    text: "SKICKA FAKTURAN TILL SANKT FIKTIVMÅNSGATAN 8 OMGÅENDE.",
+    entities: [{ value: "SANKT FIKTIVMÅNSGATAN 8", label: "ADDRESS" }],
     register: "support",
   },
   {
-    text: "Kontoret ligger på Karl XII:s gata 3, mitt emot hamnen.",
-    entities: [{ value: "Karl XII:s gata 3", label: "ADDRESS" }],
+    text: "Kontoret ligger på Maskeras gata 3, mitt emot hamnen.",
+    entities: [{ value: "Maskeras gata 3", label: "ADDRESS" }],
     register: "everyday",
   },
   // (2) Streets ending in a free word.
   {
-    text: "Butiken på Lilla Torg 4 håller stängt under renoveringen.",
-    entities: [{ value: "Lilla Torg 4", label: "ADDRESS" }],
+    text: "Butiken på Lilla Testtorget 4 håller stängt under renoveringen.",
+    entities: [{ value: "Lilla Testtorget 4", label: "ADDRESS" }],
     register: "everyday",
   },
   {
-    text: "Vittnet uppgav adressen Norr Mälarstrand 24 vid förhöret.",
-    entities: [{ value: "Norr Mälarstrand 24", label: "ADDRESS" }],
+    text: "Vittnet uppgav adressen Norra Provstranden 24 vid förhöret.",
+    entities: [{ value: "Norra Provstranden 24", label: "ADDRESS" }],
     register: "authority",
   },
   {
-    text: "hej, flytta prenumerationen till kungsholms strand 12 tack",
-    entities: [{ value: "kungsholms strand 12", label: "ADDRESS" }],
+    text: "hej, flytta prenumerationen till fiktivets strand 12 tack",
+    entities: [{ value: "fiktivets strand 12", label: "ADDRESS" }],
     register: "support",
   },
   {
-    text: "Konferensen hålls hos byrån på Anna Lindhs plats 1.",
-    entities: [{ value: "Anna Lindhs plats 1", label: "ADDRESS" }],
+    text: "Konferensen hålls hos byrån på Syntetens plats 1.",
+    entities: [{ value: "Syntetens plats 1", label: "ADDRESS" }],
     register: "everyday",
   },
   // (3) Rural and farm addresses.
   {
-    text: "Familjen är folkbokförd på Näsby Gård 2 sedan i fjol.",
-    entities: [{ value: "Näsby Gård 2", label: "ADDRESS" }],
+    text: "Familjen är folkbokförd på Maskeragården Testbyn 2 sedan i fjol.",
+    entities: [{ value: "Maskeragården Testbyn 2", label: "ADDRESS" }],
     register: "authority",
   },
   {
-    text: "Leveransen går till Berga 12, Vreta Kloster, i slutet av veckan.",
-    entities: [
-      { value: "Berga 12", label: "ADDRESS" },
-      { value: "Vreta Kloster", label: "LOCATION" },
-    ],
+    text: "Leveransen går till Provbyn 12 i slutet av veckan.",
+    entities: [{ value: "Provbyn 12", label: "ADDRESS" }],
     register: "everyday",
   },
   {
-    text: "Han bor kvar på Sörgården Ekeby 3 tillsammans med sin bror.",
-    entities: [{ value: "Sörgården Ekeby 3", label: "ADDRESS" }],
+    text: "Han bor kvar på Fiktivgården Syntetbyn 3 tillsammans med sin bror.",
+    entities: [{ value: "Fiktivgården Syntetbyn 3", label: "ADDRESS" }],
     register: "everyday",
   },
   // (4) Abbreviated stems and the "nr" form.
   {
-    text: "Returen skickas till Storg. 5 enligt fraktsedeln.",
-    entities: [{ value: "Storg. 5", label: "ADDRESS" }],
+    text: "Returen skickas till Maskerag. 5 enligt fraktsedeln.",
+    entities: [{ value: "Maskerag. 5", label: "ADDRESS" }],
     register: "support",
   },
   {
-    text: "Hyresgästen på Storgatan nr 5 har sagt upp avtalet.",
-    entities: [{ value: "Storgatan nr 5", label: "ADDRESS" }],
+    text: "Hyresgästen på Provdatagatan nr 5 har sagt upp avtalet.",
+    entities: [{ value: "Provdatagatan nr 5", label: "ADDRESS" }],
     register: "authority",
   },
   // (5) The -kajen suffix family.
   {
-    text: "Fartyget lastas vid kontoret på Skeppsbrokajen 8 i eftermiddag.",
-    entities: [{ value: "Skeppsbrokajen 8", label: "ADDRESS" }],
+    text: "Fartyget lastas vid kontoret på Testkorpuskajen 8 i eftermiddag.",
+    entities: [{ value: "Testkorpuskajen 8", label: "ADDRESS" }],
     register: "everyday",
   },
 ]

@@ -13,6 +13,7 @@ released CC0-1.0 (public domain) by the National Library of Sweden
 
   Model:   https://huggingface.co/joelhagvall/maskera-sv-ner
   Base:    https://huggingface.co/KBLab/bert-base-swedish-cased
+  Revision: ce7c3424687f042f1320e0528293d492c82918c4
 
 Note: this package does not bundle any weights; they are downloaded at
 runtime from the Hugging Face Hub (or served from your own origin via

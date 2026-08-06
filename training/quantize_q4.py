@@ -17,12 +17,20 @@ embedding table itself), then quantize. q4 only pays off after the vocab is smal
     uv run python quantize_q4.py
 """
 import os
+import subprocess
+import sys
+from pathlib import Path
 
 import onnx
 from onnxruntime.quantization.matmul_nbits_quantizer import MatMulNBitsQuantizer
 
 SRC = "student-onnx/model.onnx"  # fp32
 OUT = "student-onnx/onnx/model_q4.onnx"
+
+attestation_path = Path("student-onnx/privacy-attestation.json")
+if not attestation_path.is_file():
+    sys.exit("student-onnx has no privacy-attestation.json; refusing to quantize legacy weights")
+subprocess.run(["node", "verify_attestation.mjs", str(attestation_path)], check=True)
 
 
 def mb(p):

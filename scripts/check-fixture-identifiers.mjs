@@ -18,6 +18,16 @@ const repoFiles = execFileSync(
   .split("\0")
   .filter(Boolean)
 
+// This benchmark explainer is intentionally gitignored but is a standing
+// local snapshot carrier in the repository instructions. Audit it whenever it
+// exists so the local checkout cannot silently retain an unsafe example.
+try {
+  statSync("docs/FORSTA_MODELLEN.md")
+  repoFiles.push("docs/FORSTA_MODELLEN.md")
+} catch {
+  // Optional in a fresh checkout.
+}
+
 const SKIP_PREFIXES = ["apps/demo/public/models/", "apps/demo/reports/", "training/data/"]
 const SKIP_FILES = new Set(["pnpm-lock.yaml", "apps/demo/public/whitepaper.pdf"])
 
@@ -69,31 +79,20 @@ const TEST_POSTNUMMER = new Set(["12345"])
 
 // Real operational contact details are allowed explicitly. Every other email
 // literal must use an IANA-reserved example domain or the reserved .test TLD.
-const OPERATIONAL_EMAILS = new Set(["hej@maskera.dev", "work@joelhagvall.com"])
+const OPERATIONAL_EMAILS = new Set(["hej@maskera.dev"])
 
-// User-facing examples and unit fixtures use conspicuously fictional street
-// names. Evaluation corpora are excluded here: their public place vocabulary
-// is a deliberate model-quality probe, never imported private records.
-const SYNTHETIC_STREETS = [
-  "maskeragatan",
-  "maskeragränd",
-  "maskeras gata",
-  "maskeratorget",
-  "maskeravägen",
-  "påhittsgatan",
-  "påhittsvägen",
-]
+// User-facing examples, task-evaluation corpora and unit fixtures use
+// conspicuously synthetic street markers. Public place names can still be LOC
+// vocabulary, but no ordinary street/number pair is accepted.
+const SYNTHETIC_ADDRESS_MARKER =
+  /(?:masker|påhitt|provdata|provper|provbyn|provstrand|provtext|fiktiv|exempeldata|syntet|test|dataskyddstest|nollpost)/iu
+
+function approvedSyntheticAddress(value) {
+  return SYNTHETIC_ADDRESS_MARKER.test(value)
+}
 
 function requiresSyntheticStreet(file) {
-  if (file.endsWith(".css")) return false
-  return (
-    file.startsWith("apps/demo/") ||
-    file.startsWith("examples/") ||
-    file.startsWith("packages/core/test/") ||
-    file.startsWith("packages/ner/test/") ||
-    file === "packages/core/README.md" ||
-    file === "packages/core/src/detectors/index.ts"
-  )
+  return !file.endsWith(".css") && file !== "scripts/check-fixture-identifiers.mjs"
 }
 
 function luhnValid(digits) {
@@ -192,22 +191,20 @@ function approvedIp(value) {
 
 const issues = []
 
-function report(file, text, index, kind, value) {
+function report(file, text, index, kind) {
   const line = text.slice(0, index).split("\n").length
-  issues.push({ file, line, kind, value })
+  issues.push({ file, line, kind })
 }
 
 for (const file of repoFiles) {
   if (SKIP_FILES.has(file) || SKIP_PREFIXES.some((prefix) => file.startsWith(prefix))) continue
   // `git ls-files --cached` also lists tracked files deleted from the working
   // tree (e.g. a consumed .changeset entry before its deletion is committed).
-  let stat
   try {
-    stat = statSync(file)
+    statSync(file)
   } catch {
     continue
   }
-  if (stat.size > 20_000_000) continue
 
   const buffer = readFileSync(file)
   if (buffer.includes(0)) continue
@@ -286,6 +283,15 @@ for (const file of repoFiles) {
     }
   }
 
+  // Case/customer/order-style identifiers are linkable even when they are
+  // shorter than an account number. Product fixtures must mark them as
+  // conspicuous test data instead of inventing a plausible live reference.
+  const labelledRecordPattern =
+    /\b(?:ärende(?:nummer|nr)?|kund(?:nummer|nr)?|referensnummer|journalnummer|ordernummer|fastighetsbeteckning)\s*[:#]?\s*((?!(?:TEST|PROV|FIKTIV|EXEMPEL|SYNTET)[-:])(?=[\p{L}\p{N}:/.-]*\d)[\p{L}\p{N}][\p{L}\p{N}:/.-]{2,})\b/giu
+  for (const match of text.matchAll(labelledRecordPattern)) {
+    report(file, text, match.index, "record reference", match[1])
+  }
+
   const lines = text.split("\n")
   let offset = 0
   for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
@@ -327,11 +333,25 @@ for (const file of repoFiles) {
     }
 
     const addressPattern =
-      /\b(?:[A-ZÅÄÖa-zåäö]+(?:gatan|vägen|gränd|torget|allén)|[A-ZÅÄÖa-zåäö]+\s+(?:gata|väg))\s+\d{1,3}[A-Da-d]?\b/giu
+      /\b(?:[\p{L}-]+(?:gatan|vägen|gränd|torget|allén|stigen|backen|kajen|stranden)|(?:[\p{L}-]+\s+){1,3}(?:gata|väg|gränd|torg|allé|allén|stig|backe|plats|kaj|strand))\s+(?:nr\s+)?\d{1,3}[A-Da-d]?\b/giu
     for (const match of text.matchAll(addressPattern)) {
-      const lower = match[0].toLowerCase()
-      if (!SYNTHETIC_STREETS.some((street) => lower.startsWith(`${street} `))) {
+      if (!approvedSyntheticAddress(match[0])) {
         report(file, text, match.index, "street address", match[0])
+      }
+    }
+
+    // Catch annotated address shapes such as farm addresses, free-word
+    // endings and abbreviations that the generic street regex cannot parse.
+    const annotatedAddressPatterns = [
+      /\{\s*value:\s*["']([^"']+)["'],\s*label:\s*["']ADDRESS["']/giu,
+      /\[ADR:([^\]]+)\]/giu,
+      /"label"\s*:\s*"ADDRESS"\s*,\s*"value"\s*:\s*"([^"]+)"/giu,
+    ]
+    for (const pattern of annotatedAddressPatterns) {
+      for (const match of text.matchAll(pattern)) {
+        if (!approvedSyntheticAddress(match[1])) {
+          report(file, text, match.index, "annotated street address", match[1])
+        }
       }
     }
   }
@@ -340,7 +360,7 @@ for (const file of repoFiles) {
 if (issues.length > 0) {
   console.error("Potentially real identifiers found in repository fixtures:\n")
   for (const issue of issues) {
-    console.error(`${issue.file}:${issue.line}  ${issue.kind}: ${issue.value}`)
+    console.error(`${issue.file}:${issue.line}  ${issue.kind}`)
   }
   console.error(
     "\nUse an owner-published test/documentation value and add it to scripts/check-fixture-identifiers.mjs with its source.",

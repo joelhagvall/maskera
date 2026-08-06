@@ -40,7 +40,7 @@ export const scenarios: Scenario[] = [
     id: "kommun",
     name: "Kommun",
     tagline: "Biståndsansökan",
-    text: "Ansökan om försörjningsstöd: Jonas Wikström, 20020301 2398, boende på Påhittsvägen 21, 123 45 Stockholm. Sökande når oss på jonas.wikstrom@example.com. Sambo Elin Bergman är arbetssökande. Sammanfatta ärendet för handläggare.",
+    text: "Ansökan om försörjningsstöd: Jonas Wikström, 20020301 2398, boende på Påhittsvägen 21 i Stockholm. Sökande når oss på jonas.wikstrom@example.com. Sambo Elin Bergman är arbetssökande. Sammanfatta ärendet för handläggare.",
   },
   {
     id: "fritext",

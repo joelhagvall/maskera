@@ -18,8 +18,11 @@ Copying the teacher's weights fixes that.
 
 import json
 import os
+import shutil
+import subprocess
 import sys
 import zlib
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -49,6 +52,32 @@ TEMPERATURE = 2.0
 # Seeded so runs are comparable (see train.py).
 SEED = int(os.environ.get("MASKERA_SEED", "1337"))
 set_seed(SEED)
+
+teacher_attestation_path = Path(TEACHER) / "privacy-attestation.json"
+if not teacher_attestation_path.is_file():
+    sys.exit(
+        f"{TEACHER} has no privacy-attestation.json; retrain the teacher with the "
+        "synthetic-only pipeline before distillation"
+    )
+subprocess.run(
+    ["node", "verify_attestation.mjs", str(teacher_attestation_path)], check=True
+)
+with teacher_attestation_path.open(encoding="utf-8") as handle:
+    teacher_attestation = json.load(handle)
+if teacher_attestation.get("dataPolicy") != "synthetic-task-data-only":
+    sys.exit(f"{TEACHER} does not carry the synthetic-only training policy")
+subprocess.run(["node", "audit_data.mjs"], check=True)
+subprocess.run(
+    ["node", "privacy_attestation.mjs", "data/privacy-attestation.json"], check=True
+)
+with Path("data/privacy-attestation.json").open(encoding="utf-8") as handle:
+    current_attestation = json.load(handle)
+for split in ("train", "validation"):
+    if current_attestation.get(split) != teacher_attestation.get(split):
+        sys.exit(
+            f"Current {split} data does not match {TEACHER}'s attested training data; "
+            "retrain the teacher instead of distilling across data lineages"
+        )
 
 # --- v13: subword dropout (the decomposed-surname fix) ----------------------
 # The v12 publish hold: distillation runs with the full 50k vocab where rare
@@ -410,18 +439,21 @@ print(classification_report(tl, tp))
 
 trainer.save_model(OUT)
 tokenizer.save_pretrained(OUT)
+shutil.copy2("data/privacy-attestation.json", os.path.join(OUT, "privacy-attestation.json"))
 print(f"== saved student to {OUT}/ ==")
 
-# Generalisation check vs out-of-gazetteer entities (compare to teacher quality)
+# Generalisation check over explicitly synthetic, out-of-gazetteer entities.
+# These probes must not assert relationships involving real organisations,
+# properties or institutions.
 from transformers import pipeline  # noqa: E402
 
 nlp = pipeline("token-classification", model=OUT, tokenizer=OUT,
                aggregation_strategy="simple", device=device)
 for s in [
-    "Min granne Lars Nordström bor på Kungsholmen och jobbar på Spotify i Stockholm.",
-    "Kontakta Thorbjörn Fägerquist på Bromma innan fredag.",
-    "Wei Zhang börjar på Northvolt i Skellefteå.",
-    "Patienten Aigerim Bekova skrevs in på Sahlgrenska i Mölndal.",
+    "I provdata bor testpersonen Alva Provnamn på Maskeragatan 14 och arbetar på Fiktiv Data AB i Provbyn.",
+    "Kontakta testpersonen Thorbjörn Provnamn i Provbyn innan fredag.",
+    "Wei Testnamn börjar på Fiktiv Teknik AB i Provbyn.",
+    "Provpatienten Aigerim Testnamn skrevs in på Fiktivkliniken i Provbyn.",
 ]:
     print("\n>", s)
     for e in nlp(s):
