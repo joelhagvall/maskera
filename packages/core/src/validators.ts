@@ -32,14 +32,21 @@ function daysInMonth(year: number, month: number): number {
 }
 
 /**
- * Validate a Swedish personnummer.
- * Accepts 10 or 12 digit forms with optional `-`/`+` separator.
- * Checks the date part and the Luhn control digit (on the 10-digit core).
- * The date check is a real calendar check: a flat day <= 31 accepted
- * "850230-…" (Feb 30) and non-leap Feb 29, spending the false-positive
- * budget the checksum bought on dates that can never be issued.
+ * Personnummer shape: 10 or 12 digit form with optional `-`/`+` separator and
+ * a real calendar date, but NO Luhn check. The date check is a real calendar
+ * check: a flat day <= 31 would accept "850230-…" (Feb 30) and non-leap
+ * Feb 29, spending the false-positive budget on dates that can never be
+ * issued.
+ *
+ * This — not the strict validator — is what the personnummer detector runs
+ * on. In real customer data people routinely mistype their own personnummer,
+ * and a typo lands in the control digit as often as anywhere else; rejecting
+ * on Luhn then leaks the single most sensitive identifier Sweden has. With
+ * the checksum gone the date check carries the precision burden: it rejects
+ * ~96% of arbitrary digit runs on its own (month 1-12, day valid in that
+ * month), which is what keeps order ids and account numbers from masking.
  */
-export function isPersonnummer(value: string): boolean {
+export function isPersonnummerShape(value: string): boolean {
   const m = value.match(/^(\d{2})?(\d{2})(\d{2})(\d{2})[-+]?(\d{4})$/)
   if (!m) return false
   // Groups: 1=century? 2=YY 3=MM 4=DD 5=birth+check
@@ -48,20 +55,34 @@ export function isPersonnummer(value: string): boolean {
   const day = Number(m[4])
   // Day can be 1-31 (personnummer); samordningsnummer adds 60, handled separately.
   if (month < 1 || month > 12) return false
-  if (day < 1 || day > daysInMonth(year, month)) return false
-  const core = value.replace(/[-+]/g, "").slice(-10)
-  return luhnValid(core)
+  return day >= 1 && day <= daysInMonth(year, month)
 }
 
-/** Swedish samordningsnummer: like a personnummer but day has +60. */
-export function isSamordningsnummer(value: string): boolean {
+/** Samordningsnummer shape: like `isPersonnummerShape` but day has +60. */
+export function isSamordningsnummerShape(value: string): boolean {
   const m = value.match(/^(\d{2})?(\d{2})(\d{2})(\d{2})[-+]?(\d{4})$/)
   if (!m) return false
   const year = Number((m[1] ?? "") + m[2])
   const month = Number(m[3])
   const day = Number(m[4])
   if (month < 1 || month > 12) return false
-  if (day < 61 || day - 60 > daysInMonth(year, month)) return false
+  return day >= 61 && day - 60 <= daysInMonth(year, month)
+}
+
+/**
+ * Validate a Swedish personnummer.
+ * Accepts 10 or 12 digit forms with optional `-`/`+` separator.
+ * Checks the date part and the Luhn control digit (on the 10-digit core).
+ */
+export function isPersonnummer(value: string): boolean {
+  if (!isPersonnummerShape(value)) return false
+  const core = value.replace(/[-+]/g, "").slice(-10)
+  return luhnValid(core)
+}
+
+/** Swedish samordningsnummer: like a personnummer but day has +60. */
+export function isSamordningsnummer(value: string): boolean {
+  if (!isSamordningsnummerShape(value)) return false
   const core = value.replace(/[-+]/g, "").slice(-10)
   return luhnValid(core)
 }

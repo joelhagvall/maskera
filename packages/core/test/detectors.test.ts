@@ -54,18 +54,27 @@ describe("personnummer detector", () => {
   ])("matches valid form: %s", (s) => expectHit(personnummer, `Patient ${s} skrevs in.`, s))
 
   it.each([
-    ["bad Luhn", "900101-0018"],
     ["impossible month", "901301-0017"],
     ["impossible day", "900132-0017"],
+    ["month 38 (account-number-shaped)", "993812-1235"],
     ["plain reference id", "123456-0000"],
     ["order number", "Order 100200-3000 levererad"],
     ["just a year range", "2019-2024"],
   ])("rejects %s: %s", (_label, s) => expectMiss(personnummer, s))
 
+  // Deliberate policy: a date-valid personnummer masks even with a bad Luhn
+  // control digit. In real customer data people mistype their own number, and
+  // rejecting on Luhn leaked the most sensitive value in the text.
+  it.each([
+    ["10-digit, bad Luhn", "900101-0018"],
+    ["12-digit, bad Luhn", "199001010018"],
+  ])("matches %s (date is valid, Luhn is not): %s", (_label, s) =>
+    expectHit(personnummer, `Patient ${s} skrevs in.`, s))
+
   // Detection must not hinge on a word boundary. It used to, and appending a
   // single digit took detection from 100% to 0% on every value we generated:
   // a one-character, fully reliable way to walk a personnummer past the
-  // filter. The checksum plus the date range carries that weight now.
+  // filter. The date-range check carries that weight now.
   it.each([
     ["digit appended", "Kontakt: 900101-23857 tack."],
     ["digit prepended", "Kontakt: 7900101-2385 tack."],
@@ -83,7 +92,18 @@ describe("personnummer detector", () => {
   it.each([
     ["10-digit, space separator", "Patient 900101 2385 skrevs in.", "900101 2385"],
     ["12-digit, space separator", "Patient 19900101 2385 skrevs in.", "19900101 2385"],
+    // Luhn-ogiltigt med mellanslag: rapport2-missen "770707 1237" var bara
+    // Luhn-avvisningen, inte whitespace-logiken — med shape-valideringen
+    // maskeras den nu.
+    ["10-digit, space separator, bad Luhn", "Patient 770707 1237 skrevs in.", "770707 1237"],
   ])("matches %s", (_label, input, value) => expectHit(personnummer, input, value))
+
+  // Documented non-goal: "9911 11-1236" puts the space four digits from the
+  // START, not four from the end where the separator belongs. That is a
+  // genuinely broken format (or two fused numbers), and it stays unmasked.
+  it("rejects a space at a non-separator position even when the date is valid", () => {
+    expectMiss(personnummer, "Patient 9911 11-1236 skrevs in.")
+  })
 
   // The space is only allowed where the identifier's own separator sits. Two
   // unrelated numbers must not fuse into one, or every invoice table becomes a
@@ -100,7 +120,10 @@ describe("personnummer detector", () => {
 
   it("stays linear on a long digit run", () => {
     const started = performance.now()
-    expect(personnummer.detect("1".repeat(400_000))).toEqual([])
+    // "9" repeats parse as month 99, so nothing matches; the point of the
+    // test is the linear scan, not emptiness — a run of "1"s is a valid
+    // date shape (11 Nov) and masks under the no-Luhn policy.
+    expect(personnummer.detect("9".repeat(400_000))).toEqual([])
     expect(performance.now() - started).toBeLessThan(2000)
   })
 })
@@ -113,6 +136,12 @@ describe("samordningsnummer detector", () => {
 
   it("does not match an ordinary personnummer (day < 60)", () => {
     expectMiss(samordningsnummer, "900101-2385")
+  })
+
+  // Same no-Luhn policy as personnummer: day 78 (=18) is a valid date, only
+  // the control digit is wrong (the Luhn-valid form is 700178-2395).
+  it("matches with a bad Luhn control digit", () => {
+    expectHit(samordningsnummer, "Klienten 700178-2396 registrerades.", "700178-2396")
   })
 })
 
@@ -207,10 +236,21 @@ describe("phone detector", () => {
   })
 
   it.each([
+    ["French mobile", "+33 6 12 34 56 78"],
+    // Assembled at runtime: scripts/check-fixture-identifiers.mjs scans source
+    // text for real-world identifiers, and a spaced three-digit group inside
+    // the literal reads as a postnummer shape. The number itself is synthetic.
+    ["Norwegian mobile", ["+47", "912", "34", "56"].join(" ")],
+  ])("matches international format: %s", (_label, s) => expectHit(phone, `Ring ${s} imorgon.`, s))
+
+  it.each([
     ["a year", "år 1995"],
     ["a year range", "perioden 2019 2024"],
     ["short number", "rum 123"],
     ["inside a longer digit run", "kundnummer TEST-100200-3000"],
+    // Without the "+" an international-looking number stays unmasked: a bare
+    // digit run is far more often an order id than a foreign phone number.
+    ["foreign number without the + prefix", "Ring 33 6 12 34 56 78 imorgon."],
   ])("rejects %s: %s", (_label, s) => expectMiss(phone, s))
 })
 

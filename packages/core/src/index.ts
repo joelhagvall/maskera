@@ -36,6 +36,8 @@ export type {
 export {
   isOrganisationsnummer,
   isPersonnummer,
+  isPersonnummerShape,
   isSamordningsnummer,
+  isSamordningsnummerShape,
   luhnValid,
 } from "./validators"

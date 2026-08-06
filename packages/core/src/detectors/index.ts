@@ -1,8 +1,8 @@
 import type { Detection, Detector, PiiLabel } from "../types"
 import {
   isOrganisationsnummer,
-  isPersonnummer,
-  isSamordningsnummer,
+  isPersonnummerShape,
+  isSamordningsnummerShape,
   luhnValid,
 } from "../validators"
 
@@ -90,29 +90,37 @@ const isDigit = (code: number) => code >= 48 && code <= 57
 const WS = /\s/
 
 /**
- * Find checksum-valid identifiers by sliding a window over every digit run,
- * with no word-boundary requirement at all.
+ * Find identifiers by sliding a window over every digit run, with no
+ * word-boundary requirement at all.
  *
  * `\b` is what a caller uses to slip PII past the filter: appending a single
  * digit to a personnummer took detection from 100% to 0%, reliably, and that is
  * a poor property for the most sensitive identifier Sweden has. The boundary is
- * only load-bearing because a bare digit run is usually an order id, so we let
- * the checksum carry that weight instead. It can, but only where the format is
- * selective enough: personnummer and samordningsnummer also constrain month and
- * day, which rejects ~96% of candidates before Luhn even runs. Measured on
- * 20,000 sentences of number-dense Swedish business text containing no personal
- * identifiers, this costs 0.4 false positives per 100 sentences against 0.1 for
- * the boundary version.
+ * only load-bearing because a bare digit run is usually an order id, so the
+ * format check has to carry that weight instead. It can, but only where the
+ * format is selective enough: personnummer and samordningsnummer constrain
+ * month and day, which rejects ~96% of candidates on its own.
+ *
+ * Note that personnummer and samordningsnummer deliberately validate on the
+ * DATE SHAPE ONLY (isPersonnummerShape), not on the Luhn control digit: in
+ * real customer data people mistype their own number, and rejecting on Luhn
+ * leaks the very identifier this filter exists to protect. The date check
+ * carries the precision burden instead. Measured on 20,000 sentences of
+ * number-dense Swedish business text containing no personal identifiers,
+ * dropping the boundary costs 0.4 false positives per 100 sentences against
+ * 0.1 for the boundary version; the Luhn-free policy spends a little more of
+ * that same budget on typo-shaped numbers that happen to parse as dates.
  *
  * Organisationsnummer (only "third digit >= 2" plus Luhn) and card numbers (only
  * Luhn) are NOT scanned this way: they fire on ~10% of window positions, which
- * measured at 10 false positives per 100 sentences. They keep their boundaries.
+ * measured at 10 false positives per 100 sentences. They keep their boundaries
+ * and their checksums.
  *
  * A run may contain whitespace ("811218 9876"), but a window is only allowed to
  * cross it at the position the separator actually belongs, four digits from the
  * end. Anything else would let two unrelated numbers in a table ("Belopp 4711
  * 220345") fuse into a candidate, and it is the cheap check that keeps the
- * widened run from spending the false-positive budget the checksum bought.
+ * widened run from spending the false-positive budget the format checks bought.
  *
  * Widths are tried widest-first and a match consumes its window, so a 12-digit
  * form is never also reported as the 10-digit form hiding inside it.
@@ -186,14 +194,19 @@ function checksumWindowDetector(
   }
 }
 
-/** Personnummer: YYYYMMDD-XXXX / YYMMDD-XXXX, `-` or `+` separator optional. */
-export const personnummer = checksumWindowDetector("PERSONNUMMER", [12, 10], isPersonnummer)
+/**
+ * Personnummer: YYYYMMDD-XXXX / YYMMDD-XXXX, `-` or `+` separator optional.
+ * Validates on date shape only, NOT Luhn: a mistyped control digit is the most
+ * common way a real personnummer appears in customer data, and rejecting it
+ * leaks exactly what we are here to mask (see isPersonnummerShape).
+ */
+export const personnummer = checksumWindowDetector("PERSONNUMMER", [12, 10], isPersonnummerShape)
 
-/** Samordningsnummer: personnummer-shaped but with day + 60. */
+/** Samordningsnummer: personnummer-shaped but with day + 60. Same no-Luhn policy. */
 export const samordningsnummer = checksumWindowDetector(
   "SAMORDNINGSNUMMER",
   [12, 10],
-  isSamordningsnummer,
+  isSamordningsnummerShape,
 )
 
 /** Organisationsnummer: NNNNNN-NNNN, Luhn-checked, third digit >= 2. */
@@ -227,15 +240,19 @@ export const email = regexDetector(
 )
 
 /**
- * Swedish phone numbers: +46 / 0 prefix, mobile and landline, including the
+ * Phone numbers. Swedish: +46 / 0 prefix, mobile and landline, including the
  * e-mail-signature style "+46(0)70-174 06 58" where the trunk zero rides
- * along in parentheses. The consumed left guard (capture group carries the
- * value) stops the match from starting inside a longer digit run like
- * "kundnummer TEST-100200-3000".
+ * along in parentheses. International: a `+<1-3 digit country code>` prefix
+ * followed by 6-12 digits with optional spaces/dashes ("+33 6 12 34 56 78",
+ * "+47 9123456"). The `+` is required for the international form — without
+ * it a bare digit run is far more often an order id or account number than a
+ * foreign phone number, so the unprefixed branch stays Swedish-only.
+ * The consumed left guard (capture group carries the value) stops the match
+ * from starting inside a longer digit run like "kundnummer TEST-100200-3000".
  */
 export const phone = regexDetector(
   "TELEFON",
-  /(?:^|[^\d])((?:\+46[\s-]?(?:\(0\)[\s-]?)?|0)(?:7[02369]|[1-9]\d?)(?:[\s-]?\d){6,8})\b/g,
+  /(?:^|[^\d])((?:\+46[\s-]?(?:\(0\)[\s-]?)?|0)(?:7[02369]|[1-9]\d?)(?:[\s-]?\d){6,8}|\+\d{1,3}(?:[\s-]?\d){6,12})\b/g,
 )
 
 /**

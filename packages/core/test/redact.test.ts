@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest"
 import {
   isOrganisationsnummer,
   isPersonnummer,
+  isPersonnummerShape,
   isSamordningsnummer,
+  isSamordningsnummerShape,
   luhnValid,
   personnummer,
   redact,
@@ -61,6 +63,19 @@ describe("validators", () => {
     expect(isSamordningsnummer(withCheckDigit("900290001"))).toBe(false) // "Feb 30" + 60
   })
 
+  it("checks the personnummer shape without the Luhn digit", () => {
+    // Same date logic as the strict validator, minus the checksum: this is
+    // what the detectors run on, so a mistyped control digit still masks.
+    expect(isPersonnummerShape("900101-2385")).toBe(true)
+    expect(isPersonnummerShape("900101-0018")).toBe(true) // bad Luhn, valid date
+    expect(isPersonnummerShape("199001010018")).toBe(true) // 12-digit, bad Luhn
+    expect(isPersonnummerShape("991399-0017")).toBe(false) // bad month
+    expect(isPersonnummerShape("993812-1235")).toBe(false) // month 38
+    expect(isPersonnummerShape("900132-0017")).toBe(false) // impossible day
+    expect(isSamordningsnummerShape("700178-2396")).toBe(true) // bad Luhn, valid date
+    expect(isSamordningsnummerShape("900101-2385")).toBe(false) // day < 60
+  })
+
   it("validates organisationsnummer", () => {
     expect(isOrganisationsnummer(ORGNR)).toBe(true)
     expect(isOrganisationsnummer("123456-7890")).toBe(false)
@@ -83,6 +98,12 @@ describe("redact", () => {
     expect(labels).toContain("EPOST")
     expect(labels).toContain("TELEFON")
     expect(labels).toContain("PERSONNUMMER")
+  })
+
+  it("keeps a phone-shaped span labeled as TELEFON", () => {
+    const { text, redactions } = redact("Ring 070174-0658 nu")
+    expect(text).toBe("Ring [TELEFON_1] nu")
+    expect(redactions.map((r) => r.label)).toEqual(["TELEFON"])
   })
 
   it("never maps two values to one token (index-ignoring placeholder throws)", () => {

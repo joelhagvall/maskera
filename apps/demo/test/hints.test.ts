@@ -115,12 +115,12 @@ describe("invalidPersonnummer: suppression when another detector already masked 
 })
 
 describe("invalidPersonnummer: against the real redact() pipeline", () => {
-  it("valid pnr is masked, invalid is hinted", () => {
+  it("masks both valid and mistyped date-shaped pnr values", () => {
     const text = "pnr 19900101-2385 och 19900101-2384 klart"
     const result = redact(text)
     expect(result.text).toContain("[PERSONNUMMER_1]")
-    expect(result.text).toContain("19900101-2384")
-    expect(invalidPersonnummer(text, result.redactions)).toEqual(["19900101-2384"])
+    expect(result.text).toContain("[PERSONNUMMER_2]")
+    expect(invalidPersonnummer(text, result.redactions)).toEqual([])
   })
 
   it("pnr-shaped phone number is masked as TELEFON and not hinted", () => {

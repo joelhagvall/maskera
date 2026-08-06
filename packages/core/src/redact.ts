@@ -6,6 +6,17 @@ function defaultPlaceholder(label: PiiLabel, index: number): string {
   return `[${label}_${index}]`
 }
 
+// A Swedish phone number can have the same ten-digit shape as a
+// samordningsnummer (for example `070174-0658`). When two detectors cover the
+// exact same span, prefer the phone label: it is the more specific lexical
+// format and avoids reclassifying an ordinary phone number as an identifier
+// merely because personnummer detection is intentionally typo-tolerant.
+const SAME_SPAN_PRIORITY: Partial<Record<PiiLabel, number>> = {
+  TELEFON: 0,
+  PERSONNUMMER: 10,
+  SAMORDNINGSNUMMER: 11,
+}
+
 /** A character that can carry meaning on its own, used to trim clipped edges. */
 const WORD_CHAR = /[\p{L}\p{N}]/u
 
@@ -28,6 +39,9 @@ function resolveOverlaps(detections: Detection[], input: string): Detection[] {
   const sorted = [...detections].sort((a, b) => {
     if (a.start !== b.start) return a.start - b.start
     if (b.end - b.start !== a.end - a.start) return b.end - b.start - (a.end - a.start)
+    const priorityA = SAME_SPAN_PRIORITY[a.label] ?? 5
+    const priorityB = SAME_SPAN_PRIORITY[b.label] ?? 5
+    if (priorityA !== priorityB) return priorityA - priorityB
     return a.label.localeCompare(b.label)
   })
   const kept: Detection[] = []

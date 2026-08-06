@@ -69,6 +69,32 @@ still clears its historical safety floor. Treat the figures as release
 gates on synthetic or author-coupled data, not as an independent universal
 quality claim.
 
+## Structured-detector regression corpus (core rules + v19 hybrid)
+
+- **Measured:** 2026-08-06, after the Luhn-fallback and international-phone
+  detector changes in `@maskera/core`.
+- **Corpus:** 258 synthetic Swedish texts across 19 categories, with 949
+  annotated PII strings. This is local exploratory coverage, not an
+  independent benchmark or release gate; the generated files live under the
+  ignored `tmp/pii-test/` directory.
+- **Pipeline:** `maskera-sv-ner-v19` q4 on CPU through `redactWithNer`, with the
+  deterministic core rules and NER layer enabled.
+
+| run | full hits | partial leaks | clear-text misses | hit rate | classified junk redactions |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| before detector changes | 874 | 1 | 74 | 92.1% | 284 / 1,459 (19.5%) |
+| after detector changes | **937** | **1** | **11** | **98.7%** | 291 / 1,531 (19.0%) |
+
+The 63 recovered full hits are predominantly format-correct but Luhn-invalid
+personnummer/samordningsnummer, plus international phone numbers. The remaining
+11 misses are malformed/OCR identifiers and NER misses in code-switched or
+spoken-number text. This corpus must not be read as a universal precision claim;
+clinical language still produces the largest concentration of over-redaction.
+
+The official v19 NER release eval was rerun against the bundled q4 artifact on
+the same date: curated span F1 **96.9%** (1/205 leaks), unchanged from the
+published snapshot.
+
 ## Curated corpus (upper bound, regression tracker)
 
 149 hand-authored Swedish sentences, 205 free-text entities
