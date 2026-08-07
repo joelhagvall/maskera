@@ -1,11 +1,11 @@
 {
   "header": {
     "title": "Skydda personuppgifter innan texten skickas till AI.",
-    "lede": "maskera hittar och döljer namn, personnummer och adresser innan texten skickas till AI.",
+    "lede": "maskera döljer namn, personnummer och adresser från AI‑tjänster som ChatGPT.",
     "browserLead": "All maskering sker",
     "browserEmphasis": "direkt i din webbläsare",
-    "browserPrivacy": "Din text och återställningsnyckel lämnar inte enheten.",
-    "localProduction": "För företag körs samma maskering på egna servrar, inte via ett externt Maskera‑API. Originaldata stannar i er miljö; endast maskerad text går vidare till AI‑tjänsten.",
+    "browserPrivacy": "Din text och nyckeln med originaluppgifterna lämnar inte enheten.",
+    "localProduction": "För företag körs samma maskering på egna servrar, utan att någon text skickas till Maskera. Originaldata stannar i er miljö; endast maskerad text går vidare till AI‑tjänsten.",
     "servicesCta": "Så fungerar det för företag"
   },
   "outputCard": {
@@ -103,7 +103,7 @@
     "security": "Säkerhet"
   },
   "footer": {
-    "localProcessing": "Webbverktyget kör modellen lokalt i din webbläsare; texten och återställningsnyckeln lämnar inte enheten."
+    "localProcessing": "Webbverktyget kör modellen lokalt i din webbläsare; texten och nyckeln med originaluppgifterna lämnar inte enheten."
   },
   "accuracy": {
     "metaTitle": "träffsäkerhet & testresultat · maskera",
@@ -250,7 +250,7 @@
     ],
     "dataFlowTitle": "Dataflöde och nätverk",
     "dataFlow": [
-      "Texten och återställningsnyckeln skickas inte till Maskera för maskering. Regeldelen har inga nätverksberoenden. Modellvarianten kör inferensen lokalt i webbläsaren eller i din egen Node-process.",
+      "Texten och nyckeln med originaluppgifterna skickas inte till Maskera för maskering. Regeldelen har inga nätverksberoenden. Modellvarianten kör inferensen lokalt i webbläsaren eller i din egen Node-process.",
       "Npm-paketets standardkonfiguration hämtar modell och körmiljö första gången och cachar dem. Det är statiska program- och modellartefakter, aldrig texten som ska maskeras. För miljöer utan tillåten extern hämtning kan alla modellfiler ligga på egen server."
     ],
     "artifactsTitle": "Pinnade artefakter",
@@ -260,7 +260,7 @@
     ],
     "restoreTitle": "Återställning är en säkerhetsgräns",
     "restore": [
-      "Återställningsnyckeln innehåller originalvärdena och ska behandlas som personuppgifter. Logga den inte och lagra den inte bredvid den maskerade texten.",
+      "Nyckeln innehåller originalvärdena och ska behandlas som personuppgifter. Logga den inte och lagra den inte bredvid den maskerade texten.",
       "restore() sätter tillbaka verkliga värden där platshållartokens förekommer. Återställ därför inte opålitlig utdata som sedan hämtas som en URL, renderas som HTML eller skrivs till logg. Maskering skyddar det som skickas; återställning är inte sanering av det som kommer tillbaka.",
       "En platshållare som redan finns i indatan delas aldrig ut på nytt. Att plantera exempelvis [PERSONNUMMER_1] i källtexten kan därför inte fånga ett verkligt värde."
     ],

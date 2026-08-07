@@ -76,7 +76,7 @@ const PRODUCTS: Product[] = [
     tagline: "För team som vill bygga och underhålla integrationen själva.",
     points: [
       "Kör i webbläsaren eller Node",
-      "Text och återställningsnyckel stannar i er miljö",
+      "Texten och nyckeln med originaluppgifterna stannar i er miljö",
       "MIT-licens, utan användningsavgift eller inlåsning",
       "Svensk modell och färdiga regler för vanliga personuppgifter",
     ],
@@ -172,8 +172,9 @@ export function Services({ go, onCoverage }: { go: (view: View) => void; onCover
 
           <h2>Så skyddar Gateway AI-flödet</h2>
           <p>
-            Varje AI-anrop maskeras innan det lämnar ert nätverk. Originaltexten och
-            återställningsnyckeln stannar i er miljö.
+            Texten maskeras innan varje AI-anrop lämnar ert nätverk, utan att skickas via ett
+            externt Maskera‑API. Originaltexten och nyckeln med originaluppgifterna stannar i er
+            miljö.
           </p>
           <div className="flow-band">
             <p className="flow-band-label">Dataflöde för Gateway</p>

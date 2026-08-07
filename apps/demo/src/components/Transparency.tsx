@@ -81,8 +81,9 @@ export function Transparency({ go }: { go: (view: View) => void }) {
           <ul>
             <li>
               <strong>All maskering sker på din enhet</strong>, i webbläsaren eller på din egen
-              server (för utvecklare: WASM/WebGPU eller Node). Texten och återställningsnyckeln
-              skickas inte till Maskera eller någon annan tjänst för att maskeras.
+              server (för utvecklare: WASM/WebGPU eller Node). Texten och nyckeln med
+              originaluppgifterna skickas inte till Maskera eller någon annan tjänst för att
+              maskeras.
             </li>
             <li>
               <strong>Webbstatistiken är anonym och cookiefri.</strong> Vercel Analytics räknar
@@ -92,7 +93,7 @@ export function Transparency({ go }: { go: (view: View) => void }) {
             <li>
               <strong>Webbhotellet hanterar tekniska anropsuppgifter.</strong> Vercel kan behandla
               uppgifter som IP-adress för att leverera och skydda webbplatsen. Texten du skriver och
-              återställningsnyckeln ingår inte i dessa anrop.
+              nyckeln med originaluppgifterna ingår inte i dessa anrop.
             </li>
             <li>
               <strong>De anrop som kan göras</strong>, för fullständighetens skull: med npm-paketets
@@ -286,8 +287,8 @@ export function Transparency({ go }: { go: (view: View) => void }) {
             </li>
             <li>
               <strong>Hosting:</strong> Vercel kan behandla tekniska anropsuppgifter, som IP-adress,
-              för att leverera webbplatsen och skydda den mot angrepp. Texten och
-              återställningsnyckeln ingår inte.
+              för att leverera webbplatsen och skydda den mot angrepp. Texten och nyckeln med
+              originaluppgifterna ingår inte.
             </li>
             <li>
               <strong>En inställning sparas lokalt:</strong> växlar du till mörkt läge sparas valet
@@ -295,9 +296,9 @@ export function Transparency({ go }: { go: (view: View) => void }) {
               Det är ingen cookie, det lämnar aldrig din enhet och det går inte att koppla till dig.
             </li>
             <li>
-              <strong>Vad verktyget behandlar:</strong> texten och återställningsnyckeln behandlas
-              lokalt i din webbläsare. De skickas inte till mig eller någon annan tjänst för
-              maskering.
+              <strong>Vad verktyget behandlar:</strong> texten och nyckeln med originaluppgifterna
+              behandlas lokalt i din webbläsare. De skickas inte till mig eller någon annan tjänst
+              för maskering.
             </li>
             <li>
               <strong>Dina rättigheter:</strong> har du frågor om webbplatsens behandling av

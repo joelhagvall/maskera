@@ -114,7 +114,7 @@ export function OutputCard({
             aria-controls="restore-map"
             onClick={onToggleMap}
           >
-            {showMap ? "Dölj" : "Visa"} återställningsnyckel ({unique})
+            {showMap ? "Dölj" : "Visa"} återställningsnyckeln ({unique})
           </button>
           {showMap ? <RestoreMap map={result.map} /> : <div id="restore-map" hidden />}
         </>

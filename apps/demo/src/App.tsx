@@ -19,7 +19,7 @@ export function App() {
   const [active, setActive] = useState<Scenario>(scenarios[0])
   const [text, setText] = useState<string>(scenarios[0].text)
   const [anchor, setAnchor] = useState<string | null>(null)
-  // The output card's "Visa återställningsnyckel" toggle lives here so it
+  // The output card's "Visa återställningsnyckeln" toggle lives here so it
   // survives scenario switches instead of collapsing.
   const [mapOpen, setMapOpen] = useState(false)
   const { view, navigate } = useRoute()
