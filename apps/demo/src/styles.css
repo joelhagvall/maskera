@@ -221,14 +221,16 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
   line-height: 1.6;
   color: var(--muted);
 }
-/* Emphasis inside the hero lede renders like .prose strong on the sub-pages:
-   semibold and full-contrast, so the same role never drifts between routes. */
-.lede strong {
-  font-weight: 600;
-  color: var(--fg);
+.hero-local-production {
+  max-width: 68ch;
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
 }
-.lede a {
+.hero-local-production a {
   color: var(--fg);
+  text-decoration: underline;
   text-underline-offset: 2px;
 }
 

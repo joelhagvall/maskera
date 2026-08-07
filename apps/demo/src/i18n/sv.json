@@ -1,4 +1,10 @@
 {
+  "header": {
+    "title": "Skydda personuppgifter innan texten skickas till AI.",
+    "lede": "maskera hittar och döljer personuppgifter, som namn, personnummer och adresser, innan texten skickas till ChatGPT eller andra AI-tjänster.",
+    "localProduction": "Den här sidan körs i webbläsaren. I produktion körs samma maskering på era egna servrar. Originaltext och återställningsnyckel stannar där. Endast maskerad text går vidare till AI‑tjänsten.",
+    "servicesCta": "Så fungerar det för företag"
+  },
   "outputCard": {
     "invalidPersonnummerSingular": "har en personnummerlik form men inget giltigt födelse- eller samordningsdatum. Därför maskeras det inte.",
     "invalidPersonnummerPlural": "har personnummerlika former men inga giltiga födelse- eller samordningsdatum. Därför maskeras de inte.",
