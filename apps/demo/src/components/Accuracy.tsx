@@ -18,7 +18,9 @@ const addressRows = copy.accuracy.addressRows as BenchmarkRow[]
 export function Accuracy({ go }: { go: (view: View) => void }) {
   return (
     <>
-      <TopBar current="accuracy" go={go} />
+      <header>
+        <TopBar current="accuracy" go={go} />
+      </header>
 
       <main id="main-content">
         <article className="prose prose-wide accuracy-page">
@@ -113,11 +115,21 @@ function BenchmarkTable({
   rows: BenchmarkRow[]
 }) {
   return (
-    <section className="benchmark-section" aria-labelledby={id + "-heading"}>
+    <section className="benchmark-section" id={id} aria-labelledby={id + "-heading"}>
       <h2 id={id + "-heading"}>{title}</h2>
       <p className="benchmark-caption">{caption}</p>
-      <div className="benchmark-scroll">
+      <p className="benchmark-swipe-hint" id={id + "-swipe-hint"}>
+        {copy.accuracy.table.swipeHint}
+      </p>
+      <div
+        className="benchmark-scroll"
+        role="group"
+        aria-label={title}
+        aria-describedby={id + "-swipe-hint"}
+        tabIndex={0}
+      >
         <table className="benchmark-table">
+          <caption className="sr-only">{title}</caption>
           <thead>
             <tr>
               <th scope="col">{copy.accuracy.table.system}</th>

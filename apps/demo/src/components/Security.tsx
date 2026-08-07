@@ -12,7 +12,9 @@ const GATEWAY_URL = "https://app.maskera.dev/gateway"
 export function Security({ go }: { go: (view: View) => void }) {
   return (
     <>
-      <TopBar current="security" go={go} />
+      <header>
+        <TopBar current="security" go={go} />
+      </header>
 
       <main id="main-content">
         <article className="prose security-page">
@@ -88,7 +90,7 @@ export function Security({ go }: { go: (view: View) => void }) {
 
 function TextSection({ id, title, children }: { id: string; title: string; children: string[] }) {
   return (
-    <section aria-labelledby={id + "-heading"}>
+    <section id={id} aria-labelledby={id + "-heading"}>
       <h2 id={id + "-heading"}>{title}</h2>
       {children.map((paragraph) => (
         <p className="prose-body" key={paragraph}>

@@ -77,6 +77,8 @@ await redactWithNer(text, {
 })
 ```
 
+### Clinical profile
+
 For clinical text, use the opt-in precision policy to keep common measurements,
 medication doses and unambiguous care terms available to a downstream assistant
 without weakening deterministic identifier rules:

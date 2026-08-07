@@ -9,8 +9,7 @@ export function Header({ go }: { go: (view: View) => void }) {
       <p className="lede">
         maskera hittar och döljer personuppgifter, som namn, personnummer och adresser, innan texten
         skickas till ChatGPT eller andra AI-tjänster. Allt sker{" "}
-        <strong>direkt i din webbläsare</strong>, ingenting lämnar din enhet. För utvecklare: öppen
-        källkod, finns som npm-paket.
+        <strong>direkt i din webbläsare</strong>, ingenting lämnar din enhet.
       </p>
     </header>
   )

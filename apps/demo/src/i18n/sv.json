@@ -5,9 +5,22 @@
     "testPersonnummerCta": "Testa med Skatteverkets reserverade testnummer 19900101-2385."
   },
   "developerApi": {
-    "clinicalTitle": "Vårdtext utan onödig övermaskning",
+    "clinicalTitle": "Valfri profil för vårdtext",
     "clinicalBody": "Standardläget passar blandad text. För journal- och vårdflöden aktiverar en namngiven profil skydd för klinisk sakinformation, medan regelbaserade personuppgifter fortfarande alltid maskeras.",
-    "clinicalCode": "const { text, restore } = await redactWithNer(journalText, {\n  recognizer,\n  profile: \"clinical\",\n})"
+    "clinicalCode": "const { text, restore } = await redactWithNer(journalText, {\n  recognizer,\n  profile: \"clinical\",\n})",
+    "clinicalDocsCta": "Läs mer om vårdprofilen på GitHub",
+    "diagramOpen": "Öppna diagrammet i full storlek",
+    "codeLanguageLabel": "Språk för kodexemplet",
+    "typescriptLabel": "TypeScript",
+    "javascriptLabel": "JavaScript",
+    "sharedLanguageLabel": "JS / TS",
+    "practicalTitle": "Bra att veta",
+    "practicalItems": [
+      "Första körningen hämtar AI-modellen på cirka 43 MB. Därefter återanvänds den lokala cachen.",
+      "Skapa recognizer en gång och återanvänd den mellan anrop; undvik att skapa en ny per text.",
+      "maskera stöder webbläsare och Node 18+. I webbläsaren körs modellen med WASM eller WebGPU."
+    ],
+    "practicalDocsCta": "Fullständig användnings- och konfigurationsguide på GitHub"
   },
   "coverage": {
     "heading": "Vad maskeras?",
@@ -80,6 +93,9 @@
     "accuracy": "Träffsäkerhet",
     "security": "Säkerhet"
   },
+  "footer": {
+    "localProcessing": "Webbverktyget kör modellen lokalt i din webbläsare; texten och återställningsnyckeln lämnar inte enheten."
+  },
   "accuracy": {
     "metaTitle": "träffsäkerhet & testresultat · maskera",
     "metaDescription": "Se hur många svenska personuppgifter Maskera och andra system hittade, hur många de missade och exakt hur testerna gjordes.",
@@ -106,7 +122,8 @@
       "system": "System",
       "precision": "Rätt markeringar",
       "recall": "Hittad andel",
-      "leaks": "Helt missade"
+      "leaks": "Helt missade",
+      "swipeHint": "Svep tabellen i sidled för fler kolumner →"
     },
     "independentRows": [
       {
@@ -275,6 +292,8 @@
     }
   },
   "services": {
+    "lede": "Välj Gateway för en signerad företagsleverans med support i er egen miljö. Välj npm-paketen om ni vill bygga och underhålla integrationen själva.",
+    "sublede": "Gateway finns som 60-dagars pilot eller årslicens. Ni börjar med en teknisk genomgång.",
     "gatewayInterestCta": "Anmäl intresse",
     "gatewayInterestSubject": "Intresse för Maskera Gateway",
     "gatewayDocsCta": "Läs om Gateway",

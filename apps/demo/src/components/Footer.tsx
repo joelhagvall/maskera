@@ -3,12 +3,14 @@ import copy from "../i18n/sv.json"
 import { navClick, viewPaths } from "../routing"
 
 export function Footer({
+  showServices,
   onTransparency,
   onPolicy,
   onServices,
   onAccuracy,
   onSecurity,
 }: {
+  showServices: boolean
   onTransparency: () => void
   onPolicy: () => void
   onServices: () => void
@@ -22,8 +24,7 @@ export function Footer({
         <a href={HF_MODEL} target="_blank" rel="noreferrer">
           en egentränad svensk AI-modell
         </a>
-        . Den öppna demon kör modellen i din webbläsare. Texten och återställningsnyckeln skickas
-        inte för maskering.
+        . {copy.footer.localProcessing}
       </p>
       <nav className="footer-nav" aria-label="Integritet och dokumentation">
         <ul>
@@ -62,14 +63,16 @@ export function Footer({
           </li>
         </ul>
       </nav>
-      <p className="footer-row footer-help">
-        Vill ni bygga en egen integration med npm-paketen eller välja Gateway som signerad
-        företagsleverans? Se{" "}
-        <a className="footer-link" href={viewPaths.services} onClick={navClick(onServices)}>
-          Maskera för företag
-        </a>
-        .
-      </p>
+      {showServices ? (
+        <p className="footer-row footer-help">
+          Vill ni bygga en egen integration med npm-paketen eller välja Gateway som signerad
+          företagsleverans? Se{" "}
+          <a className="footer-link" href={viewPaths.services} onClick={navClick(onServices)}>
+            Maskera för företag
+          </a>
+          .
+        </p>
+      ) : null}
       <p className="footer-row footer-credit">
         Byggd av{" "}
         <a href="https://joelhagvall.com" target="_blank" rel="noreferrer">

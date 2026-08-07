@@ -37,12 +37,12 @@ function mountAt(path: string) {
 describe("useRoute: initial view from pathname", () => {
   const cases = [
     ["/", "demo"],
-    ["/developers", "dev"],
+    ["/utvecklare", "dev"],
     ["/integritet", "transparency"],
     ["/tjanster", "services"],
     ["/traffsakerhet", "accuracy"],
     ["/sakerhet", "security"],
-    ["/developers/", "dev"], // trailing slash
+    ["/utvecklare/", "dev"], // trailing slash
     ["/tjanster///", "services"], // repeated trailing slashes
     ["/okand-sida", "demo"], // unknown path falls back to home
   ] as const
@@ -64,7 +64,7 @@ describe("useRoute: document.title", () => {
   })
 
   it("fresh landing on a sub-page sets its title immediately", () => {
-    const { unmount } = mountAt("/developers")
+    const { unmount } = mountAt("/utvecklare")
     expect(document.title).toBe("för utvecklare · maskera")
     unmount()
   })
@@ -83,7 +83,7 @@ describe("useRoute: document.title", () => {
     const { result, unmount } = mountAt("/")
     act(() => result.current.navigate("dev"))
     expect(document.title).toBe("för utvecklare · maskera")
-    expect(window.location.pathname).toBe("/developers")
+    expect(window.location.pathname).toBe("/utvecklare")
     unmount()
   })
 
@@ -110,15 +110,15 @@ describe("useRoute: document.title", () => {
 
 describe("useRoute: route metadata", () => {
   it("sets canonical, description and social metadata on a direct sub-page landing", () => {
-    const { unmount } = mountAt("/developers")
+    const { unmount } = mountAt("/utvecklare")
     expect(document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.href).toBe(
-      "https://maskera.dev/developers",
+      "https://maskera.dev/utvecklare",
     )
     expect(document.querySelector<HTMLMetaElement>('meta[name="description"]')?.content).toContain(
       "Installera maskera",
     )
     expect(document.querySelector<HTMLMetaElement>('meta[property="og:url"]')?.content).toBe(
-      "https://maskera.dev/developers",
+      "https://maskera.dev/utvecklare",
     )
     expect(document.querySelector<HTMLMetaElement>('meta[name="twitter:title"]')?.content).toBe(
       "för utvecklare · maskera",

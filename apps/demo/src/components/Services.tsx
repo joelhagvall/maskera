@@ -46,20 +46,6 @@ type Product = {
 }
 
 const PRODUCTS: Product[] = [
-  {
-    name: "Öppen källkod",
-    price: "0 kr",
-    tagline: "För team som vill bygga och underhålla integrationen själva.",
-    points: [
-      "Kör i webbläsaren eller Node",
-      "Text och återställningsnyckel stannar i er miljö",
-      "MIT-licens, utan användningsavgift eller inlåsning",
-      "Svensk modell och färdiga regler för vanliga personuppgifter",
-    ],
-    cta: "Installera och kom igång",
-    href: viewPaths.dev,
-    view: "dev",
-  },
   // Gateway is featured: it is the product on sale today.
   {
     name: "Maskera Gateway",
@@ -83,6 +69,20 @@ const PRODUCTS: Product[] = [
     secondaryHref: portal("/gateway", "business_gateway"),
     destination: copy.services.gatewayContactNote,
     note: "Kör i er miljö på så lite som 2 CPU-kärnor och 2\u00a0GB RAM. Priser exkl. moms.",
+  },
+  {
+    name: "Öppen källkod",
+    price: "0 kr",
+    tagline: "För team som vill bygga och underhålla integrationen själva.",
+    points: [
+      "Kör i webbläsaren eller Node",
+      "Text och återställningsnyckel stannar i er miljö",
+      "MIT-licens, utan användningsavgift eller inlåsning",
+      "Svensk modell och färdiga regler för vanliga personuppgifter",
+    ],
+    cta: "Installera och kom igång",
+    href: viewPaths.dev,
+    view: "dev",
   },
 ]
 
@@ -147,19 +147,15 @@ function ProductCard({ product, go }: { product: Product; go: (view: View) => vo
 export function Services({ go, onCoverage }: { go: (view: View) => void; onCoverage: () => void }) {
   return (
     <>
-      <TopBar current="services" go={go} />
+      <header>
+        <TopBar current="services" go={go} />
+      </header>
 
       <main id="main-content">
         <article className="prose prose-wide">
           <h1>Maskera för företag</h1>
-          <p className="prose-lede">
-            Välj npm-paketen om ni vill bygga och underhålla integrationen själva. Välj Gateway för
-            en signerad företagsleverans med support i er egen miljö.
-          </p>
-          <p className="prose-sub">
-            Gateway finns som 60-dagars pilot eller årslicens. Tills självbetjäningen öppnar börjar
-            ni med en teknisk genomgång.
-          </p>
+          <p className="prose-lede">{copy.services.lede}</p>
+          <p className="prose-sub">{copy.services.sublede}</p>
 
           <div className="pkgs">
             {PRODUCTS.map((product) => (

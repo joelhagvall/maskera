@@ -14,7 +14,7 @@ export const SITE_ORIGIN = "https://maskera.dev"
 
 export const viewPaths: Record<View, string> = {
   demo: "/",
-  dev: "/developers",
+  dev: "/utvecklare",
   transparency: "/integritet",
   services: "/tjanster",
   accuracy: "/traffsakerhet",

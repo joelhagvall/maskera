@@ -33,13 +33,25 @@ describe("Accuracy", () => {
     render(<Accuracy go={vi.fn()} />)
 
     expect(screen.getByRole("heading", { name: copy.accuracy.title })).toBeTruthy()
+    expect(screen.getByRole("banner")).toBeTruthy()
     expect(screen.getAllByRole("table")).toHaveLength(2)
+    expect(screen.getAllByText(copy.accuracy.table.swipeHint)).toHaveLength(2)
     expect(screen.getByRole("heading", { name: copy.accuracy.limitsTitle })).toBeTruthy()
     expect(
       screen
         .getByRole("link", { name: new RegExp(copy.accuracy.benchmarksCta) })
         .getAttribute("href"),
     ).toBe("https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md")
+
+    for (const item of copy.accuracy.toc) {
+      const href = screen.getByRole("link", { name: item.label }).getAttribute("href")
+      expect(href).toBe(item.href)
+      expect(document.querySelector(item.href)).toBeTruthy()
+    }
+
+    for (const table of screen.getAllByRole("table")) {
+      expect(table.querySelector("caption")?.textContent).toBeTruthy()
+    }
   })
 
   it("keeps every non-Azure comparison row aligned with the committed bench output", () => {

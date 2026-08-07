@@ -9,7 +9,57 @@ import { TopBar } from "./TopBar"
 
 // Order matters: comments win over strings win over keywords/function names.
 const TOKEN =
-  /(\/\/[^\n]*|#[^\n]*)|("(?:[^"\\]|\\.)*")|\b(import|from|const|await)\b|([A-Za-z_$][\w$]*)(?=\()/g
+  /(\/\/[^\n]*|#[^\n]*)|("(?:[^"\\]|\\.)*")|\b(import|from|type|const|await)\b|([A-Za-z_$][\w$]*)(?=\()/g
+
+type CodeLanguage = "ts" | "js"
+
+const MASK_EXAMPLE: Record<CodeLanguage, string> = {
+  ts: `import { createNerRecognizer, redactWithNer, type NerRecognizer } from "maskera"
+
+// maskeras svenska modell, ca 43 MB, körs lokalt
+const recognizer: NerRecognizer = createNerRecognizer()
+
+const { text, restore } = await redactWithNer(
+  "hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala",
+  { recognizer },
+)
+
+text
+// "hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]"`,
+  js: `import { createNerRecognizer, redactWithNer } from "maskera"
+
+// maskeras svenska modell, ca 43 MB, körs lokalt
+const recognizer = createNerRecognizer()
+
+const { text, restore } = await redactWithNer(
+  "hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala",
+  { recognizer },
+)
+
+text
+// "hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]"`,
+}
+
+const RESTORE_EXAMPLE: Record<CodeLanguage, string> = {
+  ts: `// skicka den maskerade texten till valfri AI
+// upptäckta personuppgifter är ersatta med platshållare
+const svar: string = await fetch("https://api.example.com/chat", {
+  method: "POST",
+  body: JSON.stringify({ prompt: text }),
+}).then((r) => r.text())
+
+restore(svar)
+// platshållarna byts tillbaka mot originalen, lokalt`,
+  js: `// skicka den maskerade texten till valfri AI
+// upptäckta personuppgifter är ersatta med platshållare
+const svar = await fetch("https://api.example.com/chat", {
+  method: "POST",
+  body: JSON.stringify({ prompt: text }),
+}).then((r) => r.text())
+
+restore(svar)
+// platshållarna byts tillbaka mot originalen, lokalt`,
+}
 
 function highlight(line: string): ReactNode[] {
   const nodes: ReactNode[] = []
@@ -32,7 +82,17 @@ function highlight(line: string): ReactNode[] {
 }
 
 /** Tiny syntax highlighter for the static snippets below. */
-function Code({ children, lang }: { children: string; lang: string }) {
+function Code({
+  children,
+  language,
+  onLanguageChange,
+  languageLabel,
+}: {
+  children: string
+  language?: CodeLanguage
+  onLanguageChange?: (language: CodeLanguage) => void
+  languageLabel?: string
+}) {
   const src = children
   // One block element per source line. Long lines scroll sideways inside the
   // block (never wrap), so each source line stays on a single visual line.
@@ -49,11 +109,30 @@ function Code({ children, lang }: { children: string; lang: string }) {
     .replace(/\n{3,}/g, "\n\n")
     .trim()
   return (
-    <div className="code-block">
+    <div className={`code-block snippet-code${languageLabel ? " shared-language-code" : ""}`}>
       <div className="code-head">
-        <span className="code-lang" aria-hidden="true">
-          {lang}
-        </span>
+        {language && onLanguageChange ? (
+          <div className="code-tabs" role="group" aria-label={copy.developerApi.codeLanguageLabel}>
+            {(["ts", "js"] as const).map((option) => (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={language === option}
+                aria-label={
+                  option === "ts"
+                    ? copy.developerApi.typescriptLabel
+                    : copy.developerApi.javascriptLabel
+                }
+                className={`code-tab${language === option ? " on" : ""}`}
+                onClick={() => onLanguageChange(option)}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <span className="shared-language-label">{languageLabel}</span>
+        )}
         <CopyButton
           text={copyText}
           className="code-copy"
@@ -132,9 +211,13 @@ export function Developers({
   go: (view: View) => void
   onCoverage: () => void
 }) {
+  const [language, setLanguage] = useState<CodeLanguage>("ts")
+
   return (
     <>
-      <TopBar current="dev" go={go} />
+      <header>
+        <TopBar current="dev" go={go} />
+      </header>
 
       <main id="main-content">
         <article className="prose">
@@ -157,7 +240,7 @@ export function Developers({
               src="/layers-sv.svg"
               width="1200"
               height="640"
-              loading="lazy"
+              loading="eager"
               alt="Diagram över maskeras två lager: din text delas upp mellan regler för uppgifter med bestämt format och en svensk AI-modell för fri text, och slås samman till maskerad text."
             />
             <img
@@ -165,7 +248,7 @@ export function Developers({
               src="/layers-sv-dark.svg"
               width="1200"
               height="640"
-              loading="lazy"
+              loading="eager"
               alt=""
               aria-hidden="true"
             />
@@ -175,6 +258,10 @@ export function Developers({
               <a href={`${viewPaths.transparency}#vad-maskeras`} onClick={navClick(onCoverage)}>
                 {copy.coverage.linkCta}
               </a>
+              <a className="layers-expand" href="/layers-sv.svg" target="_blank" rel="noreferrer">
+                {copy.developerApi.diagramOpen}
+                <ArrowUpRightIcon size={13} />
+              </a>
             </figcaption>
           </figure>
 
@@ -183,38 +270,50 @@ export function Developers({
           <p className="install-note">
             Regler och AI-modell, hela API:t importeras från <code>maskera</code>.
           </p>
+          <aside className="developer-notes" aria-labelledby="developer-notes-title">
+            <p id="developer-notes-title" className="developer-notes-title">
+              {copy.developerApi.practicalTitle}
+            </p>
+            <ul>
+              {copy.developerApi.practicalItems.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+            <a
+              className="developer-notes-link"
+              href={`${GITHUB}/blob/main/packages/ner/README.md`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {copy.developerApi.practicalDocsCta}
+              <ArrowUpRightIcon size={13} />
+            </a>
+          </aside>
 
           <h2>Maskera en text</h2>
-          <Code lang="ts">
-            {`import { createNerRecognizer, redactWithNer } from "maskera"
+          <Code language={language} onLanguageChange={setLanguage}>
+            {MASK_EXAMPLE[language]}
+          </Code>
 
-// maskeras svenska modell, ca 43 MB, körs lokalt
-const recognizer = createNerRecognizer()
-
-const { text, restore } = await redactWithNer(
-  "hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala",
-  { recognizer },
-)
-
-text
-// "hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]"`}
+          <h2>Skicka till AI-tjänsten och återställ svaret</h2>
+          <Code language={language} onLanguageChange={setLanguage}>
+            {RESTORE_EXAMPLE[language]}
           </Code>
 
           <h2>{copy.developerApi.clinicalTitle}</h2>
-          <p>{copy.developerApi.clinicalBody}</p>
-          <Code lang="ts">{copy.developerApi.clinicalCode}</Code>
-
-          <h2>Skicka till AI-tjänsten och återställ svaret</h2>
-          <Code lang="ts">
-            {`// skicka den maskerade texten till valfri AI
-// upptäckta personuppgifter är ersatta med platshållare
-const svar = await fetch("https://api.example.com/chat", {
-  method: "POST",
-  body: JSON.stringify({ prompt: text }),
-}).then((r) => r.text())
-
-restore(svar)
-// platshållarna byts tillbaka mot originalen, lokalt`}
+          <p className="prose-note">
+            {copy.developerApi.clinicalBody}{" "}
+            <a
+              href={`${GITHUB}/blob/main/packages/ner/README.md#clinical-profile`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {copy.developerApi.clinicalDocsCta}
+              <ArrowUpRightIcon size={13} />
+            </a>
+          </p>
+          <Code languageLabel={copy.developerApi.sharedLanguageLabel}>
+            {copy.developerApi.clinicalCode}
           </Code>
 
           <nav className="prose-foot foot-links" aria-label="Utvecklarresurser">

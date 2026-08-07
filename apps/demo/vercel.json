@@ -1,9 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [{ "source": "/developers", "destination": "/utvecklare", "permanent": true }],
   "rewrites": [
-    { "source": "/developers", "destination": "/developers/index.html" },
+    { "source": "/utvecklare", "destination": "/utvecklare/index.html" },
     { "source": "/integritet", "destination": "/integritet/index.html" },
-    { "source": "/tjanster", "destination": "/tjanster/index.html" }
+    { "source": "/tjanster", "destination": "/tjanster/index.html" },
+    { "source": "/traffsakerhet", "destination": "/traffsakerhet/index.html" },
+    { "source": "/sakerhet", "destination": "/sakerhet/index.html" }
   ],
   "headers": [
     {

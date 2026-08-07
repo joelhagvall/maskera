@@ -21,6 +21,7 @@ apps/demo/reports/
 apps/demo/public/ort/
 # generated from src/meta.ts by vite.config.ts at config load
 apps/demo/developers/
+apps/demo/utvecklare/
 apps/demo/integritet/
 apps/demo/tjanster/
 apps/demo/traffsakerhet/

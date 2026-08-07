@@ -8,7 +8,9 @@ import { TopBar } from "./TopBar"
 export function Transparency({ go }: { go: (view: View) => void }) {
   return (
     <>
-      <TopBar current="transparency" go={go} />
+      <header>
+        <TopBar current="transparency" go={go} />
+      </header>
 
       <main id="main-content">
         <article className="prose">
