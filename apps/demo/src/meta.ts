@@ -134,11 +134,15 @@ export function renderRouteHtml(view: RouteHtmlView): string {
   const structuredData = JSON.stringify(jsonLd[view], null, 2)
     .replace(/</g, "\\u003c")
     .replace(/\n/g, "\n      ")
-  // Only the developers page renders code blocks, so it alone preloads the
-  // mono font.
-  const monoPreload =
+  // Only the developers page renders code blocks and the architecture image,
+  // so it alone preloads those resources. Both image themes are tiny and the
+  // saved theme is applied by the inline script below before React mounts.
+  const devPreloads =
     view === "dev"
-      ? `\n    <link rel="preload" href="/fonts/geist-mono-latin.woff2" as="font" type="font/woff2" crossorigin />`
+      ? `
+    <link rel="preload" href="/fonts/geist-mono-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/layers-sv.svg" as="image" type="image/svg+xml" fetchpriority="high" />
+    <link rel="preload" href="/layers-sv-dark.svg" as="image" type="image/svg+xml" fetchpriority="high" />`
       : ""
 
   return `<!doctype html>
@@ -191,7 +195,7 @@ export function renderRouteHtml(view: RouteHtmlView): string {
     <script type="application/ld+json">
       ${structuredData}
     </script>
-    <link rel="preload" href="/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />${monoPreload}
+    <link rel="preload" href="/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />${devPreloads}
   </head>
   <body>
     <div id="root"></div>

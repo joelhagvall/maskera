@@ -10,7 +10,7 @@ describe("Developers", () => {
 
     expect(container.textContent).toContain("const recognizer: NerRecognizer")
 
-    const javascriptButtons = screen.getAllByRole("button", { name: "JavaScript" })
+    const javascriptButtons = screen.getAllByRole("button", { name: /JavaScript/ })
     expect(javascriptButtons).toHaveLength(2)
     fireEvent.click(javascriptButtons[0])
 

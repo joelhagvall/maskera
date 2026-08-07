@@ -118,15 +118,16 @@ function Code({
                 key={option}
                 type="button"
                 aria-pressed={language === option}
-                aria-label={
-                  option === "ts"
-                    ? copy.developerApi.typescriptLabel
-                    : copy.developerApi.javascriptLabel
-                }
                 className={`code-tab${language === option ? " on" : ""}`}
                 onClick={() => onLanguageChange(option)}
               >
-                {option}
+                {option.toUpperCase()}
+                <span className="sr-only">
+                  {" – "}
+                  {option === "ts"
+                    ? copy.developerApi.typescriptLabel
+                    : copy.developerApi.javascriptLabel}
+                </span>
               </button>
             ))}
           </div>
@@ -241,6 +242,7 @@ export function Developers({
               width="1200"
               height="640"
               loading="eager"
+              fetchPriority="high"
               alt="Diagram över maskeras två lager: din text delas upp mellan regler för uppgifter med bestämt format och en svensk AI-modell för fri text, och slås samman till maskerad text."
             />
             <img
@@ -249,6 +251,7 @@ export function Developers({
               width="1200"
               height="640"
               loading="eager"
+              fetchPriority="high"
               alt=""
               aria-hidden="true"
             />

@@ -39,9 +39,12 @@ describe("renderRouteHtml", () => {
     }
   })
 
-  it("only the developers page preloads the mono font", () => {
+  it("only the developers page preloads its mono font and architecture images", () => {
     expect(renderRouteHtml("dev")).toContain("geist-mono-latin.woff2")
+    expect(renderRouteHtml("dev")).toContain('href="/layers-sv.svg"')
+    expect(renderRouteHtml("dev")).toContain('href="/layers-sv-dark.svg"')
     expect(renderRouteHtml("transparency")).not.toContain("geist-mono-latin.woff2")
+    expect(renderRouteHtml("transparency")).not.toContain('href="/layers-sv.svg"')
     expect(renderRouteHtml("services")).not.toContain("geist-mono-latin.woff2")
     expect(renderRouteHtml("accuracy")).not.toContain("geist-mono-latin.woff2")
     expect(renderRouteHtml("security")).not.toContain("geist-mono-latin.woff2")
