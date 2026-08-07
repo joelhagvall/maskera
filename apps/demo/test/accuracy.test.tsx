@@ -35,7 +35,12 @@ describe("Accuracy", () => {
     expect(screen.getByRole("heading", { name: copy.accuracy.title })).toBeTruthy()
     expect(screen.getByRole("banner")).toBeTruthy()
     expect(screen.getAllByRole("table")).toHaveLength(2)
-    expect(screen.getAllByText(copy.accuracy.table.swipeHint)).toHaveLength(2)
+    expect(
+      screen.getByRole("list", { name: copy.accuracy.independentTitle }).children,
+    ).toHaveLength(copy.accuracy.independentRows.length)
+    expect(screen.getByRole("list", { name: copy.accuracy.addressesTitle }).children).toHaveLength(
+      copy.accuracy.addressRows.length,
+    )
     expect(screen.getByRole("heading", { name: copy.accuracy.limitsTitle })).toBeTruthy()
     expect(
       screen

@@ -122,8 +122,7 @@
       "system": "System",
       "precision": "Rätt markeringar",
       "recall": "Hittad andel",
-      "leaks": "Helt missade",
-      "swipeHint": "Svep tabellen i sidled för fler kolumner →"
+      "leaks": "Helt missade"
     },
     "independentRows": [
       {

@@ -118,16 +118,7 @@ function BenchmarkTable({
     <section className="benchmark-section" id={id} aria-labelledby={id + "-heading"}>
       <h2 id={id + "-heading"}>{title}</h2>
       <p className="benchmark-caption">{caption}</p>
-      <p className="benchmark-swipe-hint" id={id + "-swipe-hint"}>
-        {copy.accuracy.table.swipeHint}
-      </p>
-      <div
-        className="benchmark-scroll"
-        role="group"
-        aria-label={title}
-        aria-describedby={id + "-swipe-hint"}
-        tabIndex={0}
-      >
+      <div className="benchmark-scroll">
         <table className="benchmark-table">
           <caption className="sr-only">{title}</caption>
           <thead>
@@ -152,6 +143,32 @@ function BenchmarkTable({
           </tbody>
         </table>
       </div>
+      <ul className="benchmark-cards" aria-label={title}>
+        {rows.map((row) => (
+          <li
+            className={row.ours ? "benchmark-card benchmark-own" : "benchmark-card"}
+            key={row.system}
+          >
+            <p className="benchmark-card-title" translate="no">
+              {row.system}
+            </p>
+            <dl>
+              <div>
+                <dt>{copy.accuracy.table.precision}</dt>
+                <dd>{row.precision}</dd>
+              </div>
+              <div>
+                <dt>{copy.accuracy.table.recall}</dt>
+                <dd>{row.recall}</dd>
+              </div>
+              <div>
+                <dt>{copy.accuracy.table.leaks}</dt>
+                <dd>{row.leaks}</dd>
+              </div>
+            </dl>
+          </li>
+        ))}
+      </ul>
     </section>
   )
 }

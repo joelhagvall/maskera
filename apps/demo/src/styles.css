@@ -1399,7 +1399,7 @@ html[data-theme="dark"] .tok-f {
   line-height: 1.6;
   color: var(--muted);
 }
-.benchmark-swipe-hint {
+.benchmark-cards {
   display: none;
 }
 .benchmark-scroll {
@@ -1445,28 +1445,67 @@ html[data-theme="dark"] .tok-f {
   color: var(--fg);
   background: var(--gray-100);
 }
-@media (max-width: 560px) {
-  .benchmark-swipe-hint {
-    display: block;
-    margin: 10px 0 -4px;
-    font-size: 12px;
+@media (max-width: 700px) {
+  .benchmark-scroll {
+    display: none;
+  }
+  .benchmark-cards {
+    display: grid;
+    gap: 10px;
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .benchmark-card {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .benchmark-card::before {
+    display: none;
+  }
+  .benchmark-card-title {
+    margin: 0;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  .benchmark-card dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+  }
+  .benchmark-card dl > div {
+    min-width: 0;
+    padding: 9px 6px 10px;
+    text-align: center;
+  }
+  .benchmark-card dl > div + div {
+    border-left: 1px solid var(--border);
+  }
+  .benchmark-card dt {
+    min-height: 2.5em;
+    font-size: 11px;
+    line-height: 1.25;
     color: var(--muted);
   }
-  .benchmark-table th:first-child {
-    position: sticky;
-    left: 0;
-    z-index: 1;
-    box-shadow: 1px 0 var(--border);
+  .benchmark-card dd {
+    margin: 4px 0 0;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.35;
   }
-  .benchmark-table thead th:first-child,
-  .benchmark-table .benchmark-own th:first-child {
+  .benchmark-card.benchmark-own {
     background: var(--gray-100);
   }
-  .benchmark-table tbody th:first-child {
-    background: var(--bg);
-  }
-  .benchmark-table .benchmark-own th:first-child {
-    background: var(--gray-100);
+  .benchmark-card.benchmark-own .benchmark-card-title,
+  .benchmark-card.benchmark-own dd {
+    font-weight: 600;
+    color: var(--fg);
   }
 }
 .security-actions {
