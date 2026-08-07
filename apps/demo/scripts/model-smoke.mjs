@@ -65,12 +65,10 @@ async function smoke(name) {
         const errorText = request.failure()?.errorText ?? "unknown"
         // Our Transformers.js patch deliberately cancels local-file metadata
         // probes once the real model request owns the body. Chromium reports
-        // those canceled probe GETs as ERR_ABORTED (Chromium) or "cancelled"
-        // (WebKit) even though loading succeeds.
-        if (
-          request.url().includes("/models/") &&
-          (errorText === "net::ERR_ABORTED" || errorText === "cancelled")
-        ) {
+        // those canceled probe GETs as some form of "aborted" or "cancelled"
+        // depending on browser and OS, even though loading succeeds. A real
+        // canceled model load still fails below because ready is never shown.
+        if (request.url().includes("/models/") && /abort|cancel/i.test(errorText)) {
           return
         }
         failures.push(`request failed: ${request.url()} (${errorText})`)
