@@ -21,7 +21,7 @@ jobs:
   # src-importing unit tests can't see).
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -38,6 +38,14 @@ jobs:
       - run: pnpm lint
         if: matrix.node == 24
       - run: pnpm build
+      # A mocked Worker cannot catch a missing or incompatible ONNX runtime.
+      # Load the real production bundle + model in Chromium and WebKit.
+      - name: Install demo smoke browsers
+        if: matrix.node == 24
+        run: pnpm --filter @maskera/demo exec playwright install --with-deps chromium webkit
+      - name: Smoke-test the browser AI model
+        if: matrix.node == 24
+        run: pnpm --filter @maskera/demo test:model
       # After build: ner/demo typecheck against @maskera/core's emitted
       # dist/*.d.ts, which only exists once build has run.
       - run: pnpm typecheck

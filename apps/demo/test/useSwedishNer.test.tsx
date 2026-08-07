@@ -85,6 +85,28 @@ describe("useSwedishNer model activation", () => {
     unmount()
   })
 
+  it("replaces a failed worker when the user retries", () => {
+    vi.useFakeTimers()
+    const { result, rerender, unmount } = renderHook(
+      ({ activation }) => useSwedishNer("Anna Karlsson", activation),
+      { initialProps: { activation: 1 } },
+    )
+
+    act(() => vi.advanceTimersByTime(40))
+    const failedWorker = FakeWorker.instances[0]
+    act(() => failedWorker.emit({ type: "error" }))
+    expect(result.current.status).toBe("error")
+
+    rerender({ activation: 2 })
+    act(() => vi.advanceTimersByTime(40))
+    expect(failedWorker.terminate).toHaveBeenCalledOnce()
+    expect(FakeWorker.instances).toHaveLength(2)
+
+    act(() => FakeWorker.instances[1].emit({ type: "ready" }))
+    expect(result.current.status).toBe("ready")
+    unmount()
+  })
+
   it("coalesces texts typed during a slow inference instead of queueing them", () => {
     vi.useFakeTimers()
     const { result, rerender, unmount } = renderHook(({ text }) => useSwedishNer(text, 1), {
