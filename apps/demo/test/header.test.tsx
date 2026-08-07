@@ -10,6 +10,8 @@ describe("Header", () => {
     const { container } = render(<Header go={go} />)
 
     expect(screen.getByRole("heading", { name: copy.header.title })).toBeTruthy()
+    expect(screen.getByText(copy.header.browserEmphasis).tagName).toBe("STRONG")
+    expect(container.querySelector(".lede")?.textContent).toContain(copy.header.browserPrivacy)
     expect(container.querySelector(".hero-local-production")?.textContent).toContain(
       copy.header.localProduction,
     )

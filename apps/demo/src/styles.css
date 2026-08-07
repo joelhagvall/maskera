@@ -221,6 +221,10 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
   line-height: 1.6;
   color: var(--muted);
 }
+.lede strong {
+  font-weight: 600;
+  color: var(--fg);
+}
 .hero-local-production {
   max-width: 68ch;
   margin: 10px 0 0;
