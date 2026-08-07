@@ -1,7 +1,10 @@
 // @vitest-environment jsdom
+import { readFileSync } from "node:fs"
+import { resolve } from "node:path"
 import { act, renderHook } from "@testing-library/react"
 import type { MouseEvent } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { viewMeta } from "../src/meta"
 import { navClick, useRoute } from "../src/routing"
 
 /**
@@ -109,6 +112,16 @@ describe("useRoute: document.title", () => {
 })
 
 describe("useRoute: route metadata", () => {
+  it("positions the home page as both browser-based and self-hosted", () => {
+    const indexSource = readFileSync(resolve(process.cwd(), "index.html"), "utf8")
+
+    expect(viewMeta.demo.description).toContain("webbläsaren")
+    expect(viewMeta.demo.description).toContain("egna servrar")
+    expect(viewMeta.demo.description).toContain("Endast maskerad text")
+    expect(indexSource).toContain(viewMeta.demo.description)
+    expect(indexSource).toContain("Skydda originaldata när ni använder AI")
+  })
+
   it("sets canonical, description and social metadata on a direct sub-page landing", () => {
     const { unmount } = mountAt("/utvecklare")
     expect(document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.href).toBe(
