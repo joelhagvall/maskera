@@ -27,16 +27,10 @@ const recognizerPromise = (async () => {
   // setting applies before the recognizer initializes.
   const transformers = await import("@huggingface/transformers")
   const onnxWasm = transformers.env.backends.onnx?.wasm
-  if (onnxWasm) {
-    // Transformers.js selects ONNX Runtime's Asyncify/WebNN build by default
-    // outside Safari. This demo explicitly uses the WASM execution provider,
-    // so the plain runtime is equivalent here and cuts the runtime download
-    // from roughly 23 MB to 12 MB on a cold visit.
-    onnxWasm.wasmPaths = {
-      mjs: "/ort/ort-wasm-simd-threaded.mjs",
-      wasm: "/ort/ort-wasm-simd-threaded.wasm",
-    }
-  }
+  // Let ONNX Runtime select the compatible variant for the current browser.
+  // Forcing the smaller plain build saves bytes, but can fail in production
+  // environments where the runtime expects its Asyncify/WebNN build.
+  if (onnxWasm) onnxWasm.wasmPaths = "/ort/"
 
   // Version suffix in the path busts the browser's Cache Storage when a new
   // model ships: Transformers.js caches by URL and never revalidates, so

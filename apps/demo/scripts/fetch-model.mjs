@@ -15,7 +15,6 @@ import {
   readdirSync,
   readFileSync,
   statSync,
-  unlinkSync,
   writeFileSync,
 } from "node:fs"
 import { createRequire } from "node:module"
@@ -112,13 +111,11 @@ const tfEntry = fileURLToPath(import.meta.resolve("@huggingface/transformers"))
 const ortSrc = dirname(createRequire(tfEntry).resolve("onnxruntime-web"))
 const ortDest = resolve(dirname(fileURLToPath(import.meta.url)), "../public/ort")
 mkdirSync(ortDest, { recursive: true })
-// The demo pins the plain WASM runtime in ner.worker.ts. Copy only that pair;
-// shipping the unused Asyncify/JSEP/JSPI variants adds over 100 MB to every
-// deployment even though browsers never request them.
-for (const file of readdirSync(ortDest).filter((f) => f.startsWith("ort-wasm-simd-threaded"))) {
-  unlinkSync(join(ortDest, file))
-}
-for (const file of ["ort-wasm-simd-threaded.mjs", "ort-wasm-simd-threaded.wasm"]) {
+// onnxruntime-web selects a browser-compatible runtime variant at load time.
+// Keep the complete matching set together; mixing or removing variants can
+// break first visits while a deployment or browser cache still has an older
+// worker bundle.
+for (const file of readdirSync(ortSrc).filter((f) => f.startsWith("ort-wasm-simd-threaded"))) {
   copyFileSync(join(ortSrc, file), join(ortDest, file))
 }
 console.log(`ort runtime ready in ${ortDest}`)

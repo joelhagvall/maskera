@@ -53,10 +53,6 @@ for (const view of routeHtmlViews) {
 
 export default defineConfig({
   plugins: [react(), serveOrtInDev()],
-  // The worker points ONNX Runtime at our self-hosted /ort/ pair. Select the
-  // package's external-WASM export so Vite does not also embed a second,
-  // unused 23 MB runtime in the JavaScript graph.
-  resolve: { conditions: ["onnxruntime-web-use-extern-wasm"] },
   // BENCH=1 also builds bench.html (the latency bench page, never deployed);
   // see scripts/bench-browser.mjs.
   build: {
