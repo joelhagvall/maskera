@@ -1,3 +1,6 @@
+import type { CSSProperties } from "react"
+import copy from "./i18n/sv.json"
+
 export interface LabelMeta {
   sv: string
   /**
@@ -52,28 +55,30 @@ export function labelMeta(label: string): LabelMeta {
   return LABEL_META[label] ?? { ...FALLBACK, sv: label }
 }
 
-// The style recipes below use light-dark(), which resolves against the
-// color-scheme that <html> carries (styles.css: light by default, dark when
-// the theme toggle sets data-theme="dark"). No JS involved.
+type PiiVariables = CSSProperties & Record<`--pii-${string}`, string>
+
+function piiVariables(meta: LabelMeta): PiiVariables {
+  return {
+    "--pii-light": meta.color,
+    "--pii-dark": meta.dark,
+    "--pii-light-bg": `${meta.color}1a`,
+    "--pii-dark-bg": `${meta.dark}1a`,
+    "--pii-light-border": `${meta.color}73`,
+    "--pii-dark-border": `${meta.dark}73`,
+    "--pii-light-highlight": `${meta.color}29`,
+    "--pii-dark-highlight": `${meta.dark}29`,
+  }
+}
 
 /**
  * Underline-highlight recipe for marked text in the editors. Adds no width,
  * so it can sit in a backdrop layer behind a transparent textarea.
  */
 export function hlStyle(meta: LabelMeta) {
-  return {
-    background: `light-dark(${meta.color}29, ${meta.dark}29)`,
-    boxShadow: `inset 0 -2px 0 light-dark(${meta.color}, ${meta.dark})`,
-  }
+  return piiVariables(meta)
 }
 
 /** Tinted pill recipe, shared by placeholder tokens and the stats tags. */
 export function pillStyle(meta: LabelMeta) {
-  return {
-    color: `light-dark(${meta.color}, ${meta.dark})`,
-    background: `light-dark(${meta.color}1a, ${meta.dark}1a)`,
-    borderColor: `light-dark(${meta.color}73, ${meta.dark}73)`,
-  }
+  return piiVariables(meta)
 }
-
-import copy from "./i18n/sv.json"

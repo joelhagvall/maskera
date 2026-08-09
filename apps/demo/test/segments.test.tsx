@@ -87,7 +87,7 @@ describe("HighlightedText", () => {
       <HighlightedText text={text} redactions={[redaction(text, "Anna", "NAMN")]} />,
     )
     const mark = container.querySelector("mark.hl") as HTMLElement
-    expect(mark.style.boxShadow).toContain(labelMeta("NAMN").color)
+    expect(mark.style.getPropertyValue("--pii-light")).toBe(labelMeta("NAMN").color)
   })
 })
 
