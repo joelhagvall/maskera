@@ -24,6 +24,8 @@ apps/demo/public/ort/
 apps/demo/developers/
 apps/demo/utvecklare/
 apps/demo/integritet/
+apps/demo/testdata/
+apps/demo/integritetspolicy/
 apps/demo/tjanster/
 apps/demo/traffsakerhet/
 apps/demo/sakerhet/

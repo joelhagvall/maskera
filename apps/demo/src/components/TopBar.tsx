@@ -26,7 +26,7 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
           onClick={navClick(() => (home ? window.scrollTo(0, 0) : go("demo")))}
         >
           <MaskeraMark size={20} />
-          maskera
+          {copy.meta.siteName}
         </a>
         <nav className="head-links">
           {/* Toggle first, matching app.maskera.dev's header: same relative
@@ -43,14 +43,14 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
             </a>
           ))}
           <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
-            GitHub
+            {copy.navigation.github}
             <ArrowUpRightIcon size={13} />
           </a>
         </nav>
       </div>
       {!home && (
         <a className="back" href={viewPaths.demo} onClick={navClick(() => go("demo"))}>
-          ← Tillbaka till startsidan
+          <span aria-hidden="true">←</span> {copy.topBar.backHome}
         </a>
       )}
     </>

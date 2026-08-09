@@ -1,10 +1,15 @@
 import type { RedactResult } from "@maskera/core"
 import { useMemo, useState } from "react"
+import copy from "../i18n/sv.json"
 import { ChatIcon, CheckIcon, KeyIcon } from "../icons"
 import { RestoredText, TokenHighlight } from "../segments"
 import { OverlayEditor } from "./OverlayEditor"
 
-const FLOW = ["Din text", "AI ser", "AI svarar", "Du ser"]
+const FLOW = copy.restoreDemo.flow
+
+function fill(template: string, values: Record<string, string | null>): string {
+  return template.replace(/\{(\w+)\}/g, (_, key: string) => values[key] ?? "")
+}
 
 /** First placeholder token in `map` matching any of the given label prefixes. */
 function pickToken(map: Record<string, string>, ...labels: string[]): string | null {
@@ -26,52 +31,63 @@ const REPLIES: Record<string, (map: Record<string, string>) => string> = {
   hr: (map) => {
     const namn = pickToken(map, "NAMN")
     const email = pickToken(map, "EPOST")
-    const who = namn ? ` för ${namn}` : ""
+    const who = namn ? fill(copy.restoreDemo.replies.hr.person, { name: namn }) : ""
     const back = namn
-      ? `Boka en första intervju och återkoppla till ${namn}${email ? ` på ${email}` : ""}.`
-      : "Boka en första intervju och dokumentera bedömningen."
-    return `Tack! Jag har gått igenom CV:t${who} mot rollbeskrivningen och profilen ser stark ut. Förslag på intervjufrågor finns nedan. ${back}`
+      ? fill(copy.restoreDemo.replies.hr.contact, {
+          name: namn,
+          email: email ? fill(copy.restoreDemo.replies.hr.email, { email }) : "",
+        })
+      : copy.restoreDemo.replies.hr.fallback
+    return `${fill(copy.restoreDemo.replies.hr.lead, { person: who })} ${back}`
   },
   support: (map) => {
     const namn = pickToken(map, "NAMN")
     const card = pickToken(map, "KORTNUMMER")
     const contact = pickToken(map, "TELEFON", "EPOST")
-    const who = namn ? ` för ${namn}` : ""
-    const sparr = card ? ` och spärrat kortet ${card}` : ""
+    const who = namn ? fill(copy.restoreDemo.replies.support.person, { name: namn }) : ""
+    const sparr = card ? fill(copy.restoreDemo.replies.support.card, { card }) : ""
     const back = contact
-      ? `Nästa steg: beställ nytt kort och återkoppla${namn ? ` till ${namn}` : ""} på ${contact}.`
-      : "Nästa steg: beställ nytt kort och dokumentera ärendet."
-    return `Tack för underlaget! Jag har skapat ärendet${who}${sparr}. ${back}`
+      ? fill(copy.restoreDemo.replies.support.contact, {
+          person: namn ? fill(copy.restoreDemo.replies.support.contactPerson, { name: namn }) : "",
+          contact,
+        })
+      : copy.restoreDemo.replies.support.fallback
+    return `${fill(copy.restoreDemo.replies.support.lead, { person: who, card: sparr })} ${back}`
   },
   vard: (map) => {
     const namn = pickToken(map, "NAMN")
     const email = pickToken(map, "EPOST")
     const phone = pickToken(map, "TELEFON")
-    const who = namn ? ` för ${namn}` : ""
-    const mail = email ? ` Sammanfattningen skickas till ${email}.` : ""
-    const anhorig = phone ? ` Nå anhörig på ${phone} om läget förändras.` : ""
-    return `Journalanteckningen${who} är uppdaterad med EKG-svaret.${mail}${anhorig}`
+    const who = namn ? fill(copy.restoreDemo.replies.vard.person, { name: namn }) : ""
+    const parts = [fill(copy.restoreDemo.replies.vard.lead, { person: who })]
+    if (email) parts.push(fill(copy.restoreDemo.replies.vard.email, { email }))
+    if (phone) parts.push(fill(copy.restoreDemo.replies.vard.phone, { phone }))
+    return parts.join(" ")
   },
   juridik: (map) => {
     const namn = pickToken(map, "NAMN")
     const konto = pickToken(map, "BANKGIRO", "IBAN", "PLUSGIRO")
-    const who = namn ? ` för ${namn}` : ""
-    const pay = konto ? ` Bekräfta att betalning ska ske till ${konto}.` : ""
-    return `Jag har sammanställt ärendet${who} inför förhandlingen och yrkandet om skadestånd är dokumenterat.${pay} Återkoppla inför mötet.`
+    const who = namn ? fill(copy.restoreDemo.replies.juridik.person, { name: namn }) : ""
+    const parts = [fill(copy.restoreDemo.replies.juridik.lead, { person: who })]
+    if (konto) parts.push(fill(copy.restoreDemo.replies.juridik.payment, { account: konto }))
+    parts.push(copy.restoreDemo.replies.juridik.closing)
+    return parts.join(" ")
   },
   kommun: (map) => {
     const namn = pickToken(map, "NAMN")
     const email = pickToken(map, "EPOST")
-    const who = namn ? ` för ${namn}` : ""
-    const back = namn && email ? ` Återkoppla beslutet till ${namn} på ${email}.` : ""
-    return `Ärendet${who} är sammanställt för handläggaren och underlaget om försörjningsstöd är komplett.${back}`
+    const who = namn ? fill(copy.restoreDemo.replies.kommun.person, { name: namn }) : ""
+    const parts = [fill(copy.restoreDemo.replies.kommun.lead, { person: who })]
+    if (namn && email)
+      parts.push(fill(copy.restoreDemo.replies.kommun.contact, { name: namn, email }))
+    return parts.join(" ")
   },
 }
 
 /** "a, b och c" - comma-joined clauses with "och" before the last. */
 function joinClauses(parts: string[]): string {
   if (parts.length <= 1) return parts[0]
-  return `${parts.slice(0, -1).join(", ")} och ${parts[parts.length - 1]}`
+  return `${parts.slice(0, -1).join(", ")} ${copy.restoreDemo.joinWord} ${parts[parts.length - 1]}`
 }
 
 /**
@@ -112,14 +128,16 @@ export function sampleAiReply(map: Record<string, string>, scenarioId?: string):
   const hasOrg = spend(org)
 
   const clauses = [
-    `sammanställt ärendet${namn ? ` för ${namn}` : ""}${hasOrg ? ` hos ${org}` : ""}`,
+    `${copy.restoreDemo.generic.case}${namn ? ` ${copy.restoreDemo.generic.for} ${namn}` : ""}${hasOrg ? ` ${copy.restoreDemo.generic.atOrganization} ${org}` : ""}`,
   ]
   if (hasAdress) {
-    clauses.push(`noterat adressen ${adress}${hasPlats ? ` i ${plats}` : ""}`)
+    clauses.push(
+      `${copy.restoreDemo.generic.address} ${adress}${hasPlats ? ` ${copy.restoreDemo.generic.inPlace} ${plats}` : ""}`,
+    )
   } else if (hasPlats) {
-    clauses.push(`noterat platsen ${plats}`)
+    clauses.push(`${copy.restoreDemo.generic.place} ${plats}`)
   }
-  if (hasId) clauses.push(`stämt av uppgifterna mot ${id}`)
+  if (hasId) clauses.push(`${copy.restoreDemo.generic.checked} ${id}`)
 
   // Catch-all: the text can mask only types no clause above covers (URL,
   // IP-adress, postnummer, lägenhetsnummer). Rather than reply without a
@@ -128,14 +146,19 @@ export function sampleAiReply(map: Record<string, string>, scenarioId?: string):
   const anyToken = namn || hasAdress || hasPlats || hasId || hasContact || hasKonto || hasOrg
   if (!anyToken) {
     const rest = Object.keys(map).slice(0, 2)
-    if (rest.length > 0) clauses.push(`noterat ${joinClauses(rest)}`)
+    if (rest.length > 0) clauses.push(`${copy.restoreDemo.generic.noted} ${joinClauses(rest)}`)
   }
 
-  const pay = hasKonto ? ` Bekräfta att betalning ska ske till ${konto}.` : ""
+  const pay = hasKonto ? fill(copy.restoreDemo.generic.payment, { token: konto }) : ""
   const back = hasContact
-    ? `Återkoppla${namn ? ` till ${namn}` : ""} på ${contact} och dokumentera bedömningen i systemet.`
-    : "Dokumentera bedömningen i systemet och boka en uppföljning."
-  return `Tack för underlaget! Jag har ${joinClauses(clauses)}. Förslag på nästa steg finns nedan.${pay} ${back}`
+    ? fill(copy.restoreDemo.generic.contact, {
+        person: namn ? fill(copy.restoreDemo.generic.contactPerson, { name: namn }) : "",
+        contact,
+      })
+    : copy.restoreDemo.generic.fallback
+  return [fill(copy.restoreDemo.generic.lead, { clauses: joinClauses(clauses) }), pay, back]
+    .filter(Boolean)
+    .join(" ")
 }
 
 /**
@@ -152,12 +175,8 @@ export function RestoreDemo({ result, scenarioId }: { result: RedactResult; scen
 
   return (
     <section className="restore">
-      <h2 className="restore-title">Så fungerar återställningen</h2>
-      <p className="restore-note">
-        AI:n ser platshållare i stället för de uppgifter som maskera upptäckte. När svaret kommer
-        tillbaka återställer maskera uppgifterna lokalt. Nyckeln med originaluppgifterna lämnar
-        aldrig din enhet.
-      </p>
+      <h2 className="restore-title">{copy.restoreDemo.title}</h2>
+      <p className="restore-note">{copy.restoreDemo.body}</p>
       <div className="flow">
         {/* Arrow and step share a no-wrap unit: when the band wraps on narrow
             screens the arrow follows onto the new line ("→ Du ser") instead of
@@ -184,21 +203,21 @@ export function RestoreDemo({ result, scenarioId }: { result: RedactResult; scen
           <div className="card-head">
             <span className="card-title">
               <ChatIcon size={14} />
-              AI:ns svar
+              {copy.restoreDemo.replyTitle}
             </span>
             {draft !== null ? (
               <button type="button" className="clear" onClick={() => setDraft(null)}>
-                Återställ exempel
+                {copy.restoreDemo.resetExample}
               </button>
             ) : (
-              <span className="card-sub">Simulerat svar, redigera fritt</span>
+              <span className="card-sub">{copy.restoreDemo.editableExample}</span>
             )}
           </div>
           <OverlayEditor
             value={reply}
             onChange={setDraft}
             name="ai-response"
-            ariaLabel="AI:ns svar med platshållare"
+            ariaLabel={copy.restoreDemo.replyAria}
             className="editor reply-editor"
             highlight={<TokenHighlight text={reply} />}
           />
@@ -207,7 +226,7 @@ export function RestoreDemo({ result, scenarioId }: { result: RedactResult; scen
           <div className="card-head">
             <span className="card-title">
               <KeyIcon size={14} />
-              Med dina uppgifter tillbaka
+              {copy.restoreDemo.restoredTitle}
             </span>
           </div>
           <div className="output restored">

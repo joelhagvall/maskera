@@ -28,6 +28,8 @@ function viewFromPath(pathname: string): View {
   const path = pathname.replace(/\/+$/, "") || "/"
   if (path === viewPaths.dev) return "dev"
   if (path === viewPaths.transparency) return "transparency"
+  if (path === viewPaths.testdata) return "testdata"
+  if (path === viewPaths.privacy) return "privacy"
   if (path === viewPaths.services) return "services"
   if (path === viewPaths.accuracy) return "accuracy"
   if (path === viewPaths.security) return "security"

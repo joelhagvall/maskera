@@ -10,14 +10,181 @@
   },
   "demo": {
     "testDataNote": "Exemplen använder påhittade personer och officiellt reserverade testvärden, aldrig verkliga personers uppgifter.",
-    "testDataCta": "Läs mer om testdatan"
+    "testDataCta": "Läs mer om testdatan",
+    "skipLink": "Hoppa till huvudinnehållet",
+    "gatewayBody": "Samma maskering finns som Maskera Gateway, en färdig installation för era egna servrar.",
+    "gatewayCta": "Se Maskera för företag"
+  },
+  "controls": {
+    "examplesLabel": "Testa ett exempel:",
+    "modelStarting": "Startar AI-modellen…",
+    "modelLoading": "Laddar maskeras AI-modell…",
+    "modelLoadingAria": "Laddar maskeras AI-modell",
+    "modelError": "AI-modellen kunde inte laddas. Personnummer, telefonnummer och annat med bestämt format maskeras ändå.",
+    "modelRetry": "Försök igen",
+    "modelReady": "maskeras AI-modell aktiv"
+  },
+  "inputCard": {
+    "title": "Din text",
+    "clear": "Rensa",
+    "placeholder": "Skriv eller klistra in egen text här… Allt körs lokalt.",
+    "examplePrefix": "Exempel:"
   },
   "outputCard": {
     "invalidPersonnummerSingular": "har en personnummerlik form men inget giltigt födelse- eller samordningsdatum. Därför maskeras det inte.",
     "invalidPersonnummerPlural": "har personnummerlika former men inga giltiga födelse- eller samordningsdatum. Därför maskeras de inte.",
-    "testPersonnummerCta": "Testa med Skatteverkets reserverade testnummer 19900101-2385."
+    "testPersonnummerCta": "Testa med Skatteverkets reserverade testnummer 19900101-2385.",
+    "singularCount": "uppgift maskerad",
+    "pluralCount": "uppgifter maskerade",
+    "title": "Vad AI:n ser",
+    "analyzing": "analyserar…",
+    "restoreMapNote": "Nyckeln stannar på din enhet. AI-tjänsten ser platshållare i stället för de uppgifter som maskera upptäckte. Med nyckeln kan du sätta tillbaka originalen i svaret efteråt.",
+    "showKey": "Visa återställningsnyckeln",
+    "hideKey": "Dölj återställningsnyckeln"
+  },
+  "copyButton": {
+    "copy": "Kopiera",
+    "copied": "Kopierat",
+    "copyCode": "Kopiera koden"
+  },
+  "restoreDemo": {
+    "title": "Så fungerar återställningen",
+    "body": "AI:n ser platshållare i stället för de uppgifter som maskera upptäckte. När svaret kommer tillbaka återställer maskera uppgifterna lokalt. Nyckeln med originaluppgifterna lämnar aldrig din enhet.",
+    "flow": ["Din text", "AI ser", "AI svarar", "Du ser"],
+    "replyTitle": "AI:ns svar",
+    "resetExample": "Återställ exempel",
+    "editableExample": "Simulerat svar, redigera fritt",
+    "replyAria": "AI:ns svar med platshållare",
+    "restoredTitle": "Med dina uppgifter tillbaka",
+    "joinWord": "och",
+    "generic": {
+      "case": "sammanställt ärendet",
+      "for": "för",
+      "atOrganization": "hos",
+      "address": "noterat adressen",
+      "inPlace": "i",
+      "place": "noterat platsen",
+      "checked": "stämt av uppgifterna mot",
+      "noted": "noterat",
+      "lead": "Tack för underlaget! Jag har {clauses}. Förslag på nästa steg finns nedan.",
+      "payment": "Bekräfta att betalning ska ske till {token}.",
+      "contact": "Återkoppla{person} på {contact} och dokumentera bedömningen i systemet.",
+      "contactPerson": " till {name}",
+      "fallback": "Dokumentera bedömningen i systemet och boka en uppföljning."
+    },
+    "replies": {
+      "hr": {
+        "lead": "Tack! Jag har gått igenom CV:t{person} mot rollbeskrivningen och profilen ser stark ut. Förslag på intervjufrågor finns nedan.",
+        "person": " för {name}",
+        "contact": "Boka en första intervju och återkoppla till {name}{email}.",
+        "email": " på {email}",
+        "fallback": "Boka en första intervju och dokumentera bedömningen."
+      },
+      "support": {
+        "lead": "Tack för underlaget! Jag har skapat ärendet{person}{card}.",
+        "person": " för {name}",
+        "card": " och spärrat kortet {card}",
+        "contact": "Nästa steg: beställ nytt kort och återkoppla{person} på {contact}.",
+        "contactPerson": " till {name}",
+        "fallback": "Nästa steg: beställ nytt kort och dokumentera ärendet."
+      },
+      "vard": {
+        "lead": "Journalanteckningen{person} är uppdaterad med EKG-svaret.",
+        "person": " för {name}",
+        "email": "Sammanfattningen skickas till {email}.",
+        "phone": "Nå anhörig på {phone} om läget förändras."
+      },
+      "juridik": {
+        "lead": "Jag har sammanställt ärendet{person} inför förhandlingen och yrkandet om skadestånd är dokumenterat.",
+        "person": " för {name}",
+        "payment": "Bekräfta att betalning ska ske till {account}.",
+        "closing": "Återkoppla inför mötet."
+      },
+      "kommun": {
+        "lead": "Ärendet{person} är sammanställt för handläggaren och underlaget om försörjningsstöd är komplett.",
+        "person": " för {name}",
+        "contact": "Återkoppla beslutet till {name} på {email}."
+      }
+    }
+  },
+  "scenarios": [
+    {
+      "id": "hr",
+      "name": "HR",
+      "tagline": "Kandidat-screening med AI",
+      "text": "Kandidat: Sara Lindgren, 991201-2391. Mail: sara.lindgren@example.com, tel 0701740605. Nuvarande lön 48 000 kr/mån. Referens: Per Holmberg, 08-465 004 12. Bedöm CV mot rollbeskrivningen och föreslå intervjufrågor."
+    },
+    {
+      "id": "support",
+      "name": "Kundsupport",
+      "tagline": "Supportärende som loggas",
+      "text": "Kund Amir Haddad hör av sig: kortet slutar fungera. Kortnummer 4242 4242 4242 4242, betalkonto IBAN SE42 8000 0890 1191 4616 8423. Ringer från 070-174 06 58. Skapa ett ärende och svara med nästa steg."
+    },
+    {
+      "id": "klagomal",
+      "name": "Klagomål",
+      "tagline": "Argt kundmejl i versaler",
+      "text": "Inkommet mejl: HEJ JAG HAR RINGT ER TRE GÅNGER NU!!! JAG HETER KENT PERSSON, PERSONNUMMER 640823-3234, OCH NI HAR DRAGIT 449 KR TVÅ GÅNGER FRÅN MITT KORT 4242 4242 4242 4242. RING MIG PÅ 0701740632 OMEDELBART. MVH KENT. Skriv ett lugnt svar och föreslå kompensation."
+    },
+    {
+      "id": "vard",
+      "name": "Vård",
+      "tagline": "Journalanteckning till AI-assistent",
+      "text": "Patient Anna Karlsson, 850601-2387, inkom 14:20 med bröstsmärta. Bor på Påhittsgatan 12B, Stockholm. Anhörig (maken Lars Eriksson) nås på 070 174 06 71. Sätt in EKG-svar i journalen och maila sammanfattning till anna.karlsson@example.com."
+    },
+    {
+      "id": "juridik",
+      "name": "Juridik",
+      "tagline": "Klientärende på advokatbyrå",
+      "text": "Klient Johan Andersson (781101-2397) yrkar skadestånd mot Kommun A, org.nr 202100-4748. Motpart företräds av advokat Leila Ahmadi. Betalning sker till bankgiro 991-2346. Sammanfatta ärendet inför förhandlingen den 12 mars."
+    },
+    {
+      "id": "kommun",
+      "name": "Kommun",
+      "tagline": "Biståndsansökan",
+      "text": "Ansökan om försörjningsstöd: Jonas Wikström, 20020301 2398, boende på Påhittsvägen 21 i Stockholm. Sökande når oss på jonas.wikstrom@example.com. Sambo Elin Bergman är arbetssökande. Sammanfatta ärendet för handläggare."
+    },
+    { "id": "fritext", "name": "Egen text", "tagline": "", "text": "" }
+  ],
+  "labels": {
+    "NAMN": "Namn",
+    "PLATS": "Plats",
+    "ADRESS": "Adress",
+    "POSTNUMMER": "Postnummer",
+    "LAGENHETSNUMMER": "Lägenhetsnr",
+    "ORGANISATION": "Organisation",
+    "ORGANISATIONSNUMMER": "Org.nummer",
+    "PERSONNUMMER": "Personnummer",
+    "SAMORDNINGSNUMMER": "Samordningsnr",
+    "EPOST": "E-post",
+    "TELEFON": "Telefon",
+    "IBAN": "IBAN",
+    "BANKGIRO": "Bankgiro",
+    "PLUSGIRO": "Plusgiro",
+    "KORTNUMMER": "Kortnummer",
+    "KONTONUMMER": "Kontonummer",
+    "JOURNALNUMMER": "Journalnummer",
+    "REGNUMMER": "Reg.nummer",
+    "IP_ADRESS": "IP-adress",
+    "URL": "Länk",
+    "fallback": "Uppgift"
   },
   "developerApi": {
+    "title": "För utvecklare",
+    "lede": "Installera maskera, skapa recognizer en gång och maskera text lokalt i webbläsaren eller Node.",
+    "modelLink": "Den svenska AI-modellen",
+    "modelSuffix": "hämtas vid första körningen och återanvänds sedan från den lokala cachen.",
+    "installTitle": "Installera",
+    "packageManagerLabel": "Pakethanterare",
+    "installNote": "Regler och AI-modell ingår; hela API:t importeras från maskera.",
+    "maskTitle": "Maskera en text",
+    "restoreTitle": "Skicka till AI-tjänsten och återställ svaret",
+    "diagramAlt": "Diagram över maskeras två lager: din text delas upp mellan regler för uppgifter med bestämt format och en svensk AI-modell för fri text, och slås samman till maskerad text.",
+    "diagramCaption": "Reglerna tar uppgifter med bestämt format. AI-modellen tar fri text som namn och adresser. Vid överlapp vinner reglerna.",
+    "maskExampleTs": "import { createNerRecognizer, redactWithNer, type NerRecognizer } from \"maskera\"\n\n// maskeras svenska modell, ca 43 MB, körs lokalt\nconst recognizer: NerRecognizer = createNerRecognizer()\n\nconst { text, restore } = await redactWithNer(\n  \"hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala\",\n  { recognizer },\n)\n\ntext\n// \"hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]\"",
+    "maskExampleJs": "import { createNerRecognizer, redactWithNer } from \"maskera\"\n\n// maskeras svenska modell, ca 43 MB, körs lokalt\nconst recognizer = createNerRecognizer()\n\nconst { text, restore } = await redactWithNer(\n  \"hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala\",\n  { recognizer },\n)\n\ntext\n// \"hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]\"",
+    "restoreExampleTs": "// skicka den maskerade texten till valfri AI\n// upptäckta personuppgifter är ersatta med platshållare\nconst svar: string = await fetch(\"https://api.example.com/chat\", {\n  method: \"POST\",\n  body: JSON.stringify({ prompt: text }),\n}).then((r) => r.text())\n\nrestore(svar)\n// platshållarna byts tillbaka mot originalen, lokalt",
+    "restoreExampleJs": "// skicka den maskerade texten till valfri AI\n// upptäckta personuppgifter är ersatta med platshållare\nconst svar = await fetch(\"https://api.example.com/chat\", {\n  method: \"POST\",\n  body: JSON.stringify({ prompt: text }),\n}).then((r) => r.text())\n\nrestore(svar)\n// platshållarna byts tillbaka mot originalen, lokalt",
     "clinicalTitle": "Valfri profil för vårdtext",
     "clinicalBody": "Standardläget passar blandad text. För journal- och vårdflöden aktiverar en namngiven profil skydd för klinisk sakinformation, medan regelbaserade personuppgifter fortfarande alltid maskeras.",
     "clinicalCode": "const { text, restore } = await redactWithNer(journalText, {\n  recognizer,\n  profile: \"clinical\",\n})",
@@ -33,7 +200,11 @@
       "Skapa recognizer en gång och återanvänd den mellan anrop; undvik att skapa en ny per text.",
       "maskera stöder webbläsare och Node 18+. I webbläsaren körs modellen med WASM eller WebGPU."
     ],
-    "practicalDocsCta": "Fullständig användnings- och konfigurationsguide på GitHub"
+    "practicalDocsCta": "Fullständig användnings- och konfigurationsguide på GitHub",
+    "resourcesLabel": "Utvecklarresurser",
+    "npmCta": "maskera på npm",
+    "githubCta": "Dokumentation och källkod på GitHub",
+    "modelCta": "Modellen på Hugging Face"
   },
   "coverage": {
     "heading": "Vad maskeras?",
@@ -104,11 +275,21 @@
     "developers": "För utvecklare",
     "services": "För företag",
     "accuracy": "Träffsäkerhet",
-    "security": "Säkerhet"
+    "security": "Säkerhet",
+    "transparency": "Integritet & transparens",
+    "testData": "Testdata",
+    "privacyPolicy": "Integritetspolicy",
+    "github": "GitHub"
   },
   "footer": {
     "openSource": "Öppen källkod",
-    "modelLink": "Egentränad svensk AI-modell"
+    "modelLink": "Egentränad svensk AI-modell",
+    "navLabel": "Integritet och dokumentation",
+    "whitepaper": "Whitepaper (PDF)",
+    "servicesPrefix": "För företag:",
+    "servicesCta": "Maskera Gateway",
+    "creditPrefix": "Byggd av",
+    "author": "Joel Hägvall"
   },
   "accuracy": {
     "metaTitle": "träffsäkerhet & testresultat · maskera",
@@ -131,7 +312,16 @@
     "independentTitle": "Externa svenska texter",
     "independentCaption": "22 meningar skrivna av andra och uteslutna ur Maskeras finträning, destillering och vokabulärurval. De innehåller 58 personuppgifter. Testet är litet och bevisar inte frånvaro ur KB-BERTs tidigare förträning, så resultatet visar en riktning och inte en slutlig vinnare.",
     "addressesTitle": "Svenska adresser",
-    "addressesCaption": "Det daterade v18-resultatet gäller den tidigare korpusen. Publicerade v19 har mätts separat på 41 texter med 35 explicit syntetiska gatuadresser: alla adresser hittas exakt och ingen av korpusens 57 entiteter läcker.",
+    "addressesCaption": "Publicerade v19 har mätts på 41 texter med 35 uttryckligen syntetiska gatuadresser.",
+    "currentTitle": "Aktuell modell: v19",
+    "currentBody": "Det här är ett aktuellt releasegrindstest av Maskera, inte en ny jämförelse med Azure eller andra system.",
+    "currentStats": [
+      { "value": "57 av 57", "label": "entiteter hittade" },
+      { "value": "0", "label": "fullständiga missar" },
+      { "value": "35 av 35", "label": "adresser hittade exakt" }
+    ],
+    "historicalAddressTitle": "Historisk jämförelse: v18",
+    "historicalAddressCaption": "Tabellen nedan mättes på den tidigare v18-korpusen med 60 entiteter och ska läsas separat från det aktuella v19-resultatet ovan.",
     "table": {
       "system": "System",
       "precision": "Rätt markeringar",
@@ -290,6 +480,43 @@
     "gatewayCta": "Läs om Maskera Gateway"
   },
   "transparency": {
+    "metaTitle": "integritet & transparens · maskera",
+    "metaDescription": "Se vad Maskera gör, vad som lämnar enheten, hur modellen tränats och vilka uppgifter den kan missa.",
+    "title": "Integritet & transparens",
+    "lede": "Här ser du vad Maskera gör, vad som lämnar enheten, hur modellen tränats och vad den kan missa.",
+    "tocLabel": "På den här sidan",
+    "toc": [
+      { "href": "#hur-fungerar", "label": "Hur fungerar det?" },
+      { "href": "#vad-maskeras", "label": "Vad maskeras?" },
+      { "href": "#dataflode", "label": "Så behandlas din text" },
+      { "href": "#modelltraning", "label": "Hur modellen tränats" },
+      { "href": "#begransningar", "label": "Begränsningar" }
+    ],
+    "howTitle": "Hur fungerar det?",
+    "how": [
+      "Maskera läser texten och ersätter upptäckta personuppgifter med platshållare, till exempel [NAMN_1] eller [PERSONNUMMER_1]. AI-tjänsten ser platshållarna. Efteråt kan du återställa originalen lokalt.",
+      "Två skydd arbetar tillsammans. Regler hittar uppgifter med fasta format, som personnummer, telefonnummer och e-post. En liten svensk AI-modell hittar namn, platser, organisationer och adresser i löpande text.",
+      "Modellen körs direkt i webbläsaren eller i er egen Node-process. Texten behöver därför inte skickas till en extern tjänst för att analyseras."
+    ],
+    "dataTitle": "Så behandlas din text",
+    "data": [
+      "All maskering sker på din enhet, i webbläsaren eller på din egen server. Texten och nyckeln med originaluppgifterna skickas inte till Maskera eller någon annan tjänst för maskering.",
+      "Vercel Analytics räknar sidvisningar anonymt och utan cookies. Texten i verktyget ingår aldrig i statistiken.",
+      "Vercel kan behandla tekniska anropsuppgifter, som IP-adress, för att leverera och skydda webbplatsen. Texten och återställningsnyckeln ingår inte i dessa anrop.",
+      "Npm-paketets standardinställning hämtar modellfil och körmiljö första gången och cachar dem. Det är statiska artefakter, aldrig texten som ska maskeras. Allt kan läggas på egen server.",
+      "Regeldelen har inga nätverksberoenden och fungerar fristående."
+    ],
+    "trainingTitle": "Hur modellen tränats",
+    "limitsTitle": "Begränsningar",
+    "limits": [
+      "Maskera är öppet utvärderad. Siffror, metod och förbehåll finns på sidan om träffsäkerhet.",
+      "Kända svaga punkter är tabellartade dumpar, OCR-brus och uppgifter skrivna med bokstäver, som ‘noll sju noll’. Versaler, felstavningar och slarviga nummerformat ingår däremot i testerna.",
+      "Maskering är ett extra skyddslager, inte en garanti. Namn och platser hittas sannolikhetsbaserat och kan missas. Behåll övriga kontroller när fel kan få stora konsekvenser.",
+      "Maskera stödjer dataminimering men garanterar inte regelefterlevnad. Den som använder verktyget är fortsatt personuppgiftsansvarig."
+    ],
+    "accuracyCta": "Se testresultat, metod och begränsningar",
+    "fullDocsPrefix": "Den fullständiga tekniska redovisningen och all källkod finns på GitHub.",
+    "fullDocsCta": "Läs hela dokumentet",
     "training": {
       "syntheticTitle": "Publicerade v19 är den integritetsrena modellen.",
       "syntheticBody": "v19 klarade alla releasegrindar med 64 000 genererade träningsrader och 4 760 separerade valideringsrader. Där stoppas IBAN, person- och organisationsnummer, telefonnummer, e-post, konto- och betalningsidentifierare, publika IP-adresser, postnummer och verklighetsnära gatuadresspar före träning. Historiska v18 använde även dokumenterade, öppet licensierade svenska korpusar och redovisas separat.",
@@ -304,12 +531,153 @@
       "reproBody": "Generering, integritetsgranskning, träning, destillering, komprimering, export och utvärdering är öppna skript. Ändras en träningsrad, försvinner en syntetisk adressmarkör eller läggs en korpus till bryts manifestet och pipelinen vägrar fortsätta."
     }
   },
+  "testData": {
+    "metaTitle": "testdata · maskera",
+    "metaDescription": "Kontrollera ursprunget för personnummer, telefonnummer, konton och andra testvärden i Maskeras webbläsardemo.",
+    "title": "Testdata i demon",
+    "lede": "Alla personer är påhittade. Uppgifter med verkliga format kommer från officiellt reserverade testvärden och kan kontrolleras här.",
+    "intro": "Några värden är avsiktligt slarvigt skrivna, med tolv siffror, mellanslag eller versaler, eftersom riktig text ser ut så.",
+    "items": [
+      {
+        "title": "Personnummer",
+        "body": "991201-2391, 850601-2387, 781101-2397, 020301-2398 och 640823-3234 kommer från Skatteverkets öppna testpersonnummer.",
+        "cta": "Kontrollera hos Skatteverket",
+        "href": "https://www.skatteverket.se/omoss/digitalasamarbeten/omvaraoppnadata/testpersonnummersomoppendata.4.5b35a6251761e6914202df9.html"
+      },
+      {
+        "title": "Organisationsnummer",
+        "body": "202100-4748 tillhör den fiktiva Kommun A i Skatteverkets testdokumentation för Navet.",
+        "cta": "Öppna testdokumentationen",
+        "href": "https://www7.skatteverket.se/portal-wapi/open/apier-och-oppna-data/utvecklarportalen/v1/getFile/tjanstebeskrivning-folkbokforingsuppgifter-for-offentliga-aktorer-v3/pdf/1.0.3/tjanstebeskrivning-folkbokforingsuppgift-offentliga-aktorer-v3.pdf"
+      },
+      {
+        "title": "Telefonnummer",
+        "body": "070-174 06 05, 070-174 06 32, 070-174 06 58, 070-174 06 71 och 08-465 004 12 ligger i PTS nummerserier för böcker och film.",
+        "cta": "Kontrollera hos PTS",
+        "href": "https://pts.se/internet-och-telefoni/telefonnummer-och-adressering/telefonnummer-till-bocker-och-filmer/"
+      },
+      {
+        "title": "Kort, konto och giro",
+        "body": "4242 4242 4242 4242 är Stripes testkort, SE42 8000 0890 1191 4616 8423 är Swedbanks testkonto och 991-2346 är Bankgirots exempelvärde.",
+        "cta": "Se samtliga källor i repot",
+        "href": "https://github.com/joelhagvall/maskera/blob/main/docs/TRANSPARENCY.md#test-data-used-in-the-demo"
+      },
+      {
+        "title": "E-post och adresser",
+        "body": "Alla e-postadresser använder IANA:s reserverade example.com. Påhittsgatan och Påhittsvägen är fiktiva.",
+        "cta": "Kontrollera exempeldomänerna hos IANA",
+        "href": "https://www.iana.org/help/example-domains"
+      }
+    ],
+    "demoCta": "Prova testvärdena i demon"
+  },
+  "privacy": {
+    "metaTitle": "integritetspolicy · maskera",
+    "metaDescription": "Integritetspolicy för maskera.dev: lokal textbehandling, cookiefri webbstatistik, hosting och dina rättigheter.",
+    "title": "Integritetspolicy",
+    "lede": "Texten du maskerar behandlas lokalt och skickas inte till Maskera. Här beskrivs den begränsade behandling som själva webbplatsen gör.",
+    "items": [
+      {
+        "title": "Personuppgiftsansvarig",
+        "body": "Joel Hägvall är personuppgiftsansvarig för maskera.dev. Kontaktuppgifter finns på joelhagvall.com."
+      },
+      {
+        "title": "Webbstatistik",
+        "body": "Vercel Analytics räknar sidvisningar med anonym, cookiefri statistik utan profilering. Statistiken innehåller aldrig texten du skriver i verktyget."
+      },
+      {
+        "title": "Hosting",
+        "body": "Vercel kan behandla tekniska anropsuppgifter, som IP-adress, för att leverera webbplatsen och skydda den mot angrepp. Texten och återställningsnyckeln ingår inte."
+      },
+      {
+        "title": "Lokal inställning",
+        "body": "Valet mellan ljust och mörkt läge sparas i webbläsarens localStorage. Det är ingen cookie och värdet lämnar inte enheten."
+      },
+      {
+        "title": "Texten i verktyget",
+        "body": "Texten och nyckeln med originaluppgifterna behandlas lokalt i webbläsaren. De skickas inte till mig eller någon annan tjänst för maskering."
+      },
+      {
+        "title": "Dina rättigheter",
+        "body": "Kontakta mig om du har frågor om webbplatsens behandling eller vill använda dina rättigheter."
+      }
+    ],
+    "contactCta": "Kontaktuppgifter på joelhagvall.com",
+    "updated": "Senast uppdaterad 9 augusti 2026."
+  },
   "services": {
+    "title": "Maskera för företag",
     "lede": "Välj Gateway för en signerad företagsleverans med support i er egen miljö. Välj npm-paketen om ni vill bygga och underhålla integrationen själva.",
     "sublede": "Gateway finns som 60-dagars pilot eller årslicens. Ni börjar med en teknisk genomgång.",
-    "gatewayInterestCta": "Anmäl intresse",
-    "gatewayInterestSubject": "Intresse för Maskera Gateway",
+    "gatewayInterestCta": "Boka teknisk genomgång",
     "gatewayDocsCta": "Läs om Gateway",
-    "gatewayContactNote": "Öppnar ditt mejlprogram till hej@maskera.dev"
+    "gatewayContactNote": "Öppnar bokningen i en ny flik",
+    "products": [
+      {
+        "id": "gateway",
+        "name": "Maskera Gateway",
+        "price": "149 000 kr/år",
+        "pilotPrice": "60-dagars pilot: 49 000 kr",
+        "pilotTerms": "Hela beloppet dras av från den första årslicensen när samma organisation köper den inom 30 dagar efter pilotens slut.",
+        "annualPrefix": "Årslicens:",
+        "tagline": "För verksamheter som vill ha en signerad leverans, gemensamma regler och support.",
+        "points": [
+          "Signerad container för Docker eller Kubernetes",
+          "Maskerar AI-trafiken innan den lämnar ert nätverk",
+          "Ingen GPU eller databas; den svenska modellen på 43 MB ingår",
+          "Gemensamma regler, företagsinloggning och säkerhetsuppdateringar"
+        ],
+        "note": "Kör i er miljö på så lite som 2 CPU-kärnor och 2 GB RAM. Priser exkl. moms."
+      },
+      {
+        "id": "open",
+        "name": "Öppen källkod",
+        "price": "0 kr",
+        "tagline": "För team som vill bygga och underhålla integrationen själva.",
+        "points": [
+          "Kör i webbläsaren eller Node",
+          "Texten och nyckeln med originaluppgifterna stannar i er miljö",
+          "MIT-licens, utan användningsavgift eller inlåsning",
+          "Svensk modell och färdiga regler för vanliga personuppgifter"
+        ],
+        "cta": "Installera och kom igång"
+      }
+    ],
+    "flowTitle": "Så skyddar Gateway AI-flödet",
+    "flowBody": "Texten maskeras före varje AI-anrop, utan ett externt Maskera-API. Originaltexten och återställningsnyckeln stannar i er miljö.",
+    "flowLabel": "Dataflöde för Gateway",
+    "flow": [
+      "Er applikation: originaltext",
+      "Gateway: maskerar i er miljö",
+      "AI-tjänsten: endast maskerad text",
+      "Gateway: återställer svaret"
+    ],
+    "considerTitle": "Bra att veta innan ni väljer",
+    "considerations": [
+      {
+        "title": "Maskering minskar risk, men är inte en garanti.",
+        "body": "Namn och platser identifieras av en AI-modell som kan missa uppgifter. Träffsäkerheten mäts öppet och hundra procent utlovas aldrig."
+      },
+      {
+        "title": "Ingen inlåsning i kärnan.",
+        "body": "Paketen med öppen källkod är MIT-licensierade och fortsätter fungera utan Gateway eller konsultstöd."
+      }
+    ]
+  },
+  "theme": {
+    "toggle": "Växla mellan ljust och mörkt läge"
+  },
+  "topBar": {
+    "backHome": "Tillbaka till startsidan"
+  },
+  "meta": {
+    "demoTitle": "maskera",
+    "demoDescription": "maskera döljer svenska personuppgifter innan text skickas till AI. Kör samma maskering i webbläsaren eller på egna servrar. Endast maskerad text går vidare.",
+    "devTitle": "för utvecklare · maskera",
+    "devDescription": "Installera maskera för svensk PII-maskering lokalt i webbläsaren eller Node. Öppen källkod, TypeScript och en egentränad svensk AI-modell.",
+    "servicesTitle": "för företag · maskera",
+    "servicesDescription": "Jämför npm-paket med öppen källkod och Maskera Gateway, som körs på CPU i er egen miljö före era AI-anrop.",
+    "siteName": "maskera",
+    "servicesSchemaName": "Maskera för företag"
   }
 }

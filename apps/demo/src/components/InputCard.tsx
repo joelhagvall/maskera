@@ -1,4 +1,5 @@
 import type { Redaction } from "@maskera/core"
+import copy from "../i18n/sv.json"
 import { PencilIcon } from "../icons"
 import { HighlightedText } from "../segments"
 import { OverlayEditor } from "./OverlayEditor"
@@ -19,12 +20,12 @@ export function InputCard({
       <div className="card-head">
         <span className="card-title">
           <PencilIcon size={14} />
-          Din text
+          {copy.inputCard.title}
           {tagline && text ? <span className="card-sub">{tagline}</span> : null}
         </span>
         {text ? (
           <button type="button" className="clear" onClick={() => onChange("")}>
-            Rensa
+            {copy.inputCard.clear}
           </button>
         ) : null}
       </div>
@@ -32,8 +33,8 @@ export function InputCard({
         value={text}
         onChange={onChange}
         name="source-text"
-        ariaLabel="Din text"
-        placeholder={`Skriv eller klistra in egen text här… Allt körs lokalt.${tagline ? `\n\nExempel: ${tagline}` : ""}`}
+        ariaLabel={copy.inputCard.title}
+        placeholder={`${copy.inputCard.placeholder}${tagline ? `\n\n${copy.inputCard.examplePrefix} ${tagline}` : ""}`}
         highlight={<HighlightedText text={text} redactions={redactions} />}
       />
     </section>

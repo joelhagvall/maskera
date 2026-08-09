@@ -14,51 +14,13 @@ const TOKEN =
 type CodeLanguage = "ts" | "js"
 
 const MASK_EXAMPLE: Record<CodeLanguage, string> = {
-  ts: `import { createNerRecognizer, redactWithNer, type NerRecognizer } from "maskera"
-
-// maskeras svenska modell, ca 43 MB, körs lokalt
-const recognizer: NerRecognizer = createNerRecognizer()
-
-const { text, restore } = await redactWithNer(
-  "hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala",
-  { recognizer },
-)
-
-text
-// "hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]"`,
-  js: `import { createNerRecognizer, redactWithNer } from "maskera"
-
-// maskeras svenska modell, ca 43 MB, körs lokalt
-const recognizer = createNerRecognizer()
-
-const { text, restore } = await redactWithNer(
-  "hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala",
-  { recognizer },
-)
-
-text
-// "hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]"`,
+  ts: copy.developerApi.maskExampleTs,
+  js: copy.developerApi.maskExampleJs,
 }
 
 const RESTORE_EXAMPLE: Record<CodeLanguage, string> = {
-  ts: `// skicka den maskerade texten till valfri AI
-// upptäckta personuppgifter är ersatta med platshållare
-const svar: string = await fetch("https://api.example.com/chat", {
-  method: "POST",
-  body: JSON.stringify({ prompt: text }),
-}).then((r) => r.text())
-
-restore(svar)
-// platshållarna byts tillbaka mot originalen, lokalt`,
-  js: `// skicka den maskerade texten till valfri AI
-// upptäckta personuppgifter är ersatta med platshållare
-const svar = await fetch("https://api.example.com/chat", {
-  method: "POST",
-  body: JSON.stringify({ prompt: text }),
-}).then((r) => r.text())
-
-restore(svar)
-// platshållarna byts tillbaka mot originalen, lokalt`,
+  ts: copy.developerApi.restoreExampleTs,
+  js: copy.developerApi.restoreExampleJs,
 }
 
 function highlight(line: string): ReactNode[] {
@@ -138,8 +100,8 @@ function Code({
           text={copyText}
           className="code-copy"
           iconSize={14}
-          ariaLabel="Kopiera koden"
-          title="Kopiera"
+          ariaLabel={copy.copyButton.copyCode}
+          title={copy.copyButton.copy}
         />
       </div>
       <pre>
@@ -172,7 +134,11 @@ function InstallTabs() {
   return (
     <div className="code-block install-tabs">
       <div className="code-head">
-        <div className="code-tabs" role="tablist" aria-label="Pakethanterare">
+        <div
+          className="code-tabs"
+          role="tablist"
+          aria-label={copy.developerApi.packageManagerLabel}
+        >
           {INSTALL.map((p) => (
             <button
               key={p.id}
@@ -192,8 +158,8 @@ function InstallTabs() {
           text={pm.cmd}
           className="code-copy"
           iconSize={14}
-          ariaLabel="Kopiera koden"
-          title="Kopiera"
+          ariaLabel={copy.copyButton.copyCode}
+          title={copy.copyButton.copy}
         />
       </div>
       <pre role="tabpanel" id="install-command" aria-labelledby={`install-tab-${pm.id}`}>
@@ -202,6 +168,42 @@ function InstallTabs() {
         </code>
       </pre>
     </div>
+  )
+}
+
+function ArchitectureFigure({ onCoverage }: { onCoverage: () => void }) {
+  return (
+    <figure className="layers-fig">
+      <img
+        className="layers-light"
+        src="/layers-sv.svg"
+        width="1200"
+        height="640"
+        loading="eager"
+        fetchPriority="high"
+        alt={copy.developerApi.diagramAlt}
+      />
+      <img
+        className="layers-dark"
+        src="/layers-sv-dark.svg"
+        width="1200"
+        height="640"
+        loading="eager"
+        fetchPriority="high"
+        alt=""
+        aria-hidden="true"
+      />
+      <figcaption>
+        {copy.developerApi.diagramCaption} {copy.coverage.developersLink}{" "}
+        <a href={`${viewPaths.transparency}#vad-maskeras`} onClick={navClick(onCoverage)}>
+          {copy.coverage.linkCta}
+        </a>
+        <a className="layers-expand" href="/layers-sv.svg" target="_blank" rel="noreferrer">
+          {copy.developerApi.diagramOpen}
+          <ArrowUpRightIcon size={13} />
+        </a>
+      </figcaption>
+    </figure>
   )
 }
 
@@ -222,57 +224,18 @@ export function Developers({
 
       <main id="main-content">
         <article className="prose">
-          <h1>För utvecklare</h1>
+          <h1>{copy.developerApi.title}</h1>
           <p className="prose-lede">
-            Samma motor som på startsidan, ett kommando bort.{" "}
+            {copy.developerApi.lede}{" "}
             <a href={HF_MODEL} target="_blank" rel="noreferrer">
-              AI-modellen
+              {copy.developerApi.modelLink}
             </a>{" "}
-            laddas ner en gång och sedan körs allt helt lokalt, i webbläsaren (WASM/WebGPU) eller i
-            Node.
+            {copy.developerApi.modelSuffix}
           </p>
 
-          <figure className="layers-fig">
-            {/* Two imgs, not <picture>: the swap follows the theme toggle's
-                data-theme attribute (CSS), not the OS media query. The dark
-                one is aria-hidden decoration mirroring the first. */}
-            <img
-              className="layers-light"
-              src="/layers-sv.svg"
-              width="1200"
-              height="640"
-              loading="eager"
-              fetchPriority="high"
-              alt="Diagram över maskeras två lager: din text delas upp mellan regler för uppgifter med bestämt format och en svensk AI-modell för fri text, och slås samman till maskerad text."
-            />
-            <img
-              className="layers-dark"
-              src="/layers-sv-dark.svg"
-              width="1200"
-              height="640"
-              loading="eager"
-              fetchPriority="high"
-              alt=""
-              aria-hidden="true"
-            />
-            <figcaption>
-              Reglerna tar allt med bestämt format, AI-modellen tar fri text som namn och adresser.
-              Vid överlapp vinner reglerna. {copy.coverage.developersLink}{" "}
-              <a href={`${viewPaths.transparency}#vad-maskeras`} onClick={navClick(onCoverage)}>
-                {copy.coverage.linkCta}
-              </a>
-              <a className="layers-expand" href="/layers-sv.svg" target="_blank" rel="noreferrer">
-                {copy.developerApi.diagramOpen}
-                <ArrowUpRightIcon size={13} />
-              </a>
-            </figcaption>
-          </figure>
-
-          <h2>Installera</h2>
+          <h2>{copy.developerApi.installTitle}</h2>
           <InstallTabs />
-          <p className="install-note">
-            Regler och AI-modell, hela API:t importeras från <code>maskera</code>.
-          </p>
+          <p className="install-note">{copy.developerApi.installNote}</p>
           <aside className="developer-notes" aria-labelledby="developer-notes-title">
             <p id="developer-notes-title" className="developer-notes-title">
               {copy.developerApi.practicalTitle}
@@ -293,12 +256,14 @@ export function Developers({
             </a>
           </aside>
 
-          <h2>Maskera en text</h2>
+          <h2>{copy.developerApi.maskTitle}</h2>
           <Code language={language} onLanguageChange={setLanguage}>
             {MASK_EXAMPLE[language]}
           </Code>
 
-          <h2>Skicka till AI-tjänsten och återställ svaret</h2>
+          <ArchitectureFigure onCoverage={onCoverage} />
+
+          <h2>{copy.developerApi.restoreTitle}</h2>
           <Code language={language} onLanguageChange={setLanguage}>
             {RESTORE_EXAMPLE[language]}
           </Code>
@@ -319,22 +284,22 @@ export function Developers({
             {copy.developerApi.clinicalCode}
           </Code>
 
-          <nav className="prose-foot foot-links" aria-label="Utvecklarresurser">
+          <nav className="prose-foot foot-links" aria-label={copy.developerApi.resourcesLabel}>
             <ul>
               <li>
                 <a href={NPM_NER} target="_blank" rel="noreferrer">
-                  <code>maskera</code> på npm
+                  {copy.developerApi.npmCta}
                 </a>
               </li>
               <li>
                 <a href={GITHUB} target="_blank" rel="noreferrer">
-                  dokumentation och källkod på GitHub
+                  {copy.developerApi.githubCta}
                   <ArrowUpRightIcon size={13} />
                 </a>
               </li>
               <li>
                 <a href={HF_MODEL} target="_blank" rel="noreferrer">
-                  modellen på Hugging Face
+                  {copy.developerApi.modelCta}
                   <ArrowUpRightIcon size={13} />
                 </a>
               </li>

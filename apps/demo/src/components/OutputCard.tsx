@@ -19,7 +19,9 @@ function Stats({ result }: { result: RedactResult }) {
       <div className="count">
         <span className="num">{result.redactions.length}</span>
         <span className="num-l">
-          {result.redactions.length === 1 ? "uppgift maskerad" : "uppgifter maskerade"}
+          {result.redactions.length === 1
+            ? copy.outputCard.singularCount
+            : copy.outputCard.pluralCount}
         </span>
       </div>
       <div className="tags">
@@ -40,10 +42,7 @@ function Stats({ result }: { result: RedactResult }) {
 function RestoreMap({ map }: { map: Record<string, string> }) {
   return (
     <div className="map" id="restore-map">
-      <p className="map-note">
-        Nyckeln stannar på din enhet. AI-tjänsten ser platshållare i stället för de uppgifter som
-        maskera upptäckte. Med nyckeln kan du sätta tillbaka originalen i svaret efteråt.
-      </p>
+      <p className="map-note">{copy.outputCard.restoreMapNote}</p>
       <table>
         <tbody>
           {Object.entries(map).map(([token, value]) => (
@@ -80,8 +79,8 @@ export function OutputCard({
       <div className="card-head">
         <span className="card-title">
           <EyeIcon size={14} />
-          Vad AI:n ser
-          {analyzing && <span className="card-sub">analyserar…</span>}
+          {copy.outputCard.title}
+          {analyzing && <span className="card-sub">{copy.outputCard.analyzing}</span>}
         </span>
         {result.text ? <CopyButton text={result.text} className="clear copy" /> : null}
       </div>
@@ -114,7 +113,7 @@ export function OutputCard({
             aria-controls="restore-map"
             onClick={onToggleMap}
           >
-            {showMap ? "Dölj" : "Visa"} återställningsnyckeln ({unique})
+            {showMap ? copy.outputCard.hideKey : copy.outputCard.showKey} ({unique})
           </button>
           {showMap ? <RestoreMap map={result.map} /> : <div id="restore-map" hidden />}
         </>

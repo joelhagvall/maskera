@@ -4,13 +4,8 @@ import type { View } from "../routing"
 import { navClick, viewPaths } from "../routing"
 import { TopBar } from "./TopBar"
 
-const EMAIL = "hej@maskera.dev"
 const BOOKING = "https://calendly.com/joel-hagvall/30min"
 const PORTAL = "https://app.maskera.dev"
-
-function mailto(subject: string) {
-  return `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}`
-}
 
 function booking(pkg: string) {
   return `${BOOKING}?utm_source=maskera_dev&utm_content=${pkg}`
@@ -48,50 +43,34 @@ type Product = {
 const PRODUCTS: Product[] = [
   // Gateway is featured: it is the product on sale today.
   {
-    name: "Maskera Gateway",
-    price: "149 000 kr/år",
+    name: copy.services.products[0].name,
+    price: copy.services.products[0].price,
     pilot: {
-      price: "60-dagars pilot: 49\u00a0000 kr",
-      terms:
-        "Hela beloppet dras av från den första årslicensen när samma organisation köper den inom 30 dagar efter pilotens slut.",
+      price: copy.services.products[0].pilotPrice!,
+      terms: copy.services.products[0].pilotTerms!,
     },
-    tagline: "För verksamheter som vill ha en signerad leverans, gemensamma regler och support.",
+    tagline: copy.services.products[0].tagline,
     featured: true,
-    points: [
-      "Signerad container för Docker eller Kubernetes",
-      "Maskerar AI-trafiken innan den lämnar ert nätverk",
-      "Ingen GPU eller databas; den svenska modellen på 43\u00a0MB ingår",
-      "Gemensamma regler, företagsinloggning och säkerhetsuppdateringar",
-    ],
+    points: copy.services.products[0].points,
     cta: copy.services.gatewayInterestCta,
-    href: mailto(copy.services.gatewayInterestSubject),
+    href: booking("gateway_technical_review"),
     secondaryCta: copy.services.gatewayDocsCta,
     secondaryHref: portal("/gateway", "business_gateway"),
     destination: copy.services.gatewayContactNote,
-    note: "Kör i er miljö på så lite som 2 CPU-kärnor och 2\u00a0GB RAM. Priser exkl. moms.",
+    note: copy.services.products[0].note,
   },
   {
-    name: "Öppen källkod",
-    price: "0 kr",
-    tagline: "För team som vill bygga och underhålla integrationen själva.",
-    points: [
-      "Kör i webbläsaren eller Node",
-      "Texten och nyckeln med originaluppgifterna stannar i er miljö",
-      "MIT-licens, utan användningsavgift eller inlåsning",
-      "Svensk modell och färdiga regler för vanliga personuppgifter",
-    ],
-    cta: "Installera och kom igång",
+    name: copy.services.products[1].name,
+    price: copy.services.products[1].price,
+    tagline: copy.services.products[1].tagline,
+    points: copy.services.products[1].points,
+    cta: copy.services.products[1].cta!,
     href: viewPaths.dev,
     view: "dev",
   },
 ]
 
-const GATEWAY_FLOW = [
-  "Er applikation: originaltext",
-  "Gateway: maskerar i er miljö",
-  "AI-tjänsten: endast maskerad text",
-  "Gateway: återställer svaret",
-] as const
+const GATEWAY_FLOW = copy.services.flow
 
 function ProductCard({ product, go }: { product: Product; go: (view: View) => void }) {
   const onClick = product.view ? navClick(() => go(product.view as View)) : undefined
@@ -107,7 +86,9 @@ function ProductCard({ product, go }: { product: Product; go: (view: View) => vo
         <>
           <p className="pkg-price">{product.pilot.price}</p>
           <p className="pkg-pilot">
-            <span className="pkg-annual">Årslicens: {product.price}</span>
+            <span className="pkg-annual">
+              {copy.services.products[0].annualPrefix} {product.price}
+            </span>
             <span className="pkg-pilot-terms">{product.pilot.terms}</span>
           </p>
         </>
@@ -122,12 +103,23 @@ function ProductCard({ product, go }: { product: Product; go: (view: View) => vo
       </ul>
       {product.note && <p className="pkg-note">{product.note}</p>}
       <div className="pkg-actions">
-        <a className="pkg-cta" href={product.href} onClick={onClick}>
+        <a
+          className="pkg-cta"
+          href={product.href}
+          onClick={onClick}
+          target={external ? "_blank" : undefined}
+          rel={external ? "noreferrer" : undefined}
+        >
           {product.cta}
           {external && <ArrowUpRightIcon size={13} />}
         </a>
         {product.secondaryCta && product.secondaryHref ? (
-          <a className="pkg-cta pkg-cta-secondary" href={product.secondaryHref}>
+          <a
+            className="pkg-cta pkg-cta-secondary"
+            href={product.secondaryHref}
+            target={secondaryExternal ? "_blank" : undefined}
+            rel={secondaryExternal ? "noreferrer" : undefined}
+          >
             {product.secondaryCta}
             {secondaryExternal && <ArrowUpRightIcon size={13} />}
           </a>
@@ -153,7 +145,7 @@ export function Services({ go, onCoverage }: { go: (view: View) => void; onCover
 
       <main id="main-content">
         <article className="prose prose-wide">
-          <h1>Maskera för företag</h1>
+          <h1>{copy.services.title}</h1>
           <p className="prose-lede">{copy.services.lede}</p>
           <p className="prose-sub">{copy.services.sublede}</p>
 
@@ -170,14 +162,10 @@ export function Services({ go, onCoverage }: { go: (view: View) => void; onCover
             </a>
           </p>
 
-          <h2>Så skyddar Gateway AI-flödet</h2>
-          <p>
-            Texten maskeras innan varje AI-anrop lämnar ert nätverk, utan att skickas via ett
-            externt Maskera‑API. Originaltexten och nyckeln med originaluppgifterna stannar i er
-            miljö.
-          </p>
+          <h2>{copy.services.flowTitle}</h2>
+          <p>{copy.services.flowBody}</p>
           <div className="flow-band">
-            <p className="flow-band-label">Dataflöde för Gateway</p>
+            <p className="flow-band-label">{copy.services.flowLabel}</p>
             <div className="flow">
               {GATEWAY_FLOW.map((step, index) => (
                 <span className="flow-item" key={step}>
@@ -192,41 +180,21 @@ export function Services({ go, onCoverage }: { go: (view: View) => void; onCover
             </div>
           </div>
 
-          <h2>Bra att veta innan ni väljer</h2>
+          <h2>{copy.services.considerTitle}</h2>
           <ul>
             <li>
-              <strong>Maskering minskar risk, men är inte en garanti.</strong> Namn och platser i
-              löpande text identifieras av en AI-modell som kan missa uppgifter. Träffsäkerheten
-              mäts öppet, och hundra procent utlovas aldrig.{" "}
+              <strong>{copy.services.considerations[0].title}</strong>{" "}
+              {copy.services.considerations[0].body}{" "}
               <a href={viewPaths.accuracy} onClick={navClick(() => go("accuracy"))}>
                 {copy.accuracy.servicesCta}
               </a>
               .
             </li>
             <li>
-              <strong>Ingen inlåsning i kärnan.</strong> Paketen med öppen källkod är
-              MIT-licensierade och fortsätter fungera även om ni inte köper Gateway eller
-              konsultstöd.
+              <strong>{copy.services.considerations[1].title}</strong>{" "}
+              {copy.services.considerations[1].body}
             </li>
           </ul>
-
-          <h2>Behöver ni hjälp med införandet?</h2>
-          <section className="implementation-help">
-            <p>
-              <strong>Tekniskt införande och anpassad integration</strong> erbjuds separat. Jag
-              hjälper ert team att koppla Maskera till rätt flöde och lämnar över tester och
-              dokumentation.
-            </p>
-            <a className="pkg-cta" href={booking("implementation")}>
-              Boka ett introduktionssamtal
-            </a>
-          </section>
-
-          <p className="prose-foot">
-            Osäkra på vilket alternativ som passar? Mejla{" "}
-            <a href={mailto("Maskera för företag")}>{EMAIL}</a> eller{" "}
-            <a href={booking("business_foot")}>boka ett kostnadsfritt samtal</a>.
-          </p>
         </article>
       </main>
     </>

@@ -42,6 +42,8 @@ describe("useRoute: initial view from pathname", () => {
     ["/", "demo"],
     ["/utvecklare", "dev"],
     ["/integritet", "transparency"],
+    ["/testdata", "testdata"],
+    ["/integritetspolicy", "privacy"],
     ["/tjanster", "services"],
     ["/traffsakerhet", "accuracy"],
     ["/sakerhet", "security"],

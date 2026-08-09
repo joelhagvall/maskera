@@ -5,6 +5,7 @@ import { navClick, viewPaths } from "../routing"
 export function Footer({
   showServices,
   onTransparency,
+  onTestData,
   onPolicy,
   onServices,
   onAccuracy,
@@ -12,6 +13,7 @@ export function Footer({
 }: {
   showServices: boolean
   onTransparency: () => void
+  onTestData: () => void
   onPolicy: () => void
   onServices: () => void
   onAccuracy: () => void
@@ -25,7 +27,7 @@ export function Footer({
           {copy.footer.modelLink}
         </a>
       </p>
-      <nav className="footer-nav" aria-label="Integritet och dokumentation">
+      <nav className="footer-nav" aria-label={copy.footer.navLabel}>
         <ul>
           <li>
             <a className="footer-link" href={viewPaths.accuracy} onClick={navClick(onAccuracy)}>
@@ -43,39 +45,39 @@ export function Footer({
               href={viewPaths.transparency}
               onClick={navClick(onTransparency)}
             >
-              Integritet & transparens
+              {copy.navigation.transparency}
             </a>
           </li>
           <li>
-            <a
-              className="footer-link"
-              href={`${viewPaths.transparency}#integritetspolicy`}
-              onClick={navClick(onPolicy)}
-            >
-              Integritetspolicy
+            <a className="footer-link" href={viewPaths.privacy} onClick={navClick(onPolicy)}>
+              {copy.navigation.privacyPolicy}
+            </a>
+          </li>
+          <li>
+            <a className="footer-link" href={viewPaths.testdata} onClick={navClick(onTestData)}>
+              {copy.navigation.testData}
             </a>
           </li>
           <li>
             <a href="/whitepaper.pdf" target="_blank" rel="noreferrer">
-              Whitepaper (PDF)
+              {copy.footer.whitepaper}
             </a>
           </li>
         </ul>
       </nav>
       {showServices ? (
         <p className="footer-row footer-help">
-          Vill ni bygga en egen integration med npm-paketen eller välja Gateway som signerad
-          företagsleverans? Se{" "}
+          {copy.footer.servicesPrefix}{" "}
           <a className="footer-link" href={viewPaths.services} onClick={navClick(onServices)}>
-            Maskera för företag
+            {copy.footer.servicesCta}
           </a>
           .
         </p>
       ) : null}
       <p className="footer-row footer-credit">
-        Byggd av{" "}
+        {copy.footer.creditPrefix}{" "}
         <a href="https://joelhagvall.com" target="_blank" rel="noreferrer">
-          Joel Hägvall
+          {copy.footer.author}
         </a>
         .
       </p>

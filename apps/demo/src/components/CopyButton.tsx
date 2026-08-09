@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import strings from "../i18n/sv.json"
 import { CheckIcon, CopyIcon } from "../icons"
 
 /**
@@ -39,11 +40,11 @@ export function CopyButton({
       type="button"
       className={`${className}${copied ? " copied" : ""}`}
       onClick={copy}
-      aria-label={ariaLabel ? (copied ? "Kopierat" : ariaLabel) : undefined}
+      aria-label={ariaLabel ? (copied ? strings.copyButton.copied : ariaLabel) : undefined}
       title={title}
     >
       {copied ? <CheckIcon size={iconSize} /> : <CopyIcon size={iconSize} />}
-      <span aria-live="polite">{copied ? "Kopierat" : "Kopiera"}</span>
+      <span aria-live="polite">{copied ? strings.copyButton.copied : strings.copyButton.copy}</span>
     </button>
   )
 }

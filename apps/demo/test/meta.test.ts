@@ -45,6 +45,8 @@ describe("renderRouteHtml", () => {
     expect(renderRouteHtml("dev")).toContain('href="/layers-sv-dark.svg"')
     expect(renderRouteHtml("transparency")).not.toContain("geist-mono-latin.woff2")
     expect(renderRouteHtml("transparency")).not.toContain('href="/layers-sv.svg"')
+    expect(renderRouteHtml("testdata")).not.toContain("geist-mono-latin.woff2")
+    expect(renderRouteHtml("privacy")).not.toContain("geist-mono-latin.woff2")
     expect(renderRouteHtml("services")).not.toContain("geist-mono-latin.woff2")
     expect(renderRouteHtml("accuracy")).not.toContain("geist-mono-latin.woff2")
     expect(renderRouteHtml("security")).not.toContain("geist-mono-latin.woff2")

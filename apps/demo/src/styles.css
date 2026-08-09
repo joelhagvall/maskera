@@ -1405,6 +1405,58 @@ html[data-theme="dark"] .tok-f {
   line-height: 1.6;
   color: var(--muted);
 }
+.benchmark-current {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 1.2fr);
+  gap: 24px;
+  margin-top: 14px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--gray-100);
+}
+.benchmark-current h3,
+.benchmark-current p,
+.benchmark-current dl {
+  margin: 0;
+}
+.benchmark-current h3 {
+  font-size: 16px;
+}
+.benchmark-current p {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.benchmark-current dl {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.benchmark-current dl div {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+}
+.benchmark-current dt {
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+.benchmark-current dd {
+  margin: 0 0 4px;
+  font-size: 19px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+#historiska-adresser {
+  margin-top: 28px;
+}
+#historiska-adresser h3 {
+  margin-bottom: 8px;
+  font-size: 18px;
+}
 .benchmark-cards {
   display: none;
 }
@@ -1452,6 +1504,12 @@ html[data-theme="dark"] .tok-f {
   background: var(--gray-100);
 }
 @media (max-width: 700px) {
+  .benchmark-current {
+    grid-template-columns: 1fr;
+  }
+  .benchmark-current dl {
+    grid-template-columns: 1fr;
+  }
   .benchmark-scroll {
     display: none;
   }

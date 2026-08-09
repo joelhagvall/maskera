@@ -23,12 +23,17 @@ pnpm changeset                    # or write .changeset/<name>.md by hand
 # 2. Bump versions + changelogs (consumes the changeset files)
 pnpm changeset version
 
-# 3. Verify, then commit the bump
+# 3. Verify, then commit and push the bump BEFORE publishing
 pnpm build && pnpm test
 git add -A && git commit -m "release: ..." && git push
 
 # 4. Publish (builds first, then changeset publish per package)
 pnpm release
+
+# 5. Verify that every generated tag points at the committed version bump,
+#    then push the tags
+git show <tag>:packages/<package>/package.json
+git push origin --tags
 ```
 
 Gotchas:
@@ -40,6 +45,10 @@ Gotchas:
 - `pnpm release` must run in an interactive terminal: npm 2FA opens a
   browser auth flow on publish. It fails from non-interactive shells,
   so the human runs this step, not the agent.
+- Never publish an uncommitted version bump. Changesets creates tags from the
+  current commit; publishing first can leave a release tag pointing at the
+  preceding package version. Push release tags only after checking the tagged
+  package.json contains the version named by the tag.
 - A 404 on `PUT .../@maskera%2fcore` from npm means bad/expired auth,
   not a missing package. Check `npm whoami`; re-login with `npm login`.
 - npm freezes README and package.json (homepage etc.) at publish time.

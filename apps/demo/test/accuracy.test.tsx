@@ -38,9 +38,13 @@ describe("Accuracy", () => {
     expect(
       screen.getByRole("list", { name: copy.accuracy.independentTitle }).children,
     ).toHaveLength(copy.accuracy.independentRows.length)
-    expect(screen.getByRole("list", { name: copy.accuracy.addressesTitle }).children).toHaveLength(
-      copy.accuracy.addressRows.length,
-    )
+    expect(
+      screen.getByRole("list", { name: copy.accuracy.historicalAddressTitle }).children,
+    ).toHaveLength(copy.accuracy.addressRows.length)
+    expect(screen.getByRole("heading", { name: copy.accuracy.currentTitle })).toBeTruthy()
+    for (const stat of copy.accuracy.currentStats) {
+      expect(screen.getByText(stat.value)).toBeTruthy()
+    }
     expect(screen.getByRole("heading", { name: copy.accuracy.limitsTitle })).toBeTruthy()
     expect(
       screen

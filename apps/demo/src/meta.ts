@@ -8,7 +8,15 @@
 
 import copy from "./i18n/sv.json"
 
-export type View = "demo" | "transparency" | "dev" | "services" | "accuracy" | "security"
+export type View =
+  | "demo"
+  | "transparency"
+  | "testdata"
+  | "privacy"
+  | "dev"
+  | "services"
+  | "accuracy"
+  | "security"
 
 export const SITE_ORIGIN = "https://maskera.dev"
 
@@ -16,6 +24,8 @@ export const viewPaths: Record<View, string> = {
   demo: "/",
   dev: "/utvecklare",
   transparency: "/integritet",
+  testdata: "/testdata",
+  privacy: "/integritetspolicy",
   services: "/tjanster",
   accuracy: "/traffsakerhet",
   security: "/sakerhet",
@@ -33,24 +43,28 @@ export function viewUrl(view: View): string {
 // tagline lives on in the static <title> + og/twitter tags for SEO and sharing.
 export const viewMeta: Record<View, { title: string; description: string }> = {
   demo: {
-    title: "maskera",
-    description:
-      "maskera döljer svenska personuppgifter innan text skickas till AI. Kör samma maskering i webbläsaren eller på egna servrar. Endast maskerad text går vidare.",
+    title: copy.meta.demoTitle,
+    description: copy.meta.demoDescription,
   },
   dev: {
-    title: "för utvecklare · maskera",
-    description:
-      "Installera maskera för svensk PII-maskering lokalt i webbläsaren eller Node. Öppen källkod, TypeScript och en egentränad svensk AI-modell.",
+    title: copy.meta.devTitle,
+    description: copy.meta.devDescription,
   },
   transparency: {
-    title: "integritet & transparens · maskera",
-    description:
-      "Så fungerar maskeras lokala personuppgiftsmaskering, hur modellen tränats, vilka begränsningar som finns och vilken testdata demon använder.",
+    title: copy.transparency.metaTitle,
+    description: copy.transparency.metaDescription,
+  },
+  testdata: {
+    title: copy.testData.metaTitle,
+    description: copy.testData.metaDescription,
+  },
+  privacy: {
+    title: copy.privacy.metaTitle,
+    description: copy.privacy.metaDescription,
   },
   services: {
-    title: "för företag · maskera",
-    description:
-      "Jämför npm-paket med öppen källkod och Maskera Gateway, som körs på CPU i er egen miljö före era AI-anrop.",
+    title: copy.meta.servicesTitle,
+    description: copy.meta.servicesDescription,
   },
   accuracy: {
     title: copy.accuracy.metaTitle,
@@ -62,14 +76,22 @@ export const viewMeta: Record<View, { title: string; description: string }> = {
   },
 }
 
-export const routeHtmlViews = ["dev", "transparency", "services", "accuracy", "security"] as const
+export const routeHtmlViews = [
+  "dev",
+  "transparency",
+  "testdata",
+  "privacy",
+  "services",
+  "accuracy",
+  "security",
+] as const
 export type RouteHtmlView = (typeof routeHtmlViews)[number]
 
 const jsonLd: Record<RouteHtmlView, object> = {
   dev: {
     "@context": "https://schema.org",
     "@type": "SoftwareSourceCode",
-    name: "maskera",
+    name: copy.meta.siteName,
     url: viewUrl("dev"),
     codeRepository: "https://github.com/joelhagvall/maskera",
     programmingLanguage: "TypeScript",
@@ -80,22 +102,38 @@ const jsonLd: Record<RouteHtmlView, object> = {
   transparency: {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: "Integritet & transparens · maskera",
+    name: copy.transparency.title,
     url: viewUrl("transparency"),
-    description:
-      "Så fungerar maskeras lokala personuppgiftsmaskering, modellträning, begränsningar och testdata.",
+    description: copy.transparency.metaDescription,
     inLanguage: "sv",
-    isPartOf: { "@type": "WebSite", name: "maskera", url: `${SITE_ORIGIN}/` },
+    isPartOf: { "@type": "WebSite", name: copy.meta.siteName, url: `${SITE_ORIGIN}/` },
+  },
+  testdata: {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: copy.testData.title,
+    url: viewUrl("testdata"),
+    description: copy.testData.metaDescription,
+    inLanguage: "sv",
+    isPartOf: { "@type": "WebSite", name: copy.meta.siteName, url: viewUrl("demo") },
+  },
+  privacy: {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: copy.privacy.title,
+    url: viewUrl("privacy"),
+    description: copy.privacy.metaDescription,
+    inLanguage: "sv",
+    isPartOf: { "@type": "WebSite", name: copy.meta.siteName, url: viewUrl("demo") },
   },
   services: {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: "Maskera för företag",
+    name: copy.meta.servicesSchemaName,
     url: viewUrl("services"),
-    description:
-      "Npm-paket med öppen källkod och en signerad CPU-baserad Gateway för svensk personuppgiftsmaskering före AI-anrop.",
+    description: copy.meta.servicesDescription,
     inLanguage: "sv",
-    isPartOf: { "@type": "WebSite", name: "maskera", url: `${SITE_ORIGIN}/` },
+    isPartOf: { "@type": "WebSite", name: copy.meta.siteName, url: `${SITE_ORIGIN}/` },
   },
   accuracy: {
     "@context": "https://schema.org",
@@ -104,7 +142,7 @@ const jsonLd: Record<RouteHtmlView, object> = {
     url: viewUrl("accuracy"),
     description: copy.accuracy.metaDescription,
     inLanguage: "sv",
-    isPartOf: { "@type": "WebSite", name: "maskera", url: viewUrl("demo") },
+    isPartOf: { "@type": "WebSite", name: copy.meta.siteName, url: viewUrl("demo") },
   },
   security: {
     "@context": "https://schema.org",
@@ -113,7 +151,7 @@ const jsonLd: Record<RouteHtmlView, object> = {
     url: viewUrl("security"),
     description: copy.security.metaDescription,
     inLanguage: "sv",
-    isPartOf: { "@type": "WebSite", name: "maskera", url: viewUrl("demo") },
+    isPartOf: { "@type": "WebSite", name: copy.meta.siteName, url: viewUrl("demo") },
   },
 }
 

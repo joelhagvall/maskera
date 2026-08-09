@@ -1,3 +1,4 @@
+import copy from "../i18n/sv.json"
 import { MoonIcon, SunIcon } from "../icons"
 
 /**
@@ -13,7 +14,7 @@ export function ThemeToggle() {
     <button
       type="button"
       className="ghlink theme-toggle"
-      aria-label="Växla mellan ljust och mörkt läge"
+      aria-label={copy.theme.toggle}
       onClick={() => {
         const root = document.documentElement
         const next = root.dataset.theme === "dark" ? "light" : "dark"

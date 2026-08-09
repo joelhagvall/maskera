@@ -6,9 +6,11 @@ import { Footer } from "./components/Footer"
 import { Header } from "./components/Header"
 import { InputCard } from "./components/InputCard"
 import { OutputCard } from "./components/OutputCard"
+import { PrivacyPolicy } from "./components/PrivacyPolicy"
 import { RestoreDemo } from "./components/RestoreDemo"
 import { Security } from "./components/Security"
 import { Services } from "./components/Services"
+import { TestData } from "./components/TestData"
 import { Transparency } from "./components/Transparency"
 import { invalidPersonnummer } from "./hints"
 import copy from "./i18n/sv.json"
@@ -85,14 +87,6 @@ export function App() {
     if (next === "demo") startModel()
     navigate(next)
   }
-  const goPolicy = () => {
-    setAnchor("integritetspolicy")
-    navigate("transparency")
-  }
-  const goTestdata = () => {
-    setAnchor("testdata")
-    navigate("transparency")
-  }
   const goCoverage = () => {
     setAnchor("vad-maskeras")
     navigate("transparency")
@@ -101,7 +95,7 @@ export function App() {
   return (
     <div className="app">
       <a className="skip-link" href="#main-content">
-        Hoppa till huvudinnehållet
+        {copy.demo.skipLink}
       </a>
       {view === "demo" && (
         <>
@@ -138,7 +132,7 @@ export function App() {
             {active.id !== "fritext" && (
               <p className="exnote">
                 {copy.demo.testDataNote}{" "}
-                <a href={viewPaths.transparency} onClick={navClick(goTestdata)}>
+                <a href={viewPaths.testdata} onClick={navClick(() => navigate("testdata"))}>
                   {copy.demo.testDataCta}
                 </a>
                 .
@@ -156,10 +150,9 @@ export function App() {
                     the way until then; the footer keeps the generic pointer.
                     The services page owns the app.maskera.dev links. */}
                 <p className="exnote">
-                  Samma maskering finns som Maskera Gateway, en färdig installation för era egna
-                  servrar.{" "}
+                  {copy.demo.gatewayBody}{" "}
                   <a href={viewPaths.services} onClick={navClick(() => navigate("services"))}>
-                    Se Maskera för företag
+                    {copy.demo.gatewayCta}
                   </a>
                   .
                 </p>
@@ -170,13 +163,16 @@ export function App() {
       )}
       {view === "dev" && <Developers go={go} onCoverage={goCoverage} />}
       {view === "transparency" && <Transparency go={go} />}
+      {view === "testdata" && <TestData go={go} />}
+      {view === "privacy" && <PrivacyPolicy go={go} />}
       {view === "services" && <Services go={go} onCoverage={goCoverage} />}
       {view === "accuracy" && <Accuracy go={go} />}
       {view === "security" && <Security go={go} />}
       <Footer
         showServices={view !== "demo"}
         onTransparency={() => navigate("transparency")}
-        onPolicy={goPolicy}
+        onTestData={() => navigate("testdata")}
+        onPolicy={() => navigate("privacy")}
         onServices={() => navigate("services")}
         onAccuracy={() => navigate("accuracy")}
         onSecurity={() => navigate("security")}

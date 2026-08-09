@@ -20,5 +20,12 @@ describe("Services", () => {
       "Maskera Gateway",
       "Öppen källkod",
     ])
+    expect(
+      screen.getByRole("link", { name: /Boka teknisk genomgång/ }).getAttribute("href"),
+    ).toContain("calendly.com")
+    expect(screen.getByRole("link", { name: /Läs om Gateway/ }).getAttribute("href")).toContain(
+      "app.maskera.dev/gateway",
+    )
+    expect(container.querySelector(".implementation-help")).toBeNull()
   })
 })

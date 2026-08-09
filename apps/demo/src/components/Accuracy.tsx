@@ -48,12 +48,31 @@ export function Accuracy({ go }: { go: (view: View) => void }) {
             rows={independentRows}
           />
 
-          <BenchmarkTable
-            id="adresser"
-            title={copy.accuracy.addressesTitle}
-            caption={copy.accuracy.addressesCaption}
-            rows={addressRows}
-          />
+          <section className="benchmark-section" id="adresser" aria-labelledby="adresser-heading">
+            <h2 id="adresser-heading">{copy.accuracy.addressesTitle}</h2>
+            <p className="benchmark-caption">{copy.accuracy.addressesCaption}</p>
+            <div className="benchmark-current">
+              <div>
+                <h3>{copy.accuracy.currentTitle}</h3>
+                <p>{copy.accuracy.currentBody}</p>
+              </div>
+              <dl>
+                {copy.accuracy.currentStats.map((stat) => (
+                  <div key={stat.label}>
+                    <dt>{stat.label}</dt>
+                    <dd>{stat.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+            <BenchmarkTable
+              id="historiska-adresser"
+              title={copy.accuracy.historicalAddressTitle}
+              caption={copy.accuracy.historicalAddressCaption}
+              rows={addressRows}
+              headingLevel={3}
+            />
+          </section>
 
           <h2 id="tolkning">{copy.accuracy.interpretationTitle}</h2>
           {copy.accuracy.interpretation.map((paragraph) => (
@@ -108,15 +127,18 @@ function BenchmarkTable({
   title,
   caption,
   rows,
+  headingLevel = 2,
 }: {
   id: string
   title: string
   caption: string
   rows: BenchmarkRow[]
+  headingLevel?: 2 | 3
 }) {
+  const Heading = headingLevel === 3 ? "h3" : "h2"
   return (
     <section className="benchmark-section" id={id} aria-labelledby={id + "-heading"}>
-      <h2 id={id + "-heading"}>{title}</h2>
+      <Heading id={id + "-heading"}>{title}</Heading>
       <p className="benchmark-caption">{caption}</p>
       <div className="benchmark-scroll">
         <table className="benchmark-table">

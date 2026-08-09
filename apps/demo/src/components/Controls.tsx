@@ -1,3 +1,4 @@
+import copy from "../i18n/sv.json"
 import { DOMAIN_ICONS } from "../icons"
 import { type Scenario, scenarios } from "../scenarios"
 import type { NerStatus } from "../useSwedishNer"
@@ -17,7 +18,7 @@ function ModelStatus({
     return (
       <div className="status model-idle" role="status" aria-live="polite">
         <span className="dot idle" aria-hidden="true" />
-        <span>Startar AI-modellen…</span>
+        <span>{copy.controls.modelStarting}</span>
       </div>
     )
   }
@@ -32,7 +33,7 @@ function ModelStatus({
         <span
           className="bar"
           role="progressbar"
-          aria-label="Laddar maskeras AI-modell"
+          aria-label={copy.controls.modelLoadingAria}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={progress}
@@ -43,10 +44,10 @@ function ModelStatus({
           />
         </span>
         {starting ? (
-          <span>Startar AI-modellen…</span>
+          <span>{copy.controls.modelStarting}</span>
         ) : (
           <span>
-            Laddar maskeras AI-modell… <span className="pct">{progress}%</span>
+            {copy.controls.modelLoading} <span className="pct">{progress}%</span>
           </span>
         )}
       </div>
@@ -57,11 +58,10 @@ function ModelStatus({
       <div className="status model-error">
         <span className="dot error" aria-hidden="true" />
         <span role="status" aria-live="polite">
-          AI-modellen kunde inte laddas. Personnummer, telefonnummer och annat med bestämt format
-          maskeras ändå.
+          {copy.controls.modelError}
         </span>
         <button type="button" className="model-action" onClick={onRetryModel}>
-          Försök igen
+          {copy.controls.modelRetry}
         </button>
       </div>
     )
@@ -72,7 +72,7 @@ function ModelStatus({
       {/* The output card shows "analyserar…" while typing; here the pulsing
           dot is the only activity signal, so the row keeps a stable width. */}
       <span className={`dot ready${analyzing ? " analyzing" : ""}`} aria-hidden="true" />
-      <span>maskeras AI-modell aktiv</span>
+      <span>{copy.controls.modelReady}</span>
     </div>
   )
 }
@@ -96,7 +96,7 @@ export function Controls({
     <div className="controls">
       <div className="tabs" role="group" aria-labelledby="scenario-label">
         <span className="tabs-label" id="scenario-label">
-          Testa ett exempel:
+          {copy.controls.examplesLabel}
         </span>
         {scenarios.map((s) => {
           const Icon = DOMAIN_ICONS[s.id]
