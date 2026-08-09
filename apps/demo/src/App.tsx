@@ -11,6 +11,7 @@ import { Security } from "./components/Security"
 import { Services } from "./components/Services"
 import { Transparency } from "./components/Transparency"
 import { invalidPersonnummer } from "./hints"
+import copy from "./i18n/sv.json"
 import { navClick, useRoute, type View, viewPaths } from "./routing"
 import { type Scenario, scenarios } from "./scenarios"
 import { useSwedishNer } from "./useSwedishNer"
@@ -136,10 +137,9 @@ export function App() {
                 exists, and it has nothing to say about the user's own text. */}
             {active.id !== "fritext" && (
               <p className="exnote">
-                Personerna i exemplen är påhittade. Personnummer, telefonnummer och kontouppgifter
-                är officiellt reserverade testvärden, aldrig en verklig persons uppgifter.{" "}
+                {copy.demo.testDataNote}{" "}
                 <a href={viewPaths.transparency} onClick={navClick(goTestdata)}>
-                  Läs mer om testdatan
+                  {copy.demo.testDataCta}
                 </a>
                 .
               </p>

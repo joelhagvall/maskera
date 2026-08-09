@@ -413,7 +413,9 @@ exception needs a different idea; see the journal.
       Corpus from task training, but a fresh independently authored fictional
       target-register set is still needed to measure honestly. Plan +
       writer brief ready: [GOLD_SET_PLAN.md](GOLD_SET_PLAN.md),
-      [GOLD_SET_STAGE2_PROMPTS.md](GOLD_SET_STAGE2_PROMPTS.md).
+      [GOLD_SET_STAGE2_PROMPTS.md](GOLD_SET_STAGE2_PROMPTS.md). The contributor
+      schema and draft/freeze validator are now implemented; collection by
+      3-5 independent human writers remains intentionally external.
 - [ ] **Target-domain evaluation** (support / healthcare / legal): collect
       300-500 independently authored, fully fictional annotated messages for
       held-out evaluation, plus optional private aggregate-only partner runs.

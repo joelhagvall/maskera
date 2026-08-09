@@ -20,11 +20,10 @@ export function Footer({
   return (
     <footer className="footer">
       <p className="footer-row footer-intro">
-        Öppen källkod med{" "}
+        {copy.footer.openSource} ·{" "}
         <a href={HF_MODEL} target="_blank" rel="noreferrer">
-          en egentränad svensk AI-modell
+          {copy.footer.modelLink}
         </a>
-        . {copy.footer.localProcessing}
       </p>
       <nav className="footer-nav" aria-label="Integritet och dokumentation">
         <ul>

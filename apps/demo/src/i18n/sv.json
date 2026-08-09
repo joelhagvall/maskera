@@ -5,8 +5,12 @@
     "browserLead": "All maskering sker",
     "browserEmphasis": "direkt i din webbläsare",
     "browserPrivacy": "Din text och nyckeln med originaluppgifterna lämnar inte enheten.",
-    "localProduction": "För företag körs samma maskering på egna servrar, utan att någon text skickas till Maskera. Originaldata stannar i er miljö; endast maskerad text går vidare till AI‑tjänsten.",
+    "localProduction": "För företag körs samma maskering i er egen miljö. Ingen text skickas till Maskera; originaldata stannar hos er och endast maskerad text går vidare till AI‑tjänsten.",
     "servicesCta": "Så fungerar det för företag"
+  },
+  "demo": {
+    "testDataNote": "Exemplen använder påhittade personer och officiellt reserverade testvärden, aldrig verkliga personers uppgifter.",
+    "testDataCta": "Läs mer om testdatan"
   },
   "outputCard": {
     "invalidPersonnummerSingular": "har en personnummerlik form men inget giltigt födelse- eller samordningsdatum. Därför maskeras det inte.",
@@ -103,7 +107,8 @@
     "security": "Säkerhet"
   },
   "footer": {
-    "localProcessing": "Webbverktyget kör modellen lokalt i din webbläsare; texten och nyckeln med originaluppgifterna lämnar inte enheten."
+    "openSource": "Öppen källkod",
+    "modelLink": "Egentränad svensk AI-modell"
   },
   "accuracy": {
     "metaTitle": "träffsäkerhet & testresultat · maskera",

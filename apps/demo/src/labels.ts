@@ -19,7 +19,7 @@ export interface LabelMeta {
 
 // The trailing comments carry the measured contrasts "light | dark", kept in
 // sync with the sibling file in maskera-cloud (see the `dark` doc above).
-const MAP: Record<string, LabelMeta> = {
+export const LABEL_META: Readonly<Record<string, LabelMeta>> = {
   // names
   NAMN: { sv: "Namn", color: "#1d4ed8", dark: "#5e82e8" }, // blue - 5.72 | 4.66
   // places & addresses
@@ -49,7 +49,7 @@ const MAP: Record<string, LabelMeta> = {
 const FALLBACK: LabelMeta = { sv: "Uppgift", color: "#334155", dark: "#7087a9" }
 
 export function labelMeta(label: string): LabelMeta {
-  return MAP[label] ?? { ...FALLBACK, sv: label }
+  return LABEL_META[label] ?? { ...FALLBACK, sv: label }
 }
 
 // The style recipes below use light-dark(), which resolves against the

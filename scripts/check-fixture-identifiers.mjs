@@ -18,6 +18,13 @@ const repoFiles = execFileSync(
   .split("\0")
   .filter(Boolean)
 
+// Explicit extra paths let privacy-sensitive, gitignored evaluation drafts
+// use the exact same source-backed identifier policy before they are frozen.
+// Keep diagnostics value-free: these files may still contain rejected data.
+for (const extraFile of process.argv.slice(2)) {
+  if (!repoFiles.includes(extraFile)) repoFiles.push(extraFile)
+}
+
 // This benchmark explainer is intentionally gitignored but is a standing
 // local snapshot carrier in the repository instructions. Audit it whenever it
 // exists so the local checkout cannot silently retain an unsafe example.

@@ -48,6 +48,11 @@ unattested local candidate into it; releases upload the attested artifact,
 pin the resulting Hub revision and file hashes, and then fetch that exact
 version into the versioned demo directory.
 
+Historical model directories may remain under `public/models/` as local
+benchmark caches. `pnpm build` keeps those caches intact but prunes every
+non-current model from `dist/models/`, so a local or manual deployment cannot
+accidentally ship old weights.
+
 Without these files the demo still runs; the model load reports an error and the
 gazetteer fallback keeps working.
 
@@ -66,3 +71,13 @@ createNerRecognizer({ model: MASKERA_SV_NER_MODEL, dtype: "q4" })
 
 `MASKERA_SV_NER_MODEL` is the one canonical id the demo and any future
 React/Node packages share.
+
+## Verification
+
+```bash
+pnpm build
+pnpm test
+pnpm audit:a11y          # CI gate: fails on WCAG errors
+pnpm audit:a11y:review   # manual review, also prints needs-review warnings
+pnpm test:model          # real model in Chromium and WebKit
+```

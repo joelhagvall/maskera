@@ -54,7 +54,14 @@ remain private and never become training or repository data.
   category-level guideline changes.
 - Store writer id, register, collection date and the declaration that the row
   is independently authored and fictional. Do not store source-entity links.
-- Run `pnpm check:fixtures` and an address-marker check before accepting rows.
+- Run the draft validator before accepting rows:
+  `node scripts/check-independent-gold.mjs packages/ner/eval/corpus-stage2.mjs`.
+  It applies the repository's source-backed fixture audit to the otherwise
+  gitignored draft too, checks provenance metadata, exact spans, duplicate
+  rows, labels and synthetic address markers without printing rejected values.
+- Before the first model run, freeze the corpus with `--freeze`. Freeze mode
+  requires 200 rows, at least three writers, the target registers and a blind
+  second pass over at least 20% of rows.
 
 ## Reporting
 
@@ -72,3 +79,11 @@ remain private and never become training or repository data.
 - Real addresses or randomly composed ordinary street/number pairs.
 - LLM-generated evaluation sentences, because they add another generator
   distribution rather than independent human authorship.
+
+## What remains external
+
+The brief, schema and automated freeze checks are complete. Corpus collection
+itself deliberately cannot be completed by the model developer or an AI agent:
+the 3-5 human writers and blind second annotator are what make the measurement
+independent. Until their rows pass `--freeze`, do not mark the roadmap item done
+or publish a v19 independent-quality claim.

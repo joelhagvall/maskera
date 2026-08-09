@@ -193,9 +193,10 @@ pnpm eval:domain           # hybrid pipeline on the tracked synthetic domain cor
 pnpm eval:domain:clinical  # same corpus with the clinical precision profile
 ```
 
-CI runs all of the above on every push, plus a model eval gated on an F1
-floor and leak-rate ceiling, and a weekly canary against the live Hub
-artifact that opens an issue if anything drifts. Roadmap:
+CI runs all of the above on every push, including the general and clinical
+domain gates, plus the package smoke on the declared minimum Node version and
+a weekly canary against the live Hub artifact that opens an issue if anything
+drifts. Roadmap:
 [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## License

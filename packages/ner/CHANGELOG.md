@@ -1,5 +1,13 @@
 # maskera
 
+## 0.9.4
+
+### Patch Changes
+
+- 09d92be: Repair street-address spans that end before the house number, add context-labeled domestic bank account and journal identifiers to the hybrid defaults, correct lowercase Swedish locality labels, and provide a simple `profile: "clinical"` preset plus a composable precision filter for measurements, medication doses, and common care terms.
+- Updated dependencies [09d92be]
+  - @maskera/core@0.7.5
+
 ## 0.9.3
 
 ### Patch Changes

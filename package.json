@@ -7,9 +7,10 @@
   "packageManager": "pnpm@10.33.0",
   "scripts": {
     "build": "pnpm -r build",
-    "test": "pnpm check:fixtures && pnpm check:training-privacy && pnpm -r test",
+    "test": "pnpm check:fixtures && pnpm check:training-privacy && pnpm check:tooling && pnpm -r test",
     "check:fixtures": "node scripts/check-fixture-identifiers.mjs",
     "check:training-privacy": "node --test training/privacy_guard.test.mjs training/privacy_attestation.test.mjs",
+    "check:tooling": "node --test bench/*.test.mjs training/check_address_eval_leak.test.mjs scripts/*.test.mjs",
     "smoke": "node scripts/pack-smoke.mjs",
     "typecheck": "for p in packages/core packages/ner apps/demo; do node node_modules/typescript-7/lib/tsc.js -p $p/tsconfig.json --noEmit || exit 1; done && node node_modules/typescript-7/lib/tsc.js -p packages/ner/tsconfig.runtime-test.json --noEmit",
     "eval": "node scripts/run-published-eval.mjs",

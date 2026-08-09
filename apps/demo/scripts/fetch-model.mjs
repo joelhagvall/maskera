@@ -22,7 +22,9 @@ import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
 const HUB = "https://huggingface.co/joelhagvall/maskera-sv-ner/resolve/main"
-const DEST = resolve(dirname(fileURLToPath(import.meta.url)), "../public/models/maskera-sv-ner-v19")
+const metaPath = resolve(dirname(fileURLToPath(import.meta.url)), "../src/model-meta.json")
+const meta = JSON.parse(readFileSync(metaPath, "utf8"))
+const DEST = resolve(dirname(fileURLToPath(import.meta.url)), "../public/models", meta.directory)
 
 // Pinned sha256 per file, so a compromised Hub account can't silently swap
 // the weights into a build. When the model is intentionally updated, refresh
@@ -93,8 +95,6 @@ console.log(`model verified in ${DEST}`)
 // come from the response). Fail the build if it drifts from the real file,
 // e.g. after a model bump that forgot to update it.
 const statSize = statSync(join(DEST, "onnx/model_q4.onnx")).size
-const metaPath = resolve(dirname(fileURLToPath(import.meta.url)), "../src/model-meta.json")
-const meta = JSON.parse(readFileSync(metaPath, "utf8"))
 if (meta.onnxBytes !== statSize) {
   console.error(
     `src/model-meta.json onnxBytes (${meta.onnxBytes}) != actual model size (${statSize}). Update it.`,

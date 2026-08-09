@@ -18,10 +18,22 @@ phrasing. This set fills that without retaining real messages or sourced PII.
 ## After collection (maintainer steps)
 
 1. Paste each writer's sentences into `packages/ner/eval/corpus-stage2.mjs`
-   (copy it from `corpus-stage2.template.mjs`; the `.mjs` is gitignored).
-2. Annotate every PERSON / LOCATION / ORGANIZATION span by exact substring,
+   (copy it from `corpus-stage2.template.mjs`; the `.mjs` is gitignored). Keep
+   the anonymised writer id, register, collection date and second-review flag
+   required by the template.
+2. Annotate every PERSON / LOCATION / ORGANIZATION / ADDRESS span by exact substring,
    **before** running the model (so gold isn't anchored to model output).
-3. Grade with the existing harness, no code change:
+3. Validate the draft before any model run:
+   ```bash
+   node scripts/check-independent-gold.mjs packages/ner/eval/corpus-stage2.mjs
+   ```
+4. Once 200+ rows exist, run the freeze gate. Do this before looking at model
+   predictions; record the frozen file hash with the result:
+   ```bash
+   node scripts/check-independent-gold.mjs \
+     packages/ner/eval/corpus-stage2.mjs --freeze
+   ```
+5. Grade with the existing harness:
    ```bash
    CORPUS_FILE="./corpus-stage2.mjs" \
    MASKERA_MODEL_PATH="$PWD/training" \
@@ -31,7 +43,7 @@ phrasing. This set fills that without retaining real messages or sourced PII.
    ```
    Record the exact artifact and its attestation hash with the result; do not
    silently switch model versions during a frozen evaluation.
-4. Report it as its own register row in `docs/BENCHMARKS.md` (never blended
+6. Report it as its own register row in `docs/BENCHMARKS.md` (never blended
    into one average, per the plan), and once ~200 sentences exist across
    writers, keep it as the new source-isolated synthetic benchmark. Do not
    reconstruct or merge the removed Wikipedia raw set.

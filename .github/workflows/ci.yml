@@ -46,11 +46,31 @@ jobs:
       - name: Smoke-test the browser AI model
         if: matrix.node == 24
         run: pnpm --filter @maskera/demo test:model
+      - name: Audit demo accessibility
+        if: matrix.node == 24
+        run: pnpm --filter @maskera/demo audit:a11y
       # After build: ner/demo typecheck against @maskera/core's emitted
       # dist/*.d.ts, which only exists once build has run.
       - run: pnpm typecheck
         if: matrix.node == 24
       - run: pnpm test
+      - run: pnpm smoke
+
+  # The public packages declare Node >=18. Keep the minimum-version contract
+  # honest without forcing Vite's newer build tooling to support Node 18 too:
+  # build and exercise only the two published package tarballs here.
+  package-node18:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 18
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter @maskera/core --filter maskera
+      - run: pnpm --filter @maskera/core --filter maskera build
       - run: pnpm smoke
 
   # Grade the published Swedish NER model against the gold corpus and gate on
@@ -62,7 +82,7 @@ jobs:
   # so a bad Hub upload still surfaces somewhere.
   model-eval:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v6
@@ -86,3 +106,9 @@ jobs:
           node eval/run-eval.mjs | tee "$GITHUB_STEP_SUMMARY" || \
             (echo "retrying once after 30s..." && sleep 30 && \
              node eval/run-eval.mjs | tee "$GITHUB_STEP_SUMMARY")
+      - name: Fetch the checksum-pinned local model
+        run: node apps/demo/scripts/fetch-model.mjs
+      - name: Run general domain regression gate
+        run: pnpm eval:domain
+      - name: Run clinical domain regression gate
+        run: pnpm eval:domain:clinical

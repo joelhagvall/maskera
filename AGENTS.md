@@ -1,5 +1,12 @@
 # maskera: repo notes
 
+## Git workflow
+
+ALWAYS work directly on `main` in this repository. NEVER create `codex/`,
+`agent/`, feature or other task branches unless the user explicitly reverses
+this rule. When asked to commit and push, commit on `main` and push to
+`origin/main`. Do not open a PR as a substitute for pushing `main`.
+
 ## Releasing to npm (the part that always goes wrong)
 
 NEVER run `npm publish` or `pnpm publish` in the repo root. The root package

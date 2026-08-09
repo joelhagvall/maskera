@@ -4,6 +4,7 @@
 import { createNerRecognizer } from "maskera"
 // @ts-expect-error plain .mjs corpus without type declarations
 import { corpus } from "../../../packages/ner/eval/corpus.mjs"
+import modelMeta from "./model-meta.json"
 
 const texts: string[] = (corpus as Array<{ text: string }>).map((d) => d.text)
 const chars = texts.reduce((n, t) => n + t.length, 0)
@@ -24,7 +25,7 @@ function stats(samples: number[]) {
 async function main() {
   const t0 = performance.now()
   const recognizer = createNerRecognizer({
-    model: "maskera-sv-ner-v19",
+    model: modelMeta.directory,
     localModelPath: "/models/",
     allowLocalModels: true,
     allowRemoteModels: false,
