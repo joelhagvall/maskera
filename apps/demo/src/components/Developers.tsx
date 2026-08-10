@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from "react"
 import { GITHUB, HF_MODEL, NPM_NER } from "../constants"
-import copy from "../i18n/sv.json"
+import copy, { activeLocale } from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
 import type { View } from "../routing"
 import { navClick, viewPaths } from "../routing"
@@ -12,16 +12,6 @@ const TOKEN =
   /(\/\/[^\n]*|#[^\n]*)|("(?:[^"\\]|\\.)*")|\b(import|from|type|const|await)\b|([A-Za-z_$][\w$]*)(?=\()/g
 
 type CodeLanguage = "ts" | "js"
-
-const MASK_EXAMPLE: Record<CodeLanguage, string> = {
-  ts: copy.developerApi.maskExampleTs,
-  js: copy.developerApi.maskExampleJs,
-}
-
-const RESTORE_EXAMPLE: Record<CodeLanguage, string> = {
-  ts: copy.developerApi.restoreExampleTs,
-  js: copy.developerApi.restoreExampleJs,
-}
 
 function highlight(line: string): ReactNode[] {
   const nodes: ReactNode[] = []
@@ -172,11 +162,14 @@ function InstallTabs() {
 }
 
 function ArchitectureFigure({ onCoverage }: { onCoverage: () => void }) {
+  const lightDiagram = activeLocale === "sv" ? "/layers-sv.svg" : "/layers.svg"
+  const darkDiagram = activeLocale === "sv" ? "/layers-sv-dark.svg" : "/layers-dark.svg"
+
   return (
     <figure className="layers-fig">
       <img
         className="layers-light"
-        src="/layers-sv.svg"
+        src={lightDiagram}
         width="1200"
         height="640"
         loading="eager"
@@ -185,7 +178,7 @@ function ArchitectureFigure({ onCoverage }: { onCoverage: () => void }) {
       />
       <img
         className="layers-dark"
-        src="/layers-sv-dark.svg"
+        src={darkDiagram}
         width="1200"
         height="640"
         loading="eager"
@@ -198,7 +191,7 @@ function ArchitectureFigure({ onCoverage }: { onCoverage: () => void }) {
         <a href={`${viewPaths.transparency}#vad-maskeras`} onClick={navClick(onCoverage)}>
           {copy.coverage.linkCta}
         </a>
-        <a className="layers-expand" href="/layers-sv.svg" target="_blank" rel="noreferrer">
+        <a className="layers-expand" href={lightDiagram} target="_blank" rel="noreferrer">
           {copy.developerApi.diagramOpen}
           <ArrowUpRightIcon size={13} />
         </a>
@@ -215,6 +208,10 @@ export function Developers({
   onCoverage: () => void
 }) {
   const [language, setLanguage] = useState<CodeLanguage>("ts")
+  const maskExample =
+    language === "ts" ? copy.developerApi.maskExampleTs : copy.developerApi.maskExampleJs
+  const restoreExample =
+    language === "ts" ? copy.developerApi.restoreExampleTs : copy.developerApi.restoreExampleJs
 
   return (
     <>
@@ -258,14 +255,14 @@ export function Developers({
 
           <h2>{copy.developerApi.maskTitle}</h2>
           <Code language={language} onLanguageChange={setLanguage}>
-            {MASK_EXAMPLE[language]}
+            {maskExample}
           </Code>
 
           <ArchitectureFigure onCoverage={onCoverage} />
 
           <h2>{copy.developerApi.restoreTitle}</h2>
           <Code language={language} onLanguageChange={setLanguage}>
-            {RESTORE_EXAMPLE[language]}
+            {restoreExample}
           </Code>
 
           <h2>{copy.developerApi.clinicalTitle}</h2>

@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react"
-import copy from "./i18n/sv.json"
+import copy from "./i18n"
 
 export interface LabelMeta {
   sv: string
@@ -49,10 +49,13 @@ export const LABEL_META: Readonly<Record<string, LabelMeta>> = {
   URL: { sv: copy.labels.URL, color: "#075985", dark: "#1d8dc9" }, // sky - 6.44 | 4.58
 }
 
-const FALLBACK: LabelMeta = { sv: copy.labels.fallback, color: "#334155", dark: "#7087a9" }
+const FALLBACK: LabelMeta = { sv: "", color: "#334155", dark: "#7087a9" }
 
 export function labelMeta(label: string): LabelMeta {
-  return LABEL_META[label] ?? { ...FALLBACK, sv: label }
+  const meta = LABEL_META[label]
+  if (!meta) return { ...FALLBACK, sv: label || copy.labels.fallback }
+  const localizedLabels = copy.labels as Record<string, string>
+  return { ...meta, sv: localizedLabels[label] ?? meta.sv }
 }
 
 type PiiVariables = CSSProperties & Record<`--pii-${string}`, string>

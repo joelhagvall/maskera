@@ -1,13 +1,9 @@
 import { GITHUB } from "../constants"
-import copy from "../i18n/sv.json"
+import copy from "../i18n"
 import { ArrowUpRightIcon, MaskeraMark } from "../icons"
 import { navClick, type View, viewPaths } from "../routing"
+import { LanguageToggle } from "./LanguageToggle"
 import { ThemeToggle } from "./ThemeToggle"
-
-const NAV: { view: View; label: string }[] = [
-  { view: "dev", label: copy.navigation.developers },
-  { view: "services", label: copy.navigation.services },
-]
 
 /**
  * The shared top bar: wordmark linking home, the nav links minus the current
@@ -17,6 +13,10 @@ const NAV: { view: View; label: string }[] = [
  */
 export function TopBar({ current, go }: { current: View; go: (view: View) => void }) {
   const home = current === "demo"
+  const nav: { view: View; label: string }[] = [
+    { view: "dev", label: copy.topBar.developers },
+    { view: "services", label: copy.topBar.services },
+  ]
   return (
     <>
       <div className={home ? "head-row" : "topbar"}>
@@ -29,19 +29,22 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
           {copy.meta.siteName}
         </a>
         <nav className="head-links">
-          {/* Toggle first, matching app.maskera.dev's header: same relative
-              position when a visitor clicks between the two sites. */}
+          {/* Display controls come first, matching app.maskera.dev's theme
+              toggle position when a visitor clicks between the two sites. */}
           <ThemeToggle />
-          {NAV.filter((item) => item.view !== current).map((item) => (
-            <a
-              key={item.view}
-              className="ghlink"
-              href={viewPaths[item.view]}
-              onClick={navClick(() => go(item.view))}
-            >
-              {item.label}
-            </a>
-          ))}
+          <LanguageToggle current={current} />
+          {nav
+            .filter((item) => item.view !== current)
+            .map((item) => (
+              <a
+                key={item.view}
+                className="ghlink"
+                href={viewPaths[item.view]}
+                onClick={navClick(() => go(item.view))}
+              >
+                {item.label}
+              </a>
+            ))}
           <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
             {copy.navigation.github}
             <ArrowUpRightIcon size={13} />

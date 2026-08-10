@@ -1,11 +1,9 @@
 import type { RedactResult } from "@maskera/core"
 import { useMemo, useState } from "react"
-import copy from "../i18n/sv.json"
+import copy from "../i18n"
 import { ChatIcon, CheckIcon, KeyIcon } from "../icons"
 import { RestoredText, TokenHighlight } from "../segments"
 import { OverlayEditor } from "./OverlayEditor"
-
-const FLOW = copy.restoreDemo.flow
 
 function fill(template: string, values: Record<string, string | null>): string {
   return template.replace(/\{(\w+)\}/g, (_, key: string) => values[key] ?? "")
@@ -168,6 +166,7 @@ export function sampleAiReply(map: Record<string, string>, scenarioId?: string):
  */
 export function RestoreDemo({ result, scenarioId }: { result: RedactResult; scenarioId?: string }) {
   const { map } = result
+  const flow = copy.restoreDemo.flow
   const auto = useMemo(() => sampleAiReply(map, scenarioId), [map, scenarioId])
   // null = untouched (mirror the generated sample); a string = the visitor's edit.
   const [draft, setDraft] = useState<string | null>(null)
@@ -181,7 +180,7 @@ export function RestoreDemo({ result, scenarioId }: { result: RedactResult; scen
         {/* Arrow and step share a no-wrap unit: when the band wraps on narrow
             screens the arrow follows onto the new line ("→ Du ser") instead of
             dangling at the end of the previous one. */}
-        {FLOW.map((step, i) => (
+        {flow.map((step, i) => (
           <span className="flow-item" key={step}>
             {i > 0 && (
               <span className="flow-arrow" aria-hidden="true">
@@ -189,7 +188,7 @@ export function RestoreDemo({ result, scenarioId }: { result: RedactResult; scen
               </span>
             )}
             <span className="flow-step">
-              {i === FLOW.length - 1 && <CheckIcon size={12} />}
+              {i === flow.length - 1 && <CheckIcon size={12} />}
               {step}
             </span>
           </span>
@@ -219,6 +218,7 @@ export function RestoreDemo({ result, scenarioId }: { result: RedactResult; scen
             name="ai-response"
             ariaLabel={copy.restoreDemo.replyAria}
             className="editor reply-editor"
+            language="sv"
             highlight={<TokenHighlight text={reply} />}
           />
         </section>
@@ -229,7 +229,7 @@ export function RestoreDemo({ result, scenarioId }: { result: RedactResult; scen
               {copy.restoreDemo.restoredTitle}
             </span>
           </div>
-          <div className="output restored">
+          <div className="output restored" lang="sv" translate="no">
             <RestoredText text={reply} map={map} />
           </div>
         </section>

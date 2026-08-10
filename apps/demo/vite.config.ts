@@ -3,7 +3,7 @@ import { basename, extname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import react from "@vitejs/plugin-react"
 import { defineConfig, type Plugin } from "vite"
-import { renderRouteHtml, routeHtmlViews, viewPaths } from "./src/meta"
+import { getViewPaths, renderRouteHtml, routeHtmlViews, type View } from "./src/meta"
 
 const ORT_MIME: Record<string, string> = {
   ".mjs": "text/javascript",
@@ -36,19 +36,24 @@ function serveOrtInDev(): Plugin {
   }
 }
 
-// The sub-page HTML shells are generated from src/meta.ts (the same data
-// applyViewMeta uses for SPA navigation), so their titles and descriptions
-// cannot drift from the client. Written at config load so dev, build, preview
-// and vitest all see fresh files; the output is gitignored. index.html stays
-// hand-authored (richer SEO title, og tags and JSON-LD @graph).
+// Localized HTML shells are generated from src/meta.ts (the same data
+// applyViewMeta uses for SPA navigation), so titles, descriptions and locale
+// alternates cannot drift from the client. Written at config load so dev,
+// build, preview and vitest all see fresh files; the output is gitignored.
+// The Swedish index stays hand-authored with its richer JSON-LD @graph.
 const routeInputs: Record<string, string> = {
   index: fileURLToPath(new URL("./index.html", import.meta.url)),
 }
-for (const view of routeHtmlViews) {
-  const dir = fileURLToPath(new URL(`.${viewPaths[view]}`, import.meta.url))
-  mkdirSync(dir, { recursive: true })
-  writeFileSync(join(dir, "index.html"), renderRouteHtml(view))
-  routeInputs[viewPaths[view].slice(1)] = join(dir, "index.html")
+for (const locale of ["sv", "en"] as const) {
+  const paths = getViewPaths(locale)
+  const views: readonly View[] = locale === "sv" ? routeHtmlViews : ["demo", ...routeHtmlViews]
+  for (const view of views) {
+    const path = paths[view]
+    const dir = fileURLToPath(new URL(`.${path}`, import.meta.url))
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, "index.html"), renderRouteHtml(view, locale))
+    routeInputs[path.slice(1).replaceAll("/", "-")] = join(dir, "index.html")
+  }
 }
 
 export default defineConfig({

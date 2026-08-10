@@ -5,6 +5,8 @@ export interface Scenario {
   text: string
 }
 
-export const scenarios: Scenario[] = copy.scenarios
+export function getScenarios(): Scenario[] {
+  return copy.scenarios
+}
 
-import copy from "./i18n/sv.json"
+import copy from "./i18n"

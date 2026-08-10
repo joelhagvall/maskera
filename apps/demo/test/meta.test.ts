@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest"
-import { renderRouteHtml, routeHtmlViews, viewMeta, viewPaths, viewUrl } from "../src/meta"
+import {
+  getViewMeta,
+  renderRouteHtml,
+  routeHtmlViews,
+  viewMeta,
+  viewPaths,
+  viewUrl,
+} from "../src/meta"
 
 /**
  * The static sub-page shells are generated from viewMeta, the same data
@@ -50,5 +57,22 @@ describe("renderRouteHtml", () => {
     expect(renderRouteHtml("services")).not.toContain("geist-mono-latin.woff2")
     expect(renderRouteHtml("accuracy")).not.toContain("geist-mono-latin.woff2")
     expect(renderRouteHtml("security")).not.toContain("geist-mono-latin.woff2")
+  })
+
+  it("renders English shells with matching paths, metadata and locale alternates", () => {
+    const html = renderRouteHtml("dev", "en")
+    const meta = getViewMeta("en").dev
+
+    expect(html).toContain('<html lang="en">')
+    expect(html).toContain(`<title>${meta.title}</title>`)
+    expect(html).toContain('<link rel="canonical" href="https://maskera.dev/en/developers" />')
+    expect(html).toContain(
+      '<link rel="alternate" hreflang="sv" href="https://maskera.dev/utvecklare" />',
+    )
+    expect(html).toContain(
+      '<link rel="alternate" hreflang="en" href="https://maskera.dev/en/developers" />',
+    )
+    expect(html).toContain('href="/layers.svg"')
+    expect(html).toContain('href="/layers-dark.svg"')
   })
 })

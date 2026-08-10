@@ -13,6 +13,7 @@ export function OverlayEditor({
   ariaLabel,
   placeholder,
   className = "editor",
+  language,
   highlight,
 }: {
   value: string
@@ -21,12 +22,13 @@ export function OverlayEditor({
   ariaLabel: string
   placeholder?: string
   className?: string
+  language?: string
   highlight: ReactNode
 }) {
   const backdropRef = useRef<HTMLDivElement>(null)
 
   return (
-    <div className={className}>
+    <div className={className} lang={language} translate="no">
       <div className="backdrop" ref={backdropRef} aria-hidden>
         {highlight}
       </div>

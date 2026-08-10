@@ -1,4 +1,4 @@
-import copy from "../i18n/sv.json"
+import copy, { activeLocale } from "../i18n"
 import { navClick, type View, viewPaths } from "../routing"
 import { TopBar } from "./TopBar"
 
@@ -17,6 +17,9 @@ export function Header({ go }: { go: (view: View) => void }) {
           {copy.header.servicesCta} <span aria-hidden="true">→</span>
         </a>
       </p>
+      {activeLocale === "en" ? (
+        <p className="demo-language-note">{copy.demo.languageNote}</p>
+      ) : null}
     </header>
   )
 }

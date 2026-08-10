@@ -1,5 +1,5 @@
 import { GITHUB } from "../constants"
-import copy from "../i18n/sv.json"
+import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
 import type { View } from "../routing"
 import { TopBar } from "./TopBar"

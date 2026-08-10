@@ -1,6 +1,6 @@
-import copy from "../i18n/sv.json"
+import copy from "../i18n"
 import { DOMAIN_ICONS } from "../icons"
-import { type Scenario, scenarios } from "../scenarios"
+import { getScenarios, type Scenario } from "../scenarios"
 import type { NerStatus } from "../useSwedishNer"
 
 function ModelStatus({
@@ -92,6 +92,8 @@ export function Controls({
   analyzing: boolean
   onRetryModel: () => void
 }) {
+  const scenarios = getScenarios()
+
   return (
     <div className="controls">
       <div className="tabs" role="group" aria-labelledby="scenario-label">

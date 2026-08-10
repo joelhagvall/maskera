@@ -1,5 +1,5 @@
 import type { Redaction } from "@maskera/core"
-import copy from "../i18n/sv.json"
+import copy from "../i18n"
 import { PencilIcon } from "../icons"
 import { HighlightedText } from "../segments"
 import { OverlayEditor } from "./OverlayEditor"

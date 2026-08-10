@@ -1,12 +1,8 @@
-// Single source of truth for per-route metadata. Both consumers read from
-// here: applyViewMeta in routing.ts (SPA navigation) and vite.config.ts,
-// which generates the static HTML shell for every content route at config
-// load. Editing a title or description here updates both; the shells are
-// gitignored so they cannot drift. index.html stays hand-authored: its SEO
-// title, og-description and JSON-LD @graph intentionally differ from the bare
-// in-app "maskera" title.
+// Single source of truth for locale-aware paths and per-route metadata. The
+// runtime router and Vite's generated static HTML shells both read this file,
+// so direct landings and client navigation cannot drift.
 
-import copy from "./i18n/sv.json"
+import { activeLocale, copies, type Locale } from "./i18n"
 
 export type View =
   | "demo"
@@ -20,61 +16,95 @@ export type View =
 
 export const SITE_ORIGIN = "https://maskera.dev"
 
-export const viewPaths: Record<View, string> = {
-  demo: "/",
-  dev: "/utvecklare",
-  transparency: "/integritet",
-  testdata: "/testdata",
-  privacy: "/integritetspolicy",
-  services: "/tjanster",
-  accuracy: "/traffsakerhet",
-  security: "/sakerhet",
+const pathsByLocale: Record<Locale, Record<View, string>> = {
+  sv: {
+    demo: "/",
+    dev: "/utvecklare",
+    transparency: "/integritet",
+    testdata: "/testdata",
+    privacy: "/integritetspolicy",
+    services: "/tjanster",
+    accuracy: "/traffsakerhet",
+    security: "/sakerhet",
+  },
+  en: {
+    demo: "/en",
+    dev: "/en/developers",
+    transparency: "/en/privacy",
+    testdata: "/en/test-data",
+    privacy: "/en/privacy-policy",
+    services: "/en/services",
+    accuracy: "/en/accuracy",
+    security: "/en/security",
+  },
 }
 
-export function viewUrl(view: View): string {
-  return new URL(viewPaths[view], SITE_ORIGIN).href
+export function viewPath(view: View, locale: Locale = activeLocale): string {
+  return pathsByLocale[locale][view]
 }
 
-// The tab shows this at runtime; the favicon already carries the maskera mark.
-// Safari hides the leading word of a tab title (favicon/close button cover it)
-// and clips the tail when long, so a long title loses "maskera" either way.
-// Home is the brand: keep it to the bare word so it never truncates and the
-// name stays visible. Sub-pages lead with the page, brand last. The descriptive
-// tagline lives on in the static <title> + og/twitter tags for SEO and sharing.
-export const viewMeta: Record<View, { title: string; description: string }> = {
-  demo: {
-    title: copy.meta.demoTitle,
-    description: copy.meta.demoDescription,
-  },
-  dev: {
-    title: copy.meta.devTitle,
-    description: copy.meta.devDescription,
-  },
-  transparency: {
-    title: copy.transparency.metaTitle,
-    description: copy.transparency.metaDescription,
-  },
-  testdata: {
-    title: copy.testData.metaTitle,
-    description: copy.testData.metaDescription,
-  },
-  privacy: {
-    title: copy.privacy.metaTitle,
-    description: copy.privacy.metaDescription,
-  },
-  services: {
-    title: copy.meta.servicesTitle,
-    description: copy.meta.servicesDescription,
-  },
-  accuracy: {
-    title: copy.accuracy.metaTitle,
-    description: copy.accuracy.metaDescription,
-  },
-  security: {
-    title: copy.security.metaTitle,
-    description: copy.security.metaDescription,
-  },
+export function getViewPaths(locale: Locale): Record<View, string> {
+  return pathsByLocale[locale]
 }
+
+// Existing components read this record during render. The proxy follows the
+// active locale after an in-page language switch while keeping ordinary
+// property access and real hrefs throughout the component tree.
+export const viewPaths = new Proxy(pathsByLocale.sv, {
+  get(_target, property: keyof Record<View, string>) {
+    return pathsByLocale[activeLocale][property]
+  },
+})
+
+export function viewUrl(view: View, locale: Locale = activeLocale): string {
+  return new URL(viewPath(view, locale), SITE_ORIGIN).href
+}
+
+export type ViewMeta = { title: string; description: string }
+
+export function getViewMeta(locale: Locale): Record<View, ViewMeta> {
+  const strings = copies[locale]
+  return {
+    demo: {
+      title: strings.meta.demoTitle,
+      description: strings.meta.demoDescription,
+    },
+    dev: {
+      title: strings.meta.devTitle,
+      description: strings.meta.devDescription,
+    },
+    transparency: {
+      title: strings.transparency.metaTitle,
+      description: strings.transparency.metaDescription,
+    },
+    testdata: {
+      title: strings.testData.metaTitle,
+      description: strings.testData.metaDescription,
+    },
+    privacy: {
+      title: strings.privacy.metaTitle,
+      description: strings.privacy.metaDescription,
+    },
+    services: {
+      title: strings.meta.servicesTitle,
+      description: strings.meta.servicesDescription,
+    },
+    accuracy: {
+      title: strings.accuracy.metaTitle,
+      description: strings.accuracy.metaDescription,
+    },
+    security: {
+      title: strings.security.metaTitle,
+      description: strings.security.metaDescription,
+    },
+  }
+}
+
+export const viewMeta = new Proxy(getViewMeta("sv"), {
+  get(_target, property: View) {
+    return getViewMeta(activeLocale)[property]
+  },
+})
 
 export const routeHtmlViews = [
   "dev",
@@ -87,72 +117,76 @@ export const routeHtmlViews = [
 ] as const
 export type RouteHtmlView = (typeof routeHtmlViews)[number]
 
-const jsonLd: Record<RouteHtmlView, object> = {
-  dev: {
+function jsonLdFor(view: View, locale: Locale): object {
+  const strings = copies[locale]
+  const url = viewUrl(view, locale)
+  const schemaName = (() => {
+    switch (view) {
+      case "transparency":
+        return strings.transparency.title
+      case "testdata":
+        return strings.testData.title
+      case "privacy":
+        return strings.privacy.title
+      case "services":
+        return strings.meta.servicesSchemaName
+      case "accuracy":
+        return strings.accuracy.title
+      case "security":
+        return strings.security.title
+      default:
+        return strings.meta.siteName
+    }
+  })()
+  const shared = {
     "@context": "https://schema.org",
-    "@type": "SoftwareSourceCode",
-    name: copy.meta.siteName,
-    url: viewUrl("dev"),
-    codeRepository: "https://github.com/joelhagvall/maskera",
-    programmingLanguage: "TypeScript",
-    runtimePlatform: ["Web browser", "Node.js"],
-    license: "https://opensource.org/license/mit",
-    inLanguage: "sv",
-  },
-  transparency: {
-    "@context": "https://schema.org",
+    name: schemaName,
+    url,
+    description: getViewMeta(locale)[view].description,
+    inLanguage: locale,
+  }
+
+  if (view === "demo") {
+    return {
+      ...shared,
+      "@type": "WebApplication",
+      applicationCategory: "SecurityApplication",
+      operatingSystem: "Any",
+      browserRequirements: "Requires JavaScript",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "SEK" },
+      author: {
+        "@type": "Person",
+        name: "Joel Hägvall",
+        url: "https://joelhagvall.com",
+      },
+      sameAs: [
+        "https://github.com/joelhagvall/maskera",
+        "https://www.npmjs.com/package/maskera",
+        "https://huggingface.co/joelhagvall/maskera-sv-ner",
+      ],
+    }
+  }
+
+  if (view === "dev") {
+    return {
+      ...shared,
+      "@type": "SoftwareSourceCode",
+      codeRepository: "https://github.com/joelhagvall/maskera",
+      programmingLanguage: "TypeScript",
+      runtimePlatform: ["Web browser", "Node.js"],
+      license: "https://opensource.org/license/mit",
+    }
+  }
+
+  return {
+    ...shared,
     "@type": "WebPage",
-    name: copy.transparency.title,
-    url: viewUrl("transparency"),
-    description: copy.transparency.metaDescription,
-    inLanguage: "sv",
-    isPartOf: { "@type": "WebSite", name: copy.meta.siteName, url: `${SITE_ORIGIN}/` },
-  },
-  testdata: {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: copy.testData.title,
-    url: viewUrl("testdata"),
-    description: copy.testData.metaDescription,
-    inLanguage: "sv",
-    isPartOf: { "@type": "WebSite", name: copy.meta.siteName, url: viewUrl("demo") },
-  },
-  privacy: {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: copy.privacy.title,
-    url: viewUrl("privacy"),
-    description: copy.privacy.metaDescription,
-    inLanguage: "sv",
-    isPartOf: { "@type": "WebSite", name: copy.meta.siteName, url: viewUrl("demo") },
-  },
-  services: {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: copy.meta.servicesSchemaName,
-    url: viewUrl("services"),
-    description: copy.meta.servicesDescription,
-    inLanguage: "sv",
-    isPartOf: { "@type": "WebSite", name: copy.meta.siteName, url: `${SITE_ORIGIN}/` },
-  },
-  accuracy: {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: copy.accuracy.title,
-    url: viewUrl("accuracy"),
-    description: copy.accuracy.metaDescription,
-    inLanguage: "sv",
-    isPartOf: { "@type": "WebSite", name: copy.meta.siteName, url: viewUrl("demo") },
-  },
-  security: {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: copy.security.title,
-    url: viewUrl("security"),
-    description: copy.security.metaDescription,
-    inLanguage: "sv",
-    isPartOf: { "@type": "WebSite", name: copy.meta.siteName, url: viewUrl("demo") },
-  },
+    isPartOf: {
+      "@type": "WebSite",
+      name: strings.meta.siteName,
+      url: viewUrl("demo", locale),
+    },
+  }
 }
 
 function escapeHtml(value: string): string {
@@ -163,28 +197,33 @@ function escapeHtml(value: string): string {
     .replace(/"/g, "&quot;")
 }
 
-/** Renders the static HTML shell for a sub-page route (see vite.config.ts). */
-export function renderRouteHtml(view: RouteHtmlView): string {
-  const title = escapeHtml(viewMeta[view].title)
-  const description = escapeHtml(viewMeta[view].description)
-  const url = viewUrl(view)
-  // Escape "<" so a "</script>" in a future value can never close the tag.
-  const structuredData = JSON.stringify(jsonLd[view], null, 2)
+/** Renders a localized static HTML shell (see vite.config.ts). */
+export function renderRouteHtml(view: View, locale: Locale = activeLocale): string {
+  const strings = copies[locale]
+  const meta = getViewMeta(locale)[view]
+  // The generated English home gets a descriptive static title. React swaps
+  // it to the short brand title once the app mounts, matching the Swedish root.
+  const staticTitle = view === "demo" ? strings.header.title : meta.title
+  const title = escapeHtml(staticTitle)
+  const description = escapeHtml(meta.description)
+  const url = viewUrl(view, locale)
+  const alternateSv = viewUrl(view, "sv")
+  const alternateEn = viewUrl(view, "en")
+  const structuredData = JSON.stringify(jsonLdFor(view, locale), null, 2)
     .replace(/</g, "\\u003c")
     .replace(/\n/g, "\n      ")
-  // Only the developers page renders code blocks and the architecture image,
-  // so it alone preloads those resources. Both image themes are tiny and the
-  // saved theme is applied by the inline script below before React mounts.
+  const lightDiagram = locale === "sv" ? "/layers-sv.svg" : "/layers.svg"
+  const darkDiagram = locale === "sv" ? "/layers-sv-dark.svg" : "/layers-dark.svg"
   const devPreloads =
     view === "dev"
       ? `
     <link rel="preload" href="/fonts/geist-mono-latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/layers-sv.svg" as="image" type="image/svg+xml" fetchpriority="high" />
-    <link rel="preload" href="/layers-sv-dark.svg" as="image" type="image/svg+xml" fetchpriority="high" />`
+    <link rel="preload" href="${lightDiagram}" as="image" type="image/svg+xml" fetchpriority="high" />
+    <link rel="preload" href="${darkDiagram}" as="image" type="image/svg+xml" fetchpriority="high" />`
       : ""
 
   return `<!doctype html>
-<html lang="sv">
+<html lang="${locale}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -194,12 +233,10 @@ export function renderRouteHtml(view: RouteHtmlView): string {
     <title>${title}</title>
     <meta name="description" content="${description}" />
     <link rel="canonical" href="${url}" />
-    <!-- Light is the default: only an explicit toggle choice switches to
-         dark, the system preference is not consulted. One meta, not two
-         media-driven ones, or a system-dark visitor would get dark browser
-         chrome around a light page. -->
+    <link rel="alternate" hreflang="sv" href="${alternateSv}" />
+    <link rel="alternate" hreflang="en" href="${alternateEn}" />
+    <link rel="alternate" hreflang="x-default" href="${alternateSv}" />
     <meta name="theme-color" content="#ffffff" />
-    <!-- Sets the theme before first paint so there is no flash. -->
     <script>
       ;(function () {
         try {
@@ -210,9 +247,7 @@ export function renderRouteHtml(view: RouteHtmlView): string {
           if (d) {
             document
               .querySelectorAll('meta[name="theme-color"]')
-              .forEach(function (m) {
-                m.setAttribute("content", "#0a0a0a")
-              })
+              .forEach(function (m) { m.setAttribute("content", "#0a0a0a") })
           }
         } catch (_) {}
       })()
@@ -220,11 +255,14 @@ export function renderRouteHtml(view: RouteHtmlView): string {
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="maskera" />
-    <meta property="og:locale" content="sv_SE" />
+    <meta property="og:locale" content="${locale === "sv" ? "sv_SE" : "en_GB"}" />
+    <meta property="og:locale:alternate" content="${locale === "sv" ? "en_GB" : "sv_SE"}" />
     <meta property="og:url" content="${url}" />
     <meta property="og:title" content="${title}" />
     <meta property="og:description" content="${description}" />
     <meta property="og:image" content="${SITE_ORIGIN}/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${title}" />
     <meta name="twitter:description" content="${description}" />

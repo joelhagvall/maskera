@@ -1,0 +1,41 @@
+import copy, { activeLocale, type Locale, setActiveLocale } from "../i18n"
+import { type View, viewPath } from "../meta"
+import { navClick } from "../routing"
+
+export function LanguageToggle({ current }: { current: View }) {
+  const nextLocale: Locale = activeLocale === "sv" ? "en" : "sv"
+  const hash = typeof window === "undefined" ? "" : window.location.hash
+  const href = `${viewPath(current, nextLocale)}${hash}`
+
+  const switchLanguage = () => {
+    const update = () => {
+      window.history.pushState(null, "", href)
+      setActiveLocale(nextLocale)
+    }
+    const transitionDocument = document as Document & {
+      startViewTransition?: (callback: () => void) => void
+    }
+    if (
+      transitionDocument.startViewTransition &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      transitionDocument.startViewTransition(update)
+      return
+    }
+    update()
+  }
+
+  return (
+    <a
+      className="ghlink language-toggle"
+      href={href}
+      hrefLang={nextLocale}
+      lang={nextLocale}
+      aria-label={copy.language.switchLabel}
+      title={copy.language.switchLabel}
+      onClick={navClick(switchLanguage)}
+    >
+      {copy.language.switchCode}
+    </a>
+  )
+}

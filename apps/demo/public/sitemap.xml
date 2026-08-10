@@ -1,42 +1,114 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://maskera.dev/</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en" />
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://maskera.dev/utvecklare</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/utvecklare" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/developers" />
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://maskera.dev/integritet</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/integritet" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/privacy" />
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://maskera.dev/testdata</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/testdata" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/test-data" />
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://maskera.dev/integritetspolicy</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/integritetspolicy" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/privacy-policy" />
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://maskera.dev/tjanster</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/tjanster" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/services" />
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://maskera.dev/traffsakerhet</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/traffsakerhet" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/accuracy" />
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://maskera.dev/sakerhet</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/sakerhet" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/security" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/en</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en" />
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/en/developers</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/utvecklare" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/developers" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/en/privacy</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/integritet" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/privacy" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/en/test-data</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/testdata" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/test-data" />
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/en/privacy-policy</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/integritetspolicy" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/privacy-policy" />
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/en/services</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/tjanster" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/services" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/en/accuracy</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/traffsakerhet" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/accuracy" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/en/security</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/sakerhet" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/security" />
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

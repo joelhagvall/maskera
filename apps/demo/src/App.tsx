@@ -13,13 +13,15 @@ import { Services } from "./components/Services"
 import { TestData } from "./components/TestData"
 import { Transparency } from "./components/Transparency"
 import { invalidPersonnummer } from "./hints"
-import copy from "./i18n/sv.json"
+import copy from "./i18n"
 import { navClick, useRoute, type View, viewPaths } from "./routing"
-import { type Scenario, scenarios } from "./scenarios"
+import { getScenarios, type Scenario } from "./scenarios"
 import { useSwedishNer } from "./useSwedishNer"
 
 export function App() {
-  const [active, setActive] = useState<Scenario>(scenarios[0])
+  const scenarios = getScenarios()
+  const [activeId, setActiveId] = useState(scenarios[0].id)
+  const active = scenarios.find((scenario) => scenario.id === activeId) ?? scenarios[0]
   const [text, setText] = useState<string>(scenarios[0].text)
   const [anchor, setAnchor] = useState<string | null>(null)
   // The output card's "Visa återställningsnyckeln" toggle lives here so it
@@ -65,7 +67,7 @@ export function App() {
   }, [anchor])
 
   function pick(s: Scenario) {
-    setActive(s)
+    setActiveId(s.id)
     setText(s.text)
   }
 
@@ -102,7 +104,7 @@ export function App() {
           <Header go={go} />
           <main id="main-content">
             <Controls
-              activeId={active.id}
+              activeId={activeId}
               onPick={pick}
               status={ner.status}
               progress={ner.progress}

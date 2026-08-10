@@ -1,5 +1,5 @@
 import { GITHUB, HF_MODEL } from "../constants"
-import copy from "../i18n/sv.json"
+import copy from "../i18n"
 import { navClick, viewPaths } from "../routing"
 
 export function Footer({

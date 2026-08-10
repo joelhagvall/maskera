@@ -5,7 +5,7 @@ import { act, renderHook } from "@testing-library/react"
 import type { MouseEvent } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { viewMeta } from "../src/meta"
-import { navClick, useRoute } from "../src/routing"
+import { navClick, useRoute, viewFromPath } from "../src/routing"
 
 /**
  * The title behaviour here guards a shipped SEO regression: index.html
@@ -57,6 +57,26 @@ describe("useRoute: initial view from pathname", () => {
       const { result, unmount } = mountAt(path)
       expect(result.current.view).toBe(view)
       unmount()
+    })
+  }
+})
+
+describe("viewFromPath: localized paths", () => {
+  const cases = [
+    ["/en", "demo"],
+    ["/en/developers", "dev"],
+    ["/en/privacy", "transparency"],
+    ["/en/test-data", "testdata"],
+    ["/en/privacy-policy", "privacy"],
+    ["/en/services", "services"],
+    ["/en/accuracy", "accuracy"],
+    ["/en/security", "security"],
+    ["/en/security/", "security"],
+  ] as const
+
+  for (const [path, view] of cases) {
+    it(`${path} -> ${view}`, () => {
+      expect(viewFromPath(path)).toBe(view)
     })
   }
 })

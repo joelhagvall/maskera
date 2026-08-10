@@ -4,9 +4,19 @@
   "rewrites": [
     { "source": "/utvecklare", "destination": "/utvecklare/index.html" },
     { "source": "/integritet", "destination": "/integritet/index.html" },
+    { "source": "/testdata", "destination": "/testdata/index.html" },
+    { "source": "/integritetspolicy", "destination": "/integritetspolicy/index.html" },
     { "source": "/tjanster", "destination": "/tjanster/index.html" },
     { "source": "/traffsakerhet", "destination": "/traffsakerhet/index.html" },
-    { "source": "/sakerhet", "destination": "/sakerhet/index.html" }
+    { "source": "/sakerhet", "destination": "/sakerhet/index.html" },
+    { "source": "/en", "destination": "/en/index.html" },
+    { "source": "/en/developers", "destination": "/en/developers/index.html" },
+    { "source": "/en/privacy", "destination": "/en/privacy/index.html" },
+    { "source": "/en/test-data", "destination": "/en/test-data/index.html" },
+    { "source": "/en/privacy-policy", "destination": "/en/privacy-policy/index.html" },
+    { "source": "/en/services", "destination": "/en/services/index.html" },
+    { "source": "/en/accuracy", "destination": "/en/accuracy/index.html" },
+    { "source": "/en/security", "destination": "/en/security/index.html" }
   ],
   "headers": [
     {

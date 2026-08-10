@@ -29,6 +29,7 @@ apps/demo/integritetspolicy/
 apps/demo/tjanster/
 apps/demo/traffsakerhet/
 apps/demo/sakerhet/
+apps/demo/en/
 # recorded demo clips (scripts/record-demo.mjs output)
 apps/demo/*.mp4
 apps/demo/*.webm

@@ -1,4 +1,4 @@
-import copy from "../i18n/sv.json"
+import copy from "../i18n"
 
 export function Coverage() {
   return (

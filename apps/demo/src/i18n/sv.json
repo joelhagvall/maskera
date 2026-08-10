@@ -11,6 +11,7 @@
   "demo": {
     "testDataNote": "Exemplen använder påhittade personer och officiellt reserverade testvärden, aldrig verkliga personers uppgifter.",
     "testDataCta": "Läs mer om testdatan",
+    "languageNote": "Gränssnittet kan visas på engelska, men exempeltexten och de simulerade AI-svaren förblir på svenska. Maskera maskerar svensk text; det översätter den inte.",
     "skipLink": "Hoppa till huvudinnehållet",
     "gatewayBody": "Samma maskering finns som Maskera Gateway, en färdig installation för era egna servrar.",
     "gatewayCta": "Se Maskera för företag"
@@ -670,8 +671,14 @@
   "theme": {
     "toggle": "Växla mellan ljust och mörkt läge"
   },
+  "language": {
+    "switchCode": "English",
+    "switchLabel": "View this page in English"
+  },
   "topBar": {
-    "backHome": "Tillbaka till startsidan"
+    "backHome": "Tillbaka till startsidan",
+    "developers": "Utvecklare",
+    "services": "Företag"
   },
   "meta": {
     "demoTitle": "maskera",

@@ -1,0 +1,683 @@
+{
+  "header": {
+    "title": "Protect personal data before it reaches AI.",
+    "lede": "maskera hides names, Swedish personal identity numbers and addresses from AI services such as ChatGPT.",
+    "browserLead": "All masking happens",
+    "browserEmphasis": "directly in your browser",
+    "browserPrivacy": "Your text and the key containing the original data never leave your device.",
+    "localProduction": "For companies, the same masking runs in your own environment. No text is sent to Maskera; the original data stays with you and only masked text is forwarded to the AI service.",
+    "servicesCta": "How it works for companies"
+  },
+  "demo": {
+    "testDataNote": "The examples use fictional people and officially reserved test values, never real people's data.",
+    "testDataCta": "Learn more about the test data",
+    "languageNote": "The interface is translated, but the example text and simulated AI responses stay in Swedish. Maskera masks Swedish text; it does not translate it.",
+    "skipLink": "Skip to main content",
+    "gatewayBody": "The same masking is available as Maskera Gateway, ready to install on your own servers.",
+    "gatewayCta": "See Maskera for companies"
+  },
+  "controls": {
+    "examplesLabel": "Try an example:",
+    "modelStarting": "Starting the AI model…",
+    "modelLoading": "Loading maskera's AI model…",
+    "modelLoadingAria": "Loading maskera's AI model",
+    "modelError": "The AI model could not be loaded. Swedish personal identity numbers, phone numbers and other fixed-format data will still be masked.",
+    "modelRetry": "Try again",
+    "modelReady": "maskera's AI model is active"
+  },
+  "inputCard": {
+    "title": "Your text",
+    "clear": "Clear",
+    "placeholder": "Type or paste your own text here… Everything runs locally.",
+    "examplePrefix": "Example:"
+  },
+  "outputCard": {
+    "invalidPersonnummerSingular": "looks like a Swedish personal identity number but does not contain a valid birth or coordination date. It is therefore not masked.",
+    "invalidPersonnummerPlural": "look like Swedish personal identity numbers but do not contain valid birth or coordination dates. They are therefore not masked.",
+    "testPersonnummerCta": "Try the Swedish Tax Agency's reserved test number 19900101-2385.",
+    "singularCount": "item masked",
+    "pluralCount": "items masked",
+    "title": "What the AI sees",
+    "analyzing": "analysing…",
+    "restoreMapNote": "The key stays on your device. The AI service sees placeholders instead of the data that maskera detected. You can use the key to restore the original values in the response afterwards.",
+    "showKey": "Show restoration key",
+    "hideKey": "Hide restoration key"
+  },
+  "copyButton": {
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyCode": "Copy code"
+  },
+  "restoreDemo": {
+    "title": "How restoration works",
+    "body": "The AI sees placeholders instead of the data that maskera detected. When the response comes back, maskera restores the data locally. The key containing the original data never leaves your device.",
+    "flow": ["Your text", "AI sees", "AI responds", "You see"],
+    "replyTitle": "AI response",
+    "resetExample": "Reset example",
+    "editableExample": "Simulated response, freely editable",
+    "replyAria": "AI response containing placeholders",
+    "restoredTitle": "With your data restored",
+    "joinWord": "och",
+    "generic": {
+      "case": "sammanställt ärendet",
+      "for": "för",
+      "atOrganization": "hos",
+      "address": "noterat adressen",
+      "inPlace": "i",
+      "place": "noterat platsen",
+      "checked": "stämt av uppgifterna mot",
+      "noted": "noterat",
+      "lead": "Tack för underlaget! Jag har {clauses}. Förslag på nästa steg finns nedan.",
+      "payment": "Bekräfta att betalning ska ske till {token}.",
+      "contact": "Återkoppla{person} på {contact} och dokumentera bedömningen i systemet.",
+      "contactPerson": " till {name}",
+      "fallback": "Dokumentera bedömningen i systemet och boka en uppföljning."
+    },
+    "replies": {
+      "hr": {
+        "lead": "Tack! Jag har gått igenom CV:t{person} mot rollbeskrivningen och profilen ser stark ut. Förslag på intervjufrågor finns nedan.",
+        "person": " för {name}",
+        "contact": "Boka en första intervju och återkoppla till {name}{email}.",
+        "email": " på {email}",
+        "fallback": "Boka en första intervju och dokumentera bedömningen."
+      },
+      "support": {
+        "lead": "Tack för underlaget! Jag har skapat ärendet{person}{card}.",
+        "person": " för {name}",
+        "card": " och spärrat kortet {card}",
+        "contact": "Nästa steg: beställ nytt kort och återkoppla{person} på {contact}.",
+        "contactPerson": " till {name}",
+        "fallback": "Nästa steg: beställ nytt kort och dokumentera ärendet."
+      },
+      "vard": {
+        "lead": "Journalanteckningen{person} är uppdaterad med EKG-svaret.",
+        "person": " för {name}",
+        "email": "Sammanfattningen skickas till {email}.",
+        "phone": "Nå anhörig på {phone} om läget förändras."
+      },
+      "juridik": {
+        "lead": "Jag har sammanställt ärendet{person} inför förhandlingen och yrkandet om skadestånd är dokumenterat.",
+        "person": " för {name}",
+        "payment": "Bekräfta att betalning ska ske till {account}.",
+        "closing": "Återkoppla inför mötet."
+      },
+      "kommun": {
+        "lead": "Ärendet{person} är sammanställt för handläggaren och underlaget om försörjningsstöd är komplett.",
+        "person": " för {name}",
+        "contact": "Återkoppla beslutet till {name} på {email}."
+      }
+    }
+  },
+  "scenarios": [
+    {
+      "id": "hr",
+      "name": "HR",
+      "tagline": "AI-assisted candidate screening",
+      "text": "Kandidat: Sara Lindgren, 991201-2391. Mail: sara.lindgren@example.com, tel 0701740605. Nuvarande lön 48 000 kr/mån. Referens: Per Holmberg, 08-465 004 12. Bedöm CV mot rollbeskrivningen och föreslå intervjufrågor."
+    },
+    {
+      "id": "support",
+      "name": "Customer support",
+      "tagline": "A support case being logged",
+      "text": "Kund Amir Haddad hör av sig: kortet slutar fungera. Kortnummer 4242 4242 4242 4242, betalkonto IBAN SE42 8000 0890 1191 4616 8423. Ringer från 070-174 06 58. Skapa ett ärende och svara med nästa steg."
+    },
+    {
+      "id": "klagomal",
+      "name": "Complaint",
+      "tagline": "An angry customer email in capitals",
+      "text": "Inkommet mejl: HEJ JAG HAR RINGT ER TRE GÅNGER NU!!! JAG HETER KENT PERSSON, PERSONNUMMER 640823-3234, OCH NI HAR DRAGIT 449 KR TVÅ GÅNGER FRÅN MITT KORT 4242 4242 4242 4242. RING MIG PÅ 0701740632 OMEDELBART. MVH KENT. Skriv ett lugnt svar och föreslå kompensation."
+    },
+    {
+      "id": "vard",
+      "name": "Healthcare",
+      "tagline": "A medical record sent to an AI assistant",
+      "text": "Patient Anna Karlsson, 850601-2387, inkom 14:20 med bröstsmärta. Bor på Påhittsgatan 12B, Stockholm. Anhörig (maken Lars Eriksson) nås på 070 174 06 71. Sätt in EKG-svar i journalen och maila sammanfattning till anna.karlsson@example.com."
+    },
+    {
+      "id": "juridik",
+      "name": "Legal",
+      "tagline": "A law firm's client matter",
+      "text": "Klient Johan Andersson (781101-2397) yrkar skadestånd mot Kommun A, org.nr 202100-4748. Motpart företräds av advokat Leila Ahmadi. Betalning sker till bankgiro 991-2346. Sammanfatta ärendet inför förhandlingen den 12 mars."
+    },
+    {
+      "id": "kommun",
+      "name": "Municipality",
+      "tagline": "An income-support application",
+      "text": "Ansökan om försörjningsstöd: Jonas Wikström, 20020301 2398, boende på Påhittsvägen 21 i Stockholm. Sökande når oss på jonas.wikstrom@example.com. Sambo Elin Bergman är arbetssökande. Sammanfatta ärendet för handläggare."
+    },
+    { "id": "fritext", "name": "Your text", "tagline": "", "text": "" }
+  ],
+  "labels": {
+    "NAMN": "Name",
+    "PLATS": "Place",
+    "ADRESS": "Address",
+    "POSTNUMMER": "Postcode",
+    "LAGENHETSNUMMER": "Apartment no.",
+    "ORGANISATION": "Organisation",
+    "ORGANISATIONSNUMMER": "Organisation no.",
+    "PERSONNUMMER": "Swedish personal identity no.",
+    "SAMORDNINGSNUMMER": "Coordination no.",
+    "EPOST": "Email",
+    "TELEFON": "Phone",
+    "IBAN": "IBAN",
+    "BANKGIRO": "Bankgiro",
+    "PLUSGIRO": "PlusGiro",
+    "KORTNUMMER": "Card no.",
+    "KONTONUMMER": "Account no.",
+    "JOURNALNUMMER": "Medical record no.",
+    "REGNUMMER": "Vehicle registration no.",
+    "IP_ADRESS": "IP address",
+    "URL": "Link",
+    "fallback": "Data"
+  },
+  "developerApi": {
+    "title": "For developers",
+    "lede": "Install maskera, create a recogniser once and mask text locally in the browser or Node.",
+    "modelLink": "The Swedish AI model",
+    "modelSuffix": "is downloaded on first use and then reused from the local cache.",
+    "installTitle": "Install",
+    "packageManagerLabel": "Package manager",
+    "installNote": "Rules and AI model are included; import the entire API from maskera.",
+    "maskTitle": "Mask text",
+    "restoreTitle": "Send to the AI service and restore the response",
+    "diagramAlt": "Diagram of maskera's two layers: your text is split between rules for fixed-format data and a Swedish AI model for free text, then merged into masked text.",
+    "diagramCaption": "Rules handle fixed-format data. The AI model handles free text such as names and addresses. Rules win when detections overlap.",
+    "maskExampleTs": "import { createNerRecognizer, redactWithNer, type NerRecognizer } from \"maskera\"\n\n// maskera's Swedish model, about 43 MB, runs locally\nconst recognizer: NerRecognizer = createNerRecognizer()\n\nconst { text, restore } = await redactWithNer(\n  \"hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala\",\n  { recognizer },\n)\n\ntext\n// \"hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]\"",
+    "maskExampleJs": "import { createNerRecognizer, redactWithNer } from \"maskera\"\n\n// maskera's Swedish model, about 43 MB, runs locally\nconst recognizer = createNerRecognizer()\n\nconst { text, restore } = await redactWithNer(\n  \"hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala\",\n  { recognizer },\n)\n\ntext\n// \"hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]\"",
+    "restoreExampleTs": "// send the masked text to any AI service\n// detected personal data has been replaced with placeholders\nconst answer: string = await fetch(\"https://api.example.com/chat\", {\n  method: \"POST\",\n  body: JSON.stringify({ prompt: text }),\n}).then((r) => r.text())\n\nrestore(answer)\n// placeholders are replaced with the originals, locally",
+    "restoreExampleJs": "// send the masked text to any AI service\n// detected personal data has been replaced with placeholders\nconst answer = await fetch(\"https://api.example.com/chat\", {\n  method: \"POST\",\n  body: JSON.stringify({ prompt: text }),\n}).then((r) => r.text())\n\nrestore(answer)\n// placeholders are replaced with the originals, locally",
+    "clinicalTitle": "Optional profile for clinical text",
+    "clinicalBody": "The default mode suits mixed text. For medical records and clinical workflows, a named profile protects clinical facts while rule-based personal data is still always masked.",
+    "clinicalCode": "const { text, restore } = await redactWithNer(journalText, {\n  recognizer,\n  profile: \"clinical\",\n})",
+    "clinicalDocsCta": "Read more about the clinical profile on GitHub",
+    "diagramOpen": "Open full-size diagram",
+    "codeLanguageLabel": "Code example language",
+    "typescriptLabel": "TypeScript",
+    "javascriptLabel": "JavaScript",
+    "sharedLanguageLabel": "JS / TS",
+    "practicalTitle": "Good to know",
+    "practicalItems": [
+      "The first run downloads the AI model of about 43 MB. It is then reused from the local cache.",
+      "Create the recogniser once and reuse it between calls; avoid creating a new one for every text.",
+      "maskera supports browsers and Node 18+. In the browser, the model runs with WASM or WebGPU."
+    ],
+    "practicalDocsCta": "Complete usage and configuration guide on GitHub",
+    "resourcesLabel": "Developer resources",
+    "npmCta": "maskera on npm",
+    "githubCta": "Documentation and source code on GitHub",
+    "modelCta": "Model on Hugging Face"
+  },
+  "coverage": {
+    "heading": "What is masked?",
+    "linkCta": "See exactly what is masked.",
+    "developersLink": "The model categories and default rule-engine detectors are listed category by category.",
+    "servicesLink": "Gateway uses the same Swedish model and base rules. Vehicle registration numbers are also included in Gateway's default policy.",
+    "lede": "The complete maskera npm package and Gateway combine fixed rules with the Swedish AI model. Their default choices differ as shown below.",
+    "groups": [
+      {
+        "id": "model",
+        "title": "AI model: free text",
+        "description": "Identified from context. This is probabilistic and the model can miss data.",
+        "items": [
+          { "label": "NAMN", "name": "Names" },
+          { "label": "PLATS", "name": "Places" },
+          { "label": "ORGANISATION", "name": "Organisations" },
+          { "label": "ADRESS", "name": "Street addresses" }
+        ]
+      },
+      {
+        "id": "optional",
+        "title": "Beyond the npm defaults",
+        "description": "Additions beyond the npm package defaults, explained in the notes below.",
+        "items": [
+          { "label": "REGNUMMER", "name": "Vehicle registration numbers" },
+          { "label": "CUSTOM", "name": "Custom business formats" }
+        ]
+      },
+      {
+        "id": "rules",
+        "title": "Rules: fixed formats",
+        "description": "Identified with deterministic format checks and selective checksums. Swedish personal identity numbers are masked even if the check digit is wrong, provided the date format is valid. Web links are detected when they start with http, https or www.",
+        "items": [
+          { "label": "PERSONNUMMER", "name": "Swedish personal identity numbers" },
+          { "label": "SAMORDNINGSNUMMER", "name": "Swedish coordination numbers" },
+          { "label": "ORGANISATIONSNUMMER", "name": "Swedish organisation numbers" },
+          { "label": "EPOST", "name": "Email addresses" },
+          { "label": "TELEFON", "name": "Swedish phone numbers" },
+          { "label": "POSTNUMMER", "name": "Swedish postcodes" },
+          { "label": "LAGENHETSNUMMER", "name": "Swedish apartment numbers" },
+          { "label": "BANKGIRO", "name": "Bankgiro numbers" },
+          { "label": "PLUSGIRO", "name": "PlusGiro numbers" },
+          { "label": "IBAN", "name": "Swedish IBANs" },
+          { "label": "KORTNUMMER", "name": "Payment card numbers" },
+          { "label": "KONTONUMMER", "name": "Context-labelled account numbers" },
+          { "label": "JOURNALNUMMER", "name": "Context-labelled medical record numbers" },
+          { "label": "IP_ADRESS", "name": "IPv4 addresses" },
+          { "label": "URL", "name": "Web links" }
+        ]
+      }
+    ],
+    "notes": [
+      {
+        "title": "Vehicle registration numbers",
+        "text": "The ready-made rule is enabled in the demo and Gateway's default policy. It is optional in the npm package defaults because the same format can also be a booking or case number."
+      },
+      {
+        "title": "Custom formats",
+        "text": "Customer, order, invoice and case numbers can be added as custom rules when the organisation's formats are known."
+      },
+      {
+        "title": "Not included automatically",
+        "text": "Maskera does not classify all sensitive information. Dates, ages, usernames, diagnoses and other sensitive facts are not masked merely because the content is sensitive. Phone numbers written as words are not detected by the numeric rules either."
+      }
+    ]
+  },
+  "navigation": {
+    "developers": "For developers",
+    "services": "For companies",
+    "accuracy": "Accuracy",
+    "security": "Security",
+    "transparency": "Privacy & transparency",
+    "testData": "Test data",
+    "privacyPolicy": "Privacy policy",
+    "github": "GitHub"
+  },
+  "footer": {
+    "openSource": "Open source",
+    "modelLink": "Custom-trained Swedish AI model",
+    "navLabel": "Privacy and documentation",
+    "whitepaper": "White paper (PDF)",
+    "servicesPrefix": "For companies:",
+    "servicesCta": "Maskera Gateway",
+    "creditPrefix": "Built by",
+    "author": "Joel Hägvall"
+  },
+  "accuracy": {
+    "metaTitle": "accuracy & test results · maskera",
+    "metaDescription": "See how much Swedish personal data Maskera and other systems found, how much they missed and exactly how the tests were conducted.",
+    "title": "Accuracy, reported openly",
+    "lede": "What matters most is how much personal data remains after masking. We therefore report correct detections, recall and complete misses, with the test texts, method and limitations open for review.",
+    "inlineCta": "accuracy page",
+    "servicesCta": "See test results and limitations",
+    "tocLabel": "On this page",
+    "toc": [
+      { "href": "#matt", "label": "What the metrics mean" },
+      { "href": "#aktuellt", "label": "Current v19 results" },
+      { "href": "#oberoende", "label": "External Swedish texts" },
+      { "href": "#adresser", "label": "Swedish addresses" },
+      { "href": "#tolkning", "label": "How to interpret the results" },
+      { "href": "#begransningar", "label": "Limitations" },
+      { "href": "#kallor", "label": "Sources and reproduction" }
+    ],
+    "metricsTitle": "Misses are the most important metric",
+    "metricsBody": "A complete miss means that a piece of personal data remains in plain text. Precision shows how often a detection was correct. Recall shows what proportion of all personal data was found. An honest test needs to show both.",
+    "independentTitle": "External Swedish texts",
+    "independentCaption": "22 sentences written by others and excluded from Maskera's fine-tuning, distillation and vocabulary selection. They contain 58 pieces of personal data. The test is small and cannot prove absence from KB-BERT's earlier pre-training, so the result indicates a direction rather than a definitive winner.",
+    "addressesTitle": "Swedish addresses",
+    "addressesCaption": "Street addresses are reported separately because the historical comparison uses a different corpus from the current v19 measurement.",
+    "currentTitle": "Current release gates: v19",
+    "currentBody": "Published v19 was measured on the synthetic release gates on 2026-08-06. The LinkedIn-like row was rerun from a clean build on 2026-08-10. These are tests of Maskera, not a new comparison with Azure or other systems.",
+    "currentStats": [
+      { "value": "96.9% / 1 of 205", "label": "curated: span F1 / misses" },
+      { "value": "100.0% / 0 of 57", "label": "synthetic ADR: span F1 / misses" },
+      { "value": "81.7% / 0 of 53", "label": "LinkedIn-like: span F1 / misses" },
+      { "value": "35 of 35", "label": "addresses found exactly" }
+    ],
+    "historicalAddressTitle": "Historical comparison: v18",
+    "historicalAddressCaption": "The table below was measured on the earlier v18 corpus with 60 entities and should be read separately from the current v19 result above.",
+    "table": {
+      "system": "System",
+      "precision": "Correct detections",
+      "recall": "Recall",
+      "leaks": "Completely missed"
+    },
+    "independentRows": [
+      {
+        "system": "Maskera",
+        "precision": "96.4%",
+        "recall": "93.1%",
+        "leaks": "2 of 58",
+        "ours": true
+      },
+      {
+        "system": "Azure AI Language (PII + NER)",
+        "precision": "95.0%",
+        "recall": "98.3%",
+        "leaks": "1 of 58"
+      },
+      {
+        "system": "Microsoft Presidio (sv)",
+        "precision": "82.5%",
+        "recall": "56.9%",
+        "leaks": "19 of 58"
+      },
+      {
+        "system": "EU PII Safeguard",
+        "precision": "77.8%",
+        "recall": "12.1%",
+        "leaks": "49 of 58"
+      },
+      {
+        "system": "OpenAI Privacy Filter",
+        "precision": "83.3%",
+        "recall": "8.6%",
+        "leaks": "53 of 58"
+      },
+      { "system": "Blindfold (rules)", "precision": "100%", "recall": "0.0%", "leaks": "58 of 58" }
+    ],
+    "addressRows": [
+      {
+        "system": "Maskera",
+        "precision": "100%",
+        "recall": "100%",
+        "leaks": "0 of 60",
+        "ours": true
+      },
+      {
+        "system": "Azure AI Language (PII + NER)",
+        "precision": "78.5%",
+        "recall": "85.0%",
+        "leaks": "1 of 60"
+      },
+      {
+        "system": "Microsoft Presidio (sv)",
+        "precision": "42.9%",
+        "recall": "40.0%",
+        "leaks": "4 of 60"
+      },
+      {
+        "system": "EU PII Safeguard",
+        "precision": "63.9%",
+        "recall": "38.3%",
+        "leaks": "24 of 60"
+      },
+      {
+        "system": "OpenAI Privacy Filter",
+        "precision": "23.1%",
+        "recall": "10.0%",
+        "leaks": "39 of 60"
+      },
+      { "system": "Blindfold (rules)", "precision": "100%", "recall": "0.0%", "leaks": "60 of 60" }
+    ],
+    "interpretationTitle": "How to interpret the results",
+    "interpretation": [
+      "Azure finds one more piece of personal data in the small external test. Maskera produces slightly fewer false detections. The sample is too small to name a clear winner.",
+      "In the historical v18 measurement, Maskera found all 35 street addresses exactly. Azure found 28 of 35 exactly and completely missed one of the test's 60 entities. Published v19 was remeasured on the replacement corpus with clearly synthetic addresses: all 35 addresses are found exactly and none of the corpus's 57 entities leak. This is not a new comparison with Azure.",
+      "Both Azure's dedicated PII analysis and its general analysis of names, places and organisations were run. This gives Azure the strongest fair configuration for the test."
+    ],
+    "limitsTitle": "What these tests do not show",
+    "limits": [
+      "In the historical v18 measurement's larger in-house test, Maskera reached 99.8% on the combined F1 metric with zero complete misses. The same developer created both the test generator and the training generator. The test is therefore used to prevent regressions, not as an independent rating.",
+      "No automatic masking is perfect. Unusual names, OCR noise and phrasing far from the training data can be missed. Have a person review the text when an error could have serious consequences.",
+      "These corpora measure free text. Structured identifiers such as Swedish personal identity numbers and IBANs are handled by the rule engine and are not included in the comparison."
+    ],
+    "sourcesTitle": "Sources and reproduction",
+    "provenance": [
+      "Published maskera-sv-ner v19 (q4, about 43 MB) was measured on the synthetic release gates on 2026-08-06. The LinkedIn-like row was rerun on 2026-08-10.",
+      "The comparison tables were measured on 2026-07-19 using maskera 0.6.4 and historical maskera-sv-ner v18.",
+      "Azure was measured on 2026-07-22 using GA API 2024-11-01, model 2025-11-01, Swedish language, UTF-16 indexing and loggingOptOut enabled."
+    ],
+    "sourcesBody": "The test texts, method, runner scripts and complete Maskera results are available in the open repository. BENCHMARKS.md is the source of truth if a number elsewhere differs.",
+    "benchmarksCta": "Read the benchmark source",
+    "scriptsCta": "See the comparison data and scripts",
+    "demoCta": "Try the current model in the browser demo"
+  },
+  "security": {
+    "metaTitle": "security · maskera",
+    "metaDescription": "Maskera's security boundaries, network requests, pinned model artefacts, safe restoration and private vulnerability reporting.",
+    "title": "Security in maskera",
+    "lede": "Security here covers both what must never leave your environment and the boundaries around masking and restoration. This page collects the operational security model for the npm packages and the open browser demo.",
+    "tocLabel": "On this page",
+    "toc": [
+      { "href": "#dataflode", "label": "Data flow and network" },
+      { "href": "#artefakter", "label": "Pinned artefacts" },
+      { "href": "#aterstallning", "label": "Safe restoration" },
+      { "href": "#omfattning", "label": "What counts as a vulnerability?" },
+      { "href": "#rapportera", "label": "Report privately" },
+      { "href": "#produktion", "label": "Production operation" }
+    ],
+    "dataFlowTitle": "Data flow and network",
+    "dataFlow": [
+      "The text and the key containing the original data are not sent to Maskera for masking. The rule layer has no network dependencies. The model variant runs inference locally in the browser or in your own Node process.",
+      "The npm package's default configuration downloads the model and runtime on first use and caches them. These are static software and model artefacts, never the text being masked. Environments that prohibit external downloads can serve all model files themselves."
+    ],
+    "artifactsTitle": "Pinned artefacts",
+    "artifacts": [
+      "The published npm version points to an immutable revision of the model on Hugging Face. The same package version therefore runs the same weights measured by the benchmark; new weights reach users through a new npm version.",
+      "The demo verifies model files with file-specific SHA-256 values during the build. An unexpected or incomplete model package should therefore stop the build rather than silently being used."
+    ],
+    "restoreTitle": "Restoration is a security boundary",
+    "restore": [
+      "The key contains the original values and must be treated as personal data. Do not log it or store it beside the masked text.",
+      "restore() inserts real values wherever placeholder tokens occur. Do not restore untrusted output that will then be fetched as a URL, rendered as HTML or written to logs. Masking protects what is sent; restoration does not sanitise what comes back.",
+      "A placeholder already present in the input is never allocated again. Planting [PERSONNUMMER_1] in the source text therefore cannot capture a real value."
+    ],
+    "scopeTitle": "What counts as a vulnerability?",
+    "scopeIntro": "Report privately if you find, for example:",
+    "inScope": [
+      "original values or the restoration key leaking to the network, storage or logs contrary to the documented local processing",
+      "unexpected network requests beyond the documented one-time downloads of the model and runtime",
+      "XSS or injection in the demo at maskera.dev",
+      "an exploitable supply-chain risk in the npm packages or model artefacts",
+      "an intentional construction that hides personal data from the detectors while a person or language model can still read it"
+    ],
+    "qualityBody": "A model missing an unusual name or a rule lacking an edge case is normally a quality issue, not a vulnerability. Report such examples publicly so they can become regression cases. A reproducible intentional bypass, however, belongs in a private security report.",
+    "reportTitle": "Report a vulnerability privately",
+    "reportBody": "Do not open a public issue for a possible security flaw. Use GitHub's private vulnerability reporting. Only the latest published versions of maskera and @maskera/core receive security fixes, so update before reporting.",
+    "advisoryCta": "Submit a private security report",
+    "issuesCta": "Report a quality issue",
+    "productionTitle": "Production operation",
+    "productionBody": "The production guide covers secure integration, fallback to rules, logging, self-hosting, domain-specific test corpora and the production checklist. Maskera is a data-minimisation layer, not a guarantee of compliance or complete detection.",
+    "productionCta": "Read the production guide",
+    "gatewayBody": "This page covers the npm packages and open demo. Gateway also has its own authentication, delivery and operating model, documented in the customer portal.",
+    "gatewayCta": "Learn about Maskera Gateway"
+  },
+  "transparency": {
+    "metaTitle": "privacy & transparency · maskera",
+    "metaDescription": "See what Maskera does, what leaves the device, how the model was trained and which data it can miss.",
+    "title": "Privacy & transparency",
+    "lede": "See what Maskera does, what leaves the device, how the model was trained and what it can miss.",
+    "tocLabel": "On this page",
+    "toc": [
+      { "href": "#hur-fungerar", "label": "How does it work?" },
+      { "href": "#vad-maskeras", "label": "What is masked?" },
+      { "href": "#dataflode", "label": "How your text is processed" },
+      { "href": "#modelltraning", "label": "How the model was trained" },
+      { "href": "#begransningar", "label": "Limitations" }
+    ],
+    "howTitle": "How does it work?",
+    "how": [
+      "Maskera reads the text and replaces detected personal data with placeholders such as [NAMN_1] or [PERSONNUMMER_1]. The AI service sees the placeholders. Afterwards, you can restore the originals locally.",
+      "Two layers work together. Rules find fixed-format data such as Swedish personal identity numbers, phone numbers and email addresses. A small Swedish AI model finds names, places, organisations and addresses in running text.",
+      "The model runs directly in the browser or in your own Node process. The text therefore does not need to be sent to an external service for analysis."
+    ],
+    "dataTitle": "How your text is processed",
+    "data": [
+      "All masking happens on your device, in the browser or on your own server. The text and the key containing the original data are not sent to Maskera or any other service for masking.",
+      "Vercel Analytics counts page views anonymously and without cookies. Text entered in the tool is never included in the statistics.",
+      "Vercel may process technical request data, such as IP addresses, to deliver and protect the website. The text and restoration key are not part of these requests.",
+      "The npm package's default configuration downloads the model file and runtime on first use and caches them. These are static artefacts, never the text being masked. Everything can be self-hosted.",
+      "The rule layer has no network dependencies and works independently."
+    ],
+    "trainingTitle": "How the model was trained",
+    "limitsTitle": "Limitations",
+    "limits": [
+      "Maskera is evaluated openly. The figures, method and caveats are available on the accuracy page.",
+      "Known weak points include table-like dumps, OCR noise and data written as words, such as ‘zero seven zero’. Capital letters, misspellings and messy number formats are, however, included in the tests.",
+      "Masking is an additional protection layer, not a guarantee. Names and places are found probabilistically and can be missed. Keep other controls in place when an error could have serious consequences.",
+      "Maskera supports data minimisation but does not guarantee regulatory compliance. The organisation using the tool remains the data controller."
+    ],
+    "accuracyCta": "See test results, method and limitations",
+    "fullDocsPrefix": "The complete technical disclosure and all source code are available on GitHub.",
+    "fullDocsCta": "Read the full document",
+    "training": {
+      "syntheticTitle": "Published v19 is the privacy-clean model.",
+      "syntheticBody": "v19 passed every release gate with 64,000 generated training rows and 4,760 separated validation rows. IBANs, personal and organisation numbers, phone numbers, emails, account and payment identifiers, public IP addresses, postcodes and realistic street-address pairs are blocked before training. Historical v18 also used documented, openly licensed Swedish corpora and is reported separately.",
+      "policyCta": "Read the technical data-protection policy",
+      "attestationBody": "Every published v19 artefact carries the same attestation with row counts and SHA-256 hashes for the exact data, generator and audit code. The published provenance is summarised in the",
+      "modelCardCta": "model card",
+      "baseTitle": "Base model:",
+      "baseBody": "KB-BERT from the National Library of Sweden, published under CC0.",
+      "baseCta": "See KB-BERT",
+      "baseBoundary": "The attestation covers Maskera's own fine-tuning. It makes no absolute claim about which public text may have been included when KB-BERT was originally pre-trained.",
+      "reproTitle": "The entire chain can be reproduced from scratch.",
+      "reproBody": "Generation, privacy review, training, distillation, compression, export and evaluation are open scripts. If a training row changes, a synthetic address marker disappears or a corpus is added, the manifest breaks and the pipeline refuses to continue."
+    }
+  },
+  "testData": {
+    "metaTitle": "test data · maskera",
+    "metaDescription": "Verify the origin of Swedish personal identity numbers, phone numbers, accounts and other test values in Maskera's browser demo.",
+    "title": "Test data in the demo",
+    "lede": "Every person is fictional. Data in real formats comes from officially reserved test values and can be verified here.",
+    "intro": "Some values are deliberately messy, with twelve digits, spaces or capitals, because real text looks like that.",
+    "items": [
+      {
+        "title": "Swedish personal identity numbers",
+        "body": "991201-2391, 850601-2387, 781101-2397, 020301-2398 and 640823-3234 come from the Swedish Tax Agency's open test identity numbers.",
+        "cta": "Verify with the Swedish Tax Agency",
+        "href": "https://www.skatteverket.se/omoss/digitalasamarbeten/omvaraoppnadata/testpersonnummersomoppendata.4.5b35a6251761e6914202df9.html"
+      },
+      {
+        "title": "Organisation numbers",
+        "body": "202100-4748 belongs to the fictional Municipality A in the Swedish Tax Agency's Navet test documentation.",
+        "cta": "Open the test documentation",
+        "href": "https://www7.skatteverket.se/portal-wapi/open/apier-och-oppna-data/utvecklarportalen/v1/getFile/tjanstebeskrivning-folkbokforingsuppgifter-for-offentliga-aktorer-v3/pdf/1.0.3/tjanstebeskrivning-folkbokforingsuppgift-offentliga-aktorer-v3.pdf"
+      },
+      {
+        "title": "Phone numbers",
+        "body": "070-174 06 05, 070-174 06 32, 070-174 06 58, 070-174 06 71 and 08-465 004 12 are in the Swedish Post and Telecom Authority's number ranges for books and films.",
+        "cta": "Verify with PTS",
+        "href": "https://pts.se/internet-och-telefoni/telefonnummer-och-adressering/telefonnummer-till-bocker-och-filmer/"
+      },
+      {
+        "title": "Cards, accounts and giro numbers",
+        "body": "4242 4242 4242 4242 is Stripe's test card, SE42 8000 0890 1191 4616 8423 is Swedbank's test account and 991-2346 is Bankgirot's example value.",
+        "cta": "See every source in the repository",
+        "href": "https://github.com/joelhagvall/maskera/blob/main/docs/TRANSPARENCY.md#test-data-used-in-the-demo"
+      },
+      {
+        "title": "Email and addresses",
+        "body": "All email addresses use IANA's reserved example.com domain. Påhittsgatan and Påhittsvägen are fictional.",
+        "cta": "Verify the example domains with IANA",
+        "href": "https://www.iana.org/help/example-domains"
+      }
+    ],
+    "demoCta": "Try the test values in the demo"
+  },
+  "privacy": {
+    "metaTitle": "privacy policy · maskera",
+    "metaDescription": "Privacy policy for maskera.dev: local text processing, cookieless web analytics, hosting and your rights.",
+    "title": "Privacy policy",
+    "lede": "The text you mask is processed locally and is not sent to Maskera. This page describes the limited processing performed by the website itself.",
+    "items": [
+      {
+        "title": "Data controller",
+        "body": "Joel Hägvall is the data controller for maskera.dev. Contact details are available at joelhagvall.com."
+      },
+      {
+        "title": "Web analytics",
+        "body": "Vercel Analytics counts page views using anonymous, cookieless statistics without profiling. The statistics never contain text entered in the tool."
+      },
+      {
+        "title": "Hosting",
+        "body": "Vercel may process technical request data, such as IP addresses, to deliver the website and protect it from attacks. The text and restoration key are not included."
+      },
+      {
+        "title": "Local setting",
+        "body": "Your light or dark theme choice is saved in the browser's localStorage. It is not a cookie and the value never leaves the device."
+      },
+      {
+        "title": "Text entered in the tool",
+        "body": "The text and the key containing the original data are processed locally in the browser. They are not sent to me or any other service for masking."
+      },
+      {
+        "title": "Your rights",
+        "body": "Contact me if you have questions about the website's processing or want to exercise your rights."
+      }
+    ],
+    "contactCta": "Contact details at joelhagvall.com",
+    "updated": "Last updated 9 August 2026."
+  },
+  "services": {
+    "title": "Maskera for companies",
+    "lede": "Choose Gateway for a signed enterprise delivery with support in your own environment. Choose the npm packages if you want to build and maintain the integration yourself.",
+    "sublede": "Gateway is available as a 60-day pilot or annual licence. You start with a technical review.",
+    "gatewayInterestCta": "Book a technical review",
+    "gatewayEmailSubject": "Technical review of Maskera Gateway",
+    "gatewayDocsCta": "Learn about Gateway",
+    "gatewayContactNote": "Opens a new email to hej@maskera.dev",
+    "products": [
+      {
+        "id": "gateway",
+        "name": "Maskera Gateway",
+        "price": "SEK 149,000/year",
+        "pilotPrice": "60-day pilot: SEK 49,000",
+        "pilotTerms": "The full amount is deducted from the first annual licence when the same organisation buys it within 30 days after the pilot ends.",
+        "annualPrefix": "Annual licence:",
+        "tagline": "For organisations that want a signed delivery, shared rules and support.",
+        "points": [
+          "Signed container for Docker or Kubernetes",
+          "Masks AI traffic before it leaves your network",
+          "No GPU or database; the 43 MB Swedish model is included",
+          "Shared rules, enterprise login and security updates"
+        ],
+        "note": "Runs in your environment on as little as 2 CPU cores and 2 GB RAM. Prices exclude VAT."
+      },
+      {
+        "id": "open",
+        "name": "Open source",
+        "price": "SEK 0",
+        "tagline": "For teams that want to build and maintain the integration themselves.",
+        "points": [
+          "Runs in the browser or Node",
+          "The text and the key containing the original data stay in your environment",
+          "MIT licence, with no usage fee or lock-in",
+          "Swedish model and ready-made rules for common personal data"
+        ],
+        "cta": "Install and get started"
+      }
+    ],
+    "flowTitle": "How Gateway protects the AI flow",
+    "flowBody": "Text is masked before every AI request, without an external Maskera API. The original text and restoration key stay in your environment.",
+    "flowLabel": "Gateway data flow",
+    "flow": [
+      "Your application: original text",
+      "Gateway: masks in your environment",
+      "AI service: masked text only",
+      "Gateway: restores the response"
+    ],
+    "considerTitle": "Good to know before choosing",
+    "considerations": [
+      {
+        "title": "Masking reduces risk, but is not a guarantee.",
+        "body": "Names and places are identified by an AI model that can miss data. Accuracy is measured openly and one hundred per cent is never promised."
+      },
+      {
+        "title": "No lock-in at the core.",
+        "body": "The open-source packages are MIT-licensed and continue to work without Gateway or consulting support."
+      }
+    ]
+  },
+  "theme": {
+    "toggle": "Switch between light and dark mode"
+  },
+  "language": {
+    "switchCode": "Svenska",
+    "switchLabel": "Visa sidan på svenska"
+  },
+  "topBar": {
+    "backHome": "Back to the home page",
+    "developers": "Developers",
+    "services": "Companies"
+  },
+  "meta": {
+    "demoTitle": "maskera",
+    "demoDescription": "maskera hides Swedish personal data before text is sent to AI. Run the same masking in the browser or on your own servers. Only masked text is forwarded.",
+    "devTitle": "for developers · maskera",
+    "devDescription": "Install maskera for local Swedish PII masking in the browser or Node. Open source, TypeScript and a custom-trained Swedish AI model.",
+    "servicesTitle": "for companies · maskera",
+    "servicesDescription": "Compare the open-source npm packages with Maskera Gateway, which runs on CPU in your own environment before your AI requests.",
+    "siteName": "maskera",
+    "servicesSchemaName": "Maskera for companies"
+  }
+}

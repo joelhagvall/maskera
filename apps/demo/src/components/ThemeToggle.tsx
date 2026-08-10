@@ -1,4 +1,4 @@
-import copy from "../i18n/sv.json"
+import copy from "../i18n"
 import { MoonIcon, SunIcon } from "../icons"
 
 /**

@@ -1,5 +1,5 @@
 import { GITHUB } from "../constants"
-import copy from "../i18n/sv.json"
+import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
 import { navClick, type View } from "../routing"
 import { TopBar } from "./TopBar"
@@ -12,10 +12,10 @@ interface BenchmarkRow {
   ours?: boolean
 }
 
-const independentRows = copy.accuracy.independentRows as BenchmarkRow[]
-const addressRows = copy.accuracy.addressRows as BenchmarkRow[]
-
 export function Accuracy({ go }: { go: (view: View) => void }) {
+  const independentRows = copy.accuracy.independentRows as BenchmarkRow[]
+  const addressRows = copy.accuracy.addressRows as BenchmarkRow[]
+
   return (
     <>
       <header>

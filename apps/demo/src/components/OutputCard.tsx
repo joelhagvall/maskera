@@ -1,6 +1,6 @@
 import type { RedactResult } from "@maskera/core"
 import { useMemo } from "react"
-import copy from "../i18n/sv.json"
+import copy from "../i18n"
 import { EyeIcon } from "../icons"
 import { labelMeta, pillStyle } from "../labels"
 import { RedactedText } from "../segments"
@@ -41,7 +41,7 @@ function Stats({ result }: { result: RedactResult }) {
 
 function RestoreMap({ map }: { map: Record<string, string> }) {
   return (
-    <div className="map" id="restore-map">
+    <div className="map" id="restore-map" lang="sv" translate="no">
       <p className="map-note">{copy.outputCard.restoreMapNote}</p>
       <table>
         <tbody>
@@ -85,7 +85,7 @@ export function OutputCard({
         {result.text ? <CopyButton text={result.text} className="clear copy" /> : null}
       </div>
 
-      <div className={`output ${analyzing ? "analyzing" : ""}`}>
+      <div className={`output ${analyzing ? "analyzing" : ""}`} lang="sv" translate="no">
         <RedactedText text={result.text} />
       </div>
 

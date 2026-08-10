@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import strings from "../i18n/sv.json"
+import strings from "../i18n"
 import { CheckIcon, CopyIcon } from "../icons"
 
 /**

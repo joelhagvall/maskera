@@ -1,5 +1,5 @@
 import { GITHUB, HF_MODEL } from "../constants"
-import copy from "../i18n/sv.json"
+import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
 import { navClick, type View, viewPaths } from "../routing"
 import { Coverage } from "./Coverage"
