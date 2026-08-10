@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { createNerRecognizer, type RawToken } from "../src/index"
+import { createNerRecognizer, type RawToken, redactWithNer } from "../src/index"
 
 // The q4 model confidently tags common Swedish words in name-like positions
 // (observed in the demo scenarios): "Kund" and "Mail" as B-PER at ~1.0,
@@ -46,6 +46,27 @@ describe("createNerRecognizer denylist", () => {
     rawTokens = [tok("B-ORG", "bank", 1), tok("I-ORG", "##gi", 2), tok("I-ORG", "##ro", 3)]
     const out = await createNerRecognizer().detect("Betalning sker till bankgiro 991-2346.")
     expect(out).toEqual([])
+  })
+
+  it('drops the v19 "betalkonto IBAN" address false positive in the support example', async () => {
+    const input =
+      "Kund Amir Haddad hör av sig: kortet slutar fungera. Kortnummer 4242 4242 4242 4242, betalkonto IBAN SE42 8000 0890 1191 4616 8423. Ringer från 070-174 06 58."
+    rawTokens = [
+      tok("B-PER", "Amir", 1),
+      tok("I-PER", "Haddad", 2),
+      tok("B-ADR", "betal", 3),
+      tok("I-ADR", "##konto", 4),
+      tok("I-ADR", "IBAN", 5),
+    ]
+    const recognizer = createNerRecognizer()
+
+    expect(await recognizer.detect(input)).toEqual([
+      { start: 5, end: 16, value: "Amir Haddad", label: "NAMN" },
+    ])
+
+    const result = await redactWithNer(input, { recognizer })
+    expect(result.text).toContain("betalkonto IBAN [IBAN_1]")
+    expect(result.redactions.some((redaction) => redaction.label === "ADRESS")).toBe(false)
   })
 
   it("drops unambiguous modifiers and generic service nouns", async () => {

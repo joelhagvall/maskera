@@ -99,8 +99,9 @@ export const defaultLabelMap: LabelMap = (group) => {
  * These are role words, contact-channel words, payment-rail words and
  * unambiguous generic modifiers/service nouns that are never a name, place or
  * organisation on their own, so a detection whose WHOLE surface form
- * (case-insensitively) is one of them is dropped.
- * Multi-word detections ("Anna Ring", "Byggfirman AB") are never affected.
+ * (case-insensitively) is one of them is dropped. Named multi-word detections
+ * ("Gamla Stan", "Byggfirman AB") are retained unless the exact full phrase
+ * is explicitly listed after being observed as a model false positive.
  */
 export const DEFAULT_DENYLIST: ReadonlySet<string> = new Set([
   // role words that precede a name
@@ -173,6 +174,9 @@ export const DEFAULT_DENYLIST: ReadonlySet<string> = new Set([
   "kontot",
   "kontonummer",
   "betalkonto",
+  // v19 can merge these two payment labels into one ADR span. Keep the phrase
+  // exact: token-by-token filtering could suppress a real multi-word name.
+  "betalkonto iban",
   "kortnummer",
   "personnummer",
   "organisationsnummer",
