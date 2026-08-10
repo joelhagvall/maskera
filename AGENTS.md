@@ -60,7 +60,16 @@ Gotchas:
 ## Benchmark numbers
 
 STANDING RULE: everything is always in sync, no number, date, version or
-size may drift anywhere. `docs/BENCHMARKS.md` is the single source of truth.
+size may drift anywhere. `docs/benchmark-release.json` is the machine-readable
+single source of truth and `docs/BENCHMARKS.md` is its canonical human report.
+Run `pnpm check:benchmarks` before every build/release and
+`pnpm check:benchmarks:live` after coordinated publication/deployment.
+The current release is reproducible, not merely copy-synchronized. The
+contract's `evaluation.files` and `evaluation.suiteSha256` lock the corpora,
+scorers, runners, runtime sources and dependency lockfile. Any change to one
+of those inputs must update the suite checksum and rerun `pnpm eval:release`;
+the recomputed machine result must match every current metric in the contract
+exactly before CI, release or deploy may pass.
 Every other file carrying dated snapshots MUST be synced in the same commit
 as a BENCHMARKS.md update. The full snapshot-carrier list: root README,
 package READMEs (also what npmjs shows; needs a patch release to update

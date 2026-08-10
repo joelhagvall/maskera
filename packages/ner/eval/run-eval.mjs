@@ -32,8 +32,11 @@
  *                       with zero overlapping prediction (default: 0.08)
  *   MASKERA_DTYPE       quantization dtype (default: q4)
  *   MASKERA_AGGREGATE_ONLY=1  suppress entity values and complete sentences
+ *   MASKERA_RESULT_FILE write aggregate machine-readable JSON to this path
  */
 
+import { mkdirSync, writeFileSync } from "node:fs"
+import { dirname, resolve } from "node:path"
 import { evaluate } from "./score.mjs"
 
 // Default to the bundled gold corpus, or point CORPUS_FILE at your own domain
@@ -50,6 +53,7 @@ const MODEL_PATH = process.env.MASKERA_MODEL_PATH
 const DTYPE = process.env.MASKERA_DTYPE ?? "q4"
 const REVISION = process.env.MASKERA_REVISION
 const AGGREGATE_ONLY = process.env.MASKERA_AGGREGATE_ONLY === "1"
+const RESULT_FILE = process.env.MASKERA_RESULT_FILE
 
 function skip(reason) {
   console.log(`\n⏭  eval skipped: ${reason}`)
@@ -116,6 +120,32 @@ async function detectAll() {
 await detectAll()
 
 const { metrics, perDoc } = evaluate(corpus, (text) => detectCache.get(text) ?? [])
+
+if (RESULT_FILE) {
+  const resultPath = resolve(process.cwd(), RESULT_FILE)
+  const countLabels = (labels) =>
+    Object.fromEntries(
+      [...new Set(labels)]
+        .sort()
+        .map((label) => [label, labels.filter((item) => item === label).length]),
+    )
+  const result = {
+    schemaVersion: 1,
+    kind: "ner-corpus",
+    corpusFile: CORPUS_FILE,
+    documents: corpus.length,
+    goldLabels: countLabels(corpus.flatMap((doc) => doc.entities.map((entity) => entity.label))),
+    predictionLabels: countLabels(
+      [...detectCache.values()].flatMap((predictions) =>
+        predictions.map((prediction) => prediction.label),
+      ),
+    ),
+    metrics,
+  }
+  mkdirSync(dirname(resultPath), { recursive: true })
+  writeFileSync(resultPath, `${JSON.stringify(result, null, 2)}\n`, "utf8")
+  console.log(`machine result: ${resultPath}`)
+}
 
 // 4. Report.
 const pct = (x) => `${(x * 100).toFixed(1)}%`

@@ -1,9 +1,19 @@
 # Benchmarks
 
-**This file is the single source of truth for the published model's numbers.**
+**This file is the canonical human report for the published model's numbers.**
 Other documents link here and some carry dated summary snapshots or copied
-tables. If a number elsewhere disagrees with this file, this file wins and the
-other document has drifted.
+tables. The machine-readable source of truth is the release contract below;
+CI requires this report and that contract to agree before any build can pass.
+
+That release contract lives in
+[`benchmark-release.json`](benchmark-release.json). Every build verifies that
+the human report, package/model pins, public carrier files and whitepaper match
+that contract. Live canaries additionally compare npm, Hugging Face, GitHub,
+maskera.dev and app.maskera.dev; any mismatch is a release/deploy failure.
+Release CI also reruns every current v19 evaluation from the checksum-locked
+suite with `pnpm eval:release` and requires the recomputed result object to
+match the contract exactly. The frozen suite checksum is
+`5584f0f4b4eaa82405170f7ad8e4de8544c0301b4ae507312afc5043d4862975`.
 
 - **Published:** 2026-08-06
 - **Artifact:** [`joelhagvall/maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner),
@@ -54,7 +64,7 @@ Two additional aggregate gates also pass:
 
 | gate | v19 result | release floor |
 | --- | ---: | ---: |
-| synthetic gold, type F1 | 92.89% | 90.0% |
+| synthetic gold, type F1 | 93.08% | 90.0% |
 | synthetic gold, type recall | 94.07% | 92.0% |
 | synthetic gold, masked recall | 98.31% | 97.0% |
 | decomposing rare surnames, masked recall | 96.94% (285/294; 9 leaks) | >94.9% |
@@ -137,6 +147,10 @@ a domain-authored gold set.
 
 ## Curated corpus (upper bound, regression tracker)
 
+> **Historical v18 snapshot — not a v19 result.** This and the following
+> dated comparison sections are retained for transparency. The live Hub
+> default now serves v19, whose current release battery is reported above.
+
 149 hand-authored Swedish sentences, 205 free-text entities
 (PERSON / LOCATION / ORGANIZATION), including hard negatives and
 all-lowercase / ALL CAPS / genitive hard cases (the 2026-07-04 additions come
@@ -156,14 +170,16 @@ Second consecutive zero-leak release on this corpus (v15 fixed the
 sentence-initial "Fiktivbolaget" classic; v18 keeps the sweep on the extended
 149-sentence set including the org.nr gate).
 
-Reproduce (downloads the published model from the Hub):
-
-```bash
-pnpm install && pnpm build
-MASKERA_REMOTE=1 node packages/ner/eval/run-eval.mjs
-```
+This historical aggregate does not reproduce from the Hub's moving `main`
+revision, which now serves v19. Exact reproduction requires the archived v18
+artifact and the historical `maskera@0.6.4` pipeline; do not use the default
+remote command and relabel its v19 output as this row.
 
 ## Independent gold set (honest floor)
+
+> **Historical v18 snapshot — not a v19 result.** The raw corpus was removed
+> before the privacy-clean v19 build, so this row has not been re-measured or
+> claimed as independent evidence for v19.
 
 22 verbatim sentences of real Swedish Wikipedia prose, 58 entities, written by
 others and excluded from Maskera's task training and vocabulary selection.
@@ -189,13 +205,16 @@ declarative-prose sentence (the adjacent full-name form is caught): the
 documented bare-surname declarative residue, now surfacing
 once in cased form. The designed 294-sentence rare-surname gate built to
 measure exactly this class reads its best value ever (99.3% masked, 2
-leaks); see [Known misses](#known-misses-published-on-purpose).
+leaks); see [Known misses](#known-misses-aggregate-categories).
 
 The raw 22-sentence copy was intentionally removed from this checkout on
 2026-08-06. These v18 aggregates remain for historical transparency; they are
 not a dependency of the privacy-clean build or release runner.
 
 ## Address (ADR) eval (the one class the other sets miss)
+
+> **Historical v18 snapshot — not the revised v19 ADR result.** The current
+> synthetic v19 ADR row is reported in the release table above.
 
 - **Measured:** 2026-07-19, same q4 artifact as everywhere else.
 
@@ -222,23 +241,16 @@ relabelled as a result on the replacement corpus.
 
 A clean sweep on every address metric, now on the extended 35-address set:
 every address detected, correctly typed, with the full span including the
-house number, and no false ADDRESS flags. This release also cleans the
+house number, and no false ADDRESS flags. v18 also cleaned the
 whole distractor harness: the v15 "Festen" over-redaction (an ordinary
 word tagged PERSON in one distractor sentence, that release's documented
 exception) is gone, so the aggregate `run-eval.mjs` span-F1 on this mixed
 corpus reads 100.0.
 
-Reproduce (corpus is committed; the model downloads from the Hub):
-
-```bash
-pnpm install && pnpm build
-CORPUS_FILE="./corpus-adr.mjs" MASKERA_MODEL=joelhagvall/maskera-sv-ner \
-  node packages/ner/eval/analyze-adr.mjs   # ADR-only breakdown + every gold vs predicted span
-```
-
-With a local copy of the model (e.g. the demo's gitignored
-`apps/demo/public/models/`), point at it instead:
-`MASKERA_MODEL_PATH="$PWD/apps/demo/public/models" MASKERA_MODEL=maskera-sv-ner-v19`.
+The historical corpus surfaces were replaced on 2026-08-06, and the Hub's
+moving `main` revision now serves v19. The current command therefore measures
+the revised v19 ADR set; it must not be presented as an exact reproduction of
+this archived v18 row.
 
 ## Public-term retention (over-redaction on PII-free text)
 
@@ -258,7 +270,7 @@ measures:
 
 (The previous artifact measured 99.91% / 99.86% with 20 / 33 flags, and the
 releases before that 99.93% / 99.90% with 16 / 23 and 99.95% / 99.93% with
-11 / 17. This release holds the line: cased +1 flag, lowercase −2, ending
+11 / 17. The v18 release held the line: cased +1 flag, lowercase −2, ending
 the three-release slide. The absolute cost remains about one flagged token
 per 1,000.) Both
 numbers are lower bounds: several of the "false flags" are gold annotation
@@ -408,7 +420,7 @@ MASKERA_REMOTE=1 node packages/ner/eval/benchmark-homograph-names.mjs
 ### ORG is still the weakest type (both registers)
 
 ORG recall is 75.1% cased / 60.1% lowercased, the weakest type in both and
-down ~2pp from the v15 release bests (77.0% / 62.0%): this release's
+down ~2pp from the v15 release bests (77.0% / 62.0%): v18's
 boundary churn lands on ORG. The v12-v14 category-level gazetteer work
 fixed the multiword-institution class at the weight level, and the
 municipal suffix families generalise. What remains is **short
@@ -474,7 +486,7 @@ no other model has an address class, it is scored on its own in
 **Redaction recall** is the safety number:
 was the entity flagged at all, under any label. Cross-model *precision* is
 indicative rather than definitive, since label schemes differ. Method fix
-from this release: the maskera row is now the **vocabulary-trimmed** fp32
+from the v18 measurement: the maskera row is the **vocabulary-trimmed** fp32
 student (what actually ships, pre-quantization); earlier releases graded the
 untrimmed student here, which flattered the row. Reproducibility note: the
 competitor rows all download from the Hub automatically, but the maskera row
@@ -527,7 +539,7 @@ Takeaways:
   can ship inside a web app; maskera is small enough to run where the text
   already is, including in a browser tab.
 - On lowercase text the honest picture is register-dependent. In the
-  chat/support register maskera targets, this release ties the strongest
+  chat/support register maskera targets, v18 ties the strongest
   measured masking (rare-surname eval 99.3% on the rotated frames, 2
   leaks) with its best rare-name typing (78.2%); klintan-lowercase leaks
   read 14.2% (second-best measured, the churn documented above). On
@@ -711,9 +723,12 @@ comparison tables remain historical v18 evidence. See
 
 ## Continuous gates
 
-- **Every push:** CI re-grades the published Hub artifact against the curated
-  corpus with a span-F1 floor of 0.90 and a leak ceiling of 0.08
-  (`.github/workflows/ci.yml`).
+- **Every push:** CI fetches the checksum-pinned published artifact, reruns the
+  complete current release suite with `pnpm eval:release`, and requires every
+  recomputed aggregate to match `benchmark-release.json` exactly. The
+  individual runners retain their span-F1, leak and full-hit floors as a
+  second line of defense; the machine-readable result files are retained as a
+  90-day workflow artifact (`.github/workflows/ci.yml`).
 - **Weekly canary:** re-grades the live Hub artifact and opens an issue if
   anything drifts (`.github/workflows/model-canary.yml`).
 
@@ -745,9 +760,9 @@ comparison tables remain historical v18 evidence. See
   measured 2026-07-21, table above). Precision on the word sense is perfect
   today (0/31), so the fix is training data carrying both roles of each word,
   not a gazetteer. Nothing ships against this yet.
-- **This release's accepted cost is a second gold-real leak**:
+- **v18's accepted cost was a second gold-real leak**:
   sentence-initial bare "Provnamn" in one declarative-prose sentence (2 of
-  58 leak there now, see [Known misses](#known-misses-published-on-purpose)).
+  58 leak there, see [Known misses](#known-misses-aggregate-categories)).
   It is the documented bare-surname declarative residue in cased form, on
   the eval axis the 294-sentence rare-surname gate was built to measure at
   scale, and that gate reads its best value ever. In exchange the release
@@ -761,5 +776,6 @@ date and the artifact hash, in one commit with the model change. The
 whitepaper ([`whitepaper/whitepaper.tex`](whitepaper/whitepaper.tex))
 carries a dated snapshot of these numbers; update its section 5 and rebuild
 the PDF (`node scripts/build-whitepaper.mjs`) in the same commit. The
-round-by-round training history stays in [`training/README.md`](../training/README.md);
-this file only ever describes the currently published artifact.
+round-by-round training history stays in [`training/README.md`](../training/README.md).
+This file contains the current v19 release snapshot plus explicitly labeled
+historical v18 evidence; never blur that boundary when updating either part.

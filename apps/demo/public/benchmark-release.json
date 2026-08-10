@@ -1,0 +1,169 @@
+{
+  "$schema": "https://maskera.dev/benchmark-release.schema.json",
+  "schemaVersion": 1,
+  "status": "published",
+  "release": "v19",
+  "publishedAt": "2026-08-06",
+  "lastMeasuredAt": "2026-08-10",
+  "scope": "Synthetic or author-coupled release gates, not an independent universal quality estimate.",
+  "packages": {
+    "maskera": "0.9.5",
+    "core": "0.7.5"
+  },
+  "artifact": {
+    "model": "maskera-sv-ner-v19",
+    "hubRepo": "joelhagvall/maskera-sv-ner",
+    "revision": "8604eec76227c35387d5fafd7bb0b9f03f291553",
+    "dtype": "q4",
+    "path": "onnx/model_q4.onnx",
+    "sha256": "6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66",
+    "bytes": 42705681,
+    "modelCardSha256": "ba48d1bc15ae9e25c5ab49a4041f3dbe09b708ed5b9fb4d1a31f023f03e2824c"
+  },
+  "whitepaper": {
+    "version": "1.18",
+    "source": "docs/whitepaper/whitepaper.tex",
+    "sourceSha256": "494f6fcb56faf201c0e3b53e8af2460abc35e482209439b68d0f77fe47cbe5e9",
+    "pdf": "apps/demo/public/whitepaper.pdf",
+    "pdfSha256": "8715bfbde30d05c73c9ef74c0141bacab222deb9563157b0cd9eee9b04465954"
+  },
+  "evaluation": {
+    "command": "pnpm eval:release",
+    "suiteSha256": "5584f0f4b4eaa82405170f7ad8e4de8544c0301b4ae507312afc5043d4862975",
+    "files": [
+      "apps/demo/scripts/evaluate-candidate-gates.mjs",
+      "apps/demo/scripts/fetch-model.mjs",
+      "apps/demo/src/model-meta.json",
+      "package.json",
+      "packages/core/package.json",
+      "packages/core/src/canonicalize.ts",
+      "packages/core/src/detectors/index.ts",
+      "packages/core/src/index.ts",
+      "packages/core/src/redact.ts",
+      "packages/core/src/types.ts",
+      "packages/core/src/validators.ts",
+      "packages/core/tsconfig.json",
+      "packages/core/tsup.config.ts",
+      "packages/ner/eval/benchmark-rare-surnames.mjs",
+      "packages/ner/eval/corpus-adr.mjs",
+      "packages/ner/eval/corpus-linkedin.mjs",
+      "packages/ner/eval/corpus.mjs",
+      "packages/ner/eval/domain-regression/corpus/bank-forsakring.mjs",
+      "packages/ner/eval/domain-regression/corpus/base.mjs",
+      "packages/ner/eval/domain-regression/corpus/blandat-webb.mjs",
+      "packages/ner/eval/domain-regression/corpus/edge2.mjs",
+      "packages/ner/eval/domain-regression/corpus/hyra-fastighet.mjs",
+      "packages/ner/eval/domain-regression/corpus/intern-chatt.mjs",
+      "packages/ner/eval/domain-regression/corpus/juridik.mjs",
+      "packages/ner/eval/domain-regression/corpus/kansliga.mjs",
+      "packages/ner/eval/domain-regression/corpus/myndighet.mjs",
+      "packages/ner/eval/domain-regression/corpus/skola.mjs",
+      "packages/ner/eval/domain-regression/corpus/telefon-transkript.mjs",
+      "packages/ner/eval/domain-regression/corpus/vard-psyk.mjs",
+      "packages/ner/eval/domain-regression/corpus/vard-remiss.mjs",
+      "packages/ner/eval/domain-regression/run.mjs",
+      "packages/ner/eval/run-eval.mjs",
+      "packages/ner/eval/score.mjs",
+      "packages/ner/package.json",
+      "packages/ner/src/index.ts",
+      "packages/ner/tsconfig.json",
+      "packages/ner/tsup.config.ts",
+      "patches/@huggingface__transformers@4.2.0.patch",
+      "pnpm-lock.yaml",
+      "scripts/benchmark-contract.mjs",
+      "scripts/run-release-benchmarks.mjs",
+      "scripts/verify-published-eval.mjs",
+      "training/eval/gold.txt",
+      "training/eval/rare-surnames.txt"
+    ]
+  },
+  "metrics": {
+    "curated": {
+      "documents": 149,
+      "entities": 205,
+      "precisionPct": "95.3",
+      "recallPct": "98.5",
+      "spanF1Pct": "96.9",
+      "labeledF1Pct": "95.9",
+      "leaks": 1
+    },
+    "syntheticAdr": {
+      "documents": 41,
+      "entities": 57,
+      "addresses": 35,
+      "precisionPct": "100.0",
+      "recallPct": "100.0",
+      "spanF1Pct": "100.0",
+      "labeledF1Pct": "96.5",
+      "leaks": 0,
+      "addressPredictions": 36
+    },
+    "linkedinStyle": {
+      "documents": 32,
+      "entities": 53,
+      "precisionPct": "75.8",
+      "recallPct": "88.7",
+      "spanF1Pct": "81.7",
+      "labeledF1Pct": "78.3",
+      "leaks": 0,
+      "measuredAt": "2026-08-10"
+    },
+    "syntheticGold": {
+      "typeF1Pct": "93.08",
+      "typeRecallPct": "94.07",
+      "maskedRecallPct": "98.31",
+      "typeF1FloorPct": "90.0",
+      "typeRecallFloorPct": "92.0",
+      "maskedRecallFloorPct": "97.0"
+    },
+    "rareSurnames": {
+      "entities": 294,
+      "masked": 285,
+      "maskedRecallPct": "96.94",
+      "personTypedRecallPct": "82.65",
+      "leaks": 9
+    },
+    "structuredRegression": {
+      "documents": 258,
+      "entities": 952,
+      "fullHits": 940,
+      "partialLeaks": 1,
+      "misses": 11,
+      "hitRatePct": "98.7",
+      "redactions": 1522,
+      "classifiedJunk": 276
+    },
+    "clinicalCareSubset": {
+      "entities": 165,
+      "generalHits": 165,
+      "clinicalHits": 165,
+      "generalClassifiedJunk": 112,
+      "clinicalClassifiedJunk": 92
+    }
+  },
+  "historical": {
+    "release": "v18",
+    "measuredAt": "2026-07-19",
+    "packageVersion": "0.6.4",
+    "status": "historical-only-not-a-v19-result",
+    "curated": {
+      "documents": 149,
+      "entities": 205,
+      "spanF1Pct": "99.8",
+      "leaks": 0
+    },
+    "independentGold": {
+      "documents": 22,
+      "entities": 58,
+      "precisionPct": "96.4",
+      "recallPct": "93.1",
+      "spanF1Pct": "94.7",
+      "leaks": 2
+    },
+    "address": {
+      "addresses": 35,
+      "spanF1Pct": "100.0",
+      "leaks": 0
+    }
+  }
+}

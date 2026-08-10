@@ -258,10 +258,13 @@ Transformers.js runtime includes a body-cancel fix for local metadata probes.
 
 maskera is **data minimisation, not a compliance guarantee**. The rule layer
 is deterministic and reliable for structured Swedish PII. The model layer
-catches most free-text PII (0.97 redaction recall on independent text) but no
-model is perfect: unusual names, heavy misspellings and OCR noise will
-sometimes get through. Treat it as a strong first line, keep server-side
-access controls, and don't market it as "GDPR compliance in one line", it
-isn't, and I don't claim it is. See
+catches free-text PII, but no model is perfect: unusual names, heavy
+misspellings and OCR noise will sometimes get through. The current v19 release
+scores 96.9% span F1 with 1/205 leaks on its curated release check and 0/53
+leaks on the LinkedIn-style check. Those are synthetic or author-coupled
+release gates, not an independent universal estimate; validate your own domain
+locally before relying on them. Treat maskera as a strong first line, keep
+server-side access controls, and don't market it as "GDPR compliance in one
+line", it isn't, and I don't claim it is. See
 [TRANSPARENCY.md](TRANSPARENCY.md) for exactly what runs where and what
 network calls exist.

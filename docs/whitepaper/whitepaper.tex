@@ -26,7 +26,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{August 10, 2026 \quad\textperiodcentered\quad Whitepaper v1.17}
+\date{August 10, 2026 \quad\textperiodcentered\quad Whitepaper v1.18}
 
 \begin{document}
 \maketitle
@@ -272,9 +272,11 @@ not determine which obligations apply.
 
 \section{Measured quality}
 
-The public-model comparison tables below were measured on \textbf{2026-07-19}
-against historical v18 and \pkg{maskera} version \pkg{0.6.4}. Its \pkg{reconstruct()} code is
-unchanged since 0.6.3; the measurements use q4 quantisation from v18 and
+The first table below is the current privacy-clean v19 release snapshot.
+After an explicit page break, the remaining quality and public-model
+comparison tables are retained as historical v18 evidence measured on
+\textbf{2026-07-19} with \pkg{maskera} version \pkg{0.6.4}. They must not be
+attributed to v19. Those measurements use q4 quantisation from v18 and
 \textbf{exact character spans}, the strict criterion under which both start
 and end offsets must match. The canonical, always-current document is
 \pkg{docs/}\allowbreak\pkg{BENCHMARKS.md} in
@@ -313,7 +315,13 @@ labeled score. The rare-surname safety gate reaches 96.94\% masked recall
 package pin target revision
 \pkg{8604eec76227c35387d5fafd7bb0b9f03f291553}.
 
-\subsection{Curated corpus (upper bound, regression tracker)}
+The broader synthetic-gold gate records 93.08\% type $F_1$, 94.07\% type
+recall, and 98.31\% masked recall. CI gates both an $F_1$ floor and a leakage
+ceiling; leakage remains the primary privacy metric because it counts values
+left entirely unmasked.
+
+\newpage
+\subsection{Historical v18: curated corpus (upper bound, regression tracker)}
 
 149 hand-authored Swedish sentences, 205 free-text entities, including hard
 cases (lowercase, ALL CAPS, genitives, deliberate traps). The corpus shares
@@ -334,7 +342,7 @@ Leakage & 0.0\% & entities missed entirely, 0 of 205 \\
 \end{tabular}
 \end{table}
 
-\subsection{External gold corpus (directional floor)}
+\subsection{Historical v18: external gold corpus (directional floor)}
 
 22 verbatim sentences of Swedish Wikipedia prose, 58 entities, written by
 others and excluded from Maskera's fine-tuning, distillation, and vocabulary
@@ -356,7 +364,7 @@ Leakage & 3.4\% & entities missed entirely, 2 of 58 \\
 \end{tabular}
 \end{table}
 
-\subsection{Street addresses (the class no comparison model has)}
+\subsection{Historical v18: street addresses}
 
 The two gold sets above cover person, location, and organisation; neither
 contains street addresses, the fourth class the model emits. Addresses are
@@ -373,10 +381,10 @@ markers, so the historical result does not transfer to the replacement. That
 replacement has been measured separately in the published v19 snapshot above; it
 does not relabel this historical v18 table. The previous release's
 one documented exception (the ordinary word \emph{Festen}
-over-redacted in one distractor sentence) is fixed in this release, which
+over-redacted in one distractor sentence) was fixed in v18, which
 carries no gate exception at all.
 
-\subsection{Comparison with public Swedish NER models}
+\subsection{Historical v18: comparison with public Swedish NER models}
 
 Same external gold corpus, same harness, overlap matching, labels mapped
 to person, location, and organisation. ``Flagged'' is the share of entities
@@ -641,8 +649,8 @@ sentence-initial bare-surname miss was new in v18 and was weighed explicitly
 against the dedicated 294-sentence rare-surname aggregate. Earlier chat-frame,
 all-caps, sentence-initial organisation and lowercase-encyclopedic categories
 are documented as aggregate history in \pkg{BENCHMARKS.md}. These misses
-are why leakage, not $F_1$, is the gated metric: every failure mode is
-visible and tracked in the public regression corpus.
+are why leakage is the primary privacy metric, while CI also gates $F_1$:
+every failure mode is visible and tracked in the public regression corpus.
 
 In short: maskera does not make text harmless, but it materially reduces
 what leaves the caller's environment, with reproducible evidence and
@@ -650,7 +658,7 @@ visible failure modes.
 
 \vfill
 \noindent\rule{\textwidth}{0.4pt}\par\smallskip
-{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.17
+{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.18
 \textperiodcentered{} August 10, 2026 \textperiodcentered{} Joel H\"agvall
 \textperiodcentered{} maskera.dev. Current numbers live in
 \pkg{docs/BENCHMARKS.md}; where this document disagrees, that file wins.

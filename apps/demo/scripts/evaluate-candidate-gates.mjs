@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /** Aggregate-only gate over the hand-authored, synthetic marked-up corpus. */
-import { readFileSync } from "node:fs"
-import { resolve } from "node:path"
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { dirname, resolve } from "node:path"
 
 import { createNerRecognizer } from "maskera"
 
@@ -13,6 +13,7 @@ const GOLD_FILE =
   process.env.MASKERA_GOLD_FILE ?? resolve(process.cwd(), "../../training/eval/gold.txt")
 const F1_FLOOR = Number(process.env.SYNTHETIC_GOLD_F1_FLOOR ?? "0.90")
 const RECALL_FLOOR = Number(process.env.SYNTHETIC_GOLD_RECALL_FLOOR ?? "0.90")
+const RESULT_FILE = process.env.MASKERA_RESULT_FILE
 
 if (!MODEL) throw new Error("MASKERA_MODEL is required")
 
@@ -99,6 +100,25 @@ for (const example of loadGold(GOLD_FILE)) {
 
 const typed = metrics(totals.typed)
 const covered = metrics(totals.covered)
+if (RESULT_FILE) {
+  const resultPath = resolve(process.cwd(), RESULT_FILE)
+  mkdirSync(dirname(resultPath), { recursive: true })
+  writeFileSync(
+    resultPath,
+    `${JSON.stringify(
+      {
+        schemaVersion: 1,
+        kind: "synthetic-gold",
+        totals,
+        metrics: { typed, covered },
+      },
+      null,
+      2,
+    )}\n`,
+    "utf8",
+  )
+  console.log(`machine result: ${resultPath}`)
+}
 console.log(
   `RESULT synthetic_gold type_f1=${typed.f1.toFixed(4)} type_recall=${typed.recall.toFixed(4)} masked_recall=${covered.recall.toFixed(4)}`,
 )

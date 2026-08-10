@@ -1425,7 +1425,7 @@ multi-word entities.
 
 | Gate | Result |
 | --- | --- |
-| synthetic gold | type F1 92.89%; type recall 94.07%; masked recall 98.31% |
+| synthetic gold | type F1 93.08%; type recall 94.07%; masked recall 98.31% |
 | rare surnames | 96.94% masked (285/294), 82.65% PER-typed, 9 leaks |
 | curated | 95.3% precision, 98.5% recall, 96.9% span F1, 1/205 leaks |
 | revised synthetic ADR | 100.0% span precision/recall/F1, 0/57 leaks; all 35 addresses exact and labeled ADDRESS |

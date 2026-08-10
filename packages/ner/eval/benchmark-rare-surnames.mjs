@@ -28,6 +28,7 @@
  *   RESULT masked_recall=0.9932 per_recall=0.9864 leaks=2/294
  */
 import fs from "node:fs"
+import { dirname, resolve } from "node:path"
 
 const FILE = process.env.BENCHMARK_FILE ?? "training/eval/rare-surnames.txt"
 const REMOTE = process.env.MASKERA_REMOTE === "1"
@@ -36,6 +37,7 @@ const MODEL =
 const MODEL_PATH = process.env.MASKERA_MODEL_PATH
 const DTYPE = process.env.MASKERA_DTYPE ?? "q4"
 const AGGREGATE_ONLY = process.env.MASKERA_AGGREGATE_ONLY === "1"
+const RESULT_FILE = process.env.MASKERA_RESULT_FILE
 
 function skip(reason) {
   console.log(`\nbenchmark skipped: ${reason}`)
@@ -123,6 +125,29 @@ console.log(`leaks:                    ${leakCount}  (${pct(leakCount)})`)
 if (!AGGREGATE_ONLY && leaks.length) {
   console.log("--- leaked sentences (first 20) ---")
   for (const l of leaks.slice(0, 20)) console.log(`  ${l}`)
+}
+if (RESULT_FILE) {
+  const resultPath = resolve(process.cwd(), RESULT_FILE)
+  fs.mkdirSync(dirname(resultPath), { recursive: true })
+  fs.writeFileSync(
+    resultPath,
+    `${JSON.stringify(
+      {
+        schemaVersion: 1,
+        kind: "rare-surnames",
+        entities: total,
+        masked,
+        personTyped: per,
+        leaks: leakCount,
+        maskedRecall: masked / total,
+        personTypedRecall: per / total,
+      },
+      null,
+      2,
+    )}\n`,
+    "utf8",
+  )
+  console.log(`machine result: ${resultPath}`)
 }
 console.log(
   `\nRESULT masked_recall=${(masked / total).toFixed(4)} per_recall=${(per / total).toFixed(4)} leaks=${leakCount}/${total}`,

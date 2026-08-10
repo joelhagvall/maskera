@@ -229,6 +229,15 @@ for (const file of repoFiles) {
   const cardMatches = [...text.matchAll(cardPattern)]
   const bankgiroPattern = /\b\d{3,4}-\d{4}\b/g
   const bankgiroMatches = [...text.matchAll(bankgiroPattern)]
+  // Model revisions and SHA-256 attestations are opaque hexadecimal values.
+  // Numeric runs inside them can look like Swedish phone prefixes; protect
+  // only the exact 40/64-character hash span, never the rest of the file.
+  const hashSpans = [...text.matchAll(/\b[a-f0-9]{40}(?:[a-f0-9]{24})?\b/gi)].map((match) => [
+    match.index,
+    match.index + match[0].length,
+  ])
+  const overlapsHash = (start, end) =>
+    hashSpans.some(([hashStart, hashEnd]) => hashStart < end && hashEnd > start)
   const protectedSpans = [
     ...identityMatches.map((match) => [match.index, match.index + match[0].length]),
     ...ibanMatches.map((match) => [match.index, match.index + match[0].length]),
@@ -238,6 +247,7 @@ for (const file of repoFiles) {
 
   for (const match of identityMatches) {
     const value = match[0]
+    if (overlapsHash(match.index, match.index + value.length)) continue
     const kind = dateKind(value) ?? (organisationCore(value) ? "organisationsnummer" : undefined)
     // A compact PTS-reserved fictional phone can also be a valid
     // samordningsnummer shape. Its authoritative phone allocation still makes
@@ -256,6 +266,7 @@ for (const file of repoFiles) {
       const start = match.index + match[0].indexOf(value)
       const end = start + value.length
       phoneSpans.push([start, end])
+      if (overlapsHash(start, end)) continue
       if (
         protectedSpans.some(
           ([protectedStart, protectedEnd]) => protectedStart < end && protectedEnd > start,

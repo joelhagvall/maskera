@@ -49,6 +49,7 @@
     "CHANGELOG.md"
   ],
   "scripts": {
+    "prebuild": "node ../../scripts/check-benchmark-sync.mjs",
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest run",

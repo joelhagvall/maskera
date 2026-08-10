@@ -14,6 +14,7 @@
  *   MASKERA_PROFILE     general or clinical (default: general)
  *   MASKERA_HIT_FLOOR   minimum full-hit rate (default: 0.98)
  *   MASKERA_REPORT      write a detailed Markdown report to this path
+ *   MASKERA_RESULT_FILE write aggregate machine-readable JSON to this path
  */
 
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs"
@@ -30,6 +31,9 @@ const profile = process.env.MASKERA_PROFILE ?? "general"
 const hitFloor = Number(process.env.MASKERA_HIT_FLOOR ?? "0.98")
 const reportPath = process.env.MASKERA_REPORT
   ? resolve(repoRoot, process.env.MASKERA_REPORT)
+  : undefined
+const resultPath = process.env.MASKERA_RESULT_FILE
+  ? resolve(repoRoot, process.env.MASKERA_RESULT_FILE)
   : undefined
 const STOP_WORDS = new Set(["och", "att", "den", "det", "som", "med", "har", "ska"])
 const NAME_LIKE = /^[A-ZÅÄÖ][a-zåäöé'-]+( [A-ZÅÄÖ][a-zåäöé'-]+)+$/
@@ -97,6 +101,29 @@ for (const [index, test] of corpus.entries()) {
 
 const summary = summarize(results)
 printSummary(summary)
+
+if (resultPath) {
+  const { categories, durationMs: _durationMs, ...totals } = summary
+  mkdirSync(dirname(resultPath), { recursive: true })
+  writeFileSync(
+    resultPath,
+    `${JSON.stringify(
+      {
+        schemaVersion: 1,
+        kind: "domain-regression",
+        profile,
+        model,
+        dtype,
+        totals,
+        categories: Object.fromEntries(categories),
+      },
+      null,
+      2,
+    )}\n`,
+    "utf8",
+  )
+  console.log(`Machine result: ${resultPath}`)
+}
 
 if (reportPath) {
   mkdirSync(dirname(reportPath), { recursive: true })

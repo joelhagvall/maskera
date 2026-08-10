@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "pnpm --filter @maskera/core --filter maskera build && node scripts/fetch-model.mjs && vite build && node scripts/prune-build-models.mjs",
+    "build": "node ../../scripts/check-benchmark-sync.mjs && node ../../scripts/check-benchmark-live.mjs --predeploy-if-production && pnpm --filter @maskera/core --filter maskera build && node scripts/fetch-model.mjs && node ../../scripts/run-release-benchmarks.mjs --if-production && vite build && node scripts/prune-build-models.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:model": "start-server-and-test preview http://127.0.0.1:4173 model:smoke",
