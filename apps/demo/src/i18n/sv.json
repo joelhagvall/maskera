@@ -301,6 +301,7 @@
     "tocLabel": "På den här sidan",
     "toc": [
       { "href": "#matt", "label": "Vad måtten betyder" },
+      { "href": "#aktuellt", "label": "Aktuella v19-resultat" },
       { "href": "#oberoende", "label": "Externa svenska texter" },
       { "href": "#adresser", "label": "Svenska adresser" },
       { "href": "#tolkning", "label": "Så ska resultaten tolkas" },
@@ -312,12 +313,13 @@
     "independentTitle": "Externa svenska texter",
     "independentCaption": "22 meningar skrivna av andra och uteslutna ur Maskeras finträning, destillering och vokabulärurval. De innehåller 58 personuppgifter. Testet är litet och bevisar inte frånvaro ur KB-BERTs tidigare förträning, så resultatet visar en riktning och inte en slutlig vinnare.",
     "addressesTitle": "Svenska adresser",
-    "addressesCaption": "Publicerade v19 har mätts på 41 texter med 35 uttryckligen syntetiska gatuadresser.",
-    "currentTitle": "Aktuell modell: v19",
-    "currentBody": "Det här är ett aktuellt releasegrindstest av Maskera, inte en ny jämförelse med Azure eller andra system.",
+    "addressesCaption": "Gatuadresser redovisas separat eftersom den historiska jämförelsen använder en annan korpus än den aktuella v19-mätningen.",
+    "currentTitle": "Aktuella releasegrindar: v19",
+    "currentBody": "Publicerade v19 mättes på de syntetiska releasegrindarna 2026-08-06. Den LinkedIn-liknande raden kördes om från en ren build 2026-08-10. Resultaten är tester av Maskera, inte en ny jämförelse med Azure eller andra system.",
     "currentStats": [
-      { "value": "57 av 57", "label": "entiteter hittade" },
-      { "value": "0", "label": "fullständiga missar" },
+      { "value": "96,9 % / 1 av 205", "label": "curated: span-F1 / missar" },
+      { "value": "100,0 % / 0 av 57", "label": "syntetisk ADR: span-F1 / missar" },
+      { "value": "81,7 % / 0 av 53", "label": "LinkedIn-liknande: span-F1 / missar" },
       { "value": "35 av 35", "label": "adresser hittade exakt" }
     ],
     "historicalAddressTitle": "Historisk jämförelse: v18",
@@ -420,7 +422,7 @@
     ],
     "sourcesTitle": "Källor och reproduktion",
     "provenance": [
-      "Publicerade maskera-sv-ner v19 (q4, cirka 43 MB) mättes på de syntetiska releasegrindarna 2026-08-06.",
+      "Publicerade maskera-sv-ner v19 (q4, cirka 43 MB) mättes på de syntetiska releasegrindarna 2026-08-06. Den LinkedIn-liknande raden kördes om 2026-08-10.",
       "De jämförande tabellerna mättes 2026-07-19 på maskera 0.6.4 och historiska maskera-sv-ner v18.",
       "Azure mättes 2026-07-22 med GA-API 2024-11-01, modell 2025-11-01, språk sv, UTF-16-index och loggingOptOut aktiverat."
     ],

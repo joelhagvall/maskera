@@ -34,7 +34,7 @@ export const MASKERA_SV_NER_MODEL = "joelhagvall/maskera-sv-ner"
  *
  * Pass `revision: "main"` to opt back into always-latest.
  */
-export const MASKERA_SV_NER_REVISION = "7ecd7a531c989d09ffb3d9ecf4168696786a204e"
+export const MASKERA_SV_NER_REVISION = "8604eec76227c35387d5fafd7bb0b9f03f291553"
 
 /**
  * The default model is maskera's own Swedish model. Pass any other

@@ -1,5 +1,11 @@
 # maskera
 
+## 0.9.5
+
+### Patch Changes
+
+- Refresh the published v19 benchmark snapshot, document the re-measured LinkedIn-style result, and pin the unchanged model weights at the model card's latest Hugging Face revision.
+
 ## 0.9.4
 
 ### Patch Changes

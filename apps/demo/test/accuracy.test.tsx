@@ -93,14 +93,22 @@ describe("Accuracy", () => {
 
   it("pins the Maskera provenance to the benchmark source of truth", () => {
     expect(benchmarkSource).toContain("Published:** 2026-08-06")
-    expect(benchmarkSource).toContain("7ecd7a531c989d09ffb3d9ecf4168696786a204e")
+    expect(benchmarkSource).toContain("8604eec76227c35387d5fafd7bb0b9f03f291553")
     expect(benchmarkSource).toContain("Measured:** 2026-07-19")
     expect(benchmarkSource).toContain("maskera@0.6.4")
     expect(benchmarkSource).toContain("42,705,681 bytes")
     expect(benchmarkSource).toContain("| span F1    | 99.8%")
     expect(copy.accuracy.provenance[0]).toContain("2026-08-06")
+    expect(copy.accuracy.provenance[0]).toContain("2026-08-10")
     expect(copy.accuracy.provenance[0]).toContain("v19")
     expect(copy.accuracy.provenance[0]).toContain("43 MB")
+    expect(copy.accuracy.currentBody).toContain("2026-08-10")
+    expect(copy.accuracy.currentStats.map((stat) => stat.value)).toEqual([
+      "96,9 % / 1 av 205",
+      "100,0 % / 0 av 57",
+      "81,7 % / 0 av 53",
+      "35 av 35",
+    ])
     expect(copy.accuracy.provenance[1]).toContain("2026-07-19")
     expect(copy.accuracy.provenance[1]).toContain("0.6.4")
     expect(copy.accuracy.provenance[1]).toContain("v18")

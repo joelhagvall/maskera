@@ -1438,7 +1438,7 @@ the first privacy-clean attempt but remains above its historical 94.9% floor;
 the fix is therefore not described as an across-the-board improvement.
 
 **Release state:** published on the Hub at revision
-`7ecd7a531c989d09ffb3d9ecf4168696786a204e`; the npm source pin, demo hashes
+`8604eec76227c35387d5fafd7bb0b9f03f291553`; the npm source pin, demo hashes
 and versioned demo folder all target the same artifact.
 
 ## Publish to Hugging Face (single hosted source)

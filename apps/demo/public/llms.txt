@@ -20,7 +20,7 @@ const { text, restore } = await redactWithNer(
 // "hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]"
 ```
 
-Published-v19 release gates (q4, measured 2026-08-06): curated span F1 96.9% with 1/205 leaks, revised synthetic ADR label-agnostic span F1 100.0% with 0/57 leaks, and rare-surname masked recall 96.94%. Historical v18 public-model comparisons remain separately labeled and do not automatically transfer to v19: https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md
+Published-v19 release gates (q4; release measured 2026-08-06): curated span F1 96.9% with 1/205 leaks, revised synthetic ADR label-agnostic span F1 100.0% with 0/57 leaks, LinkedIn-style span F1 81.7% with 0/53 leaks (re-measured 2026-08-10), and rare-surname masked recall 96.94%. Historical v18 public-model comparisons remain separately labeled and do not automatically transfer to v19: https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md
 
 Deployment boundary: the local/on-device claims above apply to this
 open-source package and the maskera.dev browser demo. Maskera Gateway is the

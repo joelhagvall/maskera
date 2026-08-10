@@ -9,7 +9,7 @@ other document has drifted.
 - **Artifact:** [`joelhagvall/maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner),
   `onnx/model_q4.onnx` (`dtype: "q4"`, the default and what the demo ships),
   sha256 `6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66`,
-  Hub revision `7ecd7a531c989d09ffb3d9ecf4168696786a204e`, 42,705,681 bytes.
+  Hub revision `8604eec76227c35387d5fafd7bb0b9f03f291553`, 42,705,681 bytes.
   This is the attested privacy-clean v19 release; see
   [training/README.md](../training/README.md).
 - **Pipeline:** the shipped `maskera` path (model + `reconstruct()`
@@ -30,7 +30,7 @@ other document has drifted.
 - **Measured:** 2026-08-06; the LinkedIn-style row was re-measured on
   2026-08-10 from a clean build of the current packaged pipeline.
 - **Artifact:** `student-v19-privacy-precision2-onnx`, published as Hub revision
-  `7ecd7a531c989d09ffb3d9ecf4168696786a204e`; q4,
+  `8604eec76227c35387d5fafd7bb0b9f03f291553`; q4,
   42,705,681 bytes, evaluated through the current packaged reconstruction and
   default whole-word precision guard.
 - **Release state:** every defined gate passes; the Hub, npm source pin and demo

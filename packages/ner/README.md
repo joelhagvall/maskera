@@ -234,9 +234,12 @@ plus 4,760 disjoint validation rows and has passed every defined release gate.
 On its revised synthetic ADR set the current pipeline covers all 57
 gold spans exactly with zero leaks, including all 35 marked addresses; one
 organisation is typed ADDRESS, so labeled F1 is 96.5%. On the packaged gold
-corpus historical v18 scored 99.8% span-F1 with a 0.0% leak rate; on independent
-real text, 94.7% and 3.4% (measured 2026-07-19). Those historical comparisons
-do not automatically transfer to v19. The canonical, dated release tables live in
+curated set v19 reaches 96.9% span F1 with 1/205 leaks, and on the
+LinkedIn-style set it reaches 81.7% with 0/53 leaks (re-measured 2026-08-10).
+On the packaged gold corpus historical v18 scored 99.8% span-F1 with a 0.0%
+leak rate; on independent real text, 94.7% and 3.4% (measured 2026-07-19).
+Those historical comparisons do not automatically transfer to v19. The
+canonical, dated release tables live in
 [docs/BENCHMARKS.md](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md).
 v19's training-data scope, identifier rejection, provenance hashes,
 and separate KB-BERT pretraining caveat are documented in

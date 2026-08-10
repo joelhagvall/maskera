@@ -41,19 +41,10 @@ export function Accuracy({ go }: { go: (view: View) => void }) {
           <h2 id="matt">{copy.accuracy.metricsTitle}</h2>
           <p className="prose-body">{copy.accuracy.metricsBody}</p>
 
-          <BenchmarkTable
-            id="oberoende"
-            title={copy.accuracy.independentTitle}
-            caption={copy.accuracy.independentCaption}
-            rows={independentRows}
-          />
-
-          <section className="benchmark-section" id="adresser" aria-labelledby="adresser-heading">
-            <h2 id="adresser-heading">{copy.accuracy.addressesTitle}</h2>
-            <p className="benchmark-caption">{copy.accuracy.addressesCaption}</p>
+          <section className="benchmark-section" id="aktuellt" aria-labelledby="aktuellt-heading">
             <div className="benchmark-current">
               <div>
-                <h3>{copy.accuracy.currentTitle}</h3>
+                <h2 id="aktuellt-heading">{copy.accuracy.currentTitle}</h2>
                 <p>{copy.accuracy.currentBody}</p>
               </div>
               <dl>
@@ -65,6 +56,18 @@ export function Accuracy({ go }: { go: (view: View) => void }) {
                 ))}
               </dl>
             </div>
+          </section>
+
+          <BenchmarkTable
+            id="oberoende"
+            title={copy.accuracy.independentTitle}
+            caption={copy.accuracy.independentCaption}
+            rows={independentRows}
+          />
+
+          <section className="benchmark-section" id="adresser" aria-labelledby="adresser-heading">
+            <h2 id="adresser-heading">{copy.accuracy.addressesTitle}</h2>
+            <p className="benchmark-caption">{copy.accuracy.addressesCaption}</p>
             <BenchmarkTable
               id="historiska-adresser"
               title={copy.accuracy.historicalAddressTitle}

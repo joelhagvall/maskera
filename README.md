@@ -60,8 +60,9 @@ places, organisations and street addresses, including all-lowercase chat text
 how people actually type.
 
 > **v19 release gates:** span F1 **96.9%** on curated (1/205 leaks), **100.0%**
-> label-agnostic span F1 on the revised synthetic ADR set (0/57 leaks), and
-> **96.94%** rare-surname masked recall (q4, measured 2026-08-06). One
+> label-agnostic span F1 on the revised synthetic ADR set (0/57 leaks),
+> **81.7%** on the LinkedIn-style set (0/53 leaks; re-measured 2026-08-10),
+> and **96.94%** rare-surname masked recall (q4; release measured 2026-08-06). One
 > canonical, dated, reproducible table:
 > **[docs/BENCHMARKS.md](docs/BENCHMARKS.md)**; every other number in this
 > repo defers to it.

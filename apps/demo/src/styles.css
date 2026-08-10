@@ -1429,11 +1429,13 @@ html[data-theme="dark"] .tok-f {
   border-radius: var(--radius);
   background: var(--gray-100);
 }
+.benchmark-current h2,
 .benchmark-current h3,
 .benchmark-current p,
 .benchmark-current dl {
   margin: 0;
 }
+.benchmark-current h2,
 .benchmark-current h3 {
   font-size: 16px;
 }
@@ -1445,7 +1447,7 @@ html[data-theme="dark"] .tok-f {
 }
 .benchmark-current dl {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
 .benchmark-current dl div {
