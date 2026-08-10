@@ -8,21 +8,8 @@ export function LanguageToggle({ current }: { current: View }) {
   const href = `${viewPath(current, nextLocale)}${hash}`
 
   const switchLanguage = () => {
-    const update = () => {
-      window.history.pushState(null, "", href)
-      setActiveLocale(nextLocale)
-    }
-    const transitionDocument = document as Document & {
-      startViewTransition?: (callback: () => void) => void
-    }
-    if (
-      transitionDocument.startViewTransition &&
-      !window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      transitionDocument.startViewTransition(update)
-      return
-    }
-    update()
+    window.history.pushState(null, "", href)
+    setActiveLocale(nextLocale)
   }
 
   return (

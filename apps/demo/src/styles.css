@@ -43,20 +43,6 @@
     U+2C60-2C7F, U+A720-A7FF;
 }
 
-/* Keep the old page visible until the localized document is ready, then
-   crossfade. This removes the white full-navigation flash while preserving a
-   real language URL and a normal link fallback. */
-@view-transition {
-  navigation: auto;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation: none;
-  }
-}
-
 :root {
   /* Light is the default: only an explicit toggle choice (data-theme on
      <html>, set by the head bootstrap script) switches to dark; the system
