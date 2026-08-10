@@ -1,4 +1,4 @@
-import { HF_MODEL } from "../constants"
+import { GITHUB, HF_MODEL } from "../constants"
 import copy from "../i18n/sv.json"
 import { navClick, viewPaths } from "../routing"
 
@@ -22,7 +22,10 @@ export function Footer({
   return (
     <footer className="footer">
       <p className="footer-row footer-intro">
-        {copy.footer.openSource} ·{" "}
+        <a href={GITHUB} target="_blank" rel="noreferrer">
+          {copy.footer.openSource}
+        </a>{" "}
+        ·{" "}
         <a href={HF_MODEL} target="_blank" rel="noreferrer">
           {copy.footer.modelLink}
         </a>

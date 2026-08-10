@@ -13,13 +13,14 @@ safety-critical number for redaction.
 > comparable to the table below. `export-corpora.mjs` now exports only the
 > synthetic curated and ADR sets.
 
-> **Published v19 snapshot (2026-08-06):** the attested privacy-clean release
+> **Published v19 snapshot (2026-08-06; LinkedIn row re-measured
+> 2026-08-10):** the attested privacy-clean release
 > passed every defined gate. On the revised synthetic ADR
 > corpus its current q4 pipeline reaches 100.0% label-agnostic span precision,
 > recall and F1 with 0/57 leaks; all 35 marked addresses are exact and labeled
 > ADDRESS. One gold organisation is typed ADDRESS, yielding 96.5% labeled F1
 > and 35/36 ADDRESS-only precision. Curated span F1 is 96.9% with 1/205 leaks;
-> LinkedIn-style span F1 is 81.0% with 0/53 leaks. This is not a competitor
+> LinkedIn-style span F1 is 81.7% with 0/53 leaks. This is not a competitor
 > re-run; the full release snapshot and caveats are in
 > [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
 

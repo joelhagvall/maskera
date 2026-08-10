@@ -27,7 +27,8 @@ other document has drifted.
 
 ## Published privacy-clean v19 release
 
-- **Measured:** 2026-08-06.
+- **Measured:** 2026-08-06; the LinkedIn-style row was re-measured on
+  2026-08-10 from a clean build of the current packaged pipeline.
 - **Artifact:** `student-v19-privacy-precision2-onnx`, published as Hub revision
   `7ecd7a531c989d09ffb3d9ecf4168696786a204e`; q4,
   42,705,681 bytes, evaluated through the current packaged reconstruction and
@@ -39,7 +40,7 @@ other document has drifted.
 | --- | ---: | ---: | ---: | ---: | ---: |
 | curated, 149 documents / 205 entities | 95.3% | 98.5% | 96.9% | 95.9% | 1/205 (0.5%) |
 | synthetic ADR, 41 documents / 57 entities | 100.0% | 100.0% | **100.0%** | 96.5% | **0/57 (0.0%)** |
-| LinkedIn-style, 32 documents / 53 entities | 74.6% | 88.7% | 81.0% | 77.6% | **0/53 (0.0%)** |
+| LinkedIn-style, 32 documents / 53 entities | 75.8% | 88.7% | 81.7% | 78.3% | **0/53 (0.0%)** |
 
 The synthetic ADR set contains 35 marked street-address spans. All 35 are
 found, labeled ADDRESS, and matched exactly, including the house number. One

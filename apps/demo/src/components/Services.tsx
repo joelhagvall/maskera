@@ -4,11 +4,12 @@ import type { View } from "../routing"
 import { navClick, viewPaths } from "../routing"
 import { TopBar } from "./TopBar"
 
-const BOOKING = "https://calendly.com/joel-hagvall/30min"
+const BOOKING_EMAIL = "hej@maskera.dev"
 const PORTAL = "https://app.maskera.dev"
 
-function booking(pkg: string) {
-  return `${BOOKING}?utm_source=maskera_dev&utm_content=${pkg}`
+function bookingEmail(subjectLine: string) {
+  const subject = encodeURIComponent(subjectLine)
+  return `mailto:${BOOKING_EMAIL}?subject=${subject}`
 }
 
 function portal(path: string, content: string) {
@@ -53,7 +54,7 @@ const PRODUCTS: Product[] = [
     featured: true,
     points: copy.services.products[0].points,
     cta: copy.services.gatewayInterestCta,
-    href: booking("gateway_technical_review"),
+    href: bookingEmail(copy.services.gatewayEmailSubject),
     secondaryCta: copy.services.gatewayDocsCta,
     secondaryHref: portal("/gateway", "business_gateway"),
     destination: copy.services.gatewayContactNote,

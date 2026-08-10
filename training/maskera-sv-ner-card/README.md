@@ -226,8 +226,9 @@ The exact published-v19 provenance is:
   `ce7c3424687f042f1320e0528293d492c82918c4`.
 
 Measured on the published q4 artifact plus the packaged runtime precision
-guard: curated span F1 96.9% with 1/205 leaks; revised synthetic ADR span
-precision/recall/F1 100.0% with 0/57 leaks; LinkedIn-style span F1 81.0% with
+guard, with the LinkedIn-style row re-measured from a clean build on
+2026-08-10: curated span F1 96.9% with 1/205 leaks; revised synthetic ADR span
+precision/recall/F1 100.0% with 0/57 leaks; LinkedIn-style span F1 81.7% with
 0/53 leaks; decomposing rare-surname masked recall 96.94% (285/294). All 35
 marked address spans are exact and labeled ADDRESS. One gold organisation is
 typed ADDRESS, so whole-corpus ADR labeled F1 is 96.5% and ADDRESS-only

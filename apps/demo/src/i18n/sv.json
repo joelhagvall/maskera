@@ -610,8 +610,9 @@
     "lede": "Välj Gateway för en signerad företagsleverans med support i er egen miljö. Välj npm-paketen om ni vill bygga och underhålla integrationen själva.",
     "sublede": "Gateway finns som 60-dagars pilot eller årslicens. Ni börjar med en teknisk genomgång.",
     "gatewayInterestCta": "Boka teknisk genomgång",
+    "gatewayEmailSubject": "Teknisk genomgång av Maskera Gateway",
     "gatewayDocsCta": "Läs om Gateway",
-    "gatewayContactNote": "Öppnar bokningen i en ny flik",
+    "gatewayContactNote": "Öppnar ett nytt mejl till hej@maskera.dev",
     "products": [
       {
         "id": "gateway",

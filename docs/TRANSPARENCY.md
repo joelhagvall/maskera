@@ -53,7 +53,7 @@ are.
 - The public-comparison tables describe historical v18, while the current v19
   release snapshot records 100.0%
   label-agnostic span F1 and 0/57 leaks on the revised synthetic ADR set,
-  96.9% span F1 and 1/205 leaks on curated, and 81.0% span F1 with 0/53
+  96.9% span F1 and 1/205 leaks on curated, and 81.7% span F1 with 0/53
   leaks on the LinkedIn-style set. All defined gates pass, but these are
   synthetic or author-coupled checks, not independent universal estimates.
   The canonical, dated numbers live in [`docs/BENCHMARKS.md`](BENCHMARKS.md);

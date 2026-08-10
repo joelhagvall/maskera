@@ -1429,7 +1429,7 @@ multi-word entities.
 | rare surnames | 96.94% masked (285/294), 82.65% PER-typed, 9 leaks |
 | curated | 95.3% precision, 98.5% recall, 96.9% span F1, 1/205 leaks |
 | revised synthetic ADR | 100.0% span precision/recall/F1, 0/57 leaks; all 35 addresses exact and labeled ADDRESS |
-| LinkedIn-style | 74.6% precision, 88.7% recall, 81.0% span F1, 0/53 leaks |
+| LinkedIn-style | 75.8% precision, 88.7% recall, 81.7% span F1, 0/53 leaks |
 
 ADR labeled F1 is 96.5% because one gold organisation is covered at its exact
 span but typed ADDRESS (ADDRESS-only precision 35/36). The curated miss is a
