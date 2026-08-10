@@ -21,7 +21,7 @@
   ],
   "properties": {
     "$schema": { "const": "https://maskera.dev/benchmark-release.schema.json" },
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "const": 2 },
     "status": { "const": "published" },
     "release": { "$ref": "#/$defs/release" },
     "publishedAt": { "$ref": "#/$defs/date" },
@@ -75,7 +75,7 @@
     "evaluation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["command", "suiteSha256", "files"],
+      "required": ["command", "suiteSha256", "files", "environment"],
       "properties": {
         "command": { "const": "pnpm eval:release" },
         "suiteSha256": { "$ref": "#/$defs/sha256" },
@@ -84,6 +84,35 @@
           "minItems": 1,
           "uniqueItems": true,
           "items": { "type": "string", "minLength": 1 }
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["node", "packageManager", "lockfile", "selectors", "ignoredPeers", "sha256"],
+          "properties": {
+            "node": { "type": "string", "minLength": 1 },
+            "packageManager": {
+              "type": "string",
+              "pattern": "^pnpm@[0-9]+\\.[0-9]+\\.[0-9]+$"
+            },
+            "lockfile": { "const": "pnpm-lock.yaml" },
+            "selectors": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": { "type": "string", "minLength": 1 }
+              }
+            },
+            "ignoredPeers": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "sha256": { "$ref": "#/$defs/sha256" }
+          }
         }
       }
     },

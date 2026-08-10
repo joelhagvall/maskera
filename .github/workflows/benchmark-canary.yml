@@ -26,11 +26,15 @@ jobs:
       - uses: actions/checkout@v5
         with:
           ref: ${{ github.event.deployment.sha || github.sha }}
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v5
         with:
           node-version: 22
+          cache: pnpm
+      - name: Install benchmark verifier dependency
+        run: pnpm install --frozen-lockfile --filter maskera-monorepo --ignore-scripts
       - name: Verify repository carriers
-        run: node scripts/check-benchmark-sync.mjs
+        run: pnpm check:benchmarks
       - name: Verify npm, Hugging Face, GitHub and both deployed sites
         env:
           MASKERA_GITHUB_REVISION: ${{ github.event.deployment.sha || github.sha }}

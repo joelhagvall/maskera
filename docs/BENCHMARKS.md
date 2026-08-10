@@ -10,10 +10,17 @@ That release contract lives in
 the human report, package/model pins, public carrier files and whitepaper match
 that contract. Live canaries additionally compare npm, Hugging Face, GitHub,
 maskera.dev and app.maskera.dev; any mismatch is a release/deploy failure.
-Release CI also reruns every current v19 evaluation from the checksum-locked
-suite with `pnpm eval:release` and requires the recomputed result object to
-match the contract exactly. The frozen suite checksum is
-`5584f0f4b4eaa82405170f7ad8e4de8544c0301b4ae507312afc5043d4862975`.
+Release CI also reruns every current v19 evaluation with `pnpm eval:release`
+and requires the recomputed result object to match the contract exactly. Two
+checksums make the reproduction boundary explicit: the suite checksum locks
+the corpora, scorers, runners and runtime source; the environment checksum
+locks the selected resolved dependency closure that executes the evaluation.
+Type-only peers and unrelated build, lint, browser-audit and test-tool updates
+are outside that closure and cannot masquerade as changed accuracy evidence.
+The frozen suite checksum is
+`dfb002f3910b83e9f529233850248930085188e24362187e5c2eb53f62ce6cbd` and the
+frozen evaluation-environment checksum is
+`e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`.
 
 - **Published:** 2026-08-06
 - **Artifact:** [`joelhagvall/maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner),

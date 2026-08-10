@@ -4,7 +4,8 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join, resolve } from "node:path"
 import test from "node:test"
-import { firstDifference } from "./benchmark-contract.mjs"
+import YAML from "yaml"
+import { evaluationEnvironmentSha256, firstDifference } from "./benchmark-contract.mjs"
 
 const root = resolve(import.meta.dirname, "..")
 
@@ -74,6 +75,84 @@ test("a changed evaluation input checksum fails before release", async () => {
     assert.equal(result.status, 1)
     assert.match(result.stderr, /BENCHMARK DRIFT/)
     assert.match(result.stderr, /evaluation suite checksum/)
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
+
+test("a changed evaluation environment checksum fails before release", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "maskera-benchmark-environment-"))
+  try {
+    const source = JSON.parse(await readFile(join(root, "docs/benchmark-release.json"), "utf8"))
+    source.evaluation.environment.sha256 = "0".repeat(64)
+    const changedContract = join(directory, "benchmark-release.json")
+    await writeFile(changedContract, `${JSON.stringify(source, null, 2)}\n`)
+    const result = spawnSync(process.execPath, ["scripts/check-benchmark-sync.mjs"], {
+      cwd: root,
+      encoding: "utf8",
+      env: { ...process.env, MASKERA_BENCHMARK_CONTRACT: changedContract },
+    })
+    assert.equal(result.status, 1)
+    assert.match(result.stderr, /BENCHMARK DRIFT/)
+    assert.match(result.stderr, /evaluation environment checksum/)
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
+
+test("an unrelated development dependency does not change the eval environment", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "maskera-benchmark-unrelated-lock-"))
+  try {
+    const contract = JSON.parse(await readFile(join(root, "docs/benchmark-release.json"), "utf8"))
+    const source = YAML.parse(await readFile(join(root, "pnpm-lock.yaml"), "utf8"))
+    source.importers["."].devDependencies["@biomejs/biome"].version = "99.0.0"
+    const changedLockfile = join(directory, "pnpm-lock.yaml")
+    await writeFile(changedLockfile, YAML.stringify(source))
+
+    const expected = await evaluationEnvironmentSha256(contract.evaluation.environment)
+    const actual = await evaluationEnvironmentSha256(contract.evaluation.environment, {
+      lockfilePath: changedLockfile,
+    })
+    assert.equal(actual, expected)
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
+
+test("a type-only peer version does not change the eval environment", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "maskera-benchmark-type-peer-"))
+  try {
+    const contract = JSON.parse(await readFile(join(root, "docs/benchmark-release.json"), "utf8"))
+    const original = await readFile(join(root, "pnpm-lock.yaml"), "utf8")
+    const changed = original.replaceAll("@types/node@26.1.1", "@types/node@99.0.0")
+    assert.notEqual(changed, original)
+    const changedLockfile = join(directory, "pnpm-lock.yaml")
+    await writeFile(changedLockfile, changed)
+
+    const expected = await evaluationEnvironmentSha256(contract.evaluation.environment)
+    const actual = await evaluationEnvironmentSha256(contract.evaluation.environment, {
+      lockfilePath: changedLockfile,
+    })
+    assert.equal(actual, expected)
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
+
+test("a selected runtime resolution changes the eval environment", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "maskera-benchmark-runtime-lock-"))
+  try {
+    const contract = JSON.parse(await readFile(join(root, "docs/benchmark-release.json"), "utf8"))
+    const source = YAML.parse(await readFile(join(root, "pnpm-lock.yaml"), "utf8"))
+    source.packages["@huggingface/transformers@4.2.0"].resolution.integrity += "changed"
+    const changedLockfile = join(directory, "pnpm-lock.yaml")
+    await writeFile(changedLockfile, YAML.stringify(source))
+
+    const expected = await evaluationEnvironmentSha256(contract.evaluation.environment)
+    const actual = await evaluationEnvironmentSha256(contract.evaluation.environment, {
+      lockfilePath: changedLockfile,
+    })
+    assert.notEqual(actual, expected)
   } finally {
     await rm(directory, { recursive: true, force: true })
   }

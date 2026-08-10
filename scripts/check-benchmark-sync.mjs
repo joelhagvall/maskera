@@ -5,6 +5,7 @@ import { resolve } from "node:path"
 import Ajv2020 from "ajv/dist/2020.js"
 import {
   contractPath as defaultContractPath,
+  evaluationEnvironmentSha256,
   firstDifference,
   formatBytes,
   readJson,
@@ -82,7 +83,7 @@ async function expectHash(label, file, expected) {
   if (actual !== expected) drift(label, file, expected, actual)
 }
 
-requireValue("schemaVersion", 1, contract.schemaVersion)
+requireValue("schemaVersion", 2, contract.schemaVersion)
 requireValue("status", "published", contract.status)
 if (!/^v\d+$/.test(contract.release ?? "")) {
   drift("release", "docs/benchmark-release.json", "v<number>", contract.release)
@@ -100,6 +101,8 @@ for (const [label, value] of [
   ["model-card sha256", contract.artifact?.modelCardSha256],
   ["whitepaper source sha256", contract.whitepaper?.sourceSha256],
   ["whitepaper PDF sha256", contract.whitepaper?.pdfSha256],
+  ["evaluation suite sha256", contract.evaluation?.suiteSha256],
+  ["evaluation environment sha256", contract.evaluation?.environment?.sha256],
 ]) {
   if (!/^[a-f0-9]{64}$/.test(value ?? ""))
     drift(label, "docs/benchmark-release.json", "64 lowercase hex characters", value)
@@ -115,6 +118,7 @@ await expectFragments("docs/BENCHMARKS.md", [
   ["artifact revision", `Hub revision \`${artifact.revision}\`, ${bytes} bytes`],
   ["release reproduction command", `\`${evaluation.command}\``],
   ["evaluation suite checksum", `\`${evaluation.suiteSha256}\``],
+  ["evaluation environment checksum", `\`${evaluation.environment.sha256}\``],
   [
     "curated release row",
     `| curated, ${curated.documents} documents / ${curated.entities} entities | ${curated.precisionPct}% | ${curated.recallPct}% | ${curated.spanF1Pct}% | ${curated.labeledF1Pct}% | ${curated.leaks}/${curated.entities}`,
@@ -156,6 +160,25 @@ if (actualSuiteHash !== evaluation.suiteSha256) {
     "docs/benchmark-release.json",
     evaluation.suiteSha256,
     actualSuiteHash,
+  )
+}
+
+try {
+  const actualEnvironmentHash = await evaluationEnvironmentSha256(evaluation.environment)
+  if (actualEnvironmentHash !== evaluation.environment.sha256) {
+    drift(
+      "evaluation environment checksum",
+      evaluation.environment.lockfile,
+      evaluation.environment.sha256,
+      actualEnvironmentHash,
+    )
+  }
+} catch (error) {
+  drift(
+    "evaluation environment",
+    evaluation.environment?.lockfile ?? "docs/benchmark-release.json",
+    "a resolvable selected dependency closure",
+    error instanceof Error ? error.message : String(error),
   )
 }
 
@@ -329,5 +352,5 @@ if (errors.length > 0) {
 }
 
 console.log(
-  `benchmark sync: ${contract.release} contract verified across source, packages, model pins and whitepaper`,
+  `benchmark sync: ${contract.release} contract verified across inputs, eval environment, packages, model pins and whitepaper`,
 )

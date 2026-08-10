@@ -1,6 +1,6 @@
 {
   "$schema": "https://maskera.dev/benchmark-release.schema.json",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "status": "published",
   "release": "v19",
   "publishedAt": "2026-08-06",
@@ -25,16 +25,15 @@
     "source": "docs/whitepaper/whitepaper.tex",
     "sourceSha256": "494f6fcb56faf201c0e3b53e8af2460abc35e482209439b68d0f77fe47cbe5e9",
     "pdf": "apps/demo/public/whitepaper.pdf",
-    "pdfSha256": "8715bfbde30d05c73c9ef74c0141bacab222deb9563157b0cd9eee9b04465954"
+    "pdfSha256": "97c969bc0d9f1cf398bfb9eb749cf6eb29f3ebf515ee97cbd07f07df4c39b236"
   },
   "evaluation": {
     "command": "pnpm eval:release",
-    "suiteSha256": "5584f0f4b4eaa82405170f7ad8e4de8544c0301b4ae507312afc5043d4862975",
+    "suiteSha256": "dfb002f3910b83e9f529233850248930085188e24362187e5c2eb53f62ce6cbd",
     "files": [
       "apps/demo/scripts/evaluate-candidate-gates.mjs",
       "apps/demo/scripts/fetch-model.mjs",
       "apps/demo/src/model-meta.json",
-      "package.json",
       "packages/core/package.json",
       "packages/core/src/canonicalize.ts",
       "packages/core/src/detectors/index.ts",
@@ -69,13 +68,22 @@
       "packages/ner/tsconfig.json",
       "packages/ner/tsup.config.ts",
       "patches/@huggingface__transformers@4.2.0.patch",
-      "pnpm-lock.yaml",
       "scripts/benchmark-contract.mjs",
       "scripts/run-release-benchmarks.mjs",
       "scripts/verify-published-eval.mjs",
       "training/eval/gold.txt",
       "training/eval/rare-surnames.txt"
-    ]
+    ],
+    "environment": {
+      "node": ">=18",
+      "packageManager": "pnpm@10.33.0",
+      "lockfile": "pnpm-lock.yaml",
+      "selectors": {
+        "packages/ner": ["@huggingface/transformers"]
+      },
+      "ignoredPeers": ["@types/node"],
+      "sha256": "e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51"
+    }
   },
   "metrics": {
     "curated": {

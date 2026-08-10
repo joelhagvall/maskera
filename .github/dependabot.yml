@@ -1,30 +1,63 @@
-# Monthly, grouped dependency PRs, minors/patches only. CI (unit tests, pack
-# smoke, model eval) gates every PR, so a green Dependabot PR is safe to merge
-# on sight, and the nightly model canary catches anything that only breaks
-# against the live Hub. Security advisories are not affected by the schedule
-# or the ignore rule below; those PRs still open as soon as they are published.
+# Monthly, reviewable version-update groups. CI proves compatibility, but a
+# green PR is still reviewed before merge. SemVer-major version updates stay
+# manual; Dependabot security updates remain eligible regardless of that
+# version-update rule when the repository security setting is enabled.
 version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
+    open-pull-requests-limit: 3
     groups:
-      actions:
+      actions-minor-patch:
         patterns: ["*"]
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: monthly
+    open-pull-requests-limit: 4
     groups:
-      dev-dependencies:
+      build-tooling:
         dependency-type: development
-      dependencies:
+        patterns:
+          - "@biomejs/biome"
+          - "@changesets/cli"
+          - "@vitejs/plugin-react"
+          - "tsup"
+          - "typescript"
+          - "typescript-7"
+          - "vite"
+          - "yaml"
+      browser-and-test-tooling:
+        dependency-type: development
+        patterns:
+          - "@testing-library/*"
+          - "@types/*"
+          - "fast-check"
+          - "jsdom"
+          - "lighthouse"
+          - "pa11y"
+          - "playwright"
+          - "start-server-and-test"
+          - "vitest"
+      remaining-development:
+        dependency-type: development
+      runtime-dependencies:
         dependency-type: production
     ignore:
-      # Majors are deliberate manual upgrades, not automated PRs: tsup requires
-      # TS 5 (TS 7 is the native rewrite, tracked via the typescript-7 alias),
-      # and transformers 4 needed a pnpm patch just to load models. See git
-      # history for both.
+      # Majors are deliberate manual upgrades. Security updates are still
+      # created even when the patched version crosses this SemVer boundary.
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+      # The Transformers.js patch carries two runtime fixes and every upgrade
+      # needs a fresh-browser model smoke plus coordinated checksum review.
+      - dependency-name: "@huggingface/transformers"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"

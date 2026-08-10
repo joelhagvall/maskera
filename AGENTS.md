@@ -66,10 +66,15 @@ Run `pnpm check:benchmarks` before every build/release and
 `pnpm check:benchmarks:live` after coordinated publication/deployment.
 The current release is reproducible, not merely copy-synchronized. The
 contract's `evaluation.files` and `evaluation.suiteSha256` lock the corpora,
-scorers, runners, runtime sources and dependency lockfile. Any change to one
-of those inputs must update the suite checksum and rerun `pnpm eval:release`;
-the recomputed machine result must match every current metric in the contract
-exactly before CI, release or deploy may pass.
+scorers, runners and runtime sources. `evaluation.environment` separately
+selects and hashes the exact dependency closure used to execute the evaluation.
+Type-only peers are explicitly excluded. Do not put the whole monorepo lockfile
+in the suite hash: unrelated build, lint, browser-audit and test-tool updates
+must not be reported as changed accuracy evidence. Any change to a suite input
+or the selected runtime closure must update its checksum and rerun
+`pnpm eval:release`; the recomputed machine
+result must match every current metric in the contract exactly before CI,
+release or deploy may pass.
 Every other file carrying dated snapshots MUST be synced in the same commit
 as a BENCHMARKS.md update. The full snapshot-carrier list: root README,
 package READMEs (also what npmjs shows; needs a patch release to update
@@ -91,6 +96,8 @@ against the repo sources.
 - Source: `docs/whitepaper/whitepaper.tex` (LaTeX, English).
 - Build: `node scripts/build-whitepaper.mjs` (needs `brew install tectonic`),
   outputs `apps/demo/public/whitepaper.pdf` -> maskera.dev/whitepaper.pdf.
+- The build script derives `SOURCE_DATE_EPOCH` from the benchmark contract's
+  published date so identical source produces a byte-identical PDF.
 - Rebuild the PDF in the same commit as any .tex or benchmark change.
 
 ## Hugging Face model card

@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 import { resolve } from "node:path"
 import { fileURLToPath } from "node:url"
-import { contractPath, firstDifference, readJson, sha256FileSet } from "./benchmark-contract.mjs"
+import {
+  contractPath,
+  evaluationEnvironmentSha256,
+  firstDifference,
+  readJson,
+  sha256FileSet,
+} from "./benchmark-contract.mjs"
 
 const pct1 = (value) => (value * 100).toFixed(1)
 const pct2 = (value) => (value * 100).toFixed(2)
@@ -123,6 +129,14 @@ export async function verifyPublishedEval(directory, suppliedContract) {
       actual: actualSuiteHash,
     }
   }
+  const actualEnvironmentHash = await evaluationEnvironmentSha256(contract.evaluation.environment)
+  if (actualEnvironmentHash !== contract.evaluation.environment.sha256) {
+    return {
+      path: "$.evaluation.environment.sha256",
+      expected: contract.evaluation.environment.sha256,
+      actual: actualEnvironmentHash,
+    }
+  }
   const actual = observedSnapshot(await loadResults(directory, contract))
   return firstDifference(expectedSnapshot(contract), actual)
 }
@@ -139,7 +153,7 @@ async function main() {
   }
   const contract = await readJson(contractPath)
   console.log(
-    `published benchmark reproduction: ${contract.release} metrics exactly reproduced from suite ${contract.evaluation.suiteSha256.slice(0, 12)}`,
+    `published benchmark reproduction: ${contract.release} metrics exactly reproduced from suite ${contract.evaluation.suiteSha256.slice(0, 12)} in environment ${contract.evaluation.environment.sha256.slice(0, 12)}`,
   )
 }
 
