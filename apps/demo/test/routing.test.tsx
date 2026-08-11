@@ -17,6 +17,7 @@ import { navClick, useRoute, viewFromPath } from "../src/routing"
  */
 
 const STATIC_TITLE = "Skydda personuppgifter innan texten skickas till AI"
+vi.spyOn(window, "scrollTo").mockImplementation(() => {})
 
 beforeEach(() => {
   document.head.innerHTML = `

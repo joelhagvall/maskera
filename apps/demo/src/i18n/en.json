@@ -12,9 +12,7 @@
     "testDataNote": "The examples use fictional people and officially reserved test values, never real people's data.",
     "testDataCta": "Learn more about the test data",
     "languageNote": "The interface is translated, but the example text and simulated AI responses stay in Swedish. Maskera masks Swedish text; it does not translate it.",
-    "skipLink": "Skip to main content",
-    "gatewayBody": "The same masking is available as Maskera Gateway, ready to install on your own servers.",
-    "gatewayCta": "See Maskera for companies"
+    "skipLink": "Skip to main content"
   },
   "controls": {
     "examplesLabel": "Try an example:",

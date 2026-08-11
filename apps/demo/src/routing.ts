@@ -1,4 +1,4 @@
-import { type MouseEvent, useEffect, useState } from "react"
+import { type MouseEvent, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { activeLocale, localeFromPath, setActiveLocale, useLocale } from "./i18n"
 import { getViewMeta, getViewPaths, type View, viewPaths, viewUrl } from "./meta"
 
@@ -53,14 +53,40 @@ export function viewFromPath(pathname: string): View {
 export function useRoute() {
   const locale = useLocale()
   const [view, setView] = useState<View>(() => viewFromPath(window.location.pathname))
+  const currentViewRef = useRef(view)
+  const homeScrollYRef = useRef(0)
+  const skipScrollRestorationRef = useRef(false)
 
   useEffect(() => {
     const onPop = () => {
+      if (currentViewRef.current === "demo") homeScrollYRef.current = window.scrollY
+      skipScrollRestorationRef.current = false
       setActiveLocale(localeFromPath(window.location.pathname))
       setView(viewFromPath(window.location.pathname))
     }
     window.addEventListener("popstate", onPop)
     return () => window.removeEventListener("popstate", onPop)
+  }, [])
+
+  // Browser history cannot restore the home position for the new history
+  // entry created by the in-app "back to start" link, so route changes own
+  // scroll restoration. Capture happens before setView replaces the long home
+  // page; otherwise a shorter content page could clamp window.scrollY first.
+  useLayoutEffect(() => {
+    currentViewRef.current = view
+    if (!skipScrollRestorationRef.current) {
+      window.scrollTo(0, view === "demo" ? homeScrollYRef.current : 0)
+    }
+    skipScrollRestorationRef.current = false
+  }, [view])
+
+  useEffect(() => {
+    if (!("scrollRestoration" in window.history)) return
+    const previous = window.history.scrollRestoration
+    window.history.scrollRestoration = "manual"
+    return () => {
+      window.history.scrollRestoration = previous
+    }
   }, [])
 
   // The bare brand title replaces index.html's descriptive static title as
@@ -71,7 +97,12 @@ export function useRoute() {
     applyViewMeta(view, locale)
   }, [view, locale])
 
-  const navigate = (next: View) => {
+  const navigate = (next: View, options?: { skipScrollRestoration?: boolean }) => {
+    const viewChanged = currentViewRef.current !== next
+    if (viewChanged && currentViewRef.current === "demo") {
+      homeScrollYRef.current = window.scrollY
+    }
+    skipScrollRestorationRef.current = viewChanged && options?.skipScrollRestoration === true
     if (viewFromPath(window.location.pathname) !== next) {
       window.history.pushState(null, "", getViewPaths(locale)[next])
     }

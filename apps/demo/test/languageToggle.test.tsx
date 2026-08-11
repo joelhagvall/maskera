@@ -1,12 +1,14 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from "@testing-library/react"
 import { useState } from "react"
-import { beforeEach, describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { Header } from "../src/components/Header"
 import { setActiveLocale } from "../src/i18n"
 import en from "../src/i18n/en.json"
 import sv from "../src/i18n/sv.json"
 import { useRoute } from "../src/routing"
+
+vi.spyOn(window, "scrollTo").mockImplementation(() => {})
 
 function LocalizedShell() {
   const { navigate } = useRoute()
