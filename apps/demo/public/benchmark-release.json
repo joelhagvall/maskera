@@ -1,10 +1,10 @@
 {
   "$schema": "https://maskera.dev/benchmark-release.schema.json",
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "status": "published",
   "release": "v19",
   "publishedAt": "2026-08-06",
-  "lastMeasuredAt": "2026-08-10",
+  "lastMeasuredAt": "2026-08-11",
   "scope": "Synthetic or author-coupled release gates, not an independent universal quality estimate.",
   "packages": {
     "maskera": "0.9.5",
@@ -18,14 +18,14 @@
     "path": "onnx/model_q4.onnx",
     "sha256": "6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66",
     "bytes": 42705681,
-    "modelCardSha256": "ba48d1bc15ae9e25c5ab49a4041f3dbe09b708ed5b9fb4d1a31f023f03e2824c"
+    "modelCardSha256": "6a0070ebcc1941c0123de65691c4a30b653f3a12e167de70d6b7735f6e930b58"
   },
   "whitepaper": {
-    "version": "1.18",
+    "version": "1.19",
     "source": "docs/whitepaper/whitepaper.tex",
-    "sourceSha256": "494f6fcb56faf201c0e3b53e8af2460abc35e482209439b68d0f77fe47cbe5e9",
+    "sourceSha256": "f4e9a76b9c85e033968ec41f626f3d0384b104c302e3ccfb7cb36ec9b3ddbfe3",
     "pdf": "apps/demo/public/whitepaper.pdf",
-    "pdfSha256": "97c969bc0d9f1cf398bfb9eb749cf6eb29f3ebf515ee97cbd07f07df4c39b236"
+    "pdfSha256": "56d48fd5edc5962421fec8c7f4b03b6db147b6936ac961ca76196546fbfb20bc"
   },
   "evaluation": {
     "command": "pnpm eval:release",
@@ -83,6 +83,58 @@
       },
       "ignoredPeers": ["@types/node"],
       "sha256": "e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51"
+    }
+  },
+  "comparison": {
+    "status": "current-v19-directional",
+    "measuredAt": "2026-08-11",
+    "scope": "Synthetic, author-coupled PER/LOC/ORG comparison. Address labels and Maskera product post-processing are excluded; this is not an independent universal quality estimate.",
+    "command": "pnpm eval:kblab",
+    "resultFile": "docs/benchmark-kblab-v19.json",
+    "resultSha256": "40df1160fc7733ce8b0b6dbc41d5f0f8ce7c8abfb78b82ef7f4efa5530e9deae",
+    "suiteSha256": "b547b7785d8317c8e76c7da59e2944dc0870a18f2f3c7f7fb34603e37832c518",
+    "files": [
+      "training/benchmark_competitors.py",
+      "training/benchmark-requirements.txt",
+      "training/eval/gold.txt"
+    ],
+    "environment": {
+      "python": "3.11.15",
+      "requirements": "training/benchmark-requirements.txt",
+      "sha256": "3e87b961ccb80856a45610d6b8d637b2fa3cc57b479794116ad912e63603c1ff"
+    },
+    "corpus": {
+      "documents": 121,
+      "entities": 211,
+      "sha256": "9f29f6dbffa92422fb6eb3097c400509289d9b8890e6c2b93e20fa618d4c64ff"
+    },
+    "matching": "overlap",
+    "labels": ["PER", "LOC", "ORG"],
+    "models": {
+      "maskera": {
+        "id": "joelhagvall/maskera-sv-ner",
+        "revision": "8604eec76227c35387d5fafd7bb0b9f03f291553",
+        "dtype": "q4",
+        "path": "onnx/model_q4.onnx",
+        "sha256": "6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66",
+        "bytes": 42705681
+      },
+      "kblab": {
+        "id": "KBLab/bert-base-swedish-lowermix-reallysimple-ner",
+        "revision": "007c6b26e6418574c494791f036d5dfa34a558da",
+        "dtype": "fp32",
+        "path": "model.safetensors",
+        "sha256": "49545200dd3a32ac76e14da91aa2c0b0ba6d4e5d5efbf90d922f7f91f6b7de89",
+        "bytes": 496456636
+      }
+    },
+    "normal": {
+      "maskera": { "masked": 211, "maskedRecallPct": "100.0", "typedF1Pct": "87.1" },
+      "kblab": { "masked": 205, "maskedRecallPct": "97.2", "typedF1Pct": "89.4" }
+    },
+    "lowercase": {
+      "maskera": { "masked": 211, "maskedRecallPct": "100.0", "typedF1Pct": "85.7" },
+      "kblab": { "masked": 187, "maskedRecallPct": "88.6", "typedF1Pct": "83.2" }
     }
   },
   "metrics": {

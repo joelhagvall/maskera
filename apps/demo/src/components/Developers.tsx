@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react"
+import { type KeyboardEvent, type ReactNode, useRef, useState } from "react"
 import { GITHUB, HF_MODEL, NPM_NER } from "../constants"
 import copy, { activeLocale } from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
@@ -121,6 +121,25 @@ const INSTALL = [
 
 function InstallTabs() {
   const [pm, setPm] = useState(INSTALL[0])
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([])
+
+  function selectTab(index: number) {
+    setPm(INSTALL[index])
+    tabRefs.current[index]?.focus()
+  }
+
+  function onTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    let nextIndex: number | null = null
+    if (event.key === "ArrowRight") nextIndex = (index + 1) % INSTALL.length
+    if (event.key === "ArrowLeft") nextIndex = (index - 1 + INSTALL.length) % INSTALL.length
+    if (event.key === "Home") nextIndex = 0
+    if (event.key === "End") nextIndex = INSTALL.length - 1
+    if (nextIndex === null) return
+
+    event.preventDefault()
+    selectTab(nextIndex)
+  }
+
   return (
     <div className="code-block install-tabs">
       <div className="code-head">
@@ -129,16 +148,21 @@ function InstallTabs() {
           role="tablist"
           aria-label={copy.developerApi.packageManagerLabel}
         >
-          {INSTALL.map((p) => (
+          {INSTALL.map((p, index) => (
             <button
               key={p.id}
+              ref={(element) => {
+                tabRefs.current[index] = element
+              }}
               type="button"
               role="tab"
               aria-selected={p.id === pm.id}
               aria-controls="install-command"
               id={`install-tab-${p.id}`}
+              tabIndex={p.id === pm.id ? 0 : -1}
               className={`code-tab${p.id === pm.id ? " on" : ""}`}
               onClick={() => setPm(p)}
+              onKeyDown={(event) => onTabKeyDown(event, index)}
             >
               {p.id}
             </button>
@@ -172,8 +196,7 @@ function ArchitectureFigure({ onCoverage }: { onCoverage: () => void }) {
         src={lightDiagram}
         width="1200"
         height="640"
-        loading="eager"
-        fetchPriority="high"
+        loading="lazy"
         alt={copy.developerApi.diagramAlt}
       />
       <img
@@ -181,8 +204,7 @@ function ArchitectureFigure({ onCoverage }: { onCoverage: () => void }) {
         src={darkDiagram}
         width="1200"
         height="640"
-        loading="eager"
-        fetchPriority="high"
+        loading="lazy"
         alt=""
         aria-hidden="true"
       />

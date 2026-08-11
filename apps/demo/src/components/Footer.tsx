@@ -3,19 +3,15 @@ import copy from "../i18n"
 import { navClick, viewPaths } from "../routing"
 
 export function Footer({
-  showServices,
   onTransparency,
   onTestData,
   onPolicy,
-  onServices,
   onAccuracy,
   onSecurity,
 }: {
-  showServices: boolean
   onTransparency: () => void
   onTestData: () => void
   onPolicy: () => void
-  onServices: () => void
   onAccuracy: () => void
   onSecurity: () => void
 }) {
@@ -68,15 +64,6 @@ export function Footer({
           </li>
         </ul>
       </nav>
-      {showServices ? (
-        <p className="footer-row footer-help">
-          {copy.footer.servicesPrefix}{" "}
-          <a className="footer-link" href={viewPaths.services} onClick={navClick(onServices)}>
-            {copy.footer.servicesCta}
-          </a>
-          .
-        </p>
-      ) : null}
       <p className="footer-row footer-credit">
         {copy.footer.creditPrefix}{" "}
         <a href="https://joelhagvall.com" target="_blank" rel="noreferrer">

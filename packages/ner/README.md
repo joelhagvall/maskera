@@ -241,6 +241,13 @@ leak rate; on independent real text, 94.7% and 3.4% (measured 2026-07-19).
 Those historical comparisons do not automatically transfer to v19. The
 canonical, dated release tables live in
 [docs/BENCHMARKS.md](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md).
+The current v19 q4 artifact was compared separately on 2026-08-11 with KBLab
+lowermix fp32 on the same 121 synthetic, hand-authored Swedish texts (211
+PER/LOC/ORG entities, overlap matching). Maskera masked 211/211 both with
+original casing and lowercased; KBLab masked 205/211 and 187/211. KBLab led
+typed F1 on original casing (89.4% vs 87.1%); Maskera led lowercase typed F1
+(85.7% vs 83.2%). Because Maskera's developer wrote the corpus, treat this as
+directional regression evidence rather than an independent ranking.
 v19's training-data scope, identifier rejection, provenance hashes,
 and separate KB-BERT pretraining caveat are documented in
 [TRAINING_DATA_PROTECTION.md](https://github.com/joelhagvall/maskera/blob/main/docs/TRAINING_DATA_PROTECTION.md).

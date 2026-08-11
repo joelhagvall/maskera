@@ -21,6 +21,7 @@ describe("Controls accessibility", () => {
       "false",
     )
     expect(screen.getByRole("status").textContent).toContain("Startar AI-modellen")
+    expect(screen.getByText(/43 MB/)).toBeTruthy()
   })
 
   it("announces model progress with progressbar semantics", () => {
@@ -38,5 +39,6 @@ describe("Controls accessibility", () => {
     const progress = screen.getByRole("progressbar", { name: /Laddar maskeras AI-modell/ })
     expect(progress.getAttribute("aria-valuenow")).toBe("42")
     expect(progress.closest('[role="status"]')).not.toBeNull()
+    expect(progress.closest(".model-status-group")?.textContent).toContain("sparas lokalt")
   })
 })

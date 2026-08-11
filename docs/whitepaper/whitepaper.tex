@@ -26,7 +26,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{August 10, 2026 \quad\textperiodcentered\quad Whitepaper v1.18}
+\date{August 11, 2026 \quad\textperiodcentered\quad Whitepaper v1.19}
 
 \begin{document}
 \maketitle
@@ -43,13 +43,15 @@ including inside a browser tab. The input text never leaves the caller's
 environment, the packages collect no telemetry, and the mapping that restores
 masked values is held locally by the caller. In the default setup the browser
 downloads the static assets once from a public host; self-hosting those
-assets makes zero external requests. Measured on a small external Swedish gold set, the
-pipeline flagged 98\% of PII entities and achieved the highest typed $F_1$
-among the public Swedish NER models tested, at less than a tenth of their size. maskera is a
-data-minimisation and data-protection-by-design tool, not a compliance
-guarantee; this document reports method and limitations with the same candour
-as the results. Intended readers: data protection officers, security teams,
-architects, and legal reviewers.
+assets makes zero external requests. In a current, author-coupled comparison
+on 211 synthetic Swedish names, places, and organisations, the published q4
+artifact masked all 211 both with original casing and lowercased; KBLab
+lowermix fp32 masked 205 and 187. The corpus was written by Maskera's
+developer, so the result is directional rather than an independent ranking.
+maskera is a data-minimisation and data-protection-by-design tool, not a
+compliance guarantee; this document reports method and limitations with the
+same candour as the results. Intended readers: data protection officers,
+security teams, architects, and legal reviewers.
 \end{abstract}
 
 \section{The problem: free text leaks PII}
@@ -272,7 +274,7 @@ not determine which obligations apply.
 
 \section{Measured quality}
 
-The first table below is the current privacy-clean v19 release snapshot.
+The first tables below are the current privacy-clean v19 release snapshot.
 After an explicit page break, the remaining quality and public-model
 comparison tables are retained as historical v18 evidence measured on
 \textbf{2026-07-19} with \pkg{maskera} version \pkg{0.6.4}. They must not be
@@ -321,6 +323,36 @@ ceiling; leakage remains the primary privacy metric because it counts values
 left entirely unmasked.
 
 \newpage
+\subsection{Current v19 comparison with KBLab lowermix}
+
+On \textbf{2026-08-11}, the published 43\,MB q4 artifact and KBLab's published
+496\,MB fp32 \pkg{bert-base-swedish-lowermix-reallysimple-ner} were run through
+the same Transformers token-classification pipeline on 121 hand-authored
+synthetic Swedish texts containing 211 comparable PER/LOC/ORG entities. The
+same texts were also forced to lowercase. Matching is by overlap; Maskera's
+product post-processing and its ADDRESS class are excluded.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llrr}
+\toprule
+Casing & Model & Masked at all & Typed $F_1$ \\
+\midrule
+Original & \textbf{Maskera v19 q4} & \textbf{100.0\% (211/211)} & 87.1\% \\
+Original & KBLab lowermix fp32 & 97.2\% (205/211) & \textbf{89.4\%} \\
+Lowercase & \textbf{Maskera v19 q4} & \textbf{100.0\% (211/211)} & \textbf{85.7\%} \\
+Lowercase & KBLab lowermix fp32 & 88.6\% (187/211) & 83.2\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Maskera covered all 211 entities in both runs. KBLab led typed $F_1$ on
+original casing by 2.3 percentage points; Maskera led lowercase typed $F_1$ by
+2.5 points. This is a \textbf{directional, author-coupled comparison}, not an
+independent universal ranking: Maskera's developer wrote the corpus. Exact
+model revisions, the pinned Python environment, machine output, and the
+\pkg{pnpm eval:kblab} command are published beside the canonical benchmark.
+
 \subsection{Historical v18: curated corpus (upper bound, regression tracker)}
 
 149 hand-authored Swedish sentences, 205 free-text entities, including hard
@@ -658,8 +690,8 @@ visible failure modes.
 
 \vfill
 \noindent\rule{\textwidth}{0.4pt}\par\smallskip
-{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.18
-\textperiodcentered{} August 10, 2026 \textperiodcentered{} Joel H\"agvall
+{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.19
+\textperiodcentered{} August 11, 2026 \textperiodcentered{} Joel H\"agvall
 \textperiodcentered{} maskera.dev. Current numbers live in
 \pkg{docs/BENCHMARKS.md}; where this document disagrees, that file wins.
 Not legal advice.\par}

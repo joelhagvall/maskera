@@ -268,3 +268,10 @@ server-side access controls, and don't market it as "GDPR compliance in one
 line", it isn't, and I don't claim it is. See
 [TRANSPARENCY.md](TRANSPARENCY.md) for exactly what runs where and what
 network calls exist.
+
+The current v19 q4 artifact was also re-run on 2026-08-11 against KBLab
+lowermix fp32 on 121 hand-authored synthetic Swedish texts with 211 comparable
+PER/LOC/ORG entities. Maskera masked 211/211 both with original casing and
+lowercased; KBLab masked 205/211 and 187/211. KBLab led typed F1 on original
+casing (89.4% vs 87.1%); Maskera led lowercase typed F1 (85.7% vs 83.2%). This
+is author-coupled directional evidence, not an independent production claim.

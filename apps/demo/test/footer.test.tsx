@@ -9,11 +9,9 @@ describe("Footer", () => {
   it("links the open-source label to the repository", () => {
     render(
       <Footer
-        showServices={false}
         onTransparency={vi.fn()}
         onTestData={vi.fn()}
         onPolicy={vi.fn()}
-        onServices={vi.fn()}
         onAccuracy={vi.fn()}
         onSecurity={vi.fn()}
       />,

@@ -2,19 +2,23 @@ import { GITHUB } from "../constants"
 import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
 import { navClick, type View } from "../routing"
+import { PageToc } from "./PageToc"
 import { TopBar } from "./TopBar"
 
-interface BenchmarkRow {
+interface ComparisonRow {
   system: string
-  precision: string
-  recall: string
-  leaks: string
+  masked: string
+  typedF1: string
   ours?: boolean
 }
 
+interface ComparisonCase {
+  title: string
+  rows: ComparisonRow[]
+}
+
 export function Accuracy({ go }: { go: (view: View) => void }) {
-  const independentRows = copy.accuracy.independentRows as BenchmarkRow[]
-  const addressRows = copy.accuracy.addressRows as BenchmarkRow[]
+  const comparisonCases = copy.accuracy.comparisonCases as ComparisonCase[]
 
   return (
     <>
@@ -23,20 +27,11 @@ export function Accuracy({ go }: { go: (view: View) => void }) {
       </header>
 
       <main id="main-content">
-        <article className="prose prose-wide accuracy-page">
+        <article className="prose prose-wide prose-with-toc accuracy-page">
           <h1>{copy.accuracy.title}</h1>
           <p className="prose-lede">{copy.accuracy.lede}</p>
 
-          <nav className="toc" aria-label={copy.accuracy.tocLabel}>
-            <p>{copy.accuracy.tocLabel}</p>
-            <ul>
-              {copy.accuracy.toc.map((item) => (
-                <li key={item.href}>
-                  <a href={item.href}>{item.label}</a>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <PageToc label={copy.accuracy.tocLabel} items={copy.accuracy.toc} />
 
           <h2 id="matt">{copy.accuracy.metricsTitle}</h2>
           <p className="prose-body">{copy.accuracy.metricsBody}</p>
@@ -58,23 +53,43 @@ export function Accuracy({ go }: { go: (view: View) => void }) {
             </div>
           </section>
 
-          <BenchmarkTable
-            id="oberoende"
-            title={copy.accuracy.independentTitle}
-            caption={copy.accuracy.independentCaption}
-            rows={independentRows}
-          />
-
-          <section className="benchmark-section" id="adresser" aria-labelledby="adresser-heading">
-            <h2 id="adresser-heading">{copy.accuracy.addressesTitle}</h2>
-            <p className="benchmark-caption">{copy.accuracy.addressesCaption}</p>
-            <BenchmarkTable
-              id="historiska-adresser"
-              title={copy.accuracy.historicalAddressTitle}
-              caption={copy.accuracy.historicalAddressCaption}
-              rows={addressRows}
-              headingLevel={3}
-            />
+          <section
+            className="benchmark-section comparison-section"
+            id="kblab"
+            aria-labelledby="kblab-heading"
+          >
+            <h2 id="kblab-heading">{copy.accuracy.comparisonTitle}</h2>
+            <p className="prose-body">{copy.accuracy.comparisonBody}</p>
+            <div className="comparison-grid">
+              {comparisonCases.map((comparisonCase) => (
+                <section className="comparison-case" key={comparisonCase.title}>
+                  <h3>{comparisonCase.title}</h3>
+                  <table>
+                    <caption className="sr-only">{comparisonCase.title}</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">{copy.accuracy.comparisonTable.system}</th>
+                        <th scope="col">{copy.accuracy.comparisonTable.masked}</th>
+                        <th scope="col">{copy.accuracy.comparisonTable.typedF1}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {comparisonCase.rows.map((row) => (
+                        <tr className={row.ours ? "comparison-own" : undefined} key={row.system}>
+                          <th scope="row" translate="no">
+                            {row.system}
+                          </th>
+                          <td>{row.masked}</td>
+                          <td>{row.typedF1}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </section>
+              ))}
+            </div>
+            <p className="comparison-summary">{copy.accuracy.comparisonSummary}</p>
+            <p className="comparison-limit">{copy.accuracy.comparisonLimit}</p>
           </section>
 
           <h2 id="tolkning">{copy.accuracy.interpretationTitle}</h2>
@@ -107,7 +122,21 @@ export function Accuracy({ go }: { go: (view: View) => void }) {
                 </a>
               </li>
               <li>
-                <a href={GITHUB + "/tree/main/bench"} target="_blank" rel="noreferrer">
+                <a
+                  href={GITHUB + "/blob/main/docs/benchmark-kblab-v19.json"}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {copy.accuracy.comparisonCta}
+                  <ArrowUpRightIcon size={13} />
+                </a>
+              </li>
+              <li>
+                <a
+                  href={GITHUB + "/blob/main/training/benchmark_competitors.py"}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   {copy.accuracy.scriptsCta}
                   <ArrowUpRightIcon size={13} />
                 </a>
@@ -122,78 +151,5 @@ export function Accuracy({ go }: { go: (view: View) => void }) {
         </article>
       </main>
     </>
-  )
-}
-
-function BenchmarkTable({
-  id,
-  title,
-  caption,
-  rows,
-  headingLevel = 2,
-}: {
-  id: string
-  title: string
-  caption: string
-  rows: BenchmarkRow[]
-  headingLevel?: 2 | 3
-}) {
-  const Heading = headingLevel === 3 ? "h3" : "h2"
-  return (
-    <section className="benchmark-section" id={id} aria-labelledby={id + "-heading"}>
-      <Heading id={id + "-heading"}>{title}</Heading>
-      <p className="benchmark-caption">{caption}</p>
-      <div className="benchmark-scroll">
-        <table className="benchmark-table">
-          <caption className="sr-only">{title}</caption>
-          <thead>
-            <tr>
-              <th scope="col">{copy.accuracy.table.system}</th>
-              <th scope="col">{copy.accuracy.table.precision}</th>
-              <th scope="col">{copy.accuracy.table.recall}</th>
-              <th scope="col">{copy.accuracy.table.leaks}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr className={row.ours ? "benchmark-own" : undefined} key={row.system}>
-                <th scope="row" translate="no">
-                  {row.system}
-                </th>
-                <td>{row.precision}</td>
-                <td>{row.recall}</td>
-                <td>{row.leaks}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <ul className="benchmark-cards" aria-label={title}>
-        {rows.map((row) => (
-          <li
-            className={row.ours ? "benchmark-card benchmark-own" : "benchmark-card"}
-            key={row.system}
-          >
-            <p className="benchmark-card-title" translate="no">
-              {row.system}
-            </p>
-            <dl>
-              <div>
-                <dt>{copy.accuracy.table.precision}</dt>
-                <dd>{row.precision}</dd>
-              </div>
-              <div>
-                <dt>{copy.accuracy.table.recall}</dt>
-                <dd>{row.recall}</dd>
-              </div>
-              <div>
-                <dt>{copy.accuracy.table.leaks}</dt>
-                <dd>{row.leaks}</dd>
-              </div>
-            </dl>
-          </li>
-        ))}
-      </ul>
-    </section>
   )
 }

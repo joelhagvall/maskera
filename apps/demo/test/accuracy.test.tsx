@@ -6,44 +6,30 @@ import { describe, expect, it, vi } from "vitest"
 import { Accuracy } from "../src/components/Accuracy"
 import copy from "../src/i18n/sv.json"
 
-const comparisonSource = readFileSync(resolve(process.cwd(), "../../bench/README.md"), "utf8")
 const benchmarkSource = readFileSync(resolve(process.cwd(), "../../docs/BENCHMARKS.md"), "utf8")
-
-const sourceNames: Record<string, string> = {
-  Maskera: "maskera",
-  "Microsoft Presidio (sv)": "presidio-sv",
-  "EU PII Safeguard": "eu-pii-safeguard",
-  "OpenAI Privacy Filter": "privacy-filter",
-  "Blindfold (regler)": "blindfold-local",
-}
-
-function sourcePercent(value: string): string {
-  const normalized = value.replace(",", ".").replace(" %", "%")
-  return normalized === "100%" ? "100.0%" : normalized
-}
-
-function resultBlock(heading: string): string {
-  const start = comparisonSource.indexOf(heading)
-  const end = comparisonSource.indexOf("\n### ", start + heading.length)
-  return comparisonSource.slice(start, end === -1 ? undefined : end)
-}
+const comparisonSource = JSON.parse(
+  readFileSync(resolve(process.cwd(), "../../docs/benchmark-kblab-v19.json"), "utf8"),
+)
 
 describe("Accuracy", () => {
-  it("renders both published comparison tables and their limitations", () => {
+  it("renders the current published results and their limitations", () => {
     render(<Accuracy go={vi.fn()} />)
 
     expect(screen.getByRole("heading", { name: copy.accuracy.title })).toBeTruthy()
     expect(screen.getByRole("banner")).toBeTruthy()
-    expect(screen.getAllByRole("table")).toHaveLength(2)
-    expect(
-      screen.getByRole("list", { name: copy.accuracy.independentTitle }).children,
-    ).toHaveLength(copy.accuracy.independentRows.length)
-    expect(
-      screen.getByRole("list", { name: copy.accuracy.historicalAddressTitle }).children,
-    ).toHaveLength(copy.accuracy.addressRows.length)
     expect(screen.getByRole("heading", { name: copy.accuracy.currentTitle })).toBeTruthy()
+    expect(screen.getByRole("heading", { name: copy.accuracy.comparisonTitle })).toBeTruthy()
+    expect(screen.getAllByRole("table")).toHaveLength(2)
     for (const stat of copy.accuracy.currentStats) {
       expect(screen.getByText(stat.value)).toBeTruthy()
+    }
+    for (const comparisonCase of copy.accuracy.comparisonCases) {
+      expect(screen.getByRole("heading", { name: comparisonCase.title })).toBeTruthy()
+      for (const row of comparisonCase.rows) {
+        expect(screen.getAllByText(row.system).length).toBeGreaterThan(0)
+        expect(screen.getAllByText(row.masked).length).toBeGreaterThan(0)
+        expect(screen.getByText(row.typedF1)).toBeTruthy()
+      }
     }
     expect(screen.getByRole("heading", { name: copy.accuracy.limitsTitle })).toBeTruthy()
     expect(
@@ -51,69 +37,53 @@ describe("Accuracy", () => {
         .getByRole("link", { name: new RegExp(copy.accuracy.benchmarksCta) })
         .getAttribute("href"),
     ).toBe("https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md")
+    expect(
+      screen
+        .getByRole("link", { name: new RegExp(copy.accuracy.comparisonCta) })
+        .getAttribute("href"),
+    ).toBe("https://github.com/joelhagvall/maskera/blob/main/docs/benchmark-kblab-v19.json")
+    expect(
+      screen.getByRole("link", { name: new RegExp(copy.accuracy.scriptsCta) }).getAttribute("href"),
+    ).toBe("https://github.com/joelhagvall/maskera/blob/main/training/benchmark_competitors.py")
 
     for (const item of copy.accuracy.toc) {
       const href = screen.getByRole("link", { name: item.label }).getAttribute("href")
       expect(href).toBe(item.href)
       expect(document.querySelector(item.href)).toBeTruthy()
     }
-
-    for (const table of screen.getAllByRole("table")) {
-      expect(table.querySelector("caption")?.textContent).toBeTruthy()
-    }
-  })
-
-  it("keeps every non-Azure comparison row aligned with the committed bench output", () => {
-    const sets = [
-      {
-        rows: copy.accuracy.independentRows,
-        source: resultBlock("### gold-real, independent"),
-      },
-      {
-        rows: copy.accuracy.addressRows,
-        source: resultBlock("### adr, street addresses"),
-      },
-    ]
-
-    for (const set of sets) {
-      for (const row of set.rows) {
-        const sourceName = sourceNames[row.system]
-        if (!sourceName) continue
-        const sourceRow = set.source
-          .split("\n")
-          .find((line) => line.startsWith("| " + sourceName + " |"))
-
-        expect(sourceRow).toBeDefined()
-        expect(sourceRow).toContain(sourcePercent(row.precision))
-        expect(sourceRow).toContain(sourcePercent(row.recall))
-        expect(sourceRow).toContain(row.leaks.split(" ")[0])
-      }
-    }
+    expect(document.body.textContent).not.toContain("v18")
+    expect(document.body.textContent).not.toContain("Azure")
+    expect(document.body.textContent).not.toContain("LinkedIn")
   })
 
   it("pins the Maskera provenance to the benchmark source of truth", () => {
     expect(benchmarkSource).toContain("Published:** 2026-08-06")
     expect(benchmarkSource).toContain("8604eec76227c35387d5fafd7bb0b9f03f291553")
-    expect(benchmarkSource).toContain("Measured:** 2026-07-19")
-    expect(benchmarkSource).toContain("maskera@0.6.4")
     expect(benchmarkSource).toContain("42,705,681 bytes")
-    expect(benchmarkSource).toContain("| span F1    | 99.8%")
     expect(copy.accuracy.provenance[0]).toContain("2026-08-06")
-    expect(copy.accuracy.provenance[0]).toContain("2026-08-10")
     expect(copy.accuracy.provenance[0]).toContain("v19")
     expect(copy.accuracy.provenance[0]).toContain("43 MB")
-    expect(copy.accuracy.currentBody).toContain("2026-08-10")
     expect(copy.accuracy.currentStats.map((stat) => stat.value)).toEqual([
       "96,9 % / 1 av 205",
       "100,0 % / 0 av 57",
-      "81,7 % / 0 av 53",
-      "35 av 35",
     ])
-    expect(copy.accuracy.provenance[1]).toContain("2026-07-19")
-    expect(copy.accuracy.provenance[1]).toContain("0.6.4")
-    expect(copy.accuracy.provenance[1]).toContain("v18")
-    expect(copy.accuracy.limits[0]).toContain("99,8 procent")
-    expect(copy.accuracy.limits[0]).toContain("noll fullständiga missar")
-    expect(comparisonSource).toContain("measured 2026-07-22")
+    expect(copy.accuracy.currentStats.map((stat) => stat.label)).toEqual([
+      "blandade svenska testtexter: F1 / missar",
+      "syntetiska adresser: F1 / missar",
+    ])
+    expect(copy.accuracy.currentTitle).toBe("Aktuella testresultat")
+    expect(copy.accuracy.provenance).toHaveLength(1)
+    expect(copy.accuracy.limits[0]).toContain("Testmängderna")
+    expect(comparisonSource.measuredAt).toBe("2026-08-11")
+    expect(comparisonSource.artifacts["joelhagvall/maskera-sv-ner"].sha256).toBe(
+      "6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66",
+    )
+    expect(
+      comparisonSource.artifacts["KBLab/bert-base-swedish-lowermix-reallysimple-ner"].sha256,
+    ).toBe("49545200dd3a32ac76e14da91aa2c0b0ba6d4e5d5efbf90d922f7f91f6b7de89")
+    expect(comparisonSource.runs[0].results[0].redactionHits).toBe(211)
+    expect(comparisonSource.runs[0].results[1].redactionHits).toBe(205)
+    expect(comparisonSource.runs[1].results[0].redactionHits).toBe(211)
+    expect(comparisonSource.runs[1].results[1].redactionHits).toBe(187)
   })
 })

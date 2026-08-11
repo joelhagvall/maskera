@@ -19,6 +19,7 @@
     "modelStarting": "Startar AI-modellen…",
     "modelLoading": "Laddar maskeras AI-modell…",
     "modelLoadingAria": "Laddar maskeras AI-modell",
+    "modelDownloadNote": "Första gången hämtas cirka 43 MB. Modellen sparas lokalt till nästa besök.",
     "modelError": "AI-modellen kunde inte laddas. Personnummer, telefonnummer och annat med bestämt format maskeras ändå.",
     "modelRetry": "Försök igen",
     "modelReady": "maskeras AI-modell aktiv"
@@ -285,149 +286,96 @@
     "modelLink": "Egentränad svensk AI-modell",
     "navLabel": "Integritet och dokumentation",
     "whitepaper": "Whitepaper (PDF)",
-    "servicesPrefix": "För företag:",
-    "servicesCta": "Maskera Gateway",
     "creditPrefix": "Byggd av",
     "author": "Joel Hägvall"
   },
   "accuracy": {
     "metaTitle": "träffsäkerhet & testresultat · maskera",
-    "metaDescription": "Se hur många svenska personuppgifter Maskera och andra system hittade, hur många de missade och exakt hur testerna gjordes.",
+    "metaDescription": "Se hur många svenska personuppgifter Maskera hittade, hur många som missades och exakt hur de aktuella testerna gjordes.",
     "title": "Träffsäkerhet, öppet redovisad",
-    "lede": "Det viktigaste är hur många personuppgifter som står kvar efter maskeringen. Därför visar vi både rätt markeringar, hittad andel och fullständiga missar, med testtexter, metod och begränsningar öppna för granskning.",
+    "lede": "Det viktigaste är hur många personuppgifter som står kvar efter maskeringen. Därför visar vi både F1 för exakta markeringar och fullständiga missar, med testtexter, metod och begränsningar öppna för granskning.",
     "inlineCta": "sidan om träffsäkerhet",
     "servicesCta": "Se testresultat och begränsningar",
     "tocLabel": "På den här sidan",
     "toc": [
       { "href": "#matt", "label": "Vad måtten betyder" },
-      { "href": "#aktuellt", "label": "Aktuella v19-resultat" },
-      { "href": "#oberoende", "label": "Externa svenska texter" },
-      { "href": "#adresser", "label": "Svenska adresser" },
+      { "href": "#aktuellt", "label": "Aktuella resultat" },
+      { "href": "#kblab", "label": "Jämfört med KBLab" },
       { "href": "#tolkning", "label": "Så ska resultaten tolkas" },
       { "href": "#begransningar", "label": "Begränsningar" },
       { "href": "#kallor", "label": "Källor och reproduktion" }
     ],
     "metricsTitle": "Missar är det viktigaste måttet",
-    "metricsBody": "En fullständig miss betyder att en personuppgift står kvar i klartext. Precision visar hur ofta en markering var rätt. Recall visar hur stor andel av alla personuppgifter som hittades. Ett hederligt test behöver visa båda.",
-    "independentTitle": "Externa svenska texter",
-    "independentCaption": "22 meningar skrivna av andra och uteslutna ur Maskeras finträning, destillering och vokabulärurval. De innehåller 58 personuppgifter. Testet är litet och bevisar inte frånvaro ur KB-BERTs tidigare förträning, så resultatet visar en riktning och inte en slutlig vinnare.",
-    "addressesTitle": "Svenska adresser",
-    "addressesCaption": "Gatuadresser redovisas separat eftersom den historiska jämförelsen använder en annan korpus än den aktuella v19-mätningen.",
-    "currentTitle": "Aktuella releasegrindar: v19",
-    "currentBody": "Publicerade v19 mättes på de syntetiska releasegrindarna 2026-08-06. Den LinkedIn-liknande raden kördes om från en ren build 2026-08-10. Resultaten är tester av Maskera, inte en ny jämförelse med Azure eller andra system.",
+    "metricsBody": "En fullständig miss betyder att en personuppgift står kvar i klartext. Precision visar hur ofta en markering var rätt och recall hur stor andel av alla personuppgifter som hittades. F1 för exakta markeringar, även kallat span-F1, väger samman de två. Fullständiga missar redovisas separat.",
+    "currentTitle": "Aktuella testresultat",
+    "currentBody": "Den publicerade modellen mättes på syntetiska svenska testmängder 2026-08-06. Resultaten visar modellens kända styrkor och gränser.",
     "currentStats": [
-      { "value": "96,9 % / 1 av 205", "label": "curated: span-F1 / missar" },
-      { "value": "100,0 % / 0 av 57", "label": "syntetisk ADR: span-F1 / missar" },
-      { "value": "81,7 % / 0 av 53", "label": "LinkedIn-liknande: span-F1 / missar" },
-      { "value": "35 av 35", "label": "adresser hittade exakt" }
+      { "value": "96,9 % / 1 av 205", "label": "blandade svenska testtexter: F1 / missar" },
+      { "value": "100,0 % / 0 av 57", "label": "syntetiska adresser: F1 / missar" }
     ],
-    "historicalAddressTitle": "Historisk jämförelse: v18",
-    "historicalAddressCaption": "Tabellen nedan mättes på den tidigare v18-korpusen med 60 entiteter och ska läsas separat från det aktuella v19-resultatet ovan.",
-    "table": {
+    "comparisonTitle": "Jämfört med KBLab",
+    "comparisonBody": "Maskeras publicerade q4-modell på 43 MB och KBLab lowermix fp32 på 496 MB kördes 2026-08-11 på samma 121 syntetiska svenska texter med 211 namn, platser och organisationer. En uppgift räknas som maskerad när markeringen överlappar den; typ-F1 kräver dessutom rätt kategori.",
+    "comparisonTable": {
       "system": "System",
-      "precision": "Rätt markeringar",
-      "recall": "Hittad andel",
-      "leaks": "Helt missade"
+      "masked": "Maskerade",
+      "typedF1": "Typ-F1"
     },
-    "independentRows": [
+    "comparisonCases": [
       {
-        "system": "Maskera",
-        "precision": "96,4 %",
-        "recall": "93,1 %",
-        "leaks": "2 av 58",
-        "ours": true
+        "title": "Ursprungligt skiftläge",
+        "rows": [
+          {
+            "system": "Maskera v19 q4",
+            "masked": "211 av 211 (100,0 %)",
+            "typedF1": "87,1 %",
+            "ours": true
+          },
+          {
+            "system": "KBLab lowermix fp32",
+            "masked": "205 av 211 (97,2 %)",
+            "typedF1": "89,4 %"
+          }
+        ]
       },
       {
-        "system": "Azure AI Language (PII + NER)",
-        "precision": "95,0 %",
-        "recall": "98,3 %",
-        "leaks": "1 av 58"
-      },
-      {
-        "system": "Microsoft Presidio (sv)",
-        "precision": "82,5 %",
-        "recall": "56,9 %",
-        "leaks": "19 av 58"
-      },
-      {
-        "system": "EU PII Safeguard",
-        "precision": "77,8 %",
-        "recall": "12,1 %",
-        "leaks": "49 av 58"
-      },
-      {
-        "system": "OpenAI Privacy Filter",
-        "precision": "83,3 %",
-        "recall": "8,6 %",
-        "leaks": "53 av 58"
-      },
-      {
-        "system": "Blindfold (regler)",
-        "precision": "100 %",
-        "recall": "0,0 %",
-        "leaks": "58 av 58"
+        "title": "Samma texter i gemener",
+        "rows": [
+          {
+            "system": "Maskera v19 q4",
+            "masked": "211 av 211 (100,0 %)",
+            "typedF1": "85,7 %",
+            "ours": true
+          },
+          {
+            "system": "KBLab lowermix fp32",
+            "masked": "187 av 211 (88,6 %)",
+            "typedF1": "83,2 %"
+          }
+        ]
       }
     ],
-    "addressRows": [
-      {
-        "system": "Maskera",
-        "precision": "100 %",
-        "recall": "100 %",
-        "leaks": "0 av 60",
-        "ours": true
-      },
-      {
-        "system": "Azure AI Language (PII + NER)",
-        "precision": "78,5 %",
-        "recall": "85,0 %",
-        "leaks": "1 av 60"
-      },
-      {
-        "system": "Microsoft Presidio (sv)",
-        "precision": "42,9 %",
-        "recall": "40,0 %",
-        "leaks": "4 av 60"
-      },
-      {
-        "system": "EU PII Safeguard",
-        "precision": "63,9 %",
-        "recall": "38,3 %",
-        "leaks": "24 av 60"
-      },
-      {
-        "system": "OpenAI Privacy Filter",
-        "precision": "23,1 %",
-        "recall": "10,0 %",
-        "leaks": "39 av 60"
-      },
-      {
-        "system": "Blindfold (regler)",
-        "precision": "100 %",
-        "recall": "0,0 %",
-        "leaks": "60 av 60"
-      }
-    ],
+    "comparisonSummary": "Maskera maskerade samtliga 211 märkta namn, platser och organisationer i båda körningarna. KBLab hade högre typ-F1 med ursprungligt skiftläge; Maskera hade högre typ-F1 i gemener.",
+    "comparisonLimit": "Testet är skrivet av Maskeras utvecklare och visar en riktning, inte en oberoende rankning. Gatuadresser och Maskeras efterbearbetning ingår inte.",
     "interpretationTitle": "Så ska resultaten tolkas",
     "interpretation": [
-      "I det lilla externa testet hittar Azure en personuppgift mer. Maskera gör något färre felmarkeringar. Underlaget är för litet för att utse en säker vinnare.",
-      "I den historiska v18-mätningen hittade Maskera alla 35 gatuadresser exakt. Azure hittade 28 av 35 exakt och missade en av testets 60 personuppgifter helt. Publicerade v19 har ommätts på ersättningskorpusen med tydligt syntetiska adresser: alla 35 adresser hittas exakt och ingen av korpusens 57 entiteter läcker. Det är inte en ny jämförelse med Azure.",
-      "Både Azures särskilda personuppgiftsanalys och dess allmänna analys av namn, platser och organisationer kördes. Det ger Azure den starkaste rättvisa konfigurationen för testet."
+      "I testet med syntetiska adresser lämnades ingen av de märkta uppgifterna helt i klartext. I testet med blandade svenska texter missades 1 av 205.",
+      "Den enda missen var en bred offentlig geografisk region, inte en person, kontaktuppgift, identifierare eller gatuadress.",
+      "Alla 35 gatuadresser hittades med exakt markering, inklusive husnumret."
     ],
     "limitsTitle": "Det här visar testerna inte",
     "limits": [
-      "I den historiska v18-mätningens större egna test nådde Maskera 99,8 procent i det sammanvägda F1-måttet och noll fullständiga missar. Samma utvecklare skapade både testgeneratorn och träningsgeneratorn. Därför används testet för att stoppa försämringar, inte som ett oberoende betyg.",
+      "Testmängderna är syntetiska eller författarkopplade. De används för att stoppa försämringar, inte som ett oberoende betyg på all svensk text.",
       "Ingen automatisk maskering är perfekt. Ovanliga namn, OCR-brus och formuleringar långt från träningsdatan kan missas. Låt en människa kontrollera texten när ett fel kan få stora konsekvenser.",
-      "De här korpusarna mäter fri text. Strukturerade identifierare som personnummer och IBAN hanteras av regelmotorn och ingår inte i jämförelsen."
+      "De här korpusarna mäter fri text. Strukturerade identifierare som personnummer och IBAN hanteras av regelmotorn och ingår inte i dessa modelltester."
     ],
     "sourcesTitle": "Källor och reproduktion",
     "provenance": [
-      "Publicerade maskera-sv-ner v19 (q4, cirka 43 MB) mättes på de syntetiska releasegrindarna 2026-08-06. Den LinkedIn-liknande raden kördes om 2026-08-10.",
-      "De jämförande tabellerna mättes 2026-07-19 på maskera 0.6.4 och historiska maskera-sv-ner v18.",
-      "Azure mättes 2026-07-22 med GA-API 2024-11-01, modell 2025-11-01, språk sv, UTF-16-index och loggingOptOut aktiverat."
+      "Publicerade maskera-sv-ner v19 (q4, cirka 43 MB) mättes på de syntetiska releasegrindarna 2026-08-06."
     ],
     "sourcesBody": "Testtexter, metod, körskript och de fullständiga Maskera-resultaten finns i det öppna repot. BENCHMARKS.md är källan som gäller om en siffra någon annanstans skulle skilja sig.",
     "benchmarksCta": "Läs benchmark-källan",
-    "scriptsCta": "Se jämförelsens data och skript",
+    "comparisonCta": "Öppna den maskinläsbara KBLab-körningen",
+    "scriptsCta": "Se körskriptet",
     "demoCta": "Prova den aktuella modellen i webbläsardemon"
   },
   "security": {

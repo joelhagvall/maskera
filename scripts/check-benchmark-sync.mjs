@@ -83,7 +83,7 @@ async function expectHash(label, file, expected) {
   if (actual !== expected) drift(label, file, expected, actual)
 }
 
-requireValue("schemaVersion", 2, contract.schemaVersion)
+requireValue("schemaVersion", 3, contract.schemaVersion)
 requireValue("status", "published", contract.status)
 if (!/^v\d+$/.test(contract.release ?? "")) {
   drift("release", "docs/benchmark-release.json", "v<number>", contract.release)
@@ -103,12 +103,17 @@ for (const [label, value] of [
   ["whitepaper PDF sha256", contract.whitepaper?.pdfSha256],
   ["evaluation suite sha256", contract.evaluation?.suiteSha256],
   ["evaluation environment sha256", contract.evaluation?.environment?.sha256],
+  ["comparison result sha256", contract.comparison?.resultSha256],
+  ["comparison suite sha256", contract.comparison?.suiteSha256],
+  ["comparison environment sha256", contract.comparison?.environment?.sha256],
+  ["comparison Maskera artifact sha256", contract.comparison?.models?.maskera?.sha256],
+  ["comparison KBLab artifact sha256", contract.comparison?.models?.kblab?.sha256],
 ]) {
   if (!/^[a-f0-9]{64}$/.test(value ?? ""))
     drift(label, "docs/benchmark-release.json", "64 lowercase hex characters", value)
 }
 
-const { artifact, evaluation, historical, metrics, packages, whitepaper } = contract
+const { artifact, comparison, evaluation, historical, metrics, packages, whitepaper } = contract
 const { curated, syntheticAdr, linkedinStyle, syntheticGold, rareSurnames } = metrics
 const bytes = formatBytes(artifact.bytes)
 
@@ -151,6 +156,16 @@ await expectFragments("docs/BENCHMARKS.md", [
     "historical boundary",
     `Historical ${historical.release} snapshot — not a ${contract.release} result.`,
   ],
+  [
+    "current KBLab original row",
+    `| original | **Maskera ${contract.release} q4** | **${comparison.normal.maskera.maskedRecallPct}% (${comparison.normal.maskera.masked}/${comparison.corpus.entities})** | ${comparison.normal.maskera.typedF1Pct}% |`,
+  ],
+  [
+    "current KBLab lowercase row",
+    `| lowercase | KBLab lowermix fp32 | ${comparison.lowercase.kblab.maskedRecallPct}% (${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}) | ${comparison.lowercase.kblab.typedF1Pct}% |`,
+  ],
+  ["comparison reproduction command", `Reproduce with \`${comparison.command}\``],
+  ["comparison suite checksum", `Comparison suite\nchecksum: \`${comparison.suiteSha256}\``],
 ])
 
 const actualSuiteHash = await sha256FileSet(evaluation.files)
@@ -161,6 +176,135 @@ if (actualSuiteHash !== evaluation.suiteSha256) {
     evaluation.suiteSha256,
     actualSuiteHash,
   )
+}
+
+const actualComparisonSuiteHash = await sha256FileSet(comparison.files)
+if (actualComparisonSuiteHash !== comparison.suiteSha256) {
+  drift(
+    "comparison suite checksum",
+    "docs/benchmark-release.json",
+    comparison.suiteSha256,
+    actualComparisonSuiteHash,
+  )
+}
+await expectHash(
+  "comparison environment checksum",
+  comparison.environment.requirements,
+  comparison.environment.sha256,
+)
+await expectHash("comparison result checksum", comparison.resultFile, comparison.resultSha256)
+
+const comparisonResult = await readJson(resolve(repoRoot, comparison.resultFile))
+for (const [role, model] of Object.entries(comparison.models)) {
+  const resultArtifact = comparisonResult.artifacts?.[model.id]
+  for (const [field, expected] of [
+    ["revision", model.revision],
+    ["path", model.path],
+    ["sha256", model.sha256],
+    ["bytes", model.bytes],
+  ]) {
+    if (!Object.is(expected, resultArtifact?.[field])) {
+      drift(
+        `comparison ${role} artifact ${field}`,
+        comparison.resultFile,
+        expected,
+        resultArtifact?.[field],
+      )
+    }
+  }
+}
+const comparisonRuns = Object.fromEntries(comparisonResult.runs.map((run) => [run.name, run]))
+const comparisonSystems = (run) =>
+  Object.fromEntries(
+    run.results.map((result) => [
+      result.model === comparison.models.maskera.id ? "maskera" : "kblab",
+      result,
+    ]),
+  )
+const comparisonPct = (value) => (value * 100).toFixed(1)
+const normalSystems = comparisonSystems(comparisonRuns["synthetic hand-authored set"])
+const lowercaseSystems = comparisonSystems(comparisonRuns["synthetic hand-authored set LOWERCASED"])
+
+for (const [label, expected, actual] of [
+  ["comparison measured date", comparison.measuredAt, comparisonResult.measuredAt],
+  ["comparison matching", comparison.matching, comparisonResult.matching],
+  ["comparison corpus sha256", comparison.corpus.sha256, comparisonResult.corpus.sha256],
+  ["comparison artifact revision", artifact.revision, comparison.models.maskera.revision],
+  ["comparison artifact sha256", artifact.sha256, comparison.models.maskera.sha256],
+  [
+    "comparison normal documents",
+    comparison.corpus.documents,
+    comparisonRuns["synthetic hand-authored set"].documents,
+  ],
+  [
+    "comparison normal entities",
+    comparison.corpus.entities,
+    comparisonRuns["synthetic hand-authored set"].entities,
+  ],
+  [
+    "comparison normal Maskera masked",
+    comparison.normal.maskera.masked,
+    normalSystems.maskera.redactionHits,
+  ],
+  [
+    "comparison normal Maskera recall",
+    comparison.normal.maskera.maskedRecallPct,
+    comparisonPct(normalSystems.maskera.redactionRecall),
+  ],
+  [
+    "comparison normal Maskera typed F1",
+    comparison.normal.maskera.typedF1Pct,
+    comparisonPct(normalSystems.maskera.typedF1),
+  ],
+  [
+    "comparison normal KBLab masked",
+    comparison.normal.kblab.masked,
+    normalSystems.kblab.redactionHits,
+  ],
+  [
+    "comparison normal KBLab recall",
+    comparison.normal.kblab.maskedRecallPct,
+    comparisonPct(normalSystems.kblab.redactionRecall),
+  ],
+  [
+    "comparison normal KBLab typed F1",
+    comparison.normal.kblab.typedF1Pct,
+    comparisonPct(normalSystems.kblab.typedF1),
+  ],
+  [
+    "comparison lowercase Maskera masked",
+    comparison.lowercase.maskera.masked,
+    lowercaseSystems.maskera.redactionHits,
+  ],
+  [
+    "comparison lowercase Maskera recall",
+    comparison.lowercase.maskera.maskedRecallPct,
+    comparisonPct(lowercaseSystems.maskera.redactionRecall),
+  ],
+  [
+    "comparison lowercase Maskera typed F1",
+    comparison.lowercase.maskera.typedF1Pct,
+    comparisonPct(lowercaseSystems.maskera.typedF1),
+  ],
+  [
+    "comparison lowercase KBLab masked",
+    comparison.lowercase.kblab.masked,
+    lowercaseSystems.kblab.redactionHits,
+  ],
+  [
+    "comparison lowercase KBLab recall",
+    comparison.lowercase.kblab.maskedRecallPct,
+    comparisonPct(lowercaseSystems.kblab.redactionRecall),
+  ],
+  [
+    "comparison lowercase KBLab typed F1",
+    comparison.lowercase.kblab.typedF1Pct,
+    comparisonPct(lowercaseSystems.kblab.typedF1),
+  ],
+]) {
+  if (!Object.is(expected, actual)) {
+    drift(label, comparison.resultFile, expected, actual)
+  }
 }
 
 try {
@@ -188,6 +332,14 @@ await expectFragments("training/README.md", [
     `| synthetic gold | type F1 ${syntheticGold.typeF1Pct}%; type recall ${syntheticGold.typeRecallPct}%; masked recall ${syntheticGold.maskedRecallPct}% |`,
   ],
   ["training artifact revision", artifact.revision],
+  [
+    "training current KBLab comparison",
+    `Maskera masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities} with original`,
+  ],
+  [
+    "training current KBLab lowercase result",
+    `KBLab masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}. Typed F1 was`,
+  ],
 ])
 await expectFragments("README.md", [
   [
@@ -196,7 +348,18 @@ await expectFragments("README.md", [
   ],
   ["root ADR claim", `**${syntheticAdr.spanF1Pct}%**`],
   ["root LinkedIn claim", `**${linkedinStyle.spanF1Pct}%**`],
-  ["root historical boundary", `dated public-model comparison belongs to ${historical.release}`],
+  [
+    "root historical boundary",
+    `broader dated public-model comparison still\nbelongs to ${historical.release}`,
+  ],
+  [
+    "root current KBLab Maskera result",
+    `Maskera masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities}`,
+  ],
+  [
+    "root current KBLab result",
+    `KBLab masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}.`,
+  ],
 ])
 await expectFragments("packages/ner/README.md", [
   [
@@ -211,6 +374,14 @@ await expectFragments("packages/ner/README.md", [
     "package historical boundary",
     `historical ${historical.release} scored ${historical.curated.spanF1Pct}% span-F1`,
   ],
+  [
+    "package current KBLab Maskera result",
+    `Maskera masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities} both with`,
+  ],
+  [
+    "package current KBLab result",
+    `KBLab masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}.`,
+  ],
 ])
 await expectFragments("training/maskera-sv-ner-card/README.md", [
   ["model-card current heading", `Published privacy-clean ${contract.release}`],
@@ -224,6 +395,14 @@ await expectFragments("training/maskera-sv-ner-card/README.md", [
     `${rareSurnames.maskedRecallPct}% (${rareSurnames.masked}/${rareSurnames.entities})`,
   ],
   ["model-card historical boundary", `${historical.release} comparison metrics`],
+  [
+    "model-card current KBLab original row",
+    `| original | **maskera-sv-ner ${contract.release} q4** | **${comparison.normal.maskera.maskedRecallPct}% (${comparison.normal.maskera.masked}/${comparison.corpus.entities})** | ${comparison.normal.maskera.typedF1Pct}% |`,
+  ],
+  [
+    "model-card current KBLab lowercase row",
+    `| lowercase | KBLab lowermix fp32 | ${comparison.lowercase.kblab.maskedRecallPct}% (${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}) | ${comparison.lowercase.kblab.typedF1Pct}% |`,
+  ],
 ])
 await expectFragments("apps/demo/public/llms.txt", [
   [
@@ -239,6 +418,10 @@ await expectFragments("apps/demo/public/llms.txt", [
     `LinkedIn-style span F1 ${linkedinStyle.spanF1Pct}% with ${linkedinStyle.leaks}/${linkedinStyle.entities} leaks`,
   ],
   ["llms historical boundary", `Historical ${historical.release} public-model comparisons`],
+  [
+    "llms current KBLab comparison",
+    `Maskera q4 masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities} with original casing and ${comparison.lowercase.maskera.masked}/${comparison.corpus.entities} lowercased; KBLab fp32 masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}.`,
+  ],
 ])
 await expectFragments("bench/README.md", [
   ["bench current boundary", `Published ${contract.release} snapshot`],
@@ -247,6 +430,10 @@ await expectFragments("bench/README.md", [
     `Curated span F1 is ${curated.spanF1Pct}% with ${curated.leaks}/${curated.entities} leaks`,
   ],
   ["bench historical boundary", `Historical snapshot`],
+  [
+    "bench current KBLab comparison",
+    `masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities} with original casing and ${comparison.lowercase.maskera.masked}/${comparison.corpus.entities} lowercased. KBLab lowermix`,
+  ],
 ])
 await expectFragments("docs/TRANSPARENCY.md", [
   ["transparency current release", `current ${contract.release}`],
@@ -258,6 +445,14 @@ await expectFragments("docs/TRANSPARENCY.md", [
     "transparency LinkedIn claim",
     `${linkedinStyle.spanF1Pct}% span F1 with ${linkedinStyle.leaks}/${linkedinStyle.entities}`,
   ],
+  [
+    "transparency current KBLab Maskera result",
+    `Maskera q4 masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities} both with original casing and lowercased`,
+  ],
+  [
+    "transparency current KBLab result",
+    `KBLab fp32 masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}.`,
+  ],
 ])
 await expectFragments("docs/PRODUCTION.md", [
   ["production release", `current ${contract.release} release`],
@@ -266,6 +461,14 @@ await expectFragments("docs/PRODUCTION.md", [
     `${curated.spanF1Pct}% span F1 with ${curated.leaks}/${curated.entities} leaks`,
   ],
   ["production LinkedIn claim", `${linkedinStyle.leaks}/${linkedinStyle.entities}\nleaks`],
+  [
+    "production current KBLab Maskera result",
+    `Maskera masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities} both with original casing and`,
+  ],
+  [
+    "production current KBLab result",
+    `lowercased; KBLab masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}.`,
+  ],
 ])
 await expectFragments(whitepaper.source, [
   ["whitepaper version", `Whitepaper v${whitepaper.version}`],
@@ -274,6 +477,35 @@ await expectFragments(whitepaper.source, [
   ["whitepaper synthetic-gold type F1", `${syntheticGold.typeF1Pct}\\% type $F_1$`],
   ["whitepaper current heading", `Published ${contract.release} release snapshot`],
   ["whitepaper historical heading", `Historical ${historical.release}: curated corpus`],
+  [
+    "whitepaper current KBLab original row",
+    `Original & \\textbf{Maskera ${contract.release} q4} & \\textbf{${comparison.normal.maskera.maskedRecallPct}\\% (${comparison.normal.maskera.masked}/${comparison.corpus.entities})} & ${comparison.normal.maskera.typedF1Pct}\\%`,
+  ],
+  [
+    "whitepaper current KBLab lowercase row",
+    `Lowercase & KBLab lowermix fp32 & ${comparison.lowercase.kblab.maskedRecallPct}\\% (${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}) & ${comparison.lowercase.kblab.typedF1Pct}\\%`,
+  ],
+])
+
+await expectFragments("apps/demo/src/i18n/sv.json", [
+  [
+    "Swedish current KBLab Maskera result",
+    `"masked": "${comparison.normal.maskera.masked} av ${comparison.corpus.entities} (${comparison.normal.maskera.maskedRecallPct.replace(".", ",")} %)"`,
+  ],
+  [
+    "Swedish current KBLab lowercase result",
+    `"masked": "${comparison.lowercase.kblab.masked} av ${comparison.corpus.entities} (${comparison.lowercase.kblab.maskedRecallPct.replace(".", ",")} %)"`,
+  ],
+])
+await expectFragments("apps/demo/src/i18n/en.json", [
+  [
+    "English current KBLab Maskera result",
+    `"masked": "${comparison.normal.maskera.masked} of ${comparison.corpus.entities} (${comparison.normal.maskera.maskedRecallPct}%)"`,
+  ],
+  [
+    "English current KBLab lowercase result",
+    `"masked": "${comparison.lowercase.kblab.masked} of ${comparison.corpus.entities} (${comparison.lowercase.kblab.maskedRecallPct}%)"`,
+  ],
 ])
 
 const optionalExplainer = "docs/FORSTA_MODELLEN.md"
@@ -288,6 +520,10 @@ if (existsSync(resolve(repoRoot, optionalExplainer))) {
       `syntetisk ADR span-F1 **${syntheticAdr.spanF1Pct.replace(".", ",")} %** med ${syntheticAdr.leaks}/${syntheticAdr.entities} läckor`,
     ],
     ["explainer historical boundary", `De här tre talen tillhör ${historical.release}-artefakten`],
+    [
+      "explainer current KBLab comparison",
+      `Maskera maskerar ${comparison.normal.maskera.masked}/${comparison.corpus.entities} både med`,
+    ],
   ])
 }
 

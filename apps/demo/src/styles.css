@@ -340,6 +340,20 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
+.model-status-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+.model-download-note {
+  max-width: 34ch;
+  margin: 0;
+  color: var(--muted-2);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
 .dot {
   width: 7px;
   height: 7px;
@@ -598,13 +612,13 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
   color: transparent;
   caret-color: var(--fg);
   resize: none;
-  outline: none;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
 }
-/* single-ring focus: the darkened border is the focus indicator; no extra
-   outline, or the field gets a double frame (textareas match :focus-visible
-   even on mouse click) */
-.editor textarea:focus {
+/* Replace the transparent default with a strong outer focus ring. */
+.editor textarea:focus-visible {
   border-color: var(--fg);
+  outline-color: var(--fg);
 }
 /* the textarea text is transparent (overlay), so colour the placeholder explicitly */
 .editor textarea::placeholder {
@@ -955,9 +969,6 @@ main:has(.prose-foot) + .footer {
     align-items: center;
     min-height: 44px;
   }
-  .footer-help {
-    margin-top: 4px;
-  }
   .footer-credit {
     margin-top: 8px;
   }
@@ -1010,6 +1021,13 @@ main:has(.prose-foot) + .footer {
   }
   .back {
     font-size: 14px;
+  }
+}
+@media (max-width: 360px) {
+  /* GitHub is also in the shared footer. Removing it from the cramped phone
+     header keeps the primary navigation on one deliberate row. */
+  .head-github {
+    display: none;
   }
 }
 .prose {
@@ -1439,13 +1457,6 @@ html[data-theme="dark"] .tok-f {
 .accuracy-page .benchmark-section h2 {
   margin-bottom: 8px;
 }
-.benchmark-caption {
-  max-width: 64ch;
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--muted);
-}
 .benchmark-current {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(300px, 1.2fr);
@@ -1456,6 +1467,9 @@ html[data-theme="dark"] .tok-f {
   border-radius: var(--radius);
   background: var(--gray-100);
 }
+.benchmark-current > div {
+  align-self: center;
+}
 .benchmark-current h2,
 .benchmark-current h3,
 .benchmark-current p,
@@ -1465,6 +1479,9 @@ html[data-theme="dark"] .tok-f {
 .benchmark-current h2,
 .benchmark-current h3 {
   font-size: 16px;
+}
+.accuracy-page .benchmark-current h2 {
+  margin-top: 0;
 }
 .benchmark-current p {
   margin-top: 6px;
@@ -1493,126 +1510,82 @@ html[data-theme="dark"] .tok-f {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
-#historiska-adresser {
-  margin-top: 28px;
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
 }
-#historiska-adresser h3 {
-  margin-bottom: 8px;
-  font-size: 18px;
-}
-.benchmark-cards {
-  display: none;
-}
-.benchmark-scroll {
-  margin-top: 14px;
-  overflow-x: auto;
+.comparison-case {
+  overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
-.benchmark-table {
-  width: 100%;
-  min-width: 650px;
-  border-collapse: collapse;
+.comparison-case h3 {
+  margin: 0;
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--gray-100);
   font-size: 13px;
-  line-height: 1.45;
 }
-.benchmark-table th,
-.benchmark-table td {
-  padding: 11px 14px;
+.comparison-case table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.comparison-case th,
+.comparison-case td {
+  padding: 9px 10px;
   border-bottom: 1px solid var(--border);
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
-.benchmark-table th:first-child {
+.comparison-case th:first-child {
   text-align: left;
 }
-.benchmark-table thead th {
-  font-size: 11.5px;
-  font-weight: 500;
+.comparison-case thead th {
   color: var(--muted);
-  background: var(--gray-100);
-  white-space: nowrap;
+  font-size: 10.5px;
+  font-weight: 500;
 }
-.benchmark-table tbody th {
+.comparison-case tbody th {
   font-weight: 400;
 }
-.benchmark-table tbody tr:last-child th,
-.benchmark-table tbody tr:last-child td {
+.comparison-case tbody tr:last-child th,
+.comparison-case tbody tr:last-child td {
   border-bottom: 0;
 }
-.benchmark-table .benchmark-own th,
-.benchmark-table .benchmark-own td {
-  font-weight: 600;
+.comparison-case .comparison-own th,
+.comparison-case .comparison-own td {
   color: var(--fg);
+  font-weight: 600;
   background: var(--gray-100);
+}
+.comparison-summary {
+  margin: 14px 0 0;
+  color: var(--ink);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.comparison-limit {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.6;
 }
 @media (max-width: 700px) {
   .benchmark-current {
     grid-template-columns: 1fr;
   }
+  .benchmark-current > div {
+    align-self: auto;
+  }
   .benchmark-current dl {
     grid-template-columns: 1fr;
   }
-  .benchmark-scroll {
-    display: none;
-  }
-  .benchmark-cards {
-    display: grid;
-    gap: 10px;
-    margin: 14px 0 0;
-    padding: 0;
-    list-style: none;
-  }
-  .benchmark-card {
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-  }
-  .benchmark-card::before {
-    display: none;
-  }
-  .benchmark-card-title {
-    margin: 0;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1.4;
-  }
-  .benchmark-card dl {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    margin: 0;
-  }
-  .benchmark-card dl > div {
-    min-width: 0;
-    padding: 9px 6px 10px;
-    text-align: center;
-  }
-  .benchmark-card dl > div + div {
-    border-left: 1px solid var(--border);
-  }
-  .benchmark-card dt {
-    min-height: 2.5em;
-    font-size: 11px;
-    line-height: 1.25;
-    color: var(--muted);
-  }
-  .benchmark-card dd {
-    margin: 4px 0 0;
-    font-size: 13px;
-    font-variant-numeric: tabular-nums;
-    line-height: 1.35;
-  }
-  .benchmark-card.benchmark-own {
-    background: var(--gray-100);
-  }
-  .benchmark-card.benchmark-own .benchmark-card-title,
-  .benchmark-card.benchmark-own dd {
-    font-weight: 600;
-    color: var(--fg);
+  .comparison-grid {
+    grid-template-columns: 1fr;
   }
 }
 .security-actions {
@@ -1885,6 +1858,31 @@ html[data-theme="dark"] .tok-f {
   background: var(--gray-100);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+}
+.prose-with-toc {
+  position: relative;
+}
+@media (min-width: 1200px) {
+  /* Long-form pages retain their full reading/table width. The rail sits in
+     the otherwise unused viewport space beside the article and stays within
+     the article's vertical boundary while it follows the reader. */
+  .prose-with-toc > .toc-rail {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(100% + 28px);
+    width: clamp(164px, calc(50vw - 436px), 204px);
+  }
+  .prose-with-toc > .toc-rail .toc {
+    position: sticky;
+    top: 24px;
+    margin: 0;
+    padding: 14px;
+  }
+  .prose-with-toc > .toc-rail .toc ul {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
 }
 .toc p {
   margin: 0 0 10px;

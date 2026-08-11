@@ -24,6 +24,14 @@ safety-critical number for redaction.
 > re-run; the full release snapshot and caveats are in
 > [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
 
+> **Current v19 KBLab comparison (2026-08-11):** on 121 hand-authored
+> synthetic Swedish texts with 211 comparable PER/LOC/ORG entities, Maskera q4
+> masked 211/211 with original casing and 211/211 lowercased. KBLab lowermix
+> fp32 masked 205/211 and 187/211. Typed F1 was 87.1% vs 89.4% original and
+> 85.7% vs 83.2% lowercased. This uses overlap matching and is author-coupled,
+> not an independent ranking. Reproduce with `pnpm eval:kblab`; see
+> [`docs/benchmark-kblab-v19.json`](../docs/benchmark-kblab-v19.json).
+
 - **Measured:** 2026-07-19 (maskera rows; competitor rows 2026-07-18, their systems unchanged), Apple M4 Pro, all systems fully local.
 - maskera's rows in the historical comparison tables are
   (`maskera@0.6.3` code, `joelhagvall/maskera-sv-ner` v18 weights, q4,

@@ -43,15 +43,14 @@ All inference happens **on the device where the text is**, via
 small enough to run **directly in a browser tab**, which is exactly how the
 maskera demo ships: try it live at [maskera.dev](https://maskera.dev).
 
-The published v18 artifact was benchmarked against the public Swedish NER
-alternatives in the dated comparison (KB-NER,
-RecordedFuture, KBLab reallysimple/lowermix/neriob, scandi-ner, the sbx
-PI-detection pair). It **held the best typed F1 on independent Swedish text at under a
-tenth of their size** (0.96 vs 0.94 for the closest full-size model); on
-lowercase text its strength is the chat/support register it targets, while
-KBLab's lowermix still leads on lowercased encyclopedic prose; see
-[How it compares](#how-it-compares). Those historical comparisons do not
-automatically transfer to v19.
+The current v19 q4 artifact was re-run on 2026-08-11 against KBLab's
+case-robust lowermix model on the same 121 hand-authored synthetic Swedish
+texts (211 PER/LOC/ORG entities). Maskera masked all 211 entities both with
+original casing and lowercased; KBLab masked 205 and 187. KBLab led typed F1
+on original casing (89.4% vs 87.1%); Maskera led lowercase typed F1 (85.7% vs
+83.2%). The corpus is author-coupled to Maskera, so this is directional rather
+than an independent ranking. The broader public-model comparison remains a
+historical v18 snapshot; see [How it compares](#how-it-compares).
 
 - **Base model:** [KBLab/bert-base-swedish-cased](https://huggingface.co/KBLab/bert-base-swedish-cased) (KB-BERT, CC0), 6 transformer layers
 - **Task:** token classification (BIO), entity types `PER`, `LOC`, `ORG`, `ADR`
@@ -245,6 +244,29 @@ Harnesses live in the
 and `training/`); run them yourself before relying on the numbers.
 
 ## How it compares
+
+### Current v19 vs KBLab lowermix
+
+Measured 2026-08-11 with overlap matching on 121 synthetic, hand-authored
+Swedish texts containing 211 comparable PER/LOC/ORG entities. Maskera is the
+published 43 MB q4 ONNX artifact; KBLab lowermix is its published 496 MB fp32
+artifact at revision `007c6b26e6418574c494791f036d5dfa34a558da`.
+Addresses and Maskera's product post-processing are excluded.
+
+| casing | model | masked at all | typed F1 |
+| --- | --- | ---: | ---: |
+| original | **maskera-sv-ner v19 q4** | **100.0% (211/211)** | 87.1% |
+| original | KBLab lowermix fp32 | 97.2% (205/211) | **89.4%** |
+| lowercase | **maskera-sv-ner v19 q4** | **100.0% (211/211)** | **85.7%** |
+| lowercase | KBLab lowermix fp32 | 88.6% (187/211) | 83.2% |
+
+Maskera's developer wrote the corpus. It is held out of training and outside
+the generator templates, but the comparison remains author-coupled and must
+not be read as an independent universal ranking. The machine result, exact
+model revisions, environment and command are in
+[`docs/BENCHMARKS.md`](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md).
+
+### Historical v18 broader comparison
 
 The public Swedish NER alternatives included in this comparison, measured on
 the same gold sets

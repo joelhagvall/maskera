@@ -16,9 +16,12 @@ function ModelStatus({
 }) {
   if (status === "idle") {
     return (
-      <div className="status model-idle" role="status" aria-live="polite">
-        <span className="dot idle" aria-hidden="true" />
-        <span>{copy.controls.modelStarting}</span>
+      <div className="model-status-group">
+        <div className="status model-idle" role="status" aria-live="polite">
+          <span className="dot idle" aria-hidden="true" />
+          <span>{copy.controls.modelStarting}</span>
+        </div>
+        <p className="model-download-note">{copy.controls.modelDownloadNote}</p>
       </div>
     )
   }
@@ -29,27 +32,30 @@ function ModelStatus({
     // instead of sitting on a frozen "100%".
     const starting = progress >= 100
     return (
-      <div className="status" role="status" aria-live="polite" aria-atomic="true">
-        <span
-          className="bar"
-          role="progressbar"
-          aria-label={copy.controls.modelLoadingAria}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={progress}
-        >
+      <div className="model-status-group">
+        <div className="status" role="status" aria-live="polite" aria-atomic="true">
           <span
-            className={`bar-fill${starting ? " starting" : ""}`}
-            style={{ width: `${Math.max(progress, 3)}%` }}
-          />
-        </span>
-        {starting ? (
-          <span>{copy.controls.modelStarting}</span>
-        ) : (
-          <span>
-            {copy.controls.modelLoading} <span className="pct">{progress}%</span>
+            className="bar"
+            role="progressbar"
+            aria-label={copy.controls.modelLoadingAria}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progress}
+          >
+            <span
+              className={`bar-fill${starting ? " starting" : ""}`}
+              style={{ width: `${Math.max(progress, 3)}%` }}
+            />
           </span>
-        )}
+          {starting ? (
+            <span>{copy.controls.modelStarting}</span>
+          ) : (
+            <span>
+              {copy.controls.modelLoading} <span className="pct">{progress}%</span>
+            </span>
+          )}
+        </div>
+        <p className="model-download-note">{copy.controls.modelDownloadNote}</p>
       </div>
     )
   }

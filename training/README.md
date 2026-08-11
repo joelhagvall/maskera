@@ -1437,6 +1437,15 @@ broad public geographic region. The rare-surname safety score is lower than
 the first privacy-clean attempt but remains above its historical 94.9% floor;
 the fix is therefore not described as an across-the-board improvement.
 
+The published q4 artifact was re-run on 2026-08-11 against KBLab lowermix
+fp32 on the same 121 hand-authored synthetic Swedish texts (211 comparable
+PER/LOC/ORG entities, overlap matching). Maskera masked 211/211 with original
+casing and 211/211 lowercased; KBLab masked 205/211 and 187/211. Typed F1 was
+87.1% vs 89.4% with original casing and 85.7% vs 83.2% lowercased. The corpus
+shares Maskera's developer, so this is a directional regression comparison,
+not an independent universal ranking. Run `pnpm eval:kblab`; the exact result
+is tracked in `docs/benchmark-kblab-v19.json`.
+
 **Release state:** published on the Hub at revision
 `8604eec76227c35387d5fafd7bb0b9f03f291553`; the npm source pin, demo hashes
 and versioned demo folder all target the same artifact.

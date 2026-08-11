@@ -2,6 +2,7 @@ import { GITHUB } from "../constants"
 import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
 import type { View } from "../routing"
+import { PageToc } from "./PageToc"
 import { TopBar } from "./TopBar"
 
 const ADVISORY_URL = GITHUB + "/security/advisories/new"
@@ -17,20 +18,11 @@ export function Security({ go }: { go: (view: View) => void }) {
       </header>
 
       <main id="main-content">
-        <article className="prose security-page">
+        <article className="prose prose-with-toc security-page">
           <h1>{copy.security.title}</h1>
           <p className="prose-lede">{copy.security.lede}</p>
 
-          <nav className="toc" aria-label={copy.security.tocLabel}>
-            <p>{copy.security.tocLabel}</p>
-            <ul>
-              {copy.security.toc.map((item) => (
-                <li key={item.href}>
-                  <a href={item.href}>{item.label}</a>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <PageToc label={copy.security.tocLabel} items={copy.security.toc} />
 
           <TextSection id="dataflode" title={copy.security.dataFlowTitle}>
             {copy.security.dataFlow}

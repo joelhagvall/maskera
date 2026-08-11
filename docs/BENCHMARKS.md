@@ -67,6 +67,39 @@ even though label-agnostic span precision, recall and F1 are all 100.0%. The
 curated miss is one broad public geographic region, not a person, contact,
 identifier, or street address.
 
+### Current v19 comparison with KBLab lowermix
+
+Measured 2026-08-11 on the privacy-safe, hand-authored synthetic gold set:
+121 Swedish texts with 211 cross-model-comparable PER / LOC / ORG entities.
+The same texts were also forced to lowercase. Both models ran through the same
+Transformers token-classification pipeline with overlap matching. Maskera used
+the published q4 ONNX artifact pinned above; KBLab used the published fp32
+`KBLab/bert-base-swedish-lowermix-reallysimple-ner` at revision
+`007c6b26e6418574c494791f036d5dfa34a558da`. Maskera's product
+post-processing and its ADDRESS class are excluded.
+
+| casing | model | masked at all | typed F1 |
+| --- | --- | ---: | ---: |
+| original | **Maskera v19 q4** | **100.0% (211/211)** | 87.1% |
+| original | KBLab lowermix fp32 | 97.2% (205/211) | **89.4%** |
+| lowercase | **Maskera v19 q4** | **100.0% (211/211)** | **85.7%** |
+| lowercase | KBLab lowermix fp32 | 88.6% (187/211) | 83.2% |
+
+For masking, the safety result is whether an entity was covered at all:
+Maskera covered all 211 entities in both runs; KBLab missed 6 with original
+casing and 24 in lowercase. KBLab had the higher typed F1 on original casing
+by 2.3 percentage points; Maskera led lowercase typed F1 by 2.5 points.
+
+This is a **directional, author-coupled comparison**, not an independent
+universal ranking: Maskera's developer wrote the corpus, even though it is
+held out of training and outside the generator's templates. The q4-vs-fp32
+choice compares the artifacts users can actually obtain, not equal numeric
+precision. Reproduce with `pnpm eval:kblab`; the machine result is
+[`benchmark-kblab-v19.json`](benchmark-kblab-v19.json). Comparison suite
+checksum: `b547b7785d8317c8e76c7da59e2944dc0870a18f2f3c7f7fb34603e37832c518`.
+Python environment checksum:
+`3e87b961ccb80856a45610d6b8d637b2fa3cc57b479794116ad912e63603c1ff`.
+
 Two additional aggregate gates also pass:
 
 | gate | v19 result | release floor |

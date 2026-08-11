@@ -45,7 +45,7 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
                 {item.label}
               </a>
             ))}
-          <a className="ghlink" href={GITHUB} target="_blank" rel="noreferrer">
+          <a className="ghlink head-github" href={GITHUB} target="_blank" rel="noreferrer">
             {copy.navigation.github}
             <ArrowUpRightIcon size={13} />
           </a>

@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-08-11",
+  "matching": "overlap",
+  "labels": ["LOC", "ORG", "PER"],
+  "corpus": {
+    "path": "training/eval/gold.txt",
+    "sha256": "9f29f6dbffa92422fb6eb3097c400509289d9b8890e6c2b93e20fa618d4c64ff"
+  },
+  "artifacts": {
+    "joelhagvall/maskera-sv-ner": {
+      "revision": "8604eec76227c35387d5fafd7bb0b9f03f291553",
+      "path": "onnx/model_q4.onnx",
+      "sha256": "6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66",
+      "bytes": 42705681
+    },
+    "KBLab/bert-base-swedish-lowermix-reallysimple-ner": {
+      "revision": "007c6b26e6418574c494791f036d5dfa34a558da",
+      "path": "model.safetensors",
+      "sha256": "49545200dd3a32ac76e14da91aa2c0b0ba6d4e5d5efbf90d922f7f91f6b7de89",
+      "bytes": 496456636
+    }
+  },
+  "runtime": {
+    "python": "3.11.15",
+    "onnxruntime": "1.27.0",
+    "optimum": "2.1.0",
+    "optimumOnnx": "0.1.0",
+    "torch": "2.12.1",
+    "transformers": "4.57.6"
+  },
+  "runs": [
+    {
+      "name": "synthetic hand-authored set",
+      "documents": 121,
+      "entities": 211,
+      "results": [
+        {
+          "label": "maskera (model_q4.onnx)",
+          "model": "joelhagvall/maskera-sv-ner",
+          "revision": "8604eec76227c35387d5fafd7bb0b9f03f291553",
+          "goldEntities": 211,
+          "redactionHits": 211,
+          "typedHits": 199,
+          "typedPredictions": 247,
+          "typedPredictionHits": 200,
+          "redactionRecall": 1.0,
+          "typedPrecision": 0.80971659919,
+          "typedRecall": 0.943127962085,
+          "typedF1": 0.871345221284
+        },
+        {
+          "label": "KBLab lowermix (case-robust)",
+          "model": "KBLab/bert-base-swedish-lowermix-reallysimple-ner",
+          "revision": "007c6b26e6418574c494791f036d5dfa34a558da",
+          "goldEntities": 211,
+          "redactionHits": 205,
+          "typedHits": 202,
+          "typedPredictions": 242,
+          "typedPredictionHits": 203,
+          "redactionRecall": 0.971563981043,
+          "typedPrecision": 0.838842975207,
+          "typedRecall": 0.957345971564,
+          "typedF1": 0.894185374576
+        }
+      ]
+    },
+    {
+      "name": "synthetic hand-authored set LOWERCASED",
+      "documents": 121,
+      "entities": 211,
+      "results": [
+        {
+          "label": "maskera (model_q4.onnx)",
+          "model": "joelhagvall/maskera-sv-ner",
+          "revision": "8604eec76227c35387d5fafd7bb0b9f03f291553",
+          "goldEntities": 211,
+          "redactionHits": 211,
+          "typedHits": 197,
+          "typedPredictions": 250,
+          "typedPredictionHits": 198,
+          "redactionRecall": 1.0,
+          "typedPrecision": 0.792,
+          "typedRecall": 0.9336492891,
+          "typedF1": 0.857011029573
+        },
+        {
+          "label": "KBLab lowermix (case-robust)",
+          "model": "KBLab/bert-base-swedish-lowermix-reallysimple-ner",
+          "revision": "007c6b26e6418574c494791f036d5dfa34a558da",
+          "goldEntities": 211,
+          "redactionHits": 187,
+          "typedHits": 180,
+          "typedPredictions": 223,
+          "typedPredictionHits": 181,
+          "redactionRecall": 0.886255924171,
+          "typedPrecision": 0.811659192825,
+          "typedRecall": 0.85308056872,
+          "typedF1": 0.831854565881
+        }
+      ]
+    }
+  ]
+}

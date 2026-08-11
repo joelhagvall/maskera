@@ -3,6 +3,7 @@ import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
 import { navClick, type View, viewPaths } from "../routing"
 import { Coverage } from "./Coverage"
+import { PageToc } from "./PageToc"
 import { TopBar } from "./TopBar"
 
 export function Transparency({ go }: { go: (view: View) => void }) {
@@ -12,20 +13,11 @@ export function Transparency({ go }: { go: (view: View) => void }) {
         <TopBar current="transparency" go={go} />
       </header>
       <main id="main-content">
-        <article className="prose">
+        <article className="prose prose-with-toc">
           <h1>{copy.transparency.title}</h1>
           <p className="prose-lede">{copy.transparency.lede}</p>
 
-          <nav className="toc" aria-label={copy.transparency.tocLabel}>
-            <p>{copy.transparency.tocLabel}</p>
-            <ul>
-              {copy.transparency.toc.map((item) => (
-                <li key={item.href}>
-                  <a href={item.href}>{item.label}</a>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <PageToc label={copy.transparency.tocLabel} items={copy.transparency.toc} />
 
           <TextList
             id="hur-fungerar"

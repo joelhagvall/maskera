@@ -67,11 +67,15 @@ how people actually type.
 > **[docs/BENCHMARKS.md](docs/BENCHMARKS.md)**; every other number in this
 > repo defers to it.
 
-The dated public-model comparison belongs to v18: it led the tested ~500 MB
-models on typed F1 on the small independent set, but those figures do not
-automatically transfer to v19. v19 instead publishes its synthetic release
-gates separately and is not described as an across-the-board quality upgrade.
-Tables, model scope, method and caveats:
+The current v19 q4 artifact was also re-run on 2026-08-11 against KBLab's
+case-robust lowermix NER model on the same 121 hand-authored synthetic Swedish
+texts (211 PER/LOC/ORG entities, overlap matching). Maskera masked 211/211
+with original casing and 211/211 lowercased; KBLab masked 205/211 and 187/211.
+KBLab led typed F1 on original casing (89.4% vs 87.1%); Maskera led lowercase
+typed F1 (85.7% vs 83.2%). This is a directional, author-coupled comparison,
+not an independent ranking. The broader dated public-model comparison still
+belongs to v18 and does not automatically transfer to v19. Tables, exact model
+revisions, method and caveats:
 [docs/BENCHMARKS.md](docs/BENCHMARKS.md). The
 training pipeline and the round-by-round journey are fully reproducible: see
 [`training/`](training/). Every push to this repo re-grades the published

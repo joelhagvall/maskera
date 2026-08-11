@@ -34,7 +34,6 @@ apps/demo/en/
 apps/demo/*.mp4
 apps/demo/*.webm
 docs/LINKEDIN_POST.md
-docs/LINKEDIN_POST_SV.md
 # local-only working docs
 docs/outreach/
 docs/DESIGN_PARTNERS.md

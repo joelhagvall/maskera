@@ -152,11 +152,9 @@ export function App() {
       {view === "accuracy" && <Accuracy go={go} />}
       {view === "security" && <Security go={go} />}
       <Footer
-        showServices={view !== "demo"}
         onTransparency={() => navigate("transparency")}
         onTestData={() => navigate("testdata")}
         onPolicy={() => navigate("privacy")}
-        onServices={() => navigate("services")}
         onAccuracy={() => navigate("accuracy")}
         onSecurity={() => navigate("security")}
       />

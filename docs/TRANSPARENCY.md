@@ -56,6 +56,12 @@ are.
   96.9% span F1 and 1/205 leaks on curated, and 81.7% span F1 with 0/53
   leaks on the LinkedIn-style set. All defined gates pass, but these are
   synthetic or author-coupled checks, not independent universal estimates.
+  A current v19 comparison re-run on 2026-08-11 against KBLab lowermix uses
+  121 hand-authored synthetic Swedish texts with 211 comparable PER/LOC/ORG
+  entities. Maskera q4 masked 211/211 both with original casing and lowercased;
+  KBLab fp32 masked 205/211 and 187/211. KBLab led typed F1 on original casing
+  (89.4% vs 87.1%), while Maskera led lowercase typed F1 (85.7% vs 83.2%). The
+  corpus shares Maskera's developer, so this is directional, not independent.
   The canonical, dated numbers live in [`docs/BENCHMARKS.md`](BENCHMARKS.md);
   the round-by-round training journey and its caveats are in
   [`training/README.md`](../training/README.md), including that synthetic-eval F1

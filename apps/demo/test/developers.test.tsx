@@ -1,10 +1,33 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import { cleanup, fireEvent, render, screen } from "@testing-library/react"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { Developers } from "../src/components/Developers"
 import copy from "../src/i18n/sv.json"
 
+afterEach(cleanup)
+
 describe("Developers", () => {
+  it("supports arrow, Home and End keys in the package-manager tabs", () => {
+    render(<Developers go={vi.fn()} onCoverage={vi.fn()} />)
+
+    const npm = screen.getByRole("tab", { name: "npm" })
+    const pnpm = screen.getByRole("tab", { name: "pnpm" })
+    const yarn = screen.getByRole("tab", { name: "yarn" })
+
+    npm.focus()
+    fireEvent.keyDown(npm, { key: "ArrowRight" })
+    expect(pnpm.getAttribute("aria-selected")).toBe("true")
+    expect(document.activeElement).toBe(pnpm)
+
+    fireEvent.keyDown(pnpm, { key: "End" })
+    expect(yarn.getAttribute("aria-selected")).toBe("true")
+    expect(document.activeElement).toBe(yarn)
+
+    fireEvent.keyDown(yarn, { key: "Home" })
+    expect(npm.getAttribute("aria-selected")).toBe("true")
+    expect(document.activeElement).toBe(npm)
+  })
+
   it("switches the code examples that differ between TypeScript and JavaScript", () => {
     const { container } = render(<Developers go={vi.fn()} onCoverage={vi.fn()} />)
 

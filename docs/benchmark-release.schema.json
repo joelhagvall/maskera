@@ -16,12 +16,13 @@
     "artifact",
     "whitepaper",
     "evaluation",
+    "comparison",
     "metrics",
     "historical"
   ],
   "properties": {
     "$schema": { "const": "https://maskera.dev/benchmark-release.schema.json" },
-    "schemaVersion": { "const": 2 },
+    "schemaVersion": { "const": 3 },
     "status": { "const": "published" },
     "release": { "$ref": "#/$defs/release" },
     "publishedAt": { "$ref": "#/$defs/date" },
@@ -114,6 +115,81 @@
             "sha256": { "$ref": "#/$defs/sha256" }
           }
         }
+      }
+    },
+    "comparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "measuredAt",
+        "scope",
+        "command",
+        "resultFile",
+        "resultSha256",
+        "suiteSha256",
+        "files",
+        "environment",
+        "corpus",
+        "matching",
+        "labels",
+        "models",
+        "normal",
+        "lowercase"
+      ],
+      "properties": {
+        "status": { "const": "current-v19-directional" },
+        "measuredAt": { "$ref": "#/$defs/date" },
+        "scope": { "type": "string", "minLength": 1 },
+        "command": { "const": "pnpm eval:kblab" },
+        "resultFile": { "const": "docs/benchmark-kblab-v19.json" },
+        "resultSha256": { "$ref": "#/$defs/sha256" },
+        "suiteSha256": { "$ref": "#/$defs/sha256" },
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["python", "requirements", "sha256"],
+          "properties": {
+            "python": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+            "requirements": { "const": "training/benchmark-requirements.txt" },
+            "sha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "corpus": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["documents", "entities", "sha256"],
+          "properties": {
+            "documents": { "$ref": "#/$defs/count" },
+            "entities": { "$ref": "#/$defs/count" },
+            "sha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "matching": { "const": "overlap" },
+        "labels": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": { "enum": ["PER", "LOC", "ORG"] }
+        },
+        "models": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["maskera", "kblab"],
+          "properties": {
+            "maskera": { "$ref": "#/$defs/comparisonModel" },
+            "kblab": { "$ref": "#/$defs/comparisonModel" }
+          }
+        },
+        "normal": { "$ref": "#/$defs/comparisonRun" },
+        "lowercase": { "$ref": "#/$defs/comparisonRun" }
       }
     },
     "metrics": {
@@ -293,6 +369,38 @@
   },
   "$defs": {
     "count": { "type": "integer", "minimum": 0 },
+    "comparisonModel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "revision", "dtype", "path", "sha256", "bytes"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[^/]+/[^/]+$" },
+        "revision": { "$ref": "#/$defs/gitSha" },
+        "dtype": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "bytes": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "comparisonResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["masked", "maskedRecallPct", "typedF1Pct"],
+      "properties": {
+        "masked": { "$ref": "#/$defs/count" },
+        "maskedRecallPct": { "$ref": "#/$defs/percentage" },
+        "typedF1Pct": { "$ref": "#/$defs/percentage" }
+      }
+    },
+    "comparisonRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maskera", "kblab"],
+      "properties": {
+        "maskera": { "$ref": "#/$defs/comparisonResult" },
+        "kblab": { "$ref": "#/$defs/comparisonResult" }
+      }
+    },
     "date": {
       "type": "string",
       "pattern": "^[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])$"
