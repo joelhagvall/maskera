@@ -1,6 +1,6 @@
 import { GITHUB } from "../constants"
 import copy from "../i18n"
-import { ArrowUpRightIcon, MaskeraMark } from "../icons"
+import { ArrowLeftIcon, ArrowUpRightIcon, MaskeraMark } from "../icons"
 import { navClick, type View, viewPaths } from "../routing"
 import { LanguageToggle } from "./LanguageToggle"
 import { ThemeToggle } from "./ThemeToggle"
@@ -53,7 +53,8 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
       </div>
       {!home && (
         <a className="back" href={viewPaths.demo} onClick={navClick(() => go("demo"))}>
-          <span aria-hidden="true">←</span> {copy.topBar.backHome}
+          <ArrowLeftIcon className="back-arrow" size={16} />
+          <span>{copy.topBar.backHome}</span>
         </a>
       )}
     </>

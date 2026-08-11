@@ -125,6 +125,13 @@ export const ArrowUpRightIcon = (p: IconProps) => (
   </Svg>
 )
 
+export const ArrowLeftIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m11 17-5-5 5-5" />
+    <path d="M18 12H6" />
+  </Svg>
+)
+
 export const CopyIcon = (p: IconProps) => (
   <Svg {...p}>
     <rect x="9" y="9" width="11" height="11" rx="2" />
