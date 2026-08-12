@@ -1,5 +1,11 @@
 # maskera
 
+## 0.9.6
+
+### Patch Changes
+
+- Publish the current v19 KBLab comparison in the package README and refresh the model revision pin after the Hugging Face card update.
+
 ## 0.9.5
 
 ### Patch Changes

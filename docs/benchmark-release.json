@@ -7,13 +7,13 @@
   "lastMeasuredAt": "2026-08-11",
   "scope": "Synthetic or author-coupled release gates, not an independent universal quality estimate.",
   "packages": {
-    "maskera": "0.9.5",
+    "maskera": "0.9.6",
     "core": "0.7.5"
   },
   "artifact": {
     "model": "maskera-sv-ner-v19",
     "hubRepo": "joelhagvall/maskera-sv-ner",
-    "revision": "8604eec76227c35387d5fafd7bb0b9f03f291553",
+    "revision": "b1aa7e799fa4839f8668dda691e893706e971523",
     "dtype": "q4",
     "path": "onnx/model_q4.onnx",
     "sha256": "6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66",
@@ -21,15 +21,15 @@
     "modelCardSha256": "6a0070ebcc1941c0123de65691c4a30b653f3a12e167de70d6b7735f6e930b58"
   },
   "whitepaper": {
-    "version": "1.19",
+    "version": "1.20",
     "source": "docs/whitepaper/whitepaper.tex",
-    "sourceSha256": "f4e9a76b9c85e033968ec41f626f3d0384b104c302e3ccfb7cb36ec9b3ddbfe3",
+    "sourceSha256": "46bab8fafcdcf0f65dccad6ff3b81011fc6d8530cf21f2324afcbb7ee59eaaf5",
     "pdf": "apps/demo/public/whitepaper.pdf",
-    "pdfSha256": "56d48fd5edc5962421fec8c7f4b03b6db147b6936ac961ca76196546fbfb20bc"
+    "pdfSha256": "5486e9dbbe4aea7df5e7476be2fff10a7b4976ff9232b3fa79ce123e001c93f5"
   },
   "evaluation": {
     "command": "pnpm eval:release",
-    "suiteSha256": "8a7952265930048fb311fa8aebe973d24a87b6cafacd26cf1b32df647ae44478",
+    "suiteSha256": "09665b1e0043bf0b7b41e764df8034c875f2298666bbb8c6d3b539815d802fe7",
     "files": [
       "apps/demo/scripts/evaluate-candidate-gates.mjs",
       "apps/demo/scripts/fetch-model.mjs",
@@ -91,8 +91,8 @@
     "scope": "Synthetic, author-coupled PER/LOC/ORG comparison. Address labels and Maskera product post-processing are excluded; this is not an independent universal quality estimate.",
     "command": "pnpm eval:kblab",
     "resultFile": "docs/benchmark-kblab-v19.json",
-    "resultSha256": "40df1160fc7733ce8b0b6dbc41d5f0f8ce7c8abfb78b82ef7f4efa5530e9deae",
-    "suiteSha256": "b547b7785d8317c8e76c7da59e2944dc0870a18f2f3c7f7fb34603e37832c518",
+    "resultSha256": "bfcb68dafd6430eaa2ac0a6022b516af6fd3a262119e5e490daa9965e83133f9",
+    "suiteSha256": "bba0e66b7738d6bce597ab2e05dbf68b3e9268b4ab46d968a303d37657f6b153",
     "files": [
       "training/benchmark_competitors.py",
       "training/benchmark-requirements.txt",
@@ -113,7 +113,7 @@
     "models": {
       "maskera": {
         "id": "joelhagvall/maskera-sv-ner",
-        "revision": "8604eec76227c35387d5fafd7bb0b9f03f291553",
+        "revision": "b1aa7e799fa4839f8668dda691e893706e971523",
         "dtype": "q4",
         "path": "onnx/model_q4.onnx",
         "sha256": "6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66",

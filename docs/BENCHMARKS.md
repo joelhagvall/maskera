@@ -18,7 +18,7 @@ locks the selected resolved dependency closure that executes the evaluation.
 Type-only peers and unrelated build, lint, browser-audit and test-tool updates
 are outside that closure and cannot masquerade as changed accuracy evidence.
 The frozen suite checksum is
-`8a7952265930048fb311fa8aebe973d24a87b6cafacd26cf1b32df647ae44478` and the
+`09665b1e0043bf0b7b41e764df8034c875f2298666bbb8c6d3b539815d802fe7` and the
 frozen evaluation-environment checksum is
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`.
 
@@ -26,7 +26,7 @@ frozen evaluation-environment checksum is
 - **Artifact:** [`joelhagvall/maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner),
   `onnx/model_q4.onnx` (`dtype: "q4"`, the default and what the demo ships),
   sha256 `6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66`,
-  Hub revision `8604eec76227c35387d5fafd7bb0b9f03f291553`, 42,705,681 bytes.
+  Hub revision `b1aa7e799fa4839f8668dda691e893706e971523`, 42,705,681 bytes.
   This is the attested privacy-clean v19 release; see
   [training/README.md](../training/README.md).
 - **Pipeline:** the shipped `maskera` path (model + `reconstruct()`
@@ -47,7 +47,7 @@ frozen evaluation-environment checksum is
 - **Measured:** 2026-08-06; the LinkedIn-style row was re-measured on
   2026-08-10 from a clean build of the current packaged pipeline.
 - **Artifact:** `student-v19-privacy-precision2-onnx`, published as Hub revision
-  `8604eec76227c35387d5fafd7bb0b9f03f291553`; q4,
+  `b1aa7e799fa4839f8668dda691e893706e971523`; q4,
   42,705,681 bytes, evaluated through the current packaged reconstruction and
   default whole-word precision guard.
 - **Release state:** every defined gate passes; the Hub, npm source pin and demo
@@ -96,7 +96,7 @@ held out of training and outside the generator's templates. The q4-vs-fp32
 choice compares the artifacts users can actually obtain, not equal numeric
 precision. Reproduce with `pnpm eval:kblab`; the machine result is
 [`benchmark-kblab-v19.json`](benchmark-kblab-v19.json). Comparison suite
-checksum: `b547b7785d8317c8e76c7da59e2944dc0870a18f2f3c7f7fb34603e37832c518`.
+checksum: `bba0e66b7738d6bce597ab2e05dbf68b3e9268b4ab46d968a303d37657f6b153`.
 Python environment checksum:
 `3e87b961ccb80856a45610d6b8d637b2fa3cc57b479794116ad912e63603c1ff`.
 
