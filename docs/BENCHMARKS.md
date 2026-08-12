@@ -18,7 +18,7 @@ locks the selected resolved dependency closure that executes the evaluation.
 Type-only peers and unrelated build, lint, browser-audit and test-tool updates
 are outside that closure and cannot masquerade as changed accuracy evidence.
 The frozen suite checksum is
-`dfb002f3910b83e9f529233850248930085188e24362187e5c2eb53f62ce6cbd` and the
+`8a7952265930048fb311fa8aebe973d24a87b6cafacd26cf1b32df647ae44478` and the
 frozen evaluation-environment checksum is
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`.
 

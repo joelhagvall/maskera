@@ -12,12 +12,20 @@ import {
 const pct1 = (value) => (value * 100).toFixed(1)
 const pct2 = (value) => (value * 100).toFixed(2)
 
-function expectedSnapshot(contract) {
+export function expectedSnapshot(contract) {
   const { metrics } = contract
   return {
     curated: metrics.curated,
     syntheticAdr: metrics.syntheticAdr,
-    linkedinStyle: metrics.linkedinStyle,
+    linkedinStyle: {
+      documents: metrics.linkedinStyle.documents,
+      entities: metrics.linkedinStyle.entities,
+      precisionPct: metrics.linkedinStyle.precisionPct,
+      recallPct: metrics.linkedinStyle.recallPct,
+      spanF1Pct: metrics.linkedinStyle.spanF1Pct,
+      labeledF1Pct: metrics.linkedinStyle.labeledF1Pct,
+      leaks: metrics.linkedinStyle.leaks,
+    },
     syntheticGold: {
       typeF1Pct: metrics.syntheticGold.typeF1Pct,
       typeRecallPct: metrics.syntheticGold.typeRecallPct,
@@ -66,10 +74,7 @@ export function observedSnapshot(results) {
       addresses: results.syntheticAdr.goldLabels.ADDRESS ?? 0,
       addressPredictions: results.syntheticAdr.predictionLabels.ADDRESS ?? 0,
     }),
-    linkedinStyle: {
-      ...nerSnapshot(results.linkedinStyle),
-      measuredAt: results.contract.lastMeasuredAt,
-    },
+    linkedinStyle: nerSnapshot(results.linkedinStyle),
     syntheticGold: {
       typeF1Pct: pct2(results.syntheticGold.metrics.typed.f1),
       typeRecallPct: pct2(results.syntheticGold.metrics.typed.recall),

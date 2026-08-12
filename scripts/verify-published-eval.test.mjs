@@ -1,8 +1,9 @@
 import assert from "node:assert/strict"
 import { spawnSync } from "node:child_process"
+import { readFileSync } from "node:fs"
 import { resolve } from "node:path"
 import test from "node:test"
-import { observedSnapshot } from "./verify-published-eval.mjs"
+import { expectedSnapshot, observedSnapshot } from "./verify-published-eval.mjs"
 
 const root = resolve(import.meta.dirname, "..")
 
@@ -84,6 +85,7 @@ test("published eval output is normalized with the contract's documented roundin
   }
 
   const observed = observedSnapshot(results)
+  assert.equal(observed.linkedinStyle.measuredAt, undefined)
   assert.equal(observed.syntheticGold.typeF1Pct, "93.08")
   assert.equal(observed.rareSurnames.maskedRecallPct, "96.94")
   assert.equal(observed.rareSurnames.personTypedRecallPct, "82.65")
@@ -94,6 +96,22 @@ test("published eval output is normalized with the contract's documented roundin
     clinicalHits: 165,
     generalClassifiedJunk: 112,
     clinicalClassifiedJunk: 92,
+  })
+})
+
+test("release reproduction ignores measurement metadata from independently dated benchmarks", () => {
+  const contract = JSON.parse(readFileSync(resolve(root, "docs/benchmark-release.json"), "utf8"))
+  contract.lastMeasuredAt = "2026-08-11"
+  contract.metrics.linkedinStyle.measuredAt = "2026-08-10"
+
+  assert.deepEqual(expectedSnapshot(contract).linkedinStyle, {
+    documents: 32,
+    entities: 53,
+    precisionPct: "75.8",
+    recallPct: "88.7",
+    spanF1Pct: "81.7",
+    labeledF1Pct: "78.3",
+    leaks: 0,
   })
 })
 
