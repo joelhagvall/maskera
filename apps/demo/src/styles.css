@@ -620,13 +620,11 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
   color: transparent;
   caret-color: var(--fg);
   resize: none;
-  outline: 2px solid transparent;
-  outline-offset: 2px;
+  outline: none;
 }
-/* Replace the transparent default with a strong outer focus ring. */
+/* Use the existing border as the focus ring so the editor keeps one outline. */
 .editor textarea:focus-visible {
   border-color: var(--fg);
-  outline-color: var(--fg);
 }
 /* the textarea text is transparent (overlay), so colour the placeholder explicitly */
 .editor textarea::placeholder {
