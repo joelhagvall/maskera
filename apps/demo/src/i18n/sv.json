@@ -1,12 +1,15 @@
 {
   "header": {
     "title": "Skydda personuppgifter innan texten skickas till AI.",
+    "titleMobile": "Skydda personuppgifter\ninnan texten skickas\ntill AI.",
     "lede": "maskera döljer namn, personnummer och adresser från AI‑tjänster som ChatGPT.",
     "browserLead": "All maskering sker",
     "browserEmphasis": "direkt i din webbläsare",
     "browserPrivacy": "Din text och nyckeln med originaluppgifterna lämnar inte enheten.",
     "localProduction": "För företag körs samma maskering i er egen miljö. Ingen text skickas till Maskera; originaldata stannar hos er och endast maskerad text går vidare till AI‑tjänsten.",
-    "servicesCta": "Så fungerar det för företag"
+    "localProductionMobile": "Företag kör maskeringen i sin egen miljö. Ingen text skickas till Maskera.",
+    "servicesCta": "Så fungerar det för företag",
+    "servicesCtaMobile": "Läs mer"
   },
   "demo": {
     "testDataNote": "Exemplen använder påhittade personer och officiellt reserverade testvärden, aldrig verkliga personers uppgifter.",

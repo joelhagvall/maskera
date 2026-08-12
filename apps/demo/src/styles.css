@@ -222,6 +222,9 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
   letter-spacing: -0.035em;
   max-width: 18ch;
 }
+.title-mobile-lines {
+  display: none;
+}
 .lede {
   margin: 18px 0 0;
   max-width: 60ch;
@@ -244,6 +247,11 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
   color: var(--fg);
   text-decoration: underline;
   text-underline-offset: 2px;
+  white-space: nowrap;
+}
+.hero-local-production-mobile-copy,
+.hero-local-production-mobile-cta {
+  display: none;
 }
 .demo-language-note {
   max-width: 68ch;
@@ -1019,13 +1027,58 @@ main:has(.prose-foot) + .footer {
     flex-wrap: wrap;
     gap: 0 16px;
   }
+  .title {
+    margin-top: 28px;
+  }
+  .hero-local-production {
+    position: relative;
+  }
+  .hero-local-production-desktop-copy,
+  .hero-local-production-desktop-cta {
+    display: none;
+  }
+  .hero-local-production-mobile-copy,
+  .hero-local-production-mobile-cta {
+    display: inline;
+  }
+  /* Preserve the compact inline CTA while making the whole short note an
+     easy touch target. The extra hit area sits inside the surrounding gaps. */
+  .hero-local-production a {
+    position: static;
+  }
+  .hero-local-production a::after {
+    content: "";
+    position: absolute;
+    inset: -10px 0;
+  }
+  /* The home wordmark remains visually compact, but its invisible hit area
+     reaches 44px without pushing the navigation or hero farther down. */
+  .wordmark {
+    position: relative;
+  }
+  .wordmark::after {
+    content: "";
+    position: absolute;
+    inset: -11px -8px;
+  }
   .back {
     font-size: 14px;
   }
 }
-@media (max-width: 360px) {
-  /* GitHub is also in the shared footer. Removing it from the cramped phone
-     header keeps the primary navigation on one deliberate row. */
+/* Use the deliberate reading units only when their 345px first line fits.
+   Narrower screens keep the fluid title so no forced line wraps again. */
+@media (min-width: 385px) and (max-width: 560px) {
+  .title-fluid {
+    display: none;
+  }
+  .title-mobile-lines,
+  .title-mobile-line {
+    display: block;
+  }
+}
+@media (max-width: 400px) {
+  /* GitHub is also in the shared footer. Removing it from narrow phone
+     headers keeps the longer English navigation on one deliberate row. */
   .head-github {
     display: none;
   }

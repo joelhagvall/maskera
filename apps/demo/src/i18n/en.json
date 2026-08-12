@@ -1,12 +1,15 @@
 {
   "header": {
     "title": "Protect personal data before it reaches AI.",
+    "titleMobile": "Protect personal data\nbefore it reaches AI.",
     "lede": "maskera hides names, Swedish personal identity numbers and addresses from AI services such as ChatGPT.",
     "browserLead": "All masking happens",
     "browserEmphasis": "directly in your browser",
     "browserPrivacy": "Your text and the key containing the original data never leave your device.",
     "localProduction": "For companies, the same masking runs in your own environment. No text is sent to Maskera; the original data stays with you and only masked text is forwarded to the AI service.",
-    "servicesCta": "How it works for companies"
+    "localProductionMobile": "Companies run the masking in their own environment. No text is sent to Maskera.",
+    "servicesCta": "How it works for companies",
+    "servicesCtaMobile": "Learn more"
   },
   "demo": {
     "testDataNote": "The examples use fictional people and officially reserved test values, never real people's data.",
