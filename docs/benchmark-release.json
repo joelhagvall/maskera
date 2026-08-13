@@ -29,7 +29,7 @@
   },
   "evaluation": {
     "command": "pnpm eval:release",
-    "suiteSha256": "db0f89d004416571140fa38c026f2f0356e90776e27b5f91673912559e1cf1bc",
+    "suiteSha256": "4a60fc219913cb4df982e5fff24c7455b53bbbb477de9da3bb3504169985088b",
     "files": [
       "apps/demo/scripts/evaluate-candidate-gates.mjs",
       "apps/demo/scripts/fetch-model.mjs",
