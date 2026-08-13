@@ -261,6 +261,7 @@ export const organisationsnummer = regexDetector(
 const EMAIL_PATTERN = /[\p{L}\p{N}._%+-]{1,64}@[\p{L}\p{N}.-]{1,255}\.\p{L}{2,63}\b/giu
 const EMAIL_LOCAL_CHAR = /[\p{L}\p{N}._%+-]/u
 const EMAIL_DOMAIN_CHAR = /[\p{L}\p{N}.-]/u
+const EMAIL_ALNUM = /[\p{L}\p{N}]/u
 
 /**
  * E-post: `anna@example.com`, Unicode letters on both sides of the @.
@@ -281,7 +282,11 @@ const EMAIL_DOMAIN_CHAR = /[\p{L}\p{N}.-]/u
  * `@`, keeping detection linear on hostile runs. Over-masking the rest of the
  * run is the right side to err on for a redaction tool: a clipped run is
  * never safe to leave visible, and `resolveOverlaps()` in redact already
- * arbitrates any span this grows into.
+ * arbitrates any span this grows into. The one exception is the trailing
+ * edge: a "." or "-" can never end a domain label, so characters like the
+ * sentence period in "mejlar anna@example.com." are trimmed back off the
+ * span - masking them would mangle the prose around the token for no
+ * redaction gain.
  */
 export const email: Detector = {
   label: "EPOST",
@@ -294,6 +299,11 @@ export const email: Detector = {
       let end = m.index + m[0].length
       while (start > 0 && EMAIL_LOCAL_CHAR.test(input[start - 1] as string)) start--
       while (end < input.length && EMAIL_DOMAIN_CHAR.test(input[end] as string)) end++
+      // Trim trailing "." / "-" the right walk picked up: they can never end
+      // a domain label, so they are punctuation touching the run, not part of
+      // the address. The raw match always ends alphanumeric, so this cannot
+      // pull the span back inside it.
+      while (end > start && !EMAIL_ALNUM.test(input[end - 1] as string)) end--
       out.push({ start, end, value: input.slice(start, end) })
     }
     return out

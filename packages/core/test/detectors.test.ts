@@ -235,6 +235,13 @@ describe("email detector", () => {
     ])
   })
 
+  it("leaves sentence punctuation after an address visible", () => {
+    // A trailing "." or "-" can never end a domain label, so the period
+    // closing the sentence is trimmed back off the span.
+    expectHit(email, "Mejla anna@example.com.", "anna@example.com")
+    expectHit(email, "kolla anna@example.com...", "anna@example.com")
+  })
+
   it("does not backtrack quadratically on a long unbroken run", () => {
     // Every character here is in the local-part class, and there is no "@" at
     // all: the shape that made the unbounded pattern take ~57 s at 250 KB.
