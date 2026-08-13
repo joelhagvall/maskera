@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { type RawToken, reconstruct } from "../src/index"
+import { isWholeWord, locateTokenStream, type RawToken, reconstruct } from "../src/index"
 
 const labelMap = (group: string) =>
   ({ PER: "PERSON", LOC: "LOCATION", ORG: "ORGANIZATION" })[group] ?? group
@@ -418,5 +418,108 @@ describe("reconstruct locates the right occurrence", () => {
       0.5,
     )
     expect(out).toEqual([{ start: 8, end: 12, value: "Anna", label: "PERSON" }])
+  })
+
+  it("masks the occurrence the token offsets point at, never the first surface hit", () => {
+    // The double-"Anna" leak: the model tagged only the SECOND "Anna" (index 4
+    // in the full encoding), but a pure surface search from cursor 0 would
+    // find the first — masking an innocent word and leaking the real name.
+    // Exact offsets (attached by enrichWithOffsets on the default pipeline
+    // path) must win over the surface search outright.
+    const text = "Ring Anna. Anna är sjuk."
+    const out = reconstruct(
+      text,
+      [{ ...tok("B-PER", "Anna", 4), start: 11, end: 15 }],
+      labelMap,
+      0.5,
+    )
+    expect(out).toEqual([{ start: 11, end: 15, value: "Anna", label: "PERSON" }])
+  })
+
+  it("uses O-token positions to reach the tagged of two identical occurrences", () => {
+    // Same text, but the caller passes the FULL token stream (the default
+    // pipeline drops O tokens; enrichWithOffsets covers that path instead).
+    // The cursor steps over the first "Anna" as an O token, so the tagged
+    // one can no longer be confused with it.
+    const text = "Ring Anna. Anna är sjuk."
+    const out = reconstruct(
+      text,
+      [
+        tok("O", "Ring", 1),
+        tok("O", "Anna", 2),
+        tok("O", ".", 3),
+        tok("B-PER", "Anna", 4),
+        tok("O", "är", 5),
+        tok("O", "sjuk", 6),
+        tok("O", ".", 7),
+      ],
+      labelMap,
+      0.5,
+    )
+    expect(out).toEqual([{ start: 11, end: 15, value: "Anna", label: "PERSON" }])
+  })
+
+  it("fails closed when a contiguous group head would have to hop untokenised content", () => {
+    // "Anna"(1) "Berg"(2) are located at 0-9, cursor ends exactly at 9. The
+    // next group claims token index 3 — the IMMEDIATE successor — yet the
+    // first "Berg" at-or-after the cursor only appears after the
+    // untokenised "x". Contiguous wordpiece tokens are adjacent by
+    // construction, so that occurrence is provably not this token's; dropping
+    // the entity beats masking a slice the tokens never pointed at.
+    const text = "Anna Berg x Berg"
+    const out = reconstruct(
+      text,
+      [tok("B-PER", "Anna", 1), tok("I-PER", "Berg", 2), tok("B-LOC", "Berg", 3)],
+      labelMap,
+      0.5,
+    )
+    expect(out).toEqual([{ start: 0, end: 9, value: "Anna Berg", label: "PERSON" }])
+  })
+
+  it("treats an astral letter as a letter at word boundaries", () => {
+    // U+20BB7 (CJK Ext B) is one letter in two UTF-16 units. A unit-wise
+    // check sees half a surrogate pair, calls it "not a letter" and invents
+    // a word boundary in the middle of the character.
+    expect(isWholeWord("Anna\u{20BB7}", 0, 4)).toBe(false)
+    expect(isWholeWord("\u{20BB7}Anna", 2, 6)).toBe(false)
+    expect(isWholeWord("Anna \u{20BB7}", 0, 4)).toBe(true)
+    expect(isWholeWord("Anna", 0, 4)).toBe(true)
+  })
+
+  it("widens across an astral letter without splitting its surrogate pair", () => {
+    // The tagged "Anna" sits right after an astral letter: widening must walk
+    // back over the WHOLE code point (two UTF-16 units), not stop between the
+    // halves of the pair.
+    const text = "x\u{20BB7}Anna!"
+    const out = reconstruct(text, [tok("B-PER", "Anna", 2)], labelMap, 0.5)
+    expect(out).toEqual([{ start: 0, end: 7, value: "x\u{20BB7}Anna", label: "PERSON" }])
+  })
+})
+
+describe("locateTokenStream", () => {
+  it("pins every piece of the double-Anna stream to its true occurrence", () => {
+    const text = "Ring Anna. Anna är sjuk."
+    // Exactly what enrichWithOffsets replays: [CLS] decodes to "", then every
+    // content token in order, [SEP] as "".
+    const spans = locateTokenStream(text, ["", "Ring", "Anna", ".", "Anna", "är", "sjuk", ".", ""])
+    expect(spans).toEqual([
+      null,
+      { start: 0, end: 4 },
+      { start: 5, end: 9 },
+      { start: 9, end: 10 },
+      { start: 11, end: 15 },
+      { start: 16, end: 18 },
+      { start: 19, end: 23 },
+      { start: 23, end: 24 },
+      null,
+    ])
+  })
+
+  it("bails out for the whole stream when any piece cannot be placed", () => {
+    // An accent-stripping tokenizer decodes "Åsa" to "asa", which is not in
+    // the text at its true position: no partial result, no guessing.
+    expect(locateTokenStream("Åsa gick hem.", ["asa", "gick"])).toBeNull()
+    // A piece that does not exist at all likewise poisons the whole walk.
+    expect(locateTokenStream("Åsa gick hem.", ["Åsa", "springe"])).toBeNull()
   })
 })

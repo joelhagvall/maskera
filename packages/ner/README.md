@@ -31,7 +31,8 @@ The ML runtime is an **optional peer dependency**: skip it (and install
 [`@maskera/core`](https://www.npmjs.com/package/@maskera/core) instead) if you
 only want the zero-dependency rule layer. Core's entire API is re-exported
 here, so one import covers rules and model alike:
-`import { redact, redactWithNer } from "maskera"`.
+`import { redact, redactWithNer } from "maskera"`. The peer range is
+`@huggingface/transformers` **v4** (`^4.0.0`); v3 is not supported or tested.
 
 ## Usage
 
@@ -125,8 +126,13 @@ createNerRecognizer({
   labelMap: defaultLabelMap,   // remap or drop raw model groups (return null to drop)
   onProgress: (e) => {},       // model download progress for a loading UI
   cacheDir: ".cache/models",   // optional writable cache directory (mainly Node)
+  verifyModelIntegrity: true,  // default: sha256-check the pinned model's cached files
 })
 ```
+
+`model`, `revision` and `localModelPath` are **developer-only configuration**:
+they decide where executable weights are loaded from and must never be
+derived from end-user input.
 
 - **`revision`**: the Hub commit, tag or branch the weights come from. maskera's
   own model defaults to the pinned `MASKERA_SV_NER_REVISION`, so a given release
@@ -135,7 +141,10 @@ createNerRecognizer({
   version. New weights therefore arrive with a maskera release, not on their
   own; pass `revision: "main"` if you would rather track the Hub directly. Any
   other `model` keeps Transformers.js's own default, and the option is ignored
-  when loading from `localModelPath`.
+  when loading from `localModelPath`. The value is validated at construction:
+  Transformers.js interpolates it verbatim into its cache path, so anything
+  containing `..` or `\`, or starting with `/`, throws (a commit sha, tag or
+  branch name all pass).
 - **`dtype`**: `"q4"` is what the maskera demo ships and what the eval gates
   run against. `"q8"` is slightly more accurate on some inputs; `"fp32"` is
   for benchmarking, not the browser.
@@ -183,6 +192,20 @@ createNerRecognizer({
 - **`cacheDir`**: sets a writable Transformers.js cache directory. Under Yarn
   PnP, maskera automatically redirects the runtime's read-only virtual default
   to `<project>/.cache/transformers`; set this option to choose another path.
+  The directory must be writable **only by the current process's user** — the
+  runtime reuses any file that exists there, so a shared world-writable
+  location (a bare `/tmp` subdir, for example) lets another local user swap
+  the model files. `verifyModelIntegrity` catches that for the pinned default
+  model, but not for a custom `model`. Use a project- or user-local path.
+- **`verifyModelIntegrity`**: on by default, and only meaningful for maskera's
+  own model loaded from the Hub at the pinned revision (Node only). Every
+  cached model file is sha256-checked against digests pinned in this package —
+  once before the pipeline touches the cache, once after the download —
+  because the revision pin controls *what* is downloaded while
+  Transformers.js's cache trusts any file that merely *exists*. A mismatch
+  throws and refuses to load. A custom `model`/`revision`/`localModelPath`
+  has no digest map and is **not** verified; self-hosted models need their own
+  integrity story.
 
 ### Self-hosting the model
 

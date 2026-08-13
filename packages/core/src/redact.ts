@@ -265,6 +265,7 @@ export function redactFromDetections(
 
   // Stable numbering: same value under the same label reuses its placeholder.
   const counters = new Map<PiiLabel, number>()
+  const shortestToken = new Map<PiiLabel, number>()
   const tokenByKey = new Map<string, string>()
   const map: Record<string, string> = {}
   const redactions: Redaction[] = []
@@ -286,14 +287,25 @@ export function redactFromDetections(
         next += 1
         token = placeholder(d.label, next)
         attempts += 1
+        const shortest = Math.min(shortestToken.get(d.label) ?? Infinity, token.length)
+        shortestToken.set(d.label, shortest)
         if (token.length > 0 && !occursInInput(d.label, token) && !(token in map)) break
         // Giving up after a fixed number of tries made a crafted input a denial
         // of service: seeding "[EPOST_1]".."[EPOST_100]" was enough to make
         // every later redact() throw. An input can only hold
-        // input.length / token.length distinct colliding tokens, so past that
-        // bound the placeholder() itself is broken (it ignores the index) and
-        // no further index will help.
-        if (token.length === 0 || attempts > 8 + input.length / token.length) {
+        // input.length / token.length distinct colliding tokens OF ONE LENGTH,
+        // but the colliding tokens in the input need not share the length of
+        // the token being probed: counter-shaped placeholders grow with the
+        // index ("[PERSONNUMMER_1001]" is longer than "[PERSONNUMMER_1]"), so
+        // dividing by the CURRENT token's length underestimates how many
+        // collisions fit - 1000 concatenated short tokens occupy ~17 KB while
+        // the bound computed from the longer 1001st token came out below 1000,
+        // and redact() threw on an input it should simply have worked through.
+        // Dividing by the SHORTEST token this label has produced is the safe
+        // bound: it never underestimates the collision count. Past it the
+        // placeholder() itself is broken (it ignores the index) and no
+        // further index will help.
+        if (token.length === 0 || attempts > 8 + input.length / shortest) {
           throw new Error(
             "maskera: placeholder() must return a token that is unique per (label, index) " +
               "and does not occur in the input",

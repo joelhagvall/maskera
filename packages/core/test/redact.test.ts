@@ -326,4 +326,20 @@ describe("crafted placeholder collisions stay linear", () => {
     // regression guard rather than a benchmark.
     expect(elapsed).toBeLessThan(1000)
   })
+
+  it("does not give up when the seeded tokens are shorter than the token being probed", () => {
+    // Counter-shaped tokens grow with the index: "[PERSONNUMMER_1001]" is three
+    // characters longer than "[PERSONNUMMER_1]". The retry bound divided by the
+    // CURRENT token's length, which assumes the colliding tokens share that
+    // length - concatenated with no separator, 1000 short tokens fit in ~17 KB
+    // and the bound at attempt 1001 computed to ~950, so redact() threw on an
+    // input it should simply have worked through. The bound now divides by the
+    // shortest token the label has produced.
+    for (const n of [1000, 2000]) {
+      const seeded = Array.from({ length: n }, (_, i) => `[PERSONNUMMER_${i + 1}]`).join("")
+      const result = redact(`${seeded} Patient 900101-2385 inskriven.`)
+      expect(result.redactions[0]?.replacement).toBe(`[PERSONNUMMER_${n + 1}]`)
+      expect(result.map[`[PERSONNUMMER_${n + 1}]`]).toBe("900101-2385")
+    }
+  })
 })

@@ -90,7 +90,9 @@ const TEST_POSTNUMMER = new Set(["12345"])
 
 // Real operational contact details are allowed explicitly. Every other email
 // literal must use an IANA-reserved example domain or the reserved .test TLD.
-const OPERATIONAL_EMAILS = new Set(["hej@maskera.dev"])
+// The HubSpot BCC is the portal's own logging address (HubSpot publishes the
+// format at https://knowledge.hubspot.com/email/logging-email-replies-with-the-bcc-address).
+const OPERATIONAL_EMAILS = new Set(["hej@maskera.dev", "149051320@bcc.eu1.hubspot.com"])
 
 // User-facing examples, task-evaluation corpora and unit fixtures use
 // conspicuously synthetic street markers. Public place names can still be LOC

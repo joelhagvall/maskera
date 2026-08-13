@@ -107,6 +107,15 @@ value to redact. `validate` can reject false positives (e.g. failing a checksum)
 
 `luhnValid`, `isPersonnummer`, `isSamordningsnummer`, `isOrganisationsnummer`.
 
+## Input size
+
+`redact()` is synchronous and linear in the input size, which covers pastes,
+documents and book-length text. The constant factor is worst on digit-dense
+input: a megabyte of pure digits (a log dump) blocks the thread for roughly a
+second per call. For documents in the megabyte class and up, split the text on
+line or paragraph boundaries and redact chunk by chunk — detection is local to
+each chunk, so only an identifier straddling a split point is affected.
+
 ## More
 
 Part of [maskera](https://github.com/joelhagvall/maskera); add the

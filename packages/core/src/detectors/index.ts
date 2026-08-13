@@ -31,7 +31,11 @@ export function regexDetector(
   // The flag is added to a copy, which also keeps `lastIndex` off the caller's
   // regex. Engines predating the flag (it needs Chrome 90 / Safari 15 / Node
   // 16) throw on construction, and these detectors are built at module scope,
-  // so the fallback is what keeps `import` itself from failing there.
+  // so the fallback is what keeps `import` itself from failing there. On such
+  // an engine the fallback is only used when it is SAFE: when the value occurs
+  // more than once inside its own match the position is ambiguous, and a wrong
+  // guess masks the wrong slice while the value stays in the clear, so the
+  // detection is refused loudly instead (see detect() below).
   let scanner = regex
   let hasIndices = regex.flags.includes("d")
   if (!hasIndices) {
@@ -53,7 +57,27 @@ export function regexDetector(
         const value = m[group] as string
         if (value.length === 0) continue
         const span = hasIndices ? (m as MatchWithIndices).indices?.[group] : undefined
-        const start = span ? span[0] : m.index + m[0].indexOf(value)
+        let start: number
+        if (span) {
+          start = span[0]
+        } else {
+          const first = m[0].indexOf(value)
+          if (first !== m[0].lastIndexOf(value)) {
+            // Fail closed rather than guess: reporting the first occurrence of
+            // a repeated group text would have redact() mask the wrong slice
+            // and leak the value itself. Only reachable on engines without
+            // the "d" flag, with a custom pattern whose capture repeats inside
+            // its own match.
+            throw new Error(
+              `maskera: detector "${label}" matched a value that occurs more than once inside ` +
+                'its own match, and this engine lacks regex match indices (the "d" flag, ' +
+                "Chrome 90 / Safari 15 / Node 16) to tell which occurrence is the value. " +
+                "Upgrade the runtime, or rewrite the pattern so the captured value appears " +
+                "only once per match.",
+            )
+          }
+          start = m.index + first
+        }
         if (validate && !validate(value)) continue
         out.push({ start, end: start + value.length, value })
       }
@@ -234,10 +258,47 @@ export const organisationsnummer = regexDetector(
 // (base64url's `-` and `_` are both in the class), so a 250 KB paste took ~57 s
 // on the unbounded pattern and ~30 ms bounded. Ordinary prose never noticed,
 // which is precisely why this could sit here unseen.
-export const email = regexDetector(
-  "EPOST",
-  /[\p{L}\p{N}._%+-]{1,64}@[\p{L}\p{N}.-]{1,255}\.\p{L}{2,63}\b/giu,
-)
+const EMAIL_PATTERN = /[\p{L}\p{N}._%+-]{1,64}@[\p{L}\p{N}.-]{1,255}\.\p{L}{2,63}\b/giu
+const EMAIL_LOCAL_CHAR = /[\p{L}\p{N}._%+-]/u
+const EMAIL_DOMAIN_CHAR = /[\p{L}\p{N}.-]/u
+
+/**
+ * E-post: `anna@example.com`, Unicode letters on both sides of the @.
+ *
+ * Not built with regexDetector, because the bounded quantifiers above
+ * reintroduced a leak of their own: a local part or domain LONGER than its
+ * window still matches, but only the window was reported and the rest of the
+ * address stayed in the clear - "anna.svensson." + 70 x's masked as
+ * "anna.svensson.xxxxxxxx[EPOST_1]", and `anna@` + "sub."×80 + "example.com"
+ * masked as "[EPOST_1].sub.sub…example.com". So after each match the span is
+ * widened to the whole contiguous run: LEFT while the characters belong to
+ * the local-part class, RIGHT while they belong to the domain class. The two
+ * classes differ (`_`, `%`, `+` are local-only), and which one applies is
+ * decided by position, not by where the window was cut: the pattern requires
+ * at least one local-part character before the literal `@`, so the match
+ * always starts inside the local part and always ends inside the domain, and
+ * `@` itself is in neither class - which also bounds each walk at the nearest
+ * `@`, keeping detection linear on hostile runs. Over-masking the rest of the
+ * run is the right side to err on for a redaction tool: a clipped run is
+ * never safe to leave visible, and `resolveOverlaps()` in redact already
+ * arbitrates any span this grows into.
+ */
+export const email: Detector = {
+  label: "EPOST",
+  detect(input: string): RawMatch[] {
+    const out: RawMatch[] = []
+    EMAIL_PATTERN.lastIndex = 0
+    for (const m of input.matchAll(EMAIL_PATTERN)) {
+      if (m.index === undefined) continue
+      let start = m.index
+      let end = m.index + m[0].length
+      while (start > 0 && EMAIL_LOCAL_CHAR.test(input[start - 1] as string)) start--
+      while (end < input.length && EMAIL_DOMAIN_CHAR.test(input[end] as string)) end++
+      out.push({ start, end, value: input.slice(start, end) })
+    }
+    return out
+  },
+}
 
 /**
  * Phone numbers. Swedish: +46 / 0 prefix, mobile and landline, including the

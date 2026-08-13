@@ -60,7 +60,7 @@
     "@maskera/core": "workspace:^"
   },
   "peerDependencies": {
-    "@huggingface/transformers": ">=3"
+    "@huggingface/transformers": "^4.0.0"
   },
   "peerDependenciesMeta": {
     "@huggingface/transformers": {

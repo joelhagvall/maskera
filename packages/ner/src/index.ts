@@ -7,6 +7,7 @@ import {
   redactFromDetections,
   runDetectors,
 } from "@maskera/core"
+import { MASKERA_SV_NER_SHA256 } from "./model-hashes"
 
 // Re-export the whole rule layer so one install + one import is enough:
 // installing maskera pulls in @maskera/core automatically, and
@@ -231,7 +232,13 @@ export interface NerProgressEvent {
 }
 
 export interface NerOptions {
-  /** Hugging Face model id. Default: {@link DEFAULT_NER_MODEL}. */
+  /**
+   * Hugging Face model id. Default: {@link DEFAULT_NER_MODEL}.
+   *
+   * DEVELOPER-ONLY configuration, like {@link revision} and
+   * {@link localModelPath}: these three select WHERE executable weights are
+   * loaded from and must never be derived from end-user input.
+   */
   model?: string
   /**
    * Hub revision (commit sha, tag or branch) to download the model from.
@@ -241,6 +248,13 @@ export interface NerOptions {
    * For any other `model` the default is Transformers.js's own (`main`), since
    * maskera's pin says nothing about a third-party repo. Ignored entirely when
    * loading from `localModelPath`.
+   *
+   * DEVELOPER-ONLY, see {@link model}: Transformers.js interpolates the
+   * revision verbatim into its cache path (`<cacheDir>/<model>/<revision>/`),
+   * where `path.join` happily normalises `..` segments, so maskera validates
+   * the charset and rejects anything containing `..` or `\` or starting with
+   * `/` at construction. A user-controlled revision would otherwise be a
+   * read/write primitive outside the cache directory.
    */
   revision?: string
   /** Quantization dtype passed to Transformers.js. Default: `"q4"`. */
@@ -266,12 +280,21 @@ export interface NerOptions {
    * Transformers.js `env.localModelPath`: base URL/path for locally hosted
    * models. Set this (plus `model`) to load your own model instead of the Hub.
    *
-   * PROCESS-GLOBAL, see {@link allowRemoteModels}.
+   * DEVELOPER-ONLY, see {@link model}. PROCESS-GLOBAL, see
+   * {@link allowRemoteModels}.
    */
   localModelPath?: string
   /**
    * Transformers.js cache directory. Also applied to `env.cacheDir`, which is
    * required by Yarn PnP because its dependency archive is read-only.
+   *
+   * The directory must be writable ONLY by the current process's user: the
+   * runtime reuses any file that exists here, and although
+   * {@link verifyModelIntegrity} catches content that does not match the
+   * pinned model, a writable-by-others cache is still a raceable attack
+   * surface for any custom `model` (which has no digest map). Never point
+   * this at a shared world-writable location such as a bare `/tmp` subdir;
+   * use a project- or user-local path with `0700`-style permissions.
    */
   cacheDir?: string
   /**
@@ -308,18 +331,44 @@ export interface NerOptions {
    * runtime known not to race the real download.
    */
   nativeLocalProgress?: boolean
+  /**
+   * sha256-verify the cached model files against the digests pinned in this
+   * package before they reach onnxruntime. Default: `true`.
+   *
+   * Only maskera's own model loaded from the Hub at
+   * {@link MASKERA_SV_NER_REVISION} carries a digest map, so only that exact
+   * combination is verified; a custom `model`, `revision` or `localModelPath`
+   * inherits nothing and needs its own integrity story (self-host over HTTPS
+   * you control, or pin and verify out-of-band). The check exists because the
+   * revision pin controls WHAT is downloaded, but Transformers.js's file
+   * cache trusts any file that merely EXISTS in the cache directory — a
+   * tampered cache means silently suppressed detections, or hostile bytes in
+   * onnxruntime's native parser. Node only (the browser Cache API exposes no
+   * files to hash); a mismatch throws and refuses to load.
+   */
+  verifyModelIntegrity?: boolean
 }
 
 export interface NerRecognizer {
-  /** Resolves once the model is loaded and ready. */
-  ready: Promise<void>
+  /**
+   * Resolves once the model is loaded and ready, rejects with the load error
+   * if it fails. LAZY: accessing the property is what starts the load (as
+   * does the first `detect()` call), so a recognizer whose `ready` nobody
+   * awaits never produces an unhandled rejection — Node ≥ 15 crashes the
+   * whole process on those. Not memoized: each access defers to the same
+   * underlying load() as `detect()`, including its retry-after-failure
+   * behaviour.
+   */
+  readonly ready: Promise<void>
   /** Run the model and return maskera-compatible detections. */
   detect(text: string): Promise<Detection[]>
 }
 
 /**
  * Create an NER recognizer backed by a Transformers.js token-classification
- * model. The model is loaded lazily on first use (or awaited via `ready`).
+ * model. The model is loaded lazily on first use: construction itself does no
+ * I/O, the load starts when `ready` is first accessed or `detect()` is first
+ * called.
  *
  * Requires the optional peer dependency `@huggingface/transformers`.
  */
@@ -344,6 +393,7 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
     allowRemoteModels,
     allowLocalModels,
     nativeLocalProgress = false,
+    verifyModelIntegrity = true,
   } = options
 
   // Scores are probabilities in [0, 1]. An invalid threshold (NaN above all,
@@ -351,6 +401,25 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
   // detection, which is fail-open for PII. Reject bad config loudly instead.
   if (!Number.isFinite(minScore) || minScore < 0 || minScore > 1) {
     throw new Error(`maskera: minScore must be a finite number between 0 and 1, got ${minScore}`)
+  }
+
+  // The revision is interpolated VERBATIM into Transformers.js's cache key
+  // (buildResourcePaths: pathJoin(repo_id, revision, filename)) and FileCache
+  // then path.join()s it onto the cache directory, which normalises ".."
+  // segments: a revision like "../../../../etc/x" would read/write outside the
+  // cache. revision is developer-only config (see NerOptions) and must never
+  // be user-controlled, but enforce the charset loudly anyway — a 40-hex
+  // commit sha, tag or branch name all pass, traversal does not.
+  if (
+    revision !== undefined &&
+    (!/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(revision) ||
+      revision.includes("..") ||
+      revision.includes("\\"))
+  ) {
+    throw new Error(
+      `maskera: invalid revision "${revision}": expected a Hub commit sha, tag or branch name ` +
+        `(letters, digits, ".", "_", "-", "/"; no ".." or "\\", no leading "/").`,
+    )
   }
 
   const denySet = denylist === null ? null : new Set(Array.from(denylist, (w) => w.toLowerCase()))
@@ -386,6 +455,74 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
     }
   }
 
+  // Only the exact pinned combination carries a digest map to verify against;
+  // a custom model/revision/localModelPath inherits nothing (documented on
+  // NerOptions.verifyModelIntegrity).
+  const integrityApplies =
+    verifyModelIntegrity &&
+    model === MASKERA_SV_NER_MODEL &&
+    revision === MASKERA_SV_NER_REVISION &&
+    localModelPath === undefined
+
+  /**
+   * sha256-check every pinned model file present in the Transformers.js
+   * FileCache against {@link MASKERA_SV_NER_SHA256}; throw on the first
+   * mismatch. Files that do not exist are skipped (before the first download
+   * nothing exists yet), and an unreadable/missing cache DIRECTORY skips the
+   * whole check: it means this environment has no file cache to poison (the
+   * browser Cache API exposes no files, and a stubbed runtime in tests writes
+   * none). Node only.
+   *
+   * Runs TWICE per load: BEFORE t.pipeline(), so a tampered cache never
+   * reaches onnxruntime's native parser, and AFTER, so bytes poisoned in
+   * transit (the pin fixes which URL is fetched; the network path itself is
+   * only TLS-grade) are caught before the first inference.
+   */
+  const verifyCachedModelFiles = async (
+    transformersEnv: Record<string, unknown>,
+  ): Promise<void> => {
+    if (!integrityApplies) return
+    if (typeof runtimeProcess?.versions?.node !== "string") return
+    const base = typeof cacheDir === "string" ? cacheDir : transformersEnv.cacheDir
+    if (typeof base !== "string" || base === "") return
+
+    // Dynamic imports with @vite-ignore on purpose: this module is also
+    // bundled for the browser (the demo builds it with Vite), and a static
+    // "node:fs" import would make those builds resolve Node builtins that can
+    // never execute here anyway — the guard above has already returned in a
+    // browser, so these imports only ever run under Node.
+    const [path, fs, { createHash }] = await Promise.all([
+      import(/* @vite-ignore */ "node:path"),
+      import(/* @vite-ignore */ "node:fs/promises"),
+      import(/* @vite-ignore */ "node:crypto"),
+    ])
+
+    // Mirrors buildResourcePaths in transformers.js 4.2: the FileCache key is
+    // "<model>/<revision>/<file>" for a pinned revision. integrityApplies has
+    // already pinned revision to MASKERA_SV_NER_REVISION, so the "main"
+    // short-form key ("<model>/<file>") is unreachable here.
+    const revisionPath = `${model}/${revision}`
+    for (const [file, expected] of Object.entries(MASKERA_SV_NER_SHA256)) {
+      const fullPath = path.join(base, revisionPath, ...file.split("/"))
+      let content: Buffer
+      try {
+        content = await fs.readFile(fullPath)
+      } catch {
+        continue // not downloaded (yet); nothing to verify
+      }
+      const actual = createHash("sha256").update(content).digest("hex")
+      if (actual !== expected) {
+        throw new Error(
+          `maskera: model integrity check failed for "${file}" of ${model}@${revision}.\n` +
+            `Expected sha256 ${expected}, got ${actual}. The cached file at "${fullPath}" does ` +
+            `not match the weights this release pins — delete the cache directory and let it ` +
+            `re-download, and keep it writable only by this process's user. ` +
+            `Set verifyModelIntegrity: false to bypass this check (not recommended).`,
+        )
+      }
+    }
+  }
+
   const load = () => {
     if (!pipePromise) {
       pipePromise = import("@huggingface/transformers")
@@ -409,6 +546,11 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
             onProgress({ status: "initiate", name: model, progress: 0 })
           }
 
+          // Pre-load integrity check: a tampered cache must be rejected BEFORE
+          // its bytes reach onnxruntime's native parser. First run finds no
+          // files and is a no-op; the post-load check below covers that case.
+          await verifyCachedModelFiles(t.env)
+
           try {
             const pipe = await t.pipeline("token-classification", model, {
               dtype,
@@ -428,6 +570,10 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
             if (coarseLocalProgress) {
               onProgress({ status: "ready", name: model, progress: 100 })
             }
+            // Post-load integrity check: the files just downloaded are hashed
+            // before the pipeline (and its fresh onnxruntime session) is
+            // handed out for a first inference.
+            await verifyCachedModelFiles(t.env)
             return pipe
           } catch (err) {
             throw withCause(`maskera: failed to load model "${model}".`, err)
@@ -454,12 +600,24 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
     offset: number,
     out: Detection[],
   ): Promise<void> => {
-    const tokenizer = (pipe as unknown as { tokenizer?: { encode?: (s: string) => number[] } })
-      .tokenizer
-    const fits =
-      !tokenizer?.encode || chunk.length === 0 || tokenizer.encode(chunk).length <= MAX_TOKENS
+    const tokenizer = (
+      pipe as unknown as {
+        tokenizer?: {
+          encode?: (s: string) => ArrayLike<number>
+          decode?: (ids: number[], options?: { skip_special_tokens?: boolean }) => string
+        }
+      }
+    ).tokenizer
+    // encode() uses the same defaults the pipeline's own tokenizer call does
+    // (special tokens on; a single-text batch pads to itself, i.e. not at
+    // all), so ids[k] here is exactly the token the pipeline reports as
+    // `index: k` — that alignment is what the offset enrichment below relies
+    // on.
+    const ids = tokenizer?.encode?.(chunk)
+    const fits = !ids || chunk.length === 0 || ids.length <= MAX_TOKENS
     if (fits) {
       const raw = await pipe(chunk, { aggregation_strategy: "none" })
+      enrichWithOffsets(tokenizer?.decode, ids, chunk, raw)
       for (const d of reconstruct(chunk, raw, labelMap, minScore)) {
         out.push({ ...d, start: d.start + offset, end: d.end + offset })
       }
@@ -471,7 +629,19 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
   }
 
   return {
-    ready: load().then(() => undefined),
+    // Lazy getter, NOT an eagerly started promise: an eager
+    // `load().then(() => undefined)` starts the download at construction, and
+    // if that load rejects while the consumer only ever calls detect(), the
+    // rejection is unhandled and Node >= 15 crashes the whole process. Now no
+    // promise (and no load) exists until someone actually awaits `ready` or
+    // calls detect(), and a consumer awaiting `ready` sees the exact same
+    // rejection as before. Not memoized either: every access defers to
+    // load(), so `ready` agrees with detect() on the retry-after-failure
+    // behaviour (the .catch in load() resets pipePromise, letting a later
+    // call attempt the load again).
+    get ready(): Promise<void> {
+      return load().then(() => undefined)
+    },
     async detect(text: string): Promise<Detection[]> {
       const pipe = await load()
       const collected: Detection[] = []
@@ -525,9 +695,13 @@ const baseType = (entity: string) => entity.replace(/^[BI]-/, "")
 /**
  * The Transformers.js token-classification pipeline for BERT-wordpiece models
  * yields per-subword tokens (`john`, `kung`, `##sho`, …) with BIO tags but,
- * for tokenizers without offset tracking, no character spans. We rebuild
+ * for tokenizers without offset tracking, no character spans. Exact spans win
+ * when they exist (tokenizer-reported, or attached by {@link
+ * enrichWithOffsets} on the default pipeline path); otherwise we rebuild
  * entities by merging subword/continuation tokens and locating the surface
- * string back in the original text.
+ * string back in the original text, with the fail-closed adjacency guard in
+ * {@link locateGroup} as the remaining defence against wrong-occurrence
+ * matches.
  */
 /**
  * Lowercase for position-stable matching. A character whose lowercase form
@@ -553,6 +727,14 @@ export function reconstruct(
   const lower = safeLower(text)
   const out: Detection[] = []
   let cursor = 0
+  // Position evidence for locateGroup: the index of the previously processed
+  // token, and whether `cursor` sits exactly at that token's true end. When
+  // both are known and the next group head carries the VERY next index (no
+  // dropped O tokens in between), wordpiece construction means only
+  // whitespace can separate the two tokens — so locateGroup must not hop over
+  // untokenised content to reach an earlier, identically spelled occurrence.
+  let prevIndex: number | null = null
+  let cursorExact = false
   let i = 0
 
   while (i < tokens.length) {
@@ -563,7 +745,10 @@ export function reconstruct(
     }
     const tag = tok.entity ?? tok.entity_group ?? ""
     if (!tag || tag === "O") {
-      cursor = advancePastToken(text, lower, tok, cursor)
+      const nextCursor = advancePastToken(text, lower, tok, cursor)
+      cursorExact = nextCursor !== cursor
+      cursor = nextCursor
+      prevIndex = typeof tok.index === "number" ? tok.index : null
       i++
       continue
     }
@@ -624,31 +809,49 @@ export function reconstruct(
       // token's `word` still carries the casing the text had, and an exact hit
       // is always the more trustworthy of the two. The folded pass stays as the
       // fallback for tokenizers that lower-case or strip accents.
+      //
+      // adjacentToPrev is the position evidence described at prevIndex above:
+      // a group head whose index is the immediate successor of the token that
+      // ended at `cursor` must follow it with nothing but whitespace between.
+      const headIndex = group[0]?.index
+      const adjacentToPrev =
+        cursorExact &&
+        prevIndex !== null &&
+        typeof headIndex === "number" &&
+        headIndex === prevIndex + 1
       const span =
         spanFromOffsets(group, text.length) ??
-        locateGroup(text, text, group, cursor, false) ??
-        locateGroup(text, lower, group, cursor, true)
+        locateGroup(text, text, group, cursor, false, adjacentToPrev) ??
+        locateGroup(text, lower, group, cursor, true, adjacentToPrev)
       if (span) {
         located = true
         let start = span.start
         // The model can tag a trailing subword of a word it half-recognises
         // (e.g. "##r" in "dr Svensson"). Widen to the word boundary so the
         // whole word is redacted instead of leaked; lone fragments inside a
-        // longer word are still rejected by isWholeWord below.
-        while (start > 0 && LETTER.test(text[start - 1] ?? "")) start--
+        // longer word are still rejected by isWholeWord below. Whole code
+        // points, not UTF-16 units: half an astral surrogate pair is not a
+        // letter, so unit-wise widening could stop in the MIDDLE of one
+        // character and invent a word boundary inside it.
+        while (start > 0) {
+          const before = prevCodePoint(text, start)
+          if (!LETTER.test(before)) break
+          start -= before.length
+        }
         let end = span.end
         // Swedish genitive: the (vocab-trimmed) model can stop right before
         // the possessive s ("Anna Karlsson" inside "Anna Karlssons"), and the
         // whole-word guard would then reject the span and leak the full name.
         // If exactly one s remains to the word boundary, take it. Anything
         // longer is a genuinely different word and still gets rejected.
-        if ((text[end] === "s" || text[end] === "S") && !LETTER.test(text[end + 1] ?? "")) end++
+        if ((text[end] === "s" || text[end] === "S") && !LETTER.test(nextCodePoint(text, end + 1)))
+          end++
         // Swedish apartment/entrance suffixes are commonly written as a
         // detached A-D after the house number ("Maskeragatan 46 C"). q4 can
         // confidently tag the street + number but leave that final letter O.
         // Restrict the extension to A-D and require a non-word boundary after
         // it, so ordinary following words such as "i Stockholm" are untouched.
-        if (base === "ADR" && DIGIT.test(text[end - 1] ?? "")) {
+        if (base === "ADR" && DIGIT.test(prevCodePoint(text, end))) {
           const suffix = text.slice(end).match(/^(\s+[A-Da-d])(?=$|[^\p{L}\p{N}])/u)
           const suffixText = suffix?.[1]
           if (suffixText) end += suffixText.length
@@ -660,7 +863,7 @@ export function reconstruct(
         // address materially, so widen to include it (and any detached A-D
         // letter after it). Ordinary following words are untouched: the
         // extension requires digits immediately after the span.
-        if (base === "ADR" && LETTER.test(text[end - 1] ?? "")) {
+        if (base === "ADR" && LETTER.test(prevCodePoint(text, end))) {
           const houseNumber = text
             .slice(end)
             .match(/^(\s+(?:nr\s+)?\d{1,4}(?:\s?[A-Da-d])?)(?=$|[^\p{L}\p{N}])/u)
@@ -704,11 +907,24 @@ export function reconstruct(
         // says where the tokenizer had got to, and a cursor left behind is
         // exactly what lets a later group re-match this same stretch of text.
         if (end > cursor) cursor = end
+        // `cursor` is exactly at the group's last token end only when nothing
+        // was widened past it (a genitive s, a house number: those characters
+        // belong to tokens the stream may still index AFTER this group, so
+        // the adjacency evidence would be off by one entity's worth of text).
+        cursorExact = cursor === end && end === span.end
       }
     }
     if (!located) {
-      for (const part of group) cursor = advancePastToken(text, lower, part, cursor)
+      let exact = true
+      for (const part of group) {
+        const nextCursor = advancePastToken(text, lower, part, cursor)
+        if (nextCursor === cursor) exact = false // a part could not be placed
+        cursor = nextCursor
+      }
+      cursorExact = exact
     }
+    const lastToken = group[group.length - 1]
+    prevIndex = typeof lastToken?.index === "number" ? lastToken.index : null
     i = j
   }
   // q4 can split a multiword address into adjacent same-label groups
@@ -744,6 +960,25 @@ export function reconstruct(
 const LETTER = /\p{L}/u
 const DIGIT = /\p{N}/u
 const WHITESPACE = /\s/
+/**
+ * The whole code point immediately before/after a UTF-16 index. Boundary
+ * checks must see whole code points: testing one UTF-16 unit makes half of an
+ * astral surrogate pair "not a letter", so a unit-wise check invents a word
+ * boundary in the middle of a single astral character.
+ */
+const prevCodePoint = (text: string, i: number): string => {
+  if (i <= 0) return ""
+  const unit = text.charCodeAt(i - 1)
+  if (i >= 2 && unit >= 0xdc00 && unit <= 0xdfff) {
+    const high = text.charCodeAt(i - 2)
+    if (high >= 0xd800 && high <= 0xdbff) return text.slice(i - 2, i)
+  }
+  return text.slice(i - 1, i)
+}
+const nextCodePoint = (text: string, i: number): string => {
+  const cp = text.codePointAt(i)
+  return cp === undefined ? "" : String.fromCodePoint(cp)
+}
 /** Max whitespace skipped between two pieces of one entity; see locateGroup. */
 const MAX_PIECE_GAP = 32
 /**
@@ -759,13 +994,106 @@ const STREET_ADDRESS_TAIL =
 const pieceOf = (t: RawToken) => (t.word.startsWith("##") ? t.word.slice(2) : t.word)
 
 /**
+ * Pin every token of a FULL decoded stream (special tokens as empty strings,
+ * O tokens included) to its exact character span, walking the text in order.
+ *
+ * This is the position evidence locateGroup cannot have: the walk's cursor
+ * has consumed EVERY preceding token, not just the confirmed entities, so an
+ * identically spelled earlier occurrence ("Ring Anna. Anna är sjuk." where
+ * the model only tagged the second "Anna") has already been stepped over and
+ * can no longer be matched by mistake.
+ *
+ * Returns one entry per piece (null for zero-width special tokens), or null
+ * for the whole stream when any piece cannot be found — an accent-stripping
+ * tokenizer decodes to strings that are not in the text at all, and a partial
+ * result would be worse than none. Whitespace between pieces is capped at
+ * {@link MAX_PIECE_GAP} for the same reason as in locateGroup; a longer run
+ * (PDF extraction produces those) bails out to the legacy search too.
+ *
+ * Exported for tests.
+ */
+export function locateTokenStream(
+  text: string,
+  pieces: readonly string[],
+): Array<{ start: number; end: number } | null> | null {
+  const lower = safeLower(text)
+  const spans: Array<{ start: number; end: number } | null> = []
+  let cursor = 0
+  for (const piece of pieces) {
+    if (piece === "") {
+      spans.push(null)
+      continue
+    }
+    let at = text.indexOf(piece, cursor)
+    if (at < 0) at = lower.indexOf(safeLower(piece), cursor)
+    if (at < 0 || at - cursor > MAX_PIECE_GAP) return null
+    for (let k = cursor; k < at; k++) {
+      if (!WHITESPACE.test(text[k] as string)) return null
+    }
+    const end = at + piece.length
+    spans.push({ start: at, end })
+    cursor = end
+  }
+  return spans
+}
+
+/**
+ * Attach exact `start`/`end` offsets to the pipeline's raw tokens.
+ *
+ * Transformers.js 4.2's TokenClassificationPipeline never emits start/end
+ * ("// TODO: Add support for start and end" in the dist) and its tokenizer
+ * exposes no offset mapping either (no return_offsets_mapping anywhere in
+ * 4.2.0), which is exactly why reconstruct falls back to searching for the
+ * surface string — and a surface search cannot tell the first "Anna" from
+ * the second when the model only tagged the second. What the pipeline DOES
+ * emit is `index`, the token's position in the encoding, and the tokenizer
+ * can replay that encoding: encode() yields the same ids (same defaults, a
+ * single-text batch is never padded, and runChunk pre-splits below the
+ * truncation limit), and decode([id], skip_special_tokens) is verbatim how
+ * the pipeline derived each `word`. {@link locateTokenStream} then pins every
+ * token — O tokens included — to its true occurrence, and spanFromOffsets
+ * wins over the surface search for the enriched tokens.
+ *
+ * Strictly additive: any replay failure (no decode() on the tokenizer, an
+ * unlocatable piece) abandons the enrichment and leaves the tokens on the
+ * legacy search they use today, rather than guessing.
+ */
+function enrichWithOffsets(
+  decode: ((ids: number[], options?: { skip_special_tokens?: boolean }) => string) | undefined,
+  ids: ArrayLike<number> | undefined,
+  chunk: string,
+  raw: RawToken[],
+): void {
+  if (!decode || !ids || ids.length === 0 || raw.length === 0) return
+  let pieces: string[]
+  try {
+    pieces = Array.from(ids, (id) => decode([id], { skip_special_tokens: true }))
+  } catch {
+    return // a tokenizer that cannot decode single ids gets no enrichment
+  }
+  const spans = locateTokenStream(chunk, pieces)
+  if (!spans) return
+  for (const tok of raw) {
+    const index = tok.index
+    if (typeof index !== "number" || !Number.isInteger(index) || index < 0) continue
+    const span = spans[index]
+    if (span && span.end > span.start) {
+      tok.start = span.start
+      tok.end = span.end
+    }
+  }
+}
+
+/**
  * The span the tokenizer itself reported, when it reported one.
  *
  * {@link RawToken} has always carried `start`/`end` and `reconstruct` ignored
  * them, searching for the surface string instead. That search exists for BERT
- * wordpiece, which tracks no offsets; where a tokenizer does track them they
- * are exact, and preferring them removes the wrong-occurrence failure mode
- * below outright rather than merely narrowing it.
+ * wordpiece, which tracks no offsets; where offsets are known — reported by
+ * the tokenizer, or attached by {@link enrichWithOffsets} on the default
+ * pipeline path — they are exact, and preferring them removes the
+ * wrong-occurrence failure mode below outright rather than merely narrowing
+ * it.
  */
 function spanFromOffsets(group: RawToken[], length: number): { start: number; end: number } | null {
   const start = group[0]?.start
@@ -831,6 +1159,18 @@ function advancePastToken(text: string, lower: string, token: RawToken, cursor: 
  * the retry loop below re-walk a 200k-space run (PDF extraction produces
  * exactly those) once per anchor of the head piece. Two pieces further apart
  * than the cap are not one entity anyway.
+ *
+ * `adjacentToCursor` is the fail-closed guard against the wrong-occurrence
+ * failure mode: it is set when the group's head token carries the VERY next
+ * token index after the token that ended exactly at `cursor` (see prevIndex
+ * in reconstruct). Wordpiece emits a token for every non-whitespace
+ * character, so between two index-contiguous tokens nothing but whitespace
+ * can exist — an anchor that requires hopping over untokenised content to
+ * reach an earlier, identically spelled occurrence is provably not this
+ * group's occurrence and is skipped. Finding no anchor drops the entity,
+ * which is the deliberate trade-off: a dropped model entity leaks at worst,
+ * but a WRONGLY located one both mangles an innocent word and still leaks
+ * the real one.
  */
 function locateGroup(
   text: string,
@@ -838,6 +1178,7 @@ function locateGroup(
   group: RawToken[],
   cursor: number,
   fold: boolean,
+  adjacentToCursor = false,
 ): { start: number; end: number } | null {
   const norm = fold ? safeLower : identity
   const head = group[0]
@@ -847,6 +1188,19 @@ function locateGroup(
 
   let start = haystack.indexOf(first, cursor)
   while (start >= 0) {
+    if (adjacentToCursor) {
+      let hopsContent = false
+      for (let k = cursor; k < start; k++) {
+        if (!WHITESPACE.test(text[k] as string)) {
+          hopsContent = true
+          break
+        }
+      }
+      if (hopsContent) {
+        start = haystack.indexOf(first, start + 1)
+        continue
+      }
+    }
     let pos = start + first.length
     let ok = true
     for (let k = 1; k < group.length; k++) {
@@ -915,12 +1269,12 @@ export function splitPoint(chunk: string): { leftEnd: number; rightStart: number
  * ordinary word (e.g. "par" inside "Motpart") or be pure digits ("14:20"). We
  * only keep spans that sit on word boundaries, the char on each side must not
  * be a letter, which drops both classes of false positive. Numbers are the
- * rule layer's job anyway.
+ * rule layer's job anyway. Whole code points on both sides (see
+ * prevCodePoint/nextCodePoint): an astral letter is one character even though
+ * it occupies two UTF-16 units.
  */
 export function isWholeWord(text: string, start: number, end: number): boolean {
-  const before = text[start - 1] ?? ""
-  const after = text[end] ?? ""
-  return !LETTER.test(before) && !LETTER.test(after)
+  return !LETTER.test(prevCodePoint(text, start)) && !LETTER.test(nextCodePoint(text, end))
 }
 
 /** Whether a hybrid detection came from the deterministic or model layer. */

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import {
   adress,
   bankgiro,
@@ -17,6 +17,7 @@ import {
   phone,
   plusgiro,
   postnummer,
+  regexDetector,
   regnummer,
   samordningsnummer,
   url,
@@ -189,12 +190,49 @@ describe("email detector", () => {
     expectHit(email, `x ${"a".repeat(64)}@example.com`, `${"a".repeat(64)}@example.com`)
   })
 
-  it("still finds the address when the local part exceeds 64 characters", () => {
-    // The match window slides rather than failing: the trailing 64 characters
-    // are what gets masked, so the domain and most of the local part are still
-    // redacted. An over-long local part is not a real address anyway.
+  it("matches a domain at the 255-character maximum", () => {
+    // 251 chars + ".com" is exactly what the domain window can hold; nothing
+    // is cut, so nothing needs extending.
+    const address = `anna@${"a".repeat(251)}.com`
+    expect(email.detect(address).map((m) => m.value)).toEqual([address])
+  })
+
+  it("masks the whole run when the local part exceeds 64 characters", () => {
+    // The bounded window still matches inside the over-long run, and the span
+    // is then extended over the whole run. Reporting only the window leaked
+    // the leading characters in the clear.
     const found = email.detect(`${"a".repeat(70)}@example.com`).map((m) => m.value)
-    expect(found).toEqual([`${"a".repeat(64)}@example.com`])
+    expect(found).toEqual([`${"a".repeat(70)}@example.com`])
+  })
+
+  it("does not leak the start of an over-long local part", () => {
+    // The audited bypass: this masked as "anna.svensson.xxxxxxxx[EPOST_1]",
+    // leaving the name itself in the clear.
+    const address = `anna.svensson.${"x".repeat(70)}@example.com`
+    const found = email.detect(`Mejla ${address} idag.`)
+    expect(found.map((m) => m.value)).toEqual([address])
+  })
+
+  it("does not leak the tail of an over-long domain", () => {
+    // The audited bypass: the 255-char domain window cut the run mid-way and
+    // this masked as "[EPOST_1].sub.sub…example.com".
+    const address = `anna@${"sub.".repeat(80)}example.com`
+    expect(email.detect(address).map((m) => m.value)).toEqual([address])
+  })
+
+  it("keeps the extension inside a single contiguous run", () => {
+    // Neither class contains a space or parentheses, so an ordinary address
+    // in prose masks exactly the address.
+    expectHit(email, "Kontakt (lars.svensson@example.org) gäller.", "lars.svensson@example.org")
+  })
+
+  it("extends across a glued-on domain suffix", () => {
+    // Not a cut window, but the run continues past the matched address;
+    // over-masking the suffix is the deliberate side to err on.
+    // (.test is reserved by RFC 2606, so this can never be routable.)
+    expect(email.detect("anna@example.com.test").map((m) => m.value)).toEqual([
+      "anna@example.com.test",
+    ])
   })
 
   it("does not backtrack quadratically on a long unbroken run", () => {
@@ -490,5 +528,61 @@ describe("contextualDetectors bundle", () => {
 
   it("stays out of the conservative rules-only defaults", () => {
     expect(defaultDetectors.some((d) => d.label === "KONTONUMMER")).toBe(false)
+  })
+})
+
+// --- regexDetector on engines without match indices -------------------------
+
+describe("regexDetector without the match-indices flag", () => {
+  /**
+   * regexDetector adds the "d" flag to a copy of the caller's regex so the
+   * capture group's position is exact. Engines predating the flag (Chrome 90 /
+   * Safari 15 / Node 16) fall back to locating the group text with
+   * `m[0].indexOf(value)`, which finds the FIRST occurrence - right for the
+   * built-in detectors, wrong for a custom pattern whose captured text repeats
+   * inside its own match. These tests simulate such an engine by making
+   * `new RegExp(..., "...d")` throw, which is exactly the construction the
+   * fallback catches.
+   */
+  function withoutMatchIndices(run: () => void) {
+    const RealRegExp = globalThis.RegExp
+    class NoIndicesRegExp extends RealRegExp {
+      constructor(source: string | RegExp, flags?: string) {
+        if (flags?.includes("d")) throw new Error("simulated engine without the d flag")
+        super(source as string, flags)
+      }
+    }
+    vi.stubGlobal("RegExp", NoIndicesRegExp)
+    try {
+      run()
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  }
+
+  it("locates the capture group exactly when indices exist (this engine)", () => {
+    const detector = regexDetector("MEJL", /kontakt (\S+) mejl \1/g)
+    expect(detector.detect("kontakt anna mejl anna")).toEqual([
+      { start: 8, end: 12, value: "anna" },
+    ])
+  })
+
+  it("still locates an unambiguous capture group on the fallback path", () => {
+    withoutMatchIndices(() => {
+      const detector = regexDetector("MEJL", /kontakt (\S+) mejl/g)
+      expect(detector.detect("kontakt anna mejl tack")).toEqual([
+        { start: 8, end: 12, value: "anna" },
+      ])
+    })
+  })
+
+  it("fails closed when the captured text repeats inside its own match", () => {
+    withoutMatchIndices(() => {
+      // The group text "anna" occurs twice in the match, so indexOf cannot
+      // tell which occurrence is the value. Guessing the first masks the
+      // wrong slice and leaks the value, so the detector must refuse loudly.
+      const detector = regexDetector("MEJL", /kontakt (\S+) mejl \1/g)
+      expect(() => detector.detect("kontakt anna mejl anna")).toThrow("match indices")
+    })
   })
 })
