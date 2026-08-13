@@ -2,3 +2,13 @@ packages:
   - "packages/*"
   - "apps/*"
   - "examples"
+
+# extract-zip <=2.0.1 (GHSA-jmr9-qjv8-65gv, symlink path traversal) has no
+# patched release; pa11y pins puppeteer 24 -> @puppeteer/browsers 2.13.2, so
+# there is no upgrade path. It only ever unpacks Chrome-for-testing archives
+# downloaded from Google's official CDN during local dev/CI browser install —
+# attacker-controlled zips never reach it. Revisit when pa11y allows
+# puppeteer 25 (@puppeteer/browsers 3.x dropped extract-zip).
+auditConfig:
+  ignoreGhsas:
+    - GHSA-jmr9-qjv8-65gv

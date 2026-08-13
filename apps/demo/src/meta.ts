@@ -237,21 +237,7 @@ export function renderRouteHtml(view: View, locale: Locale = activeLocale): stri
     <link rel="alternate" hreflang="en" href="${alternateEn}" />
     <link rel="alternate" hreflang="x-default" href="${alternateSv}" />
     <meta name="theme-color" content="#ffffff" />
-    <script>
-      ;(function () {
-        try {
-          var d = localStorage.getItem("theme") === "dark"
-          var e = document.documentElement
-          e.dataset.theme = d ? "dark" : "light"
-          e.style.colorScheme = d ? "dark" : "light"
-          if (d) {
-            document
-              .querySelectorAll('meta[name="theme-color"]')
-              .forEach(function (m) { m.setAttribute("content", "#0a0a0a") })
-          }
-        } catch (_) {}
-      })()
-    </script>
+    <script src="/theme-init.js"></script>
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="maskera" />
