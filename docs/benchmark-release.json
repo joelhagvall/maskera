@@ -149,7 +149,7 @@
     "manualStep": "Redact both exported text chunks with LogosGuard 2.4.4 in Chrome, Free plan, Balanced accuracy, and save the two returned files under tmp before scoring.",
     "resultFile": "docs/benchmark-logosguard-2.4.4.json",
     "resultSha256": "028a68a82691b42cdfba30346f4332197f61fc12e2e0a0dc5a4361f4789a43f0",
-    "suiteSha256": "33e6e763260635826c4f94a58feaf977e4ee575ffe01901f213d4ca02e419ae1",
+    "suiteSha256": "ae4a301bc903c33dc1015c84a84d32320800a306469cb170202f9e763ac997bc",
     "files": [
       "package.json",
       "apps/demo/scripts/fetch-model.mjs",
