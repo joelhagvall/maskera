@@ -1,5 +1,11 @@
 # @maskera/core
 
+## 0.8.1
+
+### Patch Changes
+
+- Refresh the published benchmark documentation with the LogosGuard end-to-end comparison and broader model links.
+
 ## 0.8.0
 
 ### Minor Changes

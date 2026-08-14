@@ -9,8 +9,8 @@
  * silently suppressed detections, or hostile bytes straight into
  * onnxruntime's native parser.
  *
- * Sources, verified 2026-08-13 against revision
- * b1aa7e799fa4839f8668dda691e893706e971523:
+ * Sources, verified 2026-08-14 against revision
+ * 7a0063375d1baabf66cf9a357dad5f46aea7008e:
  *
  * - config.json, tokenizer.json, tokenizer_config.json,
  *   special_tokens_map.json, vocab.txt and onnx/model_q4.onnx: re-downloaded

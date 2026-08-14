@@ -1,5 +1,13 @@
 # maskera
 
+## 0.10.1
+
+### Patch Changes
+
+- Refresh the published benchmark documentation with the LogosGuard end-to-end comparison and broader model links. Pin the runtime to the matching Hugging Face model-card revision; model weights are unchanged.
+- Updated dependencies
+  - @maskera/core@0.8.1
+
 ## 0.10.0
 
 ### Minor Changes

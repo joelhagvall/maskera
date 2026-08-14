@@ -19,7 +19,7 @@
   "systems": {
     "maskera": {
       "name": "Maskera",
-      "version": "0.10.0 / maskera-sv-ner-v19",
+      "version": "0.10.1 / maskera-sv-ner-v19",
       "surface": "Local JavaScript pipeline, q4 ONNX on CPU, general profile",
       "artifact": {
         "model": "maskera-sv-ner-v19",

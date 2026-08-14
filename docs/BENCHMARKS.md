@@ -18,7 +18,7 @@ locks the selected resolved dependency closure that executes the evaluation.
 Type-only peers and unrelated build, lint, browser-audit and test-tool updates
 are outside that closure and cannot masquerade as changed accuracy evidence.
 The frozen suite checksum is
-`b50d8d1a2f33b322dcf2249e72124615516b6bcb47b2ecdcaa2478c574e8ea39` and the
+`ae195d21c3d0d753a7cf2211780486eac5600d74059776022e7398077cee2a45` and the
 frozen evaluation-environment checksum is
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`.
 
@@ -26,7 +26,7 @@ frozen evaluation-environment checksum is
 - **Artifact:** [`joelhagvall/maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner),
   `onnx/model_q4.onnx` (`dtype: "q4"`, the default and what the demo ships),
   sha256 `6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66`,
-  Hub revision `b1aa7e799fa4839f8668dda691e893706e971523`, 42,705,681 bytes.
+  Hub revision `7a0063375d1baabf66cf9a357dad5f46aea7008e`, 42,705,681 bytes.
   This is the attested privacy-clean v19 release; see
   [training/README.md](../training/README.md).
 - **Pipeline:** the shipped `maskera` path (model + `reconstruct()`
@@ -96,7 +96,7 @@ held out of training and outside the generator's templates. The q4-vs-fp32
 choice compares the artifacts users can actually obtain, not equal numeric
 precision. Reproduce with `pnpm eval:kblab`; the machine result is
 [`benchmark-kblab-v19.json`](benchmark-kblab-v19.json). Comparison suite
-checksum: `bba0e66b7738d6bce597ab2e05dbf68b3e9268b4ab46d968a303d37657f6b153`.
+checksum: `585f5aaf89636f6b00c6e9e043b45bb274d081041fe2ff3aa03a3161f4919b99`.
 Python environment checksum:
 `3e87b961ccb80856a45610d6b8d637b2fa3cc57b479794116ad912e63603c1ff`.
 
@@ -141,8 +141,8 @@ exported chunks manually in the pinned LogosGuard surface, then run
 `pnpm eval:logosguard:maskera` and `pnpm eval:logosguard:score`. Privacy-clean
 per-document outcomes, masked-text hashes and capture hashes are in
 [`benchmark-logosguard-2.4.4.json`](benchmark-logosguard-2.4.4.json).
-Product-comparison result checksum: `028a68a82691b42cdfba30346f4332197f61fc12e2e0a0dc5a4361f4789a43f0`.
-Product-comparison suite checksum: `ae4a301bc903c33dc1015c84a84d32320800a306469cb170202f9e763ac997bc`.
+Product-comparison result checksum: `e348ca88b83cd347a43f03d98659cac2c1b127012cf51c6f92f11e89f8929b05`.
+Product-comparison suite checksum: `efd0a653553d29ab28c04e9ca877260d5654cc5d8c89258956279a52c3b4fa31`.
 Selected runtime-environment checksum:
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`;
 corpus checksum:

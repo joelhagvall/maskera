@@ -1454,7 +1454,7 @@ not an independent universal ranking. Run `pnpm eval:kblab`; the exact result
 is tracked in `docs/benchmark-kblab-v19.json`.
 
 **Release state:** published on the Hub at revision
-`b1aa7e799fa4839f8668dda691e893706e971523`; the npm source pin, demo hashes
+`7a0063375d1baabf66cf9a357dad5f46aea7008e`; the npm source pin, demo hashes
 and versioned demo folder all target the same artifact.
 
 ## Publish to Hugging Face (single hosted source)
