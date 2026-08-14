@@ -50,6 +50,12 @@ export function regexDetector(
     label,
     detect(input: string): RawMatch[] {
       const out: RawMatch[] = []
+      // matchAll clones the regex but copies the clone's lastIndex FROM the
+      // original, and when the caller's regex already carried the "d" flag
+      // `scanner` IS the caller's object. A lastIndex their own exec()/test()
+      // moved elsewhere would then start the scan mid-string and silently
+      // skip every detection before it — a leak. Always restart at zero.
+      scanner.lastIndex = 0
       for (const m of input.matchAll(scanner)) {
         if (m.index === undefined) continue
         // If the pattern uses a capture group for the actual value, prefer it.

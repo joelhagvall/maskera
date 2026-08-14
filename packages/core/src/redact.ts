@@ -232,10 +232,14 @@ export function redactFromDetections(
     // ({start: 5, end: 18, value: "HELT ANNAT"}) restores "Ring HELT ANNAT
     // imorgon." over "Ring Anna Svensson imorgon.". Same argument as the span
     // check above, so the same treatment.
+    //
+    // The message deliberately reports lengths, not content: `input.slice()`
+    // here IS the PII someone is redacting, and an Error message is exactly
+    // the kind of string that ends up in crash reporting and log aggregation.
     if (d.value !== input.slice(d.start, d.end)) {
       throw new Error(
         `maskera: detection value for "${d.label}" does not match its span [${d.start}, ${d.end}): ` +
-          `expected ${JSON.stringify(input.slice(d.start, d.end))}, got ${JSON.stringify(d.value)}`,
+          `span length is ${d.end - d.start}, value length is ${d.value.length}, and the content differs`,
       )
     }
     // The default placeholder wraps the label in brackets, which only delimits

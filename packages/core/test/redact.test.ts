@@ -266,6 +266,22 @@ describe("redactFromDetections rejects detections it cannot trust", () => {
     ).toThrow(/does not match its span/)
   })
 
+  it("does not put the PII itself in the error message", () => {
+    // The span content here IS what someone is redacting, and an Error
+    // message is exactly the kind of string that ends up in crash reporting
+    // and log aggregation. Report lengths, never content.
+    const pii = "Ring 850601-2387 imorgon."
+    let message = ""
+    try {
+      redactFromDetections(pii, [{ start: 5, end: 16, value: "FELAKTIGT", label: "PERSONNUMMER" }])
+    } catch (e) {
+      message = (e as Error).message
+    }
+    expect(message).toMatch(/does not match its span/)
+    expect(message).not.toContain("850601-2387")
+    expect(message).not.toContain("FELAKTIGT")
+  })
+
   it("rejects a label that would nest a placeholder inside another", () => {
     // With the default placeholder this label produces the token
     // "[X] [PERSONNUMMER_1_1]", so the text an LLM sees contains the literal

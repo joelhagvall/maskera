@@ -592,4 +592,18 @@ describe("regexDetector without the match-indices flag", () => {
       expect(() => detector.detect("kontakt anna mejl anna")).toThrow("match indices")
     })
   })
+
+  it("ignores a lastIndex the caller left on a regex it keeps using", () => {
+    // A caller-owned regex that already carries "d" is used as the scanner
+    // object itself, and matchAll copies its lastIndex into the clone. If the
+    // caller's own exec()/test() moved it, the scan started mid-string and
+    // every detection before that point was silently skipped — a leak.
+    const shared = /\b\d{6}-\d{4}\b/dg
+    const detector = regexDetector("PNR", shared)
+    shared.exec("850601-2387 bor Anna")
+    expect(shared.lastIndex).toBeGreaterThan(0)
+    expect(detector.detect("850601-2387 bor Anna")).toEqual([
+      { start: 0, end: 11, value: "850601-2387" },
+    ])
+  })
 })
