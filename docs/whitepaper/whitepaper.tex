@@ -26,7 +26,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{August 12, 2026 \quad\textperiodcentered\quad Whitepaper v1.20}
+\date{August 14, 2026 \quad\textperiodcentered\quad Whitepaper v1.21}
 
 \begin{document}
 \maketitle
@@ -352,6 +352,40 @@ original casing by 2.3 percentage points; Maskera led lowercase typed $F_1$ by
 independent universal ranking: Maskera's developer wrote the corpus. Exact
 model revisions, the pinned Python environment, machine output, and the
 \pkg{pnpm eval:kblab} command are published beside the canonical benchmark.
+
+\subsection{Current v19 end-product comparison with LogosGuard}
+
+On \textbf{2026-08-14}, the complete local Maskera v19 pipeline and
+LogosGuard 2.4.4's Chrome file-redaction flow (Free plan,
+\pkg{Balanced (recommended)}) were run on the same 258 synthetic Swedish
+domain texts with 952 annotated PII strings. The set includes names, addresses,
+personnummer, samordningsnummer, phone numbers, banking identifiers, and
+government, healthcare, and legal language.
+
+Both products were graded with the same strict material-character definition:
+a full hit removes every letter and digit from an annotated value, a partial
+leak retains some, and a clear-text miss retains all.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrr}
+\toprule
+Product & Fully masked & Partial leaks & Clear-text misses \\
+\midrule
+\textbf{Maskera v19 q4} & \textbf{98.0\% (933/952)} & 8 & 11 \\
+LogosGuard 2.4.4 & 63.7\% (606/952) & 49 & 297 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Maskera fully removed 327 more annotated values, a 34.3 percentage-point
+difference in full-hit rate. This remains \textbf{directional,
+author-coupled evidence}, not an independent ranking: Maskera's developer
+wrote the synthetic corpus, and the corpus is not exhaustively annotated for
+precision. LogosGuard's returned files also converted Swedish UTF-8 text into
+Windows-1252 mojibake; reversible encoding damage was repaired before scoring.
+Per-document outcomes, capture hashes, product settings, scorers, and checksums
+are published beside the canonical benchmark.
 
 \subsection{Historical v18: curated corpus (upper bound, regression tracker)}
 

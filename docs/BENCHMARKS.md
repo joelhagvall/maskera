@@ -100,6 +100,54 @@ checksum: `bba0e66b7738d6bce597ab2e05dbf68b3e9268b4ab46d968a303d37657f6b153`.
 Python environment checksum:
 `3e87b961ccb80856a45610d6b8d637b2fa3cc57b479794116ad912e63603c1ff`.
 
+### Current v19 end-product comparison with LogosGuard
+
+Measured 2026-08-14 on the privacy-safe Swedish domain-regression corpus: 258
+synthetic texts across 19 categories with 952 annotated PII strings, including
+names, street addresses, personnummer, samordningsnummer, phone numbers, email,
+banking identifiers, and government, healthcare and legal language. Maskera
+0.10.0 ran the published v19 q4 artifact through the complete local JavaScript
+pipeline on CPU. LogosGuard 2.4.4 ran through its Chrome file-redaction flow on
+the Free plan with `Balanced (recommended)` accuracy.
+
+Both products use the same strict material-character scorer here. A full hit
+requires every Unicode letter or digit from the annotated value to be removed;
+retaining some characters is a partial leak, while retaining them all is a
+clear-text miss. This deliberately stricter definition re-scores Maskera at
+933/8/11 rather than reusing the structured regression runner's 940/1/11 row
+below.
+
+| product | fully masked | partial leaks | clear-text misses |
+| --- | ---: | ---: | ---: |
+| **Maskera v19 q4** | **98.0% (933/952)** | 8 | 11 |
+| LogosGuard 2.4.4 | 63.7% (606/952) | 49 | 297 |
+
+Maskera fully removed 327 more annotated values. Some material remained in 19
+Maskera cases and 346 LogosGuard cases, a 34.3 percentage-point difference in
+full-hit rate. Precision is not reported: the corpus is intentionally complete
+for its 952 expected values, but not exhaustively annotated for every
+defensible name, place or organisation.
+
+This is **directional, author-coupled evidence**, not an independent universal
+ranking: Maskera's developer wrote the synthetic corpus. The LogosGuard run is
+also tied to the observed product surface and settings above. Its two returned
+files converted Swedish UTF-8 characters into Windows-1252 mojibake; the scorer
+restored the reversible encoding damage before measuring character survival.
+JSONL record metadata was excluded because LogosGuard also redacted digits
+inside synthetic record IDs.
+
+Reproduce the tracked parts with `pnpm eval:logosguard:export`, redact both
+exported chunks manually in the pinned LogosGuard surface, then run
+`pnpm eval:logosguard:maskera` and `pnpm eval:logosguard:score`. Privacy-clean
+per-document outcomes, masked-text hashes and capture hashes are in
+[`benchmark-logosguard-2.4.4.json`](benchmark-logosguard-2.4.4.json).
+Product-comparison result checksum: `028a68a82691b42cdfba30346f4332197f61fc12e2e0a0dc5a4361f4789a43f0`.
+Product-comparison suite checksum: `33e6e763260635826c4f94a58feaf977e4ee575ffe01901f213d4ca02e419ae1`.
+Selected runtime-environment checksum:
+`e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`;
+corpus checksum:
+`ab4aa30950bf0731a4b689ddef4f27cfb8873501d004f4347f3bf8dcc4ccf200`.
+
 Two additional aggregate gates also pass:
 
 | gate | v19 result | release floor |

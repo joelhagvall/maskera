@@ -83,7 +83,7 @@ async function expectHash(label, file, expected) {
   if (actual !== expected) drift(label, file, expected, actual)
 }
 
-requireValue("schemaVersion", 3, contract.schemaVersion)
+requireValue("schemaVersion", 5, contract.schemaVersion)
 requireValue("status", "published", contract.status)
 if (!/^v\d+$/.test(contract.release ?? "")) {
   drift("release", "docs/benchmark-release.json", "v<number>", contract.release)
@@ -108,14 +108,59 @@ for (const [label, value] of [
   ["comparison environment sha256", contract.comparison?.environment?.sha256],
   ["comparison Maskera artifact sha256", contract.comparison?.models?.maskera?.sha256],
   ["comparison KBLab artifact sha256", contract.comparison?.models?.kblab?.sha256],
+  ["redaction comparison result sha256", contract.redactionComparison?.resultSha256],
+  ["redaction comparison suite sha256", contract.redactionComparison?.suiteSha256],
+  ["redaction comparison environment sha256", contract.redactionComparison?.environment?.sha256],
+  ["redaction comparison corpus sha256", contract.redactionComparison?.corpus?.sha256],
 ]) {
   if (!/^[a-f0-9]{64}$/.test(value ?? ""))
     drift(label, "docs/benchmark-release.json", "64 lowercase hex characters", value)
 }
 
-const { artifact, comparison, evaluation, historical, metrics, packages, whitepaper } = contract
+const {
+  artifact,
+  comparison,
+  evaluation,
+  historical,
+  metrics,
+  packages,
+  redactionComparison,
+  whitepaper,
+} = contract
 const { curated, syntheticAdr, linkedinStyle, syntheticGold, rareSurnames } = metrics
 const bytes = formatBytes(artifact.bytes)
+const historicalModelRows = historical.modelComparison.rows
+
+requireValue(
+  "historical model corpus documents",
+  historical.independentGold.documents,
+  historical.modelComparison.corpus.documents,
+)
+requireValue(
+  "historical model corpus entities",
+  historical.independentGold.entities,
+  historical.modelComparison.corpus.entities,
+)
+requireValue(
+  "historical model row count",
+  historicalModelRows.length,
+  new Set(historicalModelRows.map((row) => row.system)).size,
+)
+
+function historicalModelMarkdownRow(row) {
+  if (row.ours) {
+    return `| **maskera student** | **${row.size}** | ${row.redactionRecall} | **${row.typedPrecision}** | ${row.typedRecall} | **${row.typedF1}** |`
+  }
+  return `| ${row.system} | ${row.size} | ${row.redactionRecall} | ${row.typedPrecision} | ${row.typedRecall} | ${row.typedF1} |`
+}
+
+function historicalScoreForLocale(score, locale) {
+  const percentage = score
+    .split(" / ")
+    .map((value) => Math.round(Number(value) * 100))
+    .join(" / ")
+  return locale === "sv" ? `${percentage} %` : `${percentage}%`
+}
 
 await expectFragments("docs/BENCHMARKS.md", [
   ["published date", `**Published:** ${contract.publishedAt}`],
@@ -166,7 +211,85 @@ await expectFragments("docs/BENCHMARKS.md", [
   ],
   ["comparison reproduction command", `Reproduce with \`${comparison.command}\``],
   ["comparison suite checksum", `Comparison suite\nchecksum: \`${comparison.suiteSha256}\``],
+  [
+    "redaction comparison Maskera row",
+    `| **Maskera v19 q4** | **${redactionComparison.systems.maskera.fullHitRatePct}% (${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations})** | ${redactionComparison.systems.maskera.partialLeaks} | ${redactionComparison.systems.maskera.misses} |`,
+  ],
+  [
+    "redaction comparison LogosGuard row",
+    `| LogosGuard ${redactionComparison.systems.logosguard.version} | ${redactionComparison.systems.logosguard.fullHitRatePct}% (${redactionComparison.systems.logosguard.fullHits}/${redactionComparison.corpus.annotations}) | ${redactionComparison.systems.logosguard.partialLeaks} | ${redactionComparison.systems.logosguard.misses} |`,
+  ],
+  ["redaction comparison score command", `\`${redactionComparison.commands.score}\``],
+  [
+    "redaction comparison result checksum",
+    `Product-comparison result checksum: \`${redactionComparison.resultSha256}\``,
+  ],
+  [
+    "redaction comparison suite checksum",
+    `Product-comparison suite checksum: \`${redactionComparison.suiteSha256}\``,
+  ],
+  ...historicalModelRows.map((row) => [
+    `historical model row: ${row.system}`,
+    historicalModelMarkdownRow(row),
+  ]),
 ])
+
+for (const locale of ["sv", "en"]) {
+  const file = `apps/demo/src/i18n/${locale}.json`
+  const localeCopy = await readJson(resolve(repoRoot, file))
+  const cases = localeCopy.accuracy?.historicalComparisonCases
+  if (!Array.isArray(cases) || cases.length !== 2) {
+    drift("historical model table cases", file, "two comparison cases", cases)
+    continue
+  }
+
+  const originalExpected = historicalModelRows.map((row) => ({
+    system: row.system,
+    masked: historicalScoreForLocale(row.redactionRecall, locale),
+    typedF1: historicalScoreForLocale(row.typedF1, locale),
+  }))
+  const originalActual = cases[0].rows?.map(({ system, masked, typedF1 }) => ({
+    system,
+    masked,
+    typedF1,
+  }))
+  const originalDifference = firstDifference(originalExpected, originalActual)
+  if (originalDifference) {
+    drift(
+      `historical original-casing table at ${originalDifference.path}`,
+      file,
+      originalDifference.expected,
+      originalDifference.actual,
+    )
+  }
+
+  const lowercaseExpected = new Map(
+    historicalModelRows
+      .filter((row) => row.lowercaseRedactionRecall && row.lowercaseTypedF1)
+      .map((row) => [
+        row.system,
+        {
+          masked: historicalScoreForLocale(row.lowercaseRedactionRecall, locale),
+          typedF1: historicalScoreForLocale(row.lowercaseTypedF1, locale),
+        },
+      ]),
+  )
+  const lowercaseRows = cases[1].rows ?? []
+  requireValue(
+    `${locale} historical lowercase row count`,
+    lowercaseExpected.size,
+    lowercaseRows.length,
+  )
+  for (const row of lowercaseRows) {
+    const expected = lowercaseExpected.get(row.system)
+    if (!expected) {
+      drift(`historical lowercase row: ${row.system}`, file, "a contract row", row)
+      continue
+    }
+    requireValue(`${locale} ${row.system} lowercase recall`, expected.masked, row.masked)
+    requireValue(`${locale} ${row.system} lowercase typed F1`, expected.typedF1, row.typedF1)
+  }
+}
 
 const actualSuiteHash = await sha256FileSet(evaluation.files)
 if (actualSuiteHash !== evaluation.suiteSha256) {
@@ -307,6 +430,139 @@ for (const [label, expected, actual] of [
   }
 }
 
+const actualRedactionSuiteHash = await sha256FileSet(redactionComparison.files)
+if (actualRedactionSuiteHash !== redactionComparison.suiteSha256) {
+  drift(
+    "redaction comparison suite checksum",
+    "docs/benchmark-release.json",
+    redactionComparison.suiteSha256,
+    actualRedactionSuiteHash,
+  )
+}
+await expectHash(
+  "redaction comparison result checksum",
+  redactionComparison.resultFile,
+  redactionComparison.resultSha256,
+)
+
+const redactionCorpusFiles = redactionComparison.files.filter((file) =>
+  file.startsWith("packages/ner/eval/domain-regression/corpus/"),
+)
+const actualRedactionCorpusHash = await sha256FileSet(redactionCorpusFiles)
+if (actualRedactionCorpusHash !== redactionComparison.corpus.sha256) {
+  drift(
+    "redaction comparison corpus checksum",
+    "docs/benchmark-release.json",
+    redactionComparison.corpus.sha256,
+    actualRedactionCorpusHash,
+  )
+}
+
+try {
+  const actualRedactionEnvironmentHash = await evaluationEnvironmentSha256(
+    redactionComparison.environment,
+  )
+  if (actualRedactionEnvironmentHash !== redactionComparison.environment.sha256) {
+    drift(
+      "redaction comparison environment checksum",
+      redactionComparison.environment.lockfile,
+      redactionComparison.environment.sha256,
+      actualRedactionEnvironmentHash,
+    )
+  }
+} catch (error) {
+  drift(
+    "redaction comparison environment",
+    redactionComparison.environment?.lockfile ?? "docs/benchmark-release.json",
+    "a resolvable selected dependency closure",
+    error instanceof Error ? error.message : String(error),
+  )
+}
+
+const redactionResult = await readJson(resolve(repoRoot, redactionComparison.resultFile))
+for (const [label, expected, actual] of [
+  [
+    "redaction comparison measured date",
+    redactionComparison.measuredAt,
+    redactionResult.measuredAt,
+  ],
+  [
+    "redaction comparison documents",
+    redactionComparison.corpus.documents,
+    redactionResult.corpus?.texts,
+  ],
+  [
+    "redaction comparison annotations",
+    redactionComparison.corpus.annotations,
+    redactionResult.corpus?.annotations,
+  ],
+  [
+    "redaction comparison corpus sha256",
+    redactionComparison.corpus.sha256,
+    redactionResult.corpus?.sha256,
+  ],
+  [
+    "redaction comparison Maskera version",
+    redactionComparison.systems.maskera.version,
+    redactionResult.systems?.maskera?.version,
+  ],
+  [
+    "redaction comparison Maskera artifact sha256",
+    artifact.sha256,
+    redactionResult.systems?.maskera?.artifact?.sha256,
+  ],
+  [
+    "redaction comparison Maskera artifact bytes",
+    artifact.bytes,
+    redactionResult.systems?.maskera?.artifact?.bytes,
+  ],
+  [
+    "redaction comparison LogosGuard version",
+    redactionComparison.systems.logosguard.version,
+    redactionResult.systems?.logosguard?.version,
+  ],
+  [
+    "redaction comparison LogosGuard surface",
+    redactionComparison.systems.logosguard.surface,
+    redactionResult.systems?.logosguard?.surface,
+  ],
+  [
+    "redaction comparison LogosGuard plan",
+    redactionComparison.systems.logosguard.plan,
+    redactionResult.systems?.logosguard?.plan,
+  ],
+  [
+    "redaction comparison LogosGuard accuracy",
+    redactionComparison.systems.logosguard.accuracy,
+    redactionResult.systems?.logosguard?.accuracy,
+  ],
+]) {
+  if (!Object.is(expected, actual)) {
+    drift(label, redactionComparison.resultFile, expected, actual)
+  }
+}
+
+for (const system of ["maskera", "logosguard"]) {
+  const expected = redactionComparison.systems[system]
+  const actual = redactionResult.systems?.[system]?.totals
+  for (const [label, expectedValue, actualValue] of [
+    ["full hits", expected.fullHits, actual?.hits],
+    ["partial leaks", expected.partialLeaks, actual?.partials],
+    ["misses", expected.misses, actual?.misses],
+    ["full-hit rate", expected.fullHitRatePct, actual?.fullHitRatePct],
+    ["redactions", expected.redactions, actual?.redactions],
+  ]) {
+    if (!Object.is(expectedValue, actualValue)) {
+      drift(
+        `redaction comparison ${system} ${label}`,
+        redactionComparison.resultFile,
+        expectedValue,
+        actualValue,
+      )
+    }
+  }
+}
+
 try {
   const actualEnvironmentHash = await evaluationEnvironmentSha256(evaluation.environment)
   if (actualEnvironmentHash !== evaluation.environment.sha256) {
@@ -340,6 +596,10 @@ await expectFragments("training/README.md", [
     "training current KBLab lowercase result",
     `KBLab masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}. Typed F1 was`,
   ],
+  [
+    "training LogosGuard comparison",
+    `fully removed ${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%) annotated values`,
+  ],
 ])
 await expectFragments("README.md", [
   [
@@ -359,6 +619,16 @@ await expectFragments("README.md", [
   [
     "root current KBLab result",
     `KBLab masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}.`,
+  ],
+  [
+    "root LogosGuard comparison",
+    `Maskera v19 fully removed **${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%)**; LogosGuard ${redactionComparison.systems.logosguard.version} in Chrome`,
+  ],
+])
+await expectFragments("packages/core/README.md", [
+  [
+    "core package LogosGuard comparison",
+    `hybrid fully removed\n${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%); LogosGuard ${redactionComparison.systems.logosguard.version} in Chrome`,
   ],
 ])
 await expectFragments("packages/ner/README.md", [
@@ -382,6 +652,10 @@ await expectFragments("packages/ner/README.md", [
     "package current KBLab result",
     `KBLab masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}.`,
   ],
+  [
+    "package LogosGuard comparison",
+    `removed ${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%) and LogosGuard ${redactionComparison.systems.logosguard.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.logosguard.fullHitRatePct}%)`,
+  ],
 ])
 await expectFragments("training/maskera-sv-ner-card/README.md", [
   ["model-card current heading", `Published privacy-clean ${contract.release}`],
@@ -403,6 +677,10 @@ await expectFragments("training/maskera-sv-ner-card/README.md", [
     "model-card current KBLab lowercase row",
     `| lowercase | KBLab lowermix fp32 | ${comparison.lowercase.kblab.maskedRecallPct}% (${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}) | ${comparison.lowercase.kblab.typedF1Pct}% |`,
   ],
+  [
+    "model-card LogosGuard comparison",
+    `removed **${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%)** and LogosGuard **${redactionComparison.systems.logosguard.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.logosguard.fullHitRatePct}%)**`,
+  ],
 ])
 await expectFragments("apps/demo/public/llms.txt", [
   [
@@ -422,6 +700,10 @@ await expectFragments("apps/demo/public/llms.txt", [
     "llms current KBLab comparison",
     `Maskera q4 masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities} with original casing and ${comparison.lowercase.maskera.masked}/${comparison.corpus.entities} lowercased; KBLab fp32 masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}.`,
   ],
+  [
+    "llms LogosGuard comparison",
+    `Maskera q4 fully removed ${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%), with ${redactionComparison.systems.maskera.partialLeaks} partial leaks and ${redactionComparison.systems.maskera.misses} clear-text misses. LogosGuard in Chrome, Free/Balanced, fully removed ${redactionComparison.systems.logosguard.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.logosguard.fullHitRatePct}%)`,
+  ],
 ])
 await expectFragments("bench/README.md", [
   ["bench current boundary", `Published ${contract.release} snapshot`],
@@ -433,6 +715,10 @@ await expectFragments("bench/README.md", [
   [
     "bench current KBLab comparison",
     `masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities} with original casing and ${comparison.lowercase.maskera.masked}/${comparison.corpus.entities} lowercased. KBLab lowermix`,
+  ],
+  [
+    "bench LogosGuard comparison",
+    `counted ${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%) fully removed for Maskera q4 and ${redactionComparison.systems.logosguard.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.logosguard.fullHitRatePct}%) for`,
   ],
 ])
 await expectFragments("docs/TRANSPARENCY.md", [
@@ -453,6 +739,10 @@ await expectFragments("docs/TRANSPARENCY.md", [
     "transparency current KBLab result",
     `KBLab fp32 masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}.`,
   ],
+  [
+    "transparency LogosGuard comparison",
+    `Maskera v19 fully removed ${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%); LogosGuard ${redactionComparison.systems.logosguard.version} in`,
+  ],
 ])
 await expectFragments("docs/PRODUCTION.md", [
   ["production release", `current ${contract.release} release`],
@@ -468,6 +758,10 @@ await expectFragments("docs/PRODUCTION.md", [
   [
     "production current KBLab result",
     `lowercased; KBLab masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}.`,
+  ],
+  [
+    "production LogosGuard comparison",
+    `Maskera v19 fully removed ${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%);\nLogosGuard ${redactionComparison.systems.logosguard.version} in Chrome`,
   ],
 ])
 await expectFragments(whitepaper.source, [
@@ -485,6 +779,14 @@ await expectFragments(whitepaper.source, [
     "whitepaper current KBLab lowercase row",
     `Lowercase & KBLab lowermix fp32 & ${comparison.lowercase.kblab.maskedRecallPct}\\% (${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}) & ${comparison.lowercase.kblab.typedF1Pct}\\%`,
   ],
+  [
+    "whitepaper LogosGuard Maskera row",
+    `\\textbf{Maskera v19 q4} & \\textbf{${redactionComparison.systems.maskera.fullHitRatePct}\\% (${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations})} & ${redactionComparison.systems.maskera.partialLeaks} & ${redactionComparison.systems.maskera.misses}`,
+  ],
+  [
+    "whitepaper LogosGuard row",
+    `LogosGuard ${redactionComparison.systems.logosguard.version} & ${redactionComparison.systems.logosguard.fullHitRatePct}\\% (${redactionComparison.systems.logosguard.fullHits}/${redactionComparison.corpus.annotations}) & ${redactionComparison.systems.logosguard.partialLeaks} & ${redactionComparison.systems.logosguard.misses}`,
+  ],
 ])
 
 await expectFragments("apps/demo/src/i18n/sv.json", [
@@ -496,6 +798,10 @@ await expectFragments("apps/demo/src/i18n/sv.json", [
     "Swedish current KBLab lowercase result",
     `"masked": "${comparison.lowercase.kblab.masked} av ${comparison.corpus.entities} (${comparison.lowercase.kblab.maskedRecallPct.replace(".", ",")} %)"`,
   ],
+  [
+    "Swedish LogosGuard comparison",
+    `"fullHits": "${redactionComparison.systems.logosguard.fullHits} av ${redactionComparison.corpus.annotations} (${redactionComparison.systems.logosguard.fullHitRatePct.replace(".", ",")} %)"`,
+  ],
 ])
 await expectFragments("apps/demo/src/i18n/en.json", [
   [
@@ -505,6 +811,10 @@ await expectFragments("apps/demo/src/i18n/en.json", [
   [
     "English current KBLab lowercase result",
     `"masked": "${comparison.lowercase.kblab.masked} of ${comparison.corpus.entities} (${comparison.lowercase.kblab.maskedRecallPct}%)"`,
+  ],
+  [
+    "English LogosGuard comparison",
+    `"fullHits": "${redactionComparison.systems.logosguard.fullHits} of ${redactionComparison.corpus.annotations} (${redactionComparison.systems.logosguard.fullHitRatePct}%)"`,
   ],
 ])
 
@@ -523,6 +833,10 @@ if (existsSync(resolve(repoRoot, optionalExplainer))) {
     [
       "explainer current KBLab comparison",
       `Maskera maskerar ${comparison.normal.maskera.masked}/${comparison.corpus.entities} både med`,
+    ],
+    [
+      "explainer LogosGuard comparison",
+      `Maskera bort ${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct.replace(".", ",")} %) helt och LogosGuard ${redactionComparison.systems.logosguard.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.logosguard.fullHitRatePct.replace(".", ",")} %)`,
     ],
   ])
 }

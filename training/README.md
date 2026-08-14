@@ -15,6 +15,13 @@ phone, IBAN…) stays with `@maskera/core`'s deterministic detectors.
 > byte-identical to the demo's `maskera-sv-ner-v19` folder. v1-v18 remain
 > historical journal entries.
 
+> **Current end-product comparison.** On 2026-08-14 the complete v19 hybrid
+> fully removed 933/952 (98.0%) annotated values across 258 synthetic Swedish
+> domain texts; LogosGuard 2.4.4 in Chrome, Free/`Balanced`, removed 606/952
+> (63.7%). Partial/clear-text leaks were 8/11 and 49/297. This is
+> author-coupled evidence without a precision claim; settings, per-document
+> outcomes and capture hashes live in [`docs/BENCHMARKS.md`](../docs/BENCHMARKS.md).
+
 > **Privacy reset after v18.** The current release pipeline no longer accepts
 > the public or pseudo-labelled corpora recorded in the historical journal
 > below. New weights start again from KB-BERT and use only generator-produced

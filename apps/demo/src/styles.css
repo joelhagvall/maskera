@@ -1567,6 +1567,11 @@ html[data-theme="dark"] .tok-f {
   gap: 12px;
   margin-top: 16px;
 }
+.historical-comparison-grid {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
 .comparison-case {
   overflow: hidden;
   border: 1px solid var(--border);
@@ -1603,6 +1608,36 @@ html[data-theme="dark"] .tok-f {
 .comparison-case tbody th {
   font-weight: 400;
 }
+.model-link,
+.model-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: inherit;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 2px;
+}
+.model-link:hover,
+.model-links a:hover {
+  text-decoration-color: currentColor;
+}
+.model-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 9px;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 400;
+}
+.model-description {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 400;
+  line-height: 1.4;
+}
 .comparison-case tbody tr:last-child th,
 .comparison-case tbody tr:last-child td {
   border-bottom: 0;
@@ -1612,6 +1647,21 @@ html[data-theme="dark"] .tok-f {
   color: var(--fg);
   font-weight: 600;
   background: var(--gray-100);
+}
+.redaction-comparison,
+.model-comparison {
+  overflow-x: auto;
+  margin-top: 16px;
+}
+.model-comparison {
+  margin-top: 0;
+}
+.redaction-comparison table,
+.model-comparison table {
+  min-width: 560px;
+}
+.model-comparison table {
+  min-width: 680px;
 }
 .comparison-summary {
   margin: 14px 0 0;
@@ -1637,6 +1687,61 @@ html[data-theme="dark"] .tok-f {
   }
   .comparison-grid {
     grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  .redaction-comparison table,
+  .model-comparison table {
+    min-width: 0;
+  }
+  .redaction-comparison thead,
+  .model-comparison thead {
+    display: none;
+  }
+  .redaction-comparison tbody tr,
+  .model-comparison tbody tr {
+    display: grid;
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .redaction-comparison tbody tr:last-child,
+  .model-comparison tbody tr:last-child {
+    border-bottom: 0;
+  }
+  .redaction-comparison tbody th,
+  .redaction-comparison tbody td,
+  .model-comparison tbody th,
+  .model-comparison tbody td {
+    padding: 4px 0;
+    border: 0;
+  }
+  .redaction-comparison tbody th,
+  .model-comparison tbody th {
+    padding-bottom: 7px;
+    font-weight: 600;
+  }
+  .redaction-comparison tbody td,
+  .model-comparison tbody td {
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+  }
+  .redaction-comparison tbody td::before,
+  .model-comparison tbody td::before {
+    color: var(--muted);
+    content: attr(data-label);
+    font-weight: 400;
+    text-align: left;
+  }
+  .redaction-comparison .comparison-own th,
+  .redaction-comparison .comparison-own td,
+  .model-comparison .comparison-own th,
+  .model-comparison .comparison-own td {
+    background: transparent;
+  }
+  .redaction-comparison .comparison-own,
+  .model-comparison .comparison-own {
+    background: var(--gray-100);
   }
 }
 .security-actions {

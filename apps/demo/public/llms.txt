@@ -24,6 +24,8 @@ Published-v19 release gates (q4; release measured 2026-08-06): curated span F1 9
 
 Current v19 vs KBLab lowermix (re-run 2026-08-11; 121 hand-authored synthetic Swedish texts, 211 PER/LOC/ORG entities, overlap matching): Maskera q4 masked 211/211 with original casing and 211/211 lowercased; KBLab fp32 masked 205/211 and 187/211. Typed F1 was 87.1% vs 89.4% original and 85.7% vs 83.2% lowercased. This is author-coupled directional evidence, not an independent ranking. Machine result: https://github.com/joelhagvall/maskera/blob/main/docs/benchmark-kblab-v19.json
 
+Current v19 vs LogosGuard 2.4.4 (2026-08-14; 258 synthetic Swedish domain texts, 952 annotated PII strings, strict full-removal scoring): Maskera q4 fully removed 933/952 (98.0%), with 8 partial leaks and 11 clear-text misses. LogosGuard in Chrome, Free/Balanced, fully removed 606/952 (63.7%), with 49 partial leaks and 297 clear-text misses. This is author-coupled directional evidence without a precision claim. Machine result and encoding caveat: https://github.com/joelhagvall/maskera/blob/main/docs/benchmark-logosguard-2.4.4.json
+
 Deployment boundary: the local/on-device claims above apply to this
 open-source package and the maskera.dev browser demo. Maskera Gateway is the
 commercial deployment for a customer's own servers: a signed OCI container

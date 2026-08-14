@@ -81,6 +81,15 @@ training pipeline and the round-by-round journey are fully reproducible: see
 [`training/`](training/). Every push to this repo re-grades the published
 model in CI against a gold corpus with an F1 floor and a leak-rate ceiling.
 
+The complete products were also compared on 2026-08-14 across 258 synthetic
+Swedish domain texts with 952 annotated PII strings. With one strict scorer,
+Maskera v19 fully removed **933/952 (98.0%)**; LogosGuard 2.4.4 in Chrome,
+Free/`Balanced`, fully removed **606/952 (63.7%)**. Partial/clear-text leaks
+were 8/11 and 49/297 respectively. This author-coupled comparison does not
+report precision or constitute an independent ranking; its per-document
+outcomes, capture hashes, settings, encoding caveat and checksums are in
+[docs/BENCHMARKS.md](docs/BENCHMARKS.md).
+
 ## Two layers, rules first
 
 <img src="docs/layers.svg" alt="The two-layer design: input text forks into layer 1, deterministic format-aware rules for structured PII like personnummer, and layer 2, a 43 MB Swedish AI model that catches free text like names. Rules win on overlap, and the merged result is the masked output. The restore key stays on your device." width="100%">

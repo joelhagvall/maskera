@@ -62,6 +62,13 @@ are.
   KBLab fp32 masked 205/211 and 187/211. KBLab led typed F1 on original casing
   (89.4% vs 87.1%), while Maskera led lowercase typed F1 (85.7% vs 83.2%). The
   corpus shares Maskera's developer, so this is directional, not independent.
+  A separate end-product comparison on 2026-08-14 used 258 synthetic Swedish
+  domain texts with 952 annotated PII strings and one strict full-removal
+  scorer. Maskera v19 fully removed 933/952 (98.0%); LogosGuard 2.4.4 in
+  Chrome, Free/`Balanced`, removed 606/952 (63.7%). Partial/clear-text leaks
+  were 8/11 and 49/297. This corpus is also author-coupled and not exhaustively
+  annotated for precision; the canonical report records the file-encoding
+  caveat, per-document outcomes and capture hashes.
   The canonical, dated numbers live in [`docs/BENCHMARKS.md`](BENCHMARKS.md);
   the round-by-round training journey and its caveats are in
   [`training/README.md`](../training/README.md), including that synthetic-eval F1

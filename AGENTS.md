@@ -7,6 +7,34 @@ ALWAYS work directly on `main` in this repository. NEVER create `codex/`,
 this rule. When asked to commit and push, commit on `main` and push to
 `origin/main`. Do not open a PR as a substitute for pushing `main`.
 
+## Maskera outreach email invariants
+
+These rules apply to every Maskera prospecting email handled by an agent,
+including new messages, replies, follow-ups, drafts, scheduled sends and
+automations:
+
+- Always use `hej@maskera.dev` for both `From` and `Reply-To`.
+- Always add the hidden HubSpot BCC
+  `149051320@bcc.eu1.hubspot.com`.
+- Never rely on Gmail's configured signature. Gmail does not add it to mail
+  sent through the API.
+- Unless the complete block is already present, append exactly this signature
+  to the plain-text body:
+
+  ```text
+  Vänliga hälsningar,
+
+  Joel Hägvall
+  Grundare & utvecklare, Maskera
+  https://maskera.dev
+  ```
+
+- Create or update a draft before sending. Read the stored draft back and
+  verify `From`, `Reply-To`, `Bcc`, recipient, subject and that the body ends
+  with the complete signature above. If any check fails, fix and verify the
+  draft again. Do not send if the readback still fails.
+- After sending, verify the message in Gmail Sent and verify its HubSpot log.
+
 ## Releasing to npm (the part that always goes wrong)
 
 NEVER run `npm publish` or `pnpm publish` in the repo root. The root package
@@ -114,7 +142,7 @@ Full model publishes use `scripts/publish-model.sh`.
 
 IMPORTANT: any commit to the Hub repo, including a card-only `hf upload`,
 moves its head sha, and npm consumers are pinned to a sha. A model publish is
-therefore not done until BOTH pins are updated in the same sitting, or users
+therefore not done until ALL pins are updated in the same sitting, or users
 keep downloading the old weights (or, worse, a sha that no longer resolves):
 
 - `MASKERA_SV_NER_REVISION` in `packages/ner/src/index.ts` (the Hub commit
@@ -122,6 +150,11 @@ keep downloading the old weights (or, worse, a sha that no longer resolves):
   `curl -s https://huggingface.co/api/models/joelhagvall/maskera-sv-ner | jq -r .sha`).
   This one only reaches users through an npm release, so a weight change means
   a changeset and `pnpm release`, not just an upload.
+- `MASKERA_SV_NER_SHA256` in `packages/ner/src/model-hashes.ts` (what the npm
+  library sha256-verifies the Transformers.js cache against before
+  onnxruntime sees the bytes). Must cover every onnx dtype file the `dtype`
+  option can select; the Hub's LFS oids at the pinned revision ARE the
+  sha256s (`/api/models/joelhagvall/maskera-sv-ner/tree/<sha>?recursive=true`).
 - The per-file sha256 map in `apps/demo/scripts/fetch-model.mjs` (what the
   demo build verifies), plus `onnxBytes` in `apps/demo/src/model-meta.json`.
 

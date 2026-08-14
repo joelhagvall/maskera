@@ -75,6 +75,14 @@ Note: the model-hybrid `redactWithNer` in the `maskera` package enables
 by default (its callers have free text by definition); only the synchronous
 `redact()` here keeps the structured default set.
 
+In the 2026-08-14 end-product comparison on 258 synthetic Swedish domain texts
+with 952 annotated PII strings, that complete Maskera v19 hybrid fully removed
+933/952 (98.0%); LogosGuard 2.4.4 in Chrome, Free/`Balanced`, fully removed
+606/952 (63.7%). Partial/clear-text leaks were 8/11 and 49/297 respectively.
+The corpus is author-coupled and not exhaustively annotated for precision; see
+the exact settings, outputs and caveats in
+[docs/BENCHMARKS.md](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md).
+
 ## API
 
 ### `redact(input, options?) => RedactResult`

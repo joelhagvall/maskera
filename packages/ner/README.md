@@ -271,6 +271,13 @@ original casing and lowercased; KBLab masked 205/211 and 187/211. KBLab led
 typed F1 on original casing (89.4% vs 87.1%); Maskera led lowercase typed F1
 (85.7% vs 83.2%). Because Maskera's developer wrote the corpus, treat this as
 directional regression evidence rather than an independent ranking.
+The full v19 hybrid was also compared on 2026-08-14 with LogosGuard 2.4.4 in
+Chrome, Free/`Balanced`, across 258 synthetic Swedish domain texts with 952
+annotated PII strings. Using the same strict full-removal scorer, Maskera fully
+removed 933/952 (98.0%) and LogosGuard 606/952 (63.7%); partial/clear-text leaks
+were 8/11 and 49/297. This comparison is author-coupled and does not report
+precision; the per-document outcomes, capture hashes and encoding caveat are
+in the canonical benchmark report.
 v19's training-data scope, identifier rejection, provenance hashes,
 and separate KB-BERT pretraining caveat are documented in
 [TRAINING_DATA_PROTECTION.md](https://github.com/joelhagvall/maskera/blob/main/docs/TRAINING_DATA_PROTECTION.md).

@@ -17,12 +17,13 @@
     "whitepaper",
     "evaluation",
     "comparison",
+    "redactionComparison",
     "metrics",
     "historical"
   ],
   "properties": {
     "$schema": { "const": "https://maskera.dev/benchmark-release.schema.json" },
-    "schemaVersion": { "const": 3 },
+    "schemaVersion": { "const": 5 },
     "status": { "const": "published" },
     "release": { "$ref": "#/$defs/release" },
     "publishedAt": { "$ref": "#/$defs/date" },
@@ -192,6 +193,146 @@
         "lowercase": { "$ref": "#/$defs/comparisonRun" }
       }
     },
+    "redactionComparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "measuredAt",
+        "scope",
+        "commands",
+        "manualStep",
+        "resultFile",
+        "resultSha256",
+        "suiteSha256",
+        "files",
+        "environment",
+        "corpus",
+        "scoring",
+        "systems"
+      ],
+      "properties": {
+        "status": { "const": "current-v19-directional" },
+        "measuredAt": { "$ref": "#/$defs/date" },
+        "scope": { "type": "string", "minLength": 1 },
+        "commands": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["export", "maskera", "score"],
+          "properties": {
+            "export": { "const": "pnpm eval:logosguard:export" },
+            "maskera": { "const": "pnpm eval:logosguard:maskera" },
+            "score": { "const": "pnpm eval:logosguard:score" }
+          }
+        },
+        "manualStep": { "type": "string", "minLength": 1 },
+        "resultFile": { "const": "docs/benchmark-logosguard-2.4.4.json" },
+        "resultSha256": { "$ref": "#/$defs/sha256" },
+        "suiteSha256": { "$ref": "#/$defs/sha256" },
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["node", "packageManager", "lockfile", "selectors", "ignoredPeers", "sha256"],
+          "properties": {
+            "node": { "type": "string", "minLength": 1 },
+            "packageManager": {
+              "type": "string",
+              "pattern": "^pnpm@[0-9]+\\.[0-9]+\\.[0-9]+$"
+            },
+            "lockfile": { "const": "pnpm-lock.yaml" },
+            "selectors": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": { "type": "string", "minLength": 1 }
+              }
+            },
+            "ignoredPeers": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "sha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "corpus": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["documents", "annotations", "categories", "sha256"],
+          "properties": {
+            "documents": { "$ref": "#/$defs/count" },
+            "annotations": { "$ref": "#/$defs/count" },
+            "categories": { "$ref": "#/$defs/count" },
+            "sha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "scoring": { "const": "material-character-survival" },
+        "systems": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["maskera", "logosguard"],
+          "properties": {
+            "maskera": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "version",
+                "fullHits",
+                "partialLeaks",
+                "misses",
+                "fullHitRatePct",
+                "redactions"
+              ],
+              "properties": {
+                "version": { "type": "string", "minLength": 1 },
+                "fullHits": { "$ref": "#/$defs/count" },
+                "partialLeaks": { "$ref": "#/$defs/count" },
+                "misses": { "$ref": "#/$defs/count" },
+                "fullHitRatePct": { "$ref": "#/$defs/percentage" },
+                "redactions": { "$ref": "#/$defs/count" }
+              }
+            },
+            "logosguard": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "version",
+                "surface",
+                "plan",
+                "accuracy",
+                "outputEncoding",
+                "fullHits",
+                "partialLeaks",
+                "misses",
+                "fullHitRatePct",
+                "redactions"
+              ],
+              "properties": {
+                "version": { "type": "string", "minLength": 1 },
+                "surface": { "type": "string", "minLength": 1 },
+                "plan": { "type": "string", "minLength": 1 },
+                "accuracy": { "type": "string", "minLength": 1 },
+                "outputEncoding": { "type": "string", "minLength": 1 },
+                "fullHits": { "$ref": "#/$defs/count" },
+                "partialLeaks": { "$ref": "#/$defs/count" },
+                "misses": { "$ref": "#/$defs/count" },
+                "fullHitRatePct": { "$ref": "#/$defs/percentage" },
+                "redactions": { "$ref": "#/$defs/count" }
+              }
+            }
+          }
+        }
+      }
+    },
     "metrics": {
       "type": "object",
       "additionalProperties": false,
@@ -323,7 +464,8 @@
         "status",
         "curated",
         "independentGold",
-        "address"
+        "address",
+        "modelComparison"
       ],
       "properties": {
         "release": { "$ref": "#/$defs/release" },
@@ -363,12 +505,65 @@
             "spanF1Pct": { "$ref": "#/$defs/percentage" },
             "leaks": { "$ref": "#/$defs/count" }
           }
+        },
+        "modelComparison": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "scope", "corpus", "matching", "labels", "rows"],
+          "properties": {
+            "status": { "const": "historical-v18-aggregate" },
+            "scope": { "type": "string", "minLength": 1 },
+            "corpus": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "documents", "entities", "rawRetained"],
+              "properties": {
+                "name": { "const": "gold-real" },
+                "documents": { "$ref": "#/$defs/count" },
+                "entities": { "$ref": "#/$defs/count" },
+                "rawRetained": { "const": false }
+              }
+            },
+            "matching": { "const": "overlap" },
+            "labels": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "prefixItems": [{ "const": "PER" }, { "const": "LOC" }, { "const": "ORG" }],
+              "items": false
+            },
+            "rows": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/historicalModelRow" }
+            }
+          }
         }
       }
     }
   },
   "$defs": {
     "count": { "type": "integer", "minimum": 0 },
+    "historicalModelRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["system", "size", "redactionRecall", "typedPrecision", "typedRecall", "typedF1"],
+      "properties": {
+        "system": { "type": "string", "minLength": 1 },
+        "size": { "type": "string", "minLength": 1 },
+        "redactionRecall": { "$ref": "#/$defs/historicalScore" },
+        "typedPrecision": { "$ref": "#/$defs/historicalScore" },
+        "typedRecall": { "$ref": "#/$defs/historicalScore" },
+        "typedF1": { "$ref": "#/$defs/historicalScore" },
+        "lowercaseRedactionRecall": { "$ref": "#/$defs/historicalScore" },
+        "lowercaseTypedF1": { "$ref": "#/$defs/historicalScore" },
+        "ours": { "type": "boolean" }
+      }
+    },
+    "historicalScore": {
+      "type": "string",
+      "pattern": "^(?:0\\.[0-9]{2}|1\\.00)(?: / (?:0\\.[0-9]{2}|1\\.00))?$"
+    },
     "comparisonModel": {
       "type": "object",
       "additionalProperties": false,

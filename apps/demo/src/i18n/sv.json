@@ -304,20 +304,50 @@
       { "href": "#matt", "label": "Vad måtten betyder" },
       { "href": "#aktuellt", "label": "Aktuella resultat" },
       { "href": "#kblab", "label": "Jämfört med KBLab" },
+      { "href": "#logosguard", "label": "End-to-end-test" },
+      { "href": "#modeller", "label": "Bredare historisk jämförelse" },
       { "href": "#tolkning", "label": "Så ska resultaten tolkas" },
       { "href": "#begransningar", "label": "Begränsningar" },
       { "href": "#kallor", "label": "Källor och reproduktion" }
     ],
     "metricsTitle": "Missar är det viktigaste måttet",
     "metricsBody": "En fullständig miss betyder att en personuppgift står kvar i klartext. Precision visar hur ofta en markering var rätt och recall hur stor andel av alla personuppgifter som hittades. F1 för exakta markeringar, även kallat span-F1, väger samman de två. Fullständiga missar redovisas separat.",
+    "externalLinkLabel": "Öppna extern källsida",
     "currentTitle": "Aktuella testresultat",
     "currentBody": "Den publicerade modellen mättes på syntetiska svenska testmängder 2026-08-06. Resultaten visar modellens kända styrkor och gränser.",
     "currentStats": [
       { "value": "96,9 % / 1 av 205", "label": "blandade svenska testtexter: F1 / missar" },
       { "value": "100,0 % / 0 av 57", "label": "syntetiska adresser: F1 / missar" }
     ],
+    "redactionComparisonTitle": "End-to-end-test med LogosGuard",
+    "redactionComparisonBody": "LogosGuard är ett Chrome-tillägg för maskering i webbläsaren, inte en fristående NER-modell. Här jämförs därför hela LogosGuards filmaskeringsflöde med Maskeras kompletta lokala pipeline. Maskera v19 och LogosGuard 2.4.4 kördes 2026-08-14 på samma 258 syntetiska svenska texter med 952 märkta personuppgifter: bland annat namn, adresser, personnummer, samordningsnummer, telefonnummer samt myndighets-, vård- och juridiktext. LogosGuard kördes med gratisplanen och läget Balanced. Samma strikta mått användes för båda: en fullträff kräver att ingen bokstav eller siffra från den märkta uppgiften står kvar.",
+    "redactionComparisonTable": {
+      "system": "System",
+      "fullHits": "Fullt maskerade",
+      "partialLeaks": "Partiella läckor",
+      "misses": "Klartextmissar"
+    },
+    "redactionComparisonRows": [
+      {
+        "system": "Maskera v19 q4",
+        "href": "https://huggingface.co/joelhagvall/maskera-sv-ner",
+        "fullHits": "933 av 952 (98,0 %)",
+        "partialLeaks": "8",
+        "misses": "11",
+        "ours": true
+      },
+      {
+        "system": "LogosGuard 2.4.4",
+        "href": "https://chromewebstore.google.com/detail/logosguard-ai-privacy-fil/hgcmlpgonpfegfdeijcngpdokpdpapam",
+        "fullHits": "606 av 952 (63,7 %)",
+        "partialLeaks": "49",
+        "misses": "297"
+      }
+    ],
+    "redactionComparisonSummary": "Maskera fullmaskerade 327 fler av de 952 märkta uppgifterna. Någon del stod kvar i 19 fall med Maskera och i 346 fall med LogosGuard — en skillnad på 34,3 procentenheter i fullträffsfrekvens.",
+    "redactionComparisonLimit": "Testmängden är syntetisk och skriven av Maskeras utvecklare, så resultatet är författarkopplat och inte en oberoende rankning. Korpusen är inte uttömmande märkt för precision. LogosGuards filexport förvanskade dessutom svenska UTF-8-tecken till Windows-1252-mojibake; tecknen återställdes före poängsättningen.",
     "comparisonTitle": "Jämfört med KBLab",
-    "comparisonBody": "Maskeras publicerade q4-modell på 43 MB och KBLab lowermix fp32 på 496 MB kördes 2026-08-11 på samma 121 syntetiska svenska texter med 211 namn, platser och organisationer. En uppgift räknas som maskerad när markeringen överlappar den; typ-F1 kräver dessutom rätt kategori.",
+    "comparisonBody": "Maskera är en liten svensk NER-modell byggd för lokal maskering. KBLab lowermix är en fullstor svensk BERT-modell vars blandning av skiftlägen gör den robustare på text utan versaler. Maskeras publicerade q4-modell på 43 MB och KBLab lowermix fp32 på 496 MB kördes 2026-08-11 på samma 121 syntetiska svenska texter med 211 namn, platser och organisationer. En uppgift räknas som maskerad när markeringen överlappar den; typ-F1 kräver dessutom rätt kategori.",
     "comparisonTable": {
       "system": "System",
       "masked": "Maskerade",
@@ -329,12 +359,14 @@
         "rows": [
           {
             "system": "Maskera v19 q4",
+            "href": "https://huggingface.co/joelhagvall/maskera-sv-ner",
             "masked": "211 av 211 (100,0 %)",
             "typedF1": "87,1 %",
             "ours": true
           },
           {
             "system": "KBLab lowermix fp32",
+            "href": "https://huggingface.co/KBLab/bert-base-swedish-lowermix-reallysimple-ner",
             "masked": "205 av 211 (97,2 %)",
             "typedF1": "89,4 %"
           }
@@ -345,12 +377,14 @@
         "rows": [
           {
             "system": "Maskera v19 q4",
+            "href": "https://huggingface.co/joelhagvall/maskera-sv-ner",
             "masked": "211 av 211 (100,0 %)",
             "typedF1": "85,7 %",
             "ours": true
           },
           {
             "system": "KBLab lowermix fp32",
+            "href": "https://huggingface.co/KBLab/bert-base-swedish-lowermix-reallysimple-ner",
             "masked": "187 av 211 (88,6 %)",
             "typedF1": "83,2 %"
           }
@@ -359,6 +393,198 @@
     ],
     "comparisonSummary": "Maskera maskerade samtliga 211 märkta namn, platser och organisationer i båda körningarna. KBLab hade högre typ-F1 med ursprungligt skiftläge; Maskera hade högre typ-F1 i gemener.",
     "comparisonLimit": "Testet är skrivet av Maskeras utvecklare och visar en riktning, inte en oberoende rankning. Gatuadresser och Maskeras efterbearbetning ingår inte.",
+    "historicalComparisonTitle": "Bredare historisk NER-jämförelse",
+    "historicalComparisonBody": "GitHub-repots bredare modellkörning omfattar elva rader på samma 22 oberoende svenska Wikipedia-texter med 58 märkta personer, platser och organisationer. Konkurrenterna mättes 2026-07-04–2026-07-19 och Maskeras v18-rad mättes 2026-07-19. Överlapp räknas som maskerat; typ-F1 kräver även rätt kategori.",
+    "historicalComparisonTable": {
+      "system": "Modell eller bibliotek",
+      "size": "Storlek",
+      "masked": "Maskeringsrecall",
+      "typedF1": "Typ-F1"
+    },
+    "historicalComparisonCases": [
+      {
+        "title": "Ursprungligt skiftläge",
+        "showSize": true,
+        "rows": [
+          {
+            "system": "Maskera student",
+            "href": "https://huggingface.co/joelhagvall/maskera-sv-ner",
+            "description": "Liten svensk NER-modell för lokal maskering",
+            "size": "43 MB",
+            "masked": "97 %",
+            "typedF1": "96 %",
+            "ours": true
+          },
+          {
+            "system": "KBLab lowermix reallysimple-ner",
+            "href": "https://huggingface.co/KBLab/bert-base-swedish-lowermix-reallysimple-ner",
+            "description": "Svensk BERT-modell gjord för robustare skiftläge",
+            "size": "≈475 MB",
+            "masked": "100 %",
+            "typedF1": "94 %"
+          },
+          {
+            "system": "nbailab scandi-ner",
+            "href": "https://huggingface.co/saattrupdan/nbailab-base-ner-scandi",
+            "description": "Flerspråkig skandinavisk NER-modell",
+            "size": "≈500 MB",
+            "masked": "100 %",
+            "typedF1": "94 %"
+          },
+          {
+            "system": "KBLab neriob (IOB head)",
+            "href": "https://huggingface.co/KBLab/bert-base-swedish-cased-neriob",
+            "description": "Svensk BERT-modell med IOB-klassificeringshuvud",
+            "size": "≈475 MB",
+            "masked": "100 %",
+            "typedF1": "94 %"
+          },
+          {
+            "system": "KB-NER (the SUC classic)",
+            "href": "https://huggingface.co/KB/bert-base-swedish-cased-ner",
+            "description": "Klassisk svensk BERT-modell tränad på SUC",
+            "size": "≈475 MB",
+            "masked": "100 %",
+            "typedF1": "92 %"
+          },
+          {
+            "system": "KBLab reallysimple-ner",
+            "href": "https://huggingface.co/KBLab/bert-base-swedish-cased-reallysimple-ner",
+            "description": "Svensk skiftlägeskänslig BERT-modell för NER",
+            "size": "≈475 MB",
+            "masked": "98 %",
+            "typedF1": "91 %"
+          },
+          {
+            "system": "RecordedFuture Swedish-NER",
+            "href": "https://huggingface.co/RecordedFuture/Swedish-NER",
+            "description": "Svensk NER-modell tränad på internet- och forumtext",
+            "size": "≈500 MB",
+            "masked": "100 %",
+            "typedF1": "88 %"
+          },
+          {
+            "system": "sbx PII general / detailed",
+            "links": [
+              {
+                "label": "general",
+                "href": "https://huggingface.co/sbx/KB-bert-swedish_PI-detection-general-iob"
+              },
+              {
+                "label": "detailed",
+                "href": "https://huggingface.co/sbx/KB-bert-swedish_PI-detection-detailed-iob"
+              }
+            ],
+            "description": "Två KB-BERT-modeller med ett annat PI-etikettschema",
+            "size": "≈475 MB",
+            "masked": "5 / 10 %",
+            "typedF1": "10 / 19 %"
+          },
+          {
+            "system": "Rampart (nationaldesignstudio)",
+            "href": "https://huggingface.co/nationaldesignstudio/rampart",
+            "description": "Liten flerspråkig PII-modell för webbläsaren",
+            "size": "14,7 MB",
+            "masked": "34 %",
+            "typedF1": "42 %"
+          },
+          {
+            "system": "Desert Ant redact (multilingual)",
+            "href": "https://huggingface.co/desert-ant-labs/redact",
+            "description": "Flerspråkig maskeringsmodell som körs på enheten",
+            "size": "13 MB",
+            "masked": "36 %",
+            "typedF1": "53 %"
+          },
+          {
+            "system": "swedish-pii (regex + name lists)",
+            "href": "https://github.com/okasi/swedish-pii",
+            "description": "Regler och svenska namnlistor, inte en AI-modell",
+            "size": "2,5 MB",
+            "masked": "50 %",
+            "typedF1": "52 %"
+          }
+        ]
+      },
+      {
+        "title": "Samma texter i gemener",
+        "showSize": false,
+        "rows": [
+          {
+            "system": "KBLab lowermix reallysimple-ner",
+            "href": "https://huggingface.co/KBLab/bert-base-swedish-lowermix-reallysimple-ner",
+            "masked": "97 %",
+            "typedF1": "90 %"
+          },
+          {
+            "system": "Maskera student",
+            "href": "https://huggingface.co/joelhagvall/maskera-sv-ner",
+            "masked": "95 %",
+            "typedF1": "91 %",
+            "ours": true
+          },
+          {
+            "system": "RecordedFuture Swedish-NER",
+            "href": "https://huggingface.co/RecordedFuture/Swedish-NER",
+            "masked": "83 %",
+            "typedF1": "82 %"
+          },
+          {
+            "system": "nbailab scandi-ner",
+            "href": "https://huggingface.co/saattrupdan/nbailab-base-ner-scandi",
+            "masked": "69 %",
+            "typedF1": "77 %"
+          },
+          {
+            "system": "KB-NER (the SUC classic)",
+            "href": "https://huggingface.co/KB/bert-base-swedish-cased-ner",
+            "masked": "28 %",
+            "typedF1": "35 %"
+          },
+          {
+            "system": "KBLab reallysimple-ner",
+            "href": "https://huggingface.co/KBLab/bert-base-swedish-cased-reallysimple-ner",
+            "masked": "29 %",
+            "typedF1": "39 %"
+          },
+          {
+            "system": "KBLab neriob (IOB head)",
+            "href": "https://huggingface.co/KBLab/bert-base-swedish-cased-neriob",
+            "masked": "24 %",
+            "typedF1": "33 %"
+          },
+          {
+            "system": "Desert Ant redact (multilingual)",
+            "href": "https://huggingface.co/desert-ant-labs/redact",
+            "masked": "24 %",
+            "typedF1": "39 %"
+          },
+          {
+            "system": "sbx PII general / detailed",
+            "links": [
+              {
+                "label": "general",
+                "href": "https://huggingface.co/sbx/KB-bert-swedish_PI-detection-general-iob"
+              },
+              {
+                "label": "detailed",
+                "href": "https://huggingface.co/sbx/KB-bert-swedish_PI-detection-detailed-iob"
+              }
+            ],
+            "masked": "9 %",
+            "typedF1": "16 %"
+          },
+          {
+            "system": "swedish-pii (regex + name lists)",
+            "href": "https://github.com/okasi/swedish-pii",
+            "masked": "0 %",
+            "typedF1": "0 %"
+          }
+        ]
+      }
+    ],
+    "historicalComparisonSummary": "I den daterade v18-körningen hade Maskera högst typ-F1 på text med ursprungligt skiftläge. I gemener hade KBLab lowermix högst maskeringsrecall, medan Maskera hade högst typ-F1.",
+    "historicalComparisonLimit": "Det här är historiska v18-resultat och ska inte läsas som v19-scores. Den oberoende råkorpusen togs bort före den integritetssäkra v19-releasen, så aggregaten är bevarade för transparens men kan inte reproduceras dokument för dokument från dagens checkout. Separata systemtester med bland annat Presidio, Privacy Filter, EU PII Safeguard och Blindfold använder andra körningar och redovisas i BENCHMARKS.md.",
     "interpretationTitle": "Så ska resultaten tolkas",
     "interpretation": [
       "I testet med syntetiska adresser lämnades ingen av de märkta uppgifterna helt i klartext. I testet med blandade svenska texter missades 1 av 205.",
@@ -377,6 +603,8 @@
     ],
     "sourcesBody": "Testtexter, metod, körskript och de fullständiga Maskera-resultaten finns i det öppna repot. BENCHMARKS.md är källan som gäller om en siffra någon annanstans skulle skilja sig.",
     "benchmarksCta": "Läs benchmark-källan",
+    "redactionComparisonCta": "Öppna den maskinläsbara LogosGuard-körningen",
+    "redactionScriptsCta": "Se LogosGuard-scorern",
     "comparisonCta": "Öppna den maskinläsbara KBLab-körningen",
     "scriptsCta": "Se körskriptet",
     "demoCta": "Prova den aktuella modellen i webbläsardemon"

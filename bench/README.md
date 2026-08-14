@@ -32,6 +32,14 @@ safety-critical number for redaction.
 > not an independent ranking. Reproduce with `pnpm eval:kblab`; see
 > [`docs/benchmark-kblab-v19.json`](../docs/benchmark-kblab-v19.json).
 
+> **Current v19 LogosGuard comparison (2026-08-14):** on 258 synthetic
+> Swedish domain texts with 952 annotated PII strings, the same strict scorer
+> counted 933/952 (98.0%) fully removed for Maskera q4 and 606/952 (63.7%) for
+> LogosGuard 2.4.4 in Chrome, Free/`Balanced`. Partial/clear-text leaks were
+> 8/11 and 49/297. This is author-coupled evidence without a precision claim;
+> see the per-document outcomes, capture hashes and encoding caveat in
+> [`docs/benchmark-logosguard-2.4.4.json`](../docs/benchmark-logosguard-2.4.4.json).
+
 - **Measured:** 2026-07-19 (maskera rows; competitor rows 2026-07-18, their systems unchanged), Apple M4 Pro, all systems fully local.
 - maskera's rows in the historical comparison tables are
   (`maskera@0.6.3` code, `joelhagvall/maskera-sv-ner` v18 weights, q4,

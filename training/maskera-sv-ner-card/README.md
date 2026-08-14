@@ -52,6 +52,15 @@ on original casing (89.4% vs 87.1%); Maskera led lowercase typed F1 (85.7% vs
 than an independent ranking. The broader public-model comparison remains a
 historical v18 snapshot; see [How it compares](#how-it-compares).
 
+The complete v19 hybrid was also compared on 2026-08-14 with LogosGuard 2.4.4
+in Chrome, Free/`Balanced`, over 258 synthetic Swedish domain texts with 952
+annotated PII strings. Under the same strict full-removal scorer, Maskera fully
+removed **933/952 (98.0%)** and LogosGuard **606/952 (63.7%)**;
+partial/clear-text leaks were 8/11 and 49/297. The corpus is author-coupled and
+not exhaustively annotated for precision. Per-document outcomes, capture
+hashes, settings, encoding caveat and reproduction boundary are in the
+canonical benchmark.
+
 - **Base model:** [KBLab/bert-base-swedish-cased](https://huggingface.co/KBLab/bert-base-swedish-cased) (KB-BERT, CC0), 6 transformer layers
 - **Task:** token classification (BIO), entity types `PER`, `LOC`, `ORG`, `ADR`
 - **Languages:** Swedish
