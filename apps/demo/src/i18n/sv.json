@@ -14,7 +14,7 @@
   "demo": {
     "testDataNote": "Exemplen använder påhittade personer och officiellt reserverade testvärden, aldrig verkliga personers uppgifter.",
     "testDataCta": "Läs mer om testdatan",
-    "languageNote": "Gränssnittet kan visas på engelska, men exempeltexten och de simulerade AI-svaren förblir på svenska. Maskera maskerar svensk text; det översätter den inte.",
+    "languageNote": "Gränssnittet kan visas på engelska, men exempeltexten och de simulerade AI-svaren förblir på svenska. Maskera stöder för närvarande endast svenskspråkig text; det översätter inte andra språk.",
     "skipLink": "Hoppa till huvudinnehållet"
   },
   "controls": {
@@ -30,7 +30,7 @@
   "inputCard": {
     "title": "Din text",
     "clear": "Rensa",
-    "placeholder": "Skriv eller klistra in egen text här… Allt körs lokalt.",
+    "placeholder": "Skriv eller klistra in egen svensk text här… Allt körs lokalt.",
     "examplePrefix": "Exempel:"
   },
   "outputCard": {

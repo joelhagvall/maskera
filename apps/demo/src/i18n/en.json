@@ -14,7 +14,7 @@
   "demo": {
     "testDataNote": "The examples use fictional people and officially reserved test values, never real people's data.",
     "testDataCta": "Learn more about the test data",
-    "languageNote": "The interface is translated, but the example text and simulated AI responses stay in Swedish. Maskera masks Swedish text; it does not translate it.",
+    "languageNote": "The interface is translated, but the example text and simulated AI responses stay in Swedish. Maskera currently only supports Swedish-language text; it does not translate other languages.",
     "skipLink": "Skip to main content"
   },
   "controls": {
@@ -30,7 +30,7 @@
   "inputCard": {
     "title": "Your text",
     "clear": "Clear",
-    "placeholder": "Type or paste your own text here… Everything runs locally.",
+    "placeholder": "Type or paste your own Swedish text here… Everything runs locally.",
     "examplePrefix": "Example:"
   },
   "outputCard": {
