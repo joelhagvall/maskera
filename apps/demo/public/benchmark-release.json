@@ -7,8 +7,8 @@
   "lastMeasuredAt": "2026-08-11",
   "scope": "Synthetic or author-coupled release gates, not an independent universal quality estimate.",
   "packages": {
-    "maskera": "0.9.6",
-    "core": "0.7.5"
+    "maskera": "0.10.0",
+    "core": "0.8.0"
   },
   "artifact": {
     "model": "maskera-sv-ner-v19",
@@ -29,7 +29,7 @@
   },
   "evaluation": {
     "command": "pnpm eval:release",
-    "suiteSha256": "4a60fc219913cb4df982e5fff24c7455b53bbbb477de9da3bb3504169985088b",
+    "suiteSha256": "ce89f9bb2cded1f0be5cd5721f9c890cd9e6d8ea2486f0770008d49b8fbd1d0c",
     "files": [
       "apps/demo/scripts/evaluate-candidate-gates.mjs",
       "apps/demo/scripts/fetch-model.mjs",
