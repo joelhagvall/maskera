@@ -18,7 +18,9 @@ import { navClick, useRoute, type View, viewPaths } from "./routing"
 import { getScenarios, type Scenario } from "./scenarios"
 import { useSwedishNer } from "./useSwedishNer"
 
-export function App() {
+// initialView is the build-time prerender's route (entry-server.tsx); the
+// browser leaves it undefined and derives the view from the URL as before.
+export function App({ initialView }: { initialView?: View }) {
   const scenarios = getScenarios()
   const [activeId, setActiveId] = useState(scenarios[0].id)
   const active = scenarios.find((scenario) => scenario.id === activeId) ?? scenarios[0]
@@ -27,7 +29,7 @@ export function App() {
   // The output card's "Visa återställningsnyckeln" toggle lives here so it
   // survives scenario switches instead of collapsing.
   const [mapOpen, setMapOpen] = useState(false)
-  const { view, navigate } = useRoute()
+  const { view, navigate } = useRoute(initialView)
   // The demo autoloads the model on first entry, as before. Direct landings on
   // content pages stay at zero and therefore never create the worker or fetch
   // its weights. Incrementing gives the error UI a real retry path.

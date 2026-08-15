@@ -20,8 +20,9 @@
          media-driven ones, or a system-dark visitor would get dark browser
          chrome around a light page. -->
     <meta name="theme-color" content="#ffffff" />
-    <!-- Sets the theme before first paint so there is no flash. External so
-         the strict CSP (script-src 'self') allows it. -->
+    <!-- Sets the theme before first paint so there is no flash. Inlined into
+         the built pages by scripts/prerender.mjs (one less render-blocking
+         request); vercel.json's script-src carries its sha256. -->
     <script src="/theme-init.js"></script>
 
     <meta property="og:type" content="website" />

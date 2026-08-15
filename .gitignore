@@ -1,5 +1,6 @@
 node_modules/
 dist/
+dist-ssr/
 *.tsbuildinfo
 coverage/
 .venv/
@@ -33,7 +34,7 @@ apps/demo/en/
 # recorded demo clips (scripts/record-demo.mjs output)
 apps/demo/*.mp4
 apps/demo/*.webm
-docs/LINKEDIN_POST.md
+docs/LINKEDIN_POST*.md
 # local-only working docs
 docs/outreach/
 docs/DESIGN_PARTNERS.md

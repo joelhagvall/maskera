@@ -1,7 +1,9 @@
-// Sets the theme before first paint so there is no flash. Loaded as a
-// blocking classic script from <head> of every shell (index.html and the
-// localized shells from src/meta.ts). External, not inline, so the strict
-// CSP (script-src 'self') allows it without hash/nonce maintenance.
+// Sets the theme before first paint so there is no flash. Referenced from
+// <head> of every shell (index.html and the localized shells from
+// src/meta.ts); scripts/prerender.mjs inlines it into the built pages so it
+// costs no render-blocking request, and vercel.json's script-src carries its
+// sha256 (verified by scripts/check-theme-hash.mjs) so the strict CSP allows
+// the inline copy.
 ;(function () {
   try {
     var d = localStorage.getItem("theme") === "dark"

@@ -50,9 +50,13 @@ export function viewFromPath(pathname: string): View {
   return "demo"
 }
 
-export function useRoute() {
+export function useRoute(initialView?: View) {
   const locale = useLocale()
-  const [view, setView] = useState<View>(() => viewFromPath(window.location.pathname))
+  // initialView lets the build-time prerender (entry-server.tsx) pick the
+  // route without a window; the browser derives it from the URL.
+  const [view, setView] = useState<View>(
+    () => initialView ?? viewFromPath(window.location.pathname),
+  )
   const currentViewRef = useRef(view)
   const homeScrollYRef = useRef(0)
   const skipScrollRestorationRef = useRef(false)

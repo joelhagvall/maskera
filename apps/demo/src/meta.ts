@@ -214,13 +214,20 @@ export function renderRouteHtml(view: View, locale: Locale = activeLocale): stri
     .replace(/\n/g, "\n      ")
   const lightDiagram = locale === "sv" ? "/layers-sv.svg" : "/layers.svg"
   const darkDiagram = locale === "sv" ? "/layers-sv-dark.svg" : "/layers-dark.svg"
+  // The demo and developer pages show mono text above the fold (the
+  // hand-authored Swedish index.html preloads it too); the diagrams are only
+  // on the developer page.
+  const monoPreload =
+    view === "demo" || view === "dev"
+      ? `
+    <link rel="preload" href="/fonts/geist-mono-latin.woff2" as="font" type="font/woff2" crossorigin />`
+      : ""
   const devPreloads =
     view === "dev"
-      ? `
-    <link rel="preload" href="/fonts/geist-mono-latin.woff2" as="font" type="font/woff2" crossorigin />
+      ? `${monoPreload}
     <link rel="preload" href="${lightDiagram}" as="image" type="image/svg+xml" fetchpriority="high" />
     <link rel="preload" href="${darkDiagram}" as="image" type="image/svg+xml" fetchpriority="high" />`
-      : ""
+      : monoPreload
 
   return `<!doctype html>
 <html lang="${locale}">

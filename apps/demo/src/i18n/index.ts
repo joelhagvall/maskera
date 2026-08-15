@@ -19,7 +19,8 @@ const listeners = new Set<() => void>()
 export function setActiveLocale(locale: Locale) {
   if (locale === activeLocale) return
   activeLocale = locale
-  document.documentElement.lang = locale
+  // The build-time prerender runs this in Node, where there is no document.
+  if (typeof document !== "undefined") document.documentElement.lang = locale
   for (const listener of listeners) listener()
 }
 
@@ -32,7 +33,10 @@ export function useLocale(): Locale {
   return useSyncExternalStore(
     subscribe,
     () => activeLocale,
-    () => "sv",
+    // Server snapshot: the build-time prerender sets activeLocale per route
+    // before rendering, and the browser derives it from the URL at module
+    // load, so both sides hydrate against the same locale.
+    () => activeLocale,
   )
 }
 
