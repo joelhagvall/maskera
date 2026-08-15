@@ -142,7 +142,7 @@ exported chunks manually in the pinned LogosGuard surface, then run
 per-document outcomes, masked-text hashes and capture hashes are in
 [`benchmark-logosguard-2.4.4.json`](benchmark-logosguard-2.4.4.json).
 Product-comparison result checksum: `e348ca88b83cd347a43f03d98659cac2c1b127012cf51c6f92f11e89f8929b05`.
-Product-comparison suite checksum: `efd0a653553d29ab28c04e9ca877260d5654cc5d8c89258956279a52c3b4fa31`.
+Product-comparison suite checksum: `1405dede4207cfdfb42165f58692ec04a8108e9fcadd9332eb4f16a7d4168594`.
 Selected runtime-environment checksum:
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`;
 corpus checksum:

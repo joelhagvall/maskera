@@ -124,7 +124,11 @@ test("a type-only peer version does not change the eval environment", async () =
   try {
     const contract = JSON.parse(await readFile(join(root, "docs/benchmark-release.json"), "utf8"))
     const original = await readFile(join(root, "pnpm-lock.yaml"), "utf8")
-    const changed = original.replaceAll("@types/node@26.1.1", "@types/node@99.0.0")
+    // Read the resolved version from the lockfile instead of pinning it here,
+    // so a routine @types/node bump cannot turn this test into a no-op.
+    const pinned = original.match(/@types\/node@(\d+\.\d+\.\d+)/)?.[1]
+    assert.ok(pinned, "lockfile resolves @types/node")
+    const changed = original.replaceAll(`@types/node@${pinned}`, "@types/node@99.0.0")
     assert.notEqual(changed, original)
     const changedLockfile = join(directory, "pnpm-lock.yaml")
     await writeFile(changedLockfile, changed)
