@@ -31,7 +31,8 @@
     "title": "Your text",
     "clear": "Clear",
     "placeholder": "Type or paste your own Swedish text here… Everything runs locally.",
-    "examplePrefix": "Example:"
+    "examplePrefix": "Example:",
+    "limitNote": "The text was cut off at 100,000 characters – the demo does not accept longer texts."
   },
   "outputCard": {
     "invalidPersonnummerSingular": "looks like a Swedish personal identity number but does not contain a valid birth or coordination date. It is therefore not masked.",

@@ -631,6 +631,11 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
   color: var(--muted-2);
   opacity: 1;
 }
+.editor-limit {
+  margin: 6px 2px 0;
+  font-size: 12px;
+  color: var(--muted);
+}
 .clear {
   background: none;
   border: none;

@@ -31,7 +31,8 @@
     "title": "Din text",
     "clear": "Rensa",
     "placeholder": "Skriv eller klistra in egen svensk text här… Allt körs lokalt.",
-    "examplePrefix": "Exempel:"
+    "examplePrefix": "Exempel:",
+    "limitNote": "Texten klipptes vid 100 000 tecken – demon tar inte längre texter."
   },
   "outputCard": {
     "invalidPersonnummerSingular": "har en personnummerlik form men inget giltigt födelse- eller samordningsdatum. Därför maskeras det inte.",
