@@ -27,12 +27,26 @@ export type NerWorkerMsg =
  * The build already pins every model file (scripts/fetch-model.mjs), but the
  * demo loads with localModelPath, which disables @maskera/ner's hash check -
  * and that check is Node-only anyway. So a compromised deploy or a poisoned
- * HTTP cache could otherwise swap the weights silently. The fetch hits the
- * browser cache (the /models/ route is immutable), so this costs a local
- * 43 MB read, not a second download.
+ * HTTP cache could otherwise swap the weights silently.
+ *
+ * Read the bytes back from Transformers.js's own Cache Storage entry: that is
+ * the exact buffer it just handed to onnxruntime, and it is a local read.
+ * A plain fetch() here is NOT reliably local: the 35 MB brotli body is served
+ * chunked without content-length, and browsers routinely decline to keep it
+ * in the HTTP cache, so the "verification" turned into a second full download
+ * (measured at 27 s on a slow route). Fall back to fetch only if the cache
+ * entry is missing (quota, private mode, cache.put failure).
  */
-async function verifyModelIntegrity(): Promise<void> {
-  const res = await fetch(`/models/${modelMeta.directory}/onnx/model_q4.onnx`)
+async function verifyModelIntegrity(cacheName: string): Promise<void> {
+  const path = `/models/${modelMeta.directory}/onnx/model_q4.onnx`
+  let res: Response | undefined
+  if (typeof caches !== "undefined") {
+    res = await caches
+      .open(cacheName)
+      .then((cache) => cache.match(path))
+      .catch(() => undefined)
+  }
+  res ??= await fetch(path)
   if (!res.ok) throw new Error(`integrity fetch failed: ${res.status}`)
   const digest = await crypto.subtle.digest("SHA-256", await res.arrayBuffer())
   const hex = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("")
@@ -90,7 +104,7 @@ const recognizerPromise = (async () => {
   await recognizer.ready
   // Reject before the UI ever sees "ready" if the served weights don't match
   // the pinned hash; a mismatch surfaces as the regular load-error state.
-  await verifyModelIntegrity()
+  await verifyModelIntegrity(transformers.env.cacheKey)
   return recognizer
 })()
 
