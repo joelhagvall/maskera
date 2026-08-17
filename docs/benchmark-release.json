@@ -4,11 +4,11 @@
   "status": "published",
   "release": "v19",
   "publishedAt": "2026-08-06",
-  "lastMeasuredAt": "2026-08-14",
+  "lastMeasuredAt": "2026-08-16",
   "scope": "Synthetic or author-coupled release gates, not an independent universal quality estimate.",
   "packages": {
-    "maskera": "0.10.1",
-    "core": "0.8.1"
+    "maskera": "0.10.2",
+    "core": "0.8.2"
   },
   "artifact": {
     "model": "maskera-sv-ner-v19",
@@ -29,7 +29,7 @@
   },
   "evaluation": {
     "command": "pnpm eval:release",
-    "suiteSha256": "ae195d21c3d0d753a7cf2211780486eac5600d74059776022e7398077cee2a45",
+    "suiteSha256": "92f210dd1c1d6435f99c18a4c8776b98bc1223ab703f3aab98ba21c4bf2e959f",
     "files": [
       "apps/demo/scripts/evaluate-candidate-gates.mjs",
       "apps/demo/scripts/fetch-model.mjs",
@@ -149,7 +149,7 @@
     "manualStep": "Redact both exported text chunks with LogosGuard 2.4.4 in Chrome, Free plan, Balanced accuracy, and save the two returned files under tmp before scoring.",
     "resultFile": "docs/benchmark-logosguard-2.4.4.json",
     "resultSha256": "e348ca88b83cd347a43f03d98659cac2c1b127012cf51c6f92f11e89f8929b05",
-    "suiteSha256": "1405dede4207cfdfb42165f58692ec04a8108e9fcadd9332eb4f16a7d4168594",
+    "suiteSha256": "90c51464315c53fb6dd9e906b1dc5e81b5c4f8c8a7dc05bae63e354c7c5af709",
     "files": [
       "apps/demo/scripts/fetch-model.mjs",
       "apps/demo/src/model-meta.json",
@@ -274,11 +274,11 @@
     "structuredRegression": {
       "documents": 258,
       "entities": 952,
-      "fullHits": 940,
+      "fullHits": 942,
       "partialLeaks": 1,
-      "misses": 11,
-      "hitRatePct": "98.7",
-      "redactions": 1522,
+      "misses": 9,
+      "hitRatePct": "98.9",
+      "redactions": 1523,
       "classifiedJunk": 276
     },
     "clinicalCareSubset": {

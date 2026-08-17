@@ -108,13 +108,20 @@ type MatchWithIndices = RegExpMatchArray & {
  * column never merge, and the whitespace run is bounded so the pattern cannot
  * backtrack over a long gap.
  *
+ * The whitespace lookahead accepts a digit OR the `-`/`+` separator: "811218
+ * -9876" (space before the dash) is a realistic typed form and was the same
+ * one-character bypass one step earlier — the run split at the space and both
+ * halves were too short to window. The window check in checksumWindowDetector
+ * still confines whitespace to the separator position, so "4711 - 2203" style
+ * table neighbours do not fuse into a candidate.
+ *
  * The class names U+1680 OGHAM SPACE MARK explicitly: it is the one horizontal
  * whitespace NFKC does not fold to U+0020 (canonicalize folds the rest, so the
  * plain space covers them), yet it matches JS `\s` and renders as a space, so
  * without it a single character split the run and walked a personnummer past
  * the checksum detectors.
  */
-const DIGIT_RUN = /\d(?:[\d+-]|[ \t\u00a0\u1680]{1,2}(?=\d))*\d|\d/g
+const DIGIT_RUN = /\d(?:[\d+-]|[ \t\u00a0\u1680]{1,2}(?=[\d+-]))*\d|\d/g
 
 const isDigit = (code: number) => code >= 48 && code <= 57
 const WS = /\s/
@@ -242,7 +249,10 @@ export const samordningsnummer = checksumWindowDetector(
 /** Organisationsnummer: NNNNNN-NNNN, Luhn-checked, third digit >= 2. */
 export const organisationsnummer = regexDetector(
   "ORGANISATIONSNUMMER",
-  /\b\d{6}[-]?\d{4}\b/g,
+  // Whitespace is tolerated around the dash ("556036 -0793"), but a space
+  // WITHOUT the dash stays unmatched: that shape is far more often two
+  // unrelated numbers than an org number, and Luhn only filters ~92% of them.
+  /\b\d{6}(?:\s{1,2}-\s?|-\s?)?\d{4}\b/g,
   isOrganisationsnummer,
 )
 
@@ -326,10 +336,12 @@ export const email: Detector = {
  * foreign phone number, so the unprefixed branch stays Swedish-only.
  * The consumed left guard (capture group carries the value) stops the match
  * from starting inside a longer digit run like "kundnummer TEST-100200-3000".
+ * Up to three separator characters sit between digits so "070 - 174 06 58"
+ * (whitespace around the dash) is masked whole instead of leaking its ends.
  */
 export const phone = regexDetector(
   "TELEFON",
-  /(?:^|[^\d])((?:\+46[\s-]?(?:\(0\)[\s-]?)?|0)(?:7[02369]|[1-9]\d?)(?:[\s-]?\d){6,8}|\+\d{1,3}(?:[\s-]?\d){6,12})\b/g,
+  /(?:^|[^\d])((?:\+46[\s-]?(?:\(0\)[\s-]?)?|0)(?:7[02369]|[1-9]\d?)(?:[\s-]{0,3}\d){6,8}|\+\d{1,3}(?:[\s-]{0,3}\d){6,12})\b/g,
 )
 
 /**
@@ -352,7 +364,7 @@ export const postnummer = regexDetector(
  * checksum is what separates a real bankgiro from look-alikes such as a year
  * range ("2019-2024") or an arbitrary reference id.
  */
-export const bankgiro = regexDetector("BANKGIRO", /\b\d{3,4}-\d{4}\b/g, (v) =>
+export const bankgiro = regexDetector("BANKGIRO", /\b\d{3,4}\s{0,2}-\s{0,2}\d{4}\b/g, (v) =>
   luhnValid(v.replace(/\D/g, "")),
 )
 
@@ -365,7 +377,7 @@ export const bankgiro = regexDetector("BANKGIRO", /\b\d{3,4}-\d{4}\b/g, (v) =>
  * page ranges), which over-masks far more than the vanishingly rare
  * one-digit plusgiro accounts protect.
  */
-export const plusgiro = regexDetector("PLUSGIRO", /\b\d(?:\s?\d){1,6}-\d\b/g, (v) =>
+export const plusgiro = regexDetector("PLUSGIRO", /\b\d(?:\s?\d){1,6}\s{0,2}-\s{0,2}\d\b/g, (v) =>
   luhnValid(v.replace(/\D/g, "")),
 )
 

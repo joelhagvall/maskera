@@ -10,7 +10,8 @@ const texts: string[] = (corpus as Array<{ text: string }>).map((d) => d.text)
 const chars = texts.reduce((n, t) => n + t.length, 0)
 
 const params = new URLSearchParams(window.location.search)
-const device = (params.get("device") ?? "wasm") as "wasm" | "webgpu"
+// Allowlist the device param instead of trusting the query string.
+const device = params.get("device") === "webgpu" ? ("webgpu" as const) : ("wasm" as const)
 
 function stats(samples: number[]) {
   const s = [...samples].sort((a, b) => a - b)

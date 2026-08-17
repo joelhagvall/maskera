@@ -156,7 +156,10 @@ keep downloading the old weights (or, worse, a sha that no longer resolves):
   option can select; the Hub's LFS oids at the pinned revision ARE the
   sha256s (`/api/models/joelhagvall/maskera-sv-ner/tree/<sha>?recursive=true`).
 - The per-file sha256 map in `apps/demo/scripts/fetch-model.mjs` (what the
-  demo build verifies), plus `onnxBytes` in `apps/demo/src/model-meta.json`.
+  demo build verifies), plus `onnxBytes` in `apps/demo/src/model-meta.json`
+  and `onnxSha256` in `apps/demo/src/model-integrity.json` (what the demo
+  worker verifies in the browser at runtime; the build fails if it drifts
+  from the fetch-model.mjs map).
 
 ## Copy coupling with app.maskera.dev
 

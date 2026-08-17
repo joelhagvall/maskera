@@ -4,7 +4,11 @@ import { navClick } from "../routing"
 
 export function LanguageToggle({ current }: { current: View }) {
   const nextLocale: Locale = activeLocale === "sv" ? "en" : "sv"
-  const hash = typeof window === "undefined" ? "" : window.location.hash
+  // location.hash is user-controlled; keep it only when it is a plain anchor
+  // id (all in-page anchors are, e.g. #main-content, #vad-maskeras), so the
+  // value can never carry anything else into href/pushState.
+  const rawHash = typeof window === "undefined" ? "" : window.location.hash
+  const hash = /^#[A-Za-z][\w-]*$/.test(rawHash) ? rawHash : ""
   const href = `${viewPath(current, nextLocale)}${hash}`
 
   const switchLanguage = () => {

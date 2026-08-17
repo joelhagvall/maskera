@@ -103,6 +103,23 @@ describe("personnummer detector", () => {
     ["10-digit, space separator, bad Luhn", "Patient 770707 1237 skrevs in.", "770707 1237"],
   ])("matches %s", (_label, input, value) => expectHit(personnummer, input, value))
 
+  // The 2026-08 sweep found the same one-character bypass one step earlier:
+  // a space BEFORE the dash ("900101 -2385") split the digit run and both
+  // halves were too short to window. Whitespace is allowed on either side of
+  // the separator, still only at the separator position.
+  it.each([
+    ["space before the dash", "Patient 900101 -2385 skrevs in.", "900101 -2385"],
+    ["space on both sides of the dash", "Patient 900101 - 2385 skrevs in.", "900101 - 2385"],
+    ["tab before the dash", "Patient 900101\t-2385 skrevs in.", "900101\t-2385"],
+    ["12-digit, space before the dash", "Patient 19900101 -2385 skrevs in.", "19900101 -2385"],
+  ])("matches %s", (_label, input, value) => expectHit(personnummer, input, value))
+
+  // A spaced dash still only fuses at the separator position: "9001 - 012385"
+  // has the gap four digits from the START and stays two unrelated numbers.
+  it("does not fuse across a spaced dash at a non-separator position", () => {
+    expectMiss(personnummer, "Ref 9001 - 012385 klar.")
+  })
+
   // Documented non-goal: "9911 11-1236" puts the space four digits from the
   // START, not four from the end where the separator belongs. That is a
   // genuinely broken format (or two fused numbers), and it stays unmasked.
@@ -149,11 +166,24 @@ describe("samordningsnummer detector", () => {
   it("matches with a bad Luhn control digit", () => {
     expectHit(samordningsnummer, "Klienten 700178-2396 registrerades.", "700178-2396")
   })
+
+  it("matches with a space before the dash", () => {
+    expectHit(samordningsnummer, "Klienten 700178 -2395 registrerades.", "700178 -2395")
+  })
 })
 
 describe("organisationsnummer detector", () => {
   it("matches a Luhn-valid orgnr with third digit >= 2", () => {
     expectHit(organisationsnummer, "Kommun A 202100-4748 är registrerad.", "202100-4748")
+  })
+
+  it.each(["202100 -4748", "202100- 4748", "202100 - 4748"])(
+    "matches whitespace around the dash: %s",
+    (s) => expectHit(organisationsnummer, `Kommun A ${s} är registrerad.`, s),
+  )
+
+  it("rejects a space without the dash", () => {
+    expectMiss(organisationsnummer, "Kommun A 202100 4748 är registrerad.")
   })
 
   it.each([
@@ -279,6 +309,9 @@ describe("phone detector", () => {
     "+46(0)70-1740658",
     "+46 (0)70-174 06 58",
     "+46(0)8-465 004 12",
+    // space before the dash: 2026-08 sweep finding, used to leak both ends
+    "070 -174 06 58",
+    "031 - 390 06 12",
   ])("matches: %s", (s) => expectHit(phone, `Ring ${s} imorgon.`, s))
 
   it("matches at the very start of the text", () => {
@@ -344,6 +377,9 @@ describe("bankgiro detector", () => {
     expectHit(bankgiro, `Betala till bankgiro ${s}.`, s),
   )
 
+  it("matches whitespace around the dash", () =>
+    expectHit(bankgiro, "Betala till bankgiro 991 -2346.", "991 -2346"))
+
   it.each([
     ["year range", "2019-2024"],
     ["arbitrary ref with bad checksum", "1234-5678"],
@@ -357,6 +393,10 @@ describe("plusgiro detector", () => {
 
   it("matches the same test account with space grouping", () => {
     expectHit(plusgiro, "Betala till plusgiro 92 01 00-5 tack.", "92 01 00-5")
+  })
+
+  it("matches a space before the dash", () => {
+    expectHit(plusgiro, "Betala till plusgiro 92 01 00 -5 tack.", "92 01 00 -5")
   })
 
   it.each([

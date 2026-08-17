@@ -1,5 +1,11 @@
 # @maskera/core
 
+## 0.8.2
+
+### Patch Changes
+
+- Close the whitespace-before-separator evasion in the structured identifier detectors. Personnummer, samordningsnummer, organisationsnummer, bankgiro, plusgiro and phone numbers are now masked when typed with whitespace around the dash ("811218 -9876", "070 - 174 06 58"): the digit run previously split at a space before the separator, so the identifier passed through unmasked or (for phone numbers) only partially masked.
+
 ## 0.8.1
 
 ### Patch Changes

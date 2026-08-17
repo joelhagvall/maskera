@@ -1,6 +1,7 @@
 import type { Redaction } from "@maskera/core"
 import { createNerRecognizer, redactWithNer } from "maskera"
 import { ruleDetectors } from "./detectors"
+import modelIntegrity from "./model-integrity.json"
 import modelMeta from "./model-meta.json"
 
 /** Messages from the worker to the main thread. */
@@ -19,6 +20,24 @@ export type NerWorkerMsg =
 
 // Everything heavy lives here: the Transformers.js import, the WASM runtime
 // and the model itself. The main thread only ever sees plain result objects.
+
+/**
+ * sha256-verify the weights the worker is about to serve results from.
+ *
+ * The build already pins every model file (scripts/fetch-model.mjs), but the
+ * demo loads with localModelPath, which disables @maskera/ner's hash check -
+ * and that check is Node-only anyway. So a compromised deploy or a poisoned
+ * HTTP cache could otherwise swap the weights silently. The fetch hits the
+ * browser cache (the /models/ route is immutable), so this costs a local
+ * 43 MB read, not a second download.
+ */
+async function verifyModelIntegrity(): Promise<void> {
+  const res = await fetch(`/models/${modelMeta.directory}/onnx/model_q4.onnx`)
+  if (!res.ok) throw new Error(`integrity fetch failed: ${res.status}`)
+  const digest = await crypto.subtle.digest("SHA-256", await res.arrayBuffer())
+  const hex = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("")
+  if (hex !== modelIntegrity.onnxSha256) throw new Error("model checksum mismatch")
+}
 
 const recognizerPromise = (async () => {
   // Self-host the ONNX WASM runtime (copied to /ort/ by scripts/fetch-model.mjs)
@@ -69,6 +88,9 @@ const recognizerPromise = (async () => {
     },
   })
   await recognizer.ready
+  // Reject before the UI ever sees "ready" if the served weights don't match
+  // the pinned hash; a mismatch surfaces as the regular load-error state.
+  await verifyModelIntegrity()
   return recognizer
 })()
 

@@ -18,7 +18,7 @@ locks the selected resolved dependency closure that executes the evaluation.
 Type-only peers and unrelated build, lint, browser-audit and test-tool updates
 are outside that closure and cannot masquerade as changed accuracy evidence.
 The frozen suite checksum is
-`ae195d21c3d0d753a7cf2211780486eac5600d74059776022e7398077cee2a45` and the
+`92f210dd1c1d6435f99c18a4c8776b98bc1223ab703f3aab98ba21c4bf2e959f` and the
 frozen evaluation-environment checksum is
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`.
 
@@ -114,7 +114,7 @@ Both products use the same strict material-character scorer here. A full hit
 requires every Unicode letter or digit from the annotated value to be removed;
 retaining some characters is a partial leak, while retaining them all is a
 clear-text miss. This deliberately stricter definition re-scores Maskera at
-933/8/11 rather than reusing the structured regression runner's 940/1/11 row
+933/8/11 rather than reusing the structured regression runner's 942/1/9 row
 below.
 
 | product | fully masked | partial leaks | clear-text misses |
@@ -142,7 +142,7 @@ exported chunks manually in the pinned LogosGuard surface, then run
 per-document outcomes, masked-text hashes and capture hashes are in
 [`benchmark-logosguard-2.4.4.json`](benchmark-logosguard-2.4.4.json).
 Product-comparison result checksum: `e348ca88b83cd347a43f03d98659cac2c1b127012cf51c6f92f11e89f8929b05`.
-Product-comparison suite checksum: `1405dede4207cfdfb42165f58692ec04a8108e9fcadd9332eb4f16a7d4168594`.
+Product-comparison suite checksum: `90c51464315c53fb6dd9e906b1dc5e81b5c4f8c8a7dc05bae63e354c7c5af709`.
 Selected runtime-environment checksum:
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`;
 corpus checksum:
@@ -170,8 +170,9 @@ quality claim.
 
 ## Structured-detector regression corpus (core rules + v19 hybrid)
 
-- **Measured:** 2026-08-06, after the Luhn-fallback, international-phone,
-  address-boundary, contextual account and domain-precision changes.
+- **Measured:** 2026-08-16, after the Luhn-fallback, international-phone,
+  address-boundary, contextual account, domain-precision and
+  whitespace-around-separator changes.
 - **Corpus:** 258 synthetic Swedish texts across 19 categories, with 952
   annotated PII strings. The privacy-safe corpus and its runner are tracked in
   [`packages/ner/eval/domain-regression/`](../packages/ner/eval/domain-regression/);
@@ -186,12 +187,14 @@ quality claim.
 
 | run | full hits | partial leaks | clear-text misses | hit rate | classified junk redactions |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| tracked privacy-safe baseline, general default | **940** | **1** | **11** | **98.7%** | 276 / 1,522 (18.1%) |
+| tracked privacy-safe baseline, general default | **942** | **1** | **9** | **98.9%** | 276 / 1,523 (18.1%) |
 
 The 63 recovered full hits are predominantly format-correct but Luhn-invalid
 personnummer/samordningsnummer, plus international phone numbers. The remaining
-11 misses are malformed/OCR identifiers and NER misses in code-switched or
-spoken-number text. Three contextual domestic-account examples that were
+9 misses are malformed/OCR identifiers and NER misses in code-switched or
+spoken-number text. The two hits recovered on 2026-08-16 are the two fragments
+of a phone number written with whitespace around its dash ("070 - 174-06 83"),
+which the structured detectors previously split at the space. Three contextual domestic-account examples that were
 previously unannotated are now explicit annotations backed by Bankgirot's
 published test file. Sanitizing and tracking the corpus changes its annotation
 and redaction totals, so the retired ignored-scratch results (874/1/74 before

@@ -261,8 +261,10 @@ for (const file of repoFiles) {
 
   const phoneSpans = []
   if (!file.endsWith(".css")) {
+    // Keep in sync with the phone detector in packages/core/src/detectors:
+    // up to three separator characters between digits ("070 - 174 06 58").
     const phonePattern =
-      /(?:^|[^\d])((?:\+46[\s-]?(?:\(0\)[\s-]?)?|0)(?:7[02369]|[1-9]\d?)(?:[\s-]?\d){6,8})\b/g
+      /(?:^|[^\d])((?:\+46[\s-]?(?:\(0\)[\s-]?)?|0)(?:7[02369]|[1-9]\d?)(?:[\s-]{0,3}\d){6,8})\b/g
     for (const match of text.matchAll(phonePattern)) {
       const value = match[1]
       const start = match.index + match[0].indexOf(value)

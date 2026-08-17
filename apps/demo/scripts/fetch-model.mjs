@@ -102,6 +102,22 @@ if (meta.onnxBytes !== statSize) {
   process.exit(1)
 }
 
+// src/model-integrity.json carries the pinned sha256 the demo worker verifies
+// the weights against in the browser (the npm library's check is disabled for
+// localModelPath, and Node-only). Fail the build if it drifts from FILES,
+// e.g. after a model bump that forgot to update it.
+const integrityPath = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "../src/model-integrity.json",
+)
+const integrity = JSON.parse(readFileSync(integrityPath, "utf8"))
+if (integrity.onnxSha256 !== FILES["onnx/model_q4.onnx"]) {
+  console.error(
+    `src/model-integrity.json onnxSha256 (${integrity.onnxSha256}) != FILES (${FILES["onnx/model_q4.onnx"]}). Update it.`,
+  )
+  process.exit(1)
+}
+
 // Also copy the ONNX WASM runtime into public/ort/, so the demo self-hosts
 // it instead of pulling it from jsDelivr (zero external requests). Since
 // Transformers.js v4 the runtime lives only in onnxruntime-web (v3 bundled a
