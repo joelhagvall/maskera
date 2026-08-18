@@ -123,6 +123,7 @@ export function App({ initialView }: { initialView?: View }) {
                 invalidPnrs={invalidPnrs}
                 showMap={mapOpen}
                 onToggleMap={() => setMapOpen((v) => !v)}
+                onCoverage={goCoverage}
               />
             </div>
             {/* Right under the cards, and only for the preset examples: the

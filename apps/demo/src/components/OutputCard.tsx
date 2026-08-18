@@ -3,6 +3,7 @@ import { useMemo } from "react"
 import copy from "../i18n"
 import { EyeIcon } from "../icons"
 import { labelMeta, pillStyle } from "../labels"
+import { navClick, viewPaths } from "../routing"
 import { RedactedText } from "../segments"
 import { CopyButton } from "./CopyButton"
 
@@ -64,6 +65,7 @@ export function OutputCard({
   invalidPnrs,
   showMap,
   onToggleMap,
+  onCoverage,
 }: {
   result: RedactResult
   analyzing: boolean
@@ -71,6 +73,8 @@ export function OutputCard({
   /** Owned by App so the toggle survives scenario switches. */
   showMap: boolean
   onToggleMap: () => void
+  /** Client-side navigation to the "Vad maskeras?" section on the transparency page. */
+  onCoverage: () => void
 }) {
   const unique = Object.keys(result.map).length
 
@@ -104,8 +108,10 @@ export function OutputCard({
 
       <Stats result={result} />
 
-      {unique > 0 && (
-        <>
+      {/* The moment someone wonders why a value was (or was not) masked is
+          right here, so the coverage page is one click away from the result. */}
+      <div className="card-links">
+        {unique > 0 && (
           <button
             type="button"
             className="link"
@@ -115,9 +121,16 @@ export function OutputCard({
           >
             {showMap ? copy.outputCard.hideKey : copy.outputCard.showKey} ({unique})
           </button>
-          {showMap ? <RestoreMap map={result.map} /> : <div id="restore-map" hidden />}
-        </>
-      )}
+        )}
+        <a
+          className="link"
+          href={`${viewPaths.transparency}#vad-maskeras`}
+          onClick={navClick(onCoverage)}
+        >
+          {copy.outputCard.coverageLink}
+        </a>
+      </div>
+      {unique > 0 && (showMap ? <RestoreMap map={result.map} /> : <div id="restore-map" hidden />)}
     </section>
   )
 }

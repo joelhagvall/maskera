@@ -741,8 +741,15 @@ html[data-theme="dark"] .tag {
 }
 
 /* ---- restore map ---- */
-.link {
+.card-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
   margin-top: 16px;
+}
+.link {
+  display: inline-flex;
+  align-items: center;
   background: none;
   border: none;
   padding: 0;

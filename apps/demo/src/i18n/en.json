@@ -44,7 +44,8 @@
     "analyzing": "analysing…",
     "restoreMapNote": "The key stays on your device. The AI service sees placeholders instead of the data that maskera detected. You can use the key to restore the original values in the response afterwards.",
     "showKey": "Show restoration key",
-    "hideKey": "Hide restoration key"
+    "hideKey": "Hide restoration key",
+    "coverageLink": "What gets masked?"
   },
   "copyButton": {
     "copy": "Copy",
