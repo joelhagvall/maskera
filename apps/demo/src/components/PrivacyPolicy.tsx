@@ -21,7 +21,7 @@ export function PrivacyPolicy({ go }: { go: (view: View) => void }) {
             ))}
           </ul>
           <p className="prose-body">
-            <a href="https://joelhagvall.com" target="_blank" rel="noreferrer">
+            <a href="https://hagvall-labs.com" target="_blank" rel="noreferrer">
               {copy.privacy.contactCta}
               <ArrowUpRightIcon size={13} />
             </a>

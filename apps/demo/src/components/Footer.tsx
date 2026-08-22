@@ -66,7 +66,7 @@ export function Footer({
       </nav>
       <p className="footer-row footer-credit">
         {copy.footer.creditPrefix}{" "}
-        <a href="https://joelhagvall.com" target="_blank" rel="noreferrer">
+        <a href="https://hagvall-labs.com" target="_blank" rel="noreferrer">
           {copy.footer.author}
         </a>
         .

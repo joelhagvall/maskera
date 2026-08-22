@@ -157,12 +157,17 @@ function jsonLdFor(view: View, locale: Locale): object {
       author: {
         "@type": "Person",
         name: "Joel Hägvall",
-        url: "https://joelhagvall.com",
+      },
+      publisher: {
+        "@type": "Organization",
+        name: "Hägvall Labs AB",
+        url: "https://hagvall-labs.com",
       },
       sameAs: [
         "https://github.com/joelhagvall/maskera",
         "https://www.npmjs.com/package/maskera",
         "https://huggingface.co/joelhagvall/maskera-sv-ner",
+        "https://hagvall-labs.com",
       ],
     }
   }

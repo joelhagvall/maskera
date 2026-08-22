@@ -291,8 +291,8 @@
     "modelLink": "Egentränad svensk AI-modell",
     "navLabel": "Integritet och dokumentation",
     "whitepaper": "Whitepaper (PDF)",
-    "creditPrefix": "Byggd av",
-    "author": "Joel Hägvall"
+    "creditPrefix": "En produkt från",
+    "author": "Hägvall Labs AB"
   },
   "accuracy": {
     "metaTitle": "träffsäkerhet & testresultat · maskera",
@@ -761,7 +761,7 @@
     "items": [
       {
         "title": "Personuppgiftsansvarig",
-        "body": "Joel Hägvall är personuppgiftsansvarig för maskera.dev. Kontaktuppgifter finns på joelhagvall.com."
+        "body": "Hägvall Labs AB (org.nr 559598-0110) är personuppgiftsansvarig för maskera.dev. Kontaktuppgifter finns på hagvall-labs.com."
       },
       {
         "title": "Webbstatistik",
@@ -777,15 +777,15 @@
       },
       {
         "title": "Texten i verktyget",
-        "body": "Texten och nyckeln med originaluppgifterna behandlas lokalt i webbläsaren. De skickas inte till mig eller någon annan tjänst för maskering."
+        "body": "Texten och nyckeln med originaluppgifterna behandlas lokalt i webbläsaren. De skickas inte till oss eller någon annan tjänst för maskering."
       },
       {
         "title": "Dina rättigheter",
-        "body": "Kontakta mig om du har frågor om webbplatsens behandling eller vill använda dina rättigheter."
+        "body": "Kontakta oss om du har frågor om webbplatsens behandling eller vill använda dina rättigheter."
       }
     ],
-    "contactCta": "Kontaktuppgifter på joelhagvall.com",
-    "updated": "Senast uppdaterad 9 augusti 2026."
+    "contactCta": "Kontaktuppgifter på hagvall-labs.com",
+    "updated": "Senast uppdaterad 21 augusti 2026."
   },
   "services": {
     "title": "Maskera för företag",

@@ -217,3 +217,7 @@ drifts. Roadmap:
 
 Code: MIT © Joel Hägvall. Model weights: MIT (base model KB-BERT is CC0,
 National Library of Sweden). See [`packages/ner/NOTICE`](packages/ner/NOTICE).
+
+Maskera is developed and maintained by
+[Hägvall Labs AB](https://hagvall-labs.com) (Stockholm, Sweden,
+reg. no. 559598-0110).

@@ -291,8 +291,8 @@
     "modelLink": "Custom-trained Swedish AI model",
     "navLabel": "Privacy and documentation",
     "whitepaper": "White paper (PDF)",
-    "creditPrefix": "Built by",
-    "author": "Joel Hägvall"
+    "creditPrefix": "A product of",
+    "author": "Hägvall Labs AB"
   },
   "accuracy": {
     "metaTitle": "accuracy & test results · maskera",
@@ -761,7 +761,7 @@
     "items": [
       {
         "title": "Data controller",
-        "body": "Joel Hägvall is the data controller for maskera.dev. Contact details are available at joelhagvall.com."
+        "body": "Hägvall Labs AB (Swedish company reg. no. 559598-0110) is the data controller for maskera.dev. Contact details are available at hagvall-labs.com."
       },
       {
         "title": "Web analytics",
@@ -777,15 +777,15 @@
       },
       {
         "title": "Text entered in the tool",
-        "body": "The text and the key containing the original data are processed locally in the browser. They are not sent to me or any other service for masking."
+        "body": "The text and the key containing the original data are processed locally in the browser. They are not sent to us or any other service for masking."
       },
       {
         "title": "Your rights",
-        "body": "Contact me if you have questions about the website's processing or want to exercise your rights."
+        "body": "Contact us if you have questions about the website's processing or want to exercise your rights."
       }
     ],
-    "contactCta": "Contact details at joelhagvall.com",
-    "updated": "Last updated 9 August 2026."
+    "contactCta": "Contact details at hagvall-labs.com",
+    "updated": "Last updated 21 August 2026."
   },
   "services": {
     "title": "Maskera for companies",

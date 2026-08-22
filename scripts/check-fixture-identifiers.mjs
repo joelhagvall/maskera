@@ -58,6 +58,11 @@ const TEST_SAMORDNINGSNUMMER = new Set(["196403722397", "197001782395"])
 // https://www7.skatteverket.se/portal-wapi/open/apier-och-oppna-data/utvecklarportalen/v1/getFile/tjanstebeskrivning-folkbokforingsuppgifter-for-offentliga-aktorer-v3/pdf/1.0.3/tjanstebeskrivning-folkbokforingsuppgift-offentliga-aktorer-v3.pdf
 const TEST_ORGANISATIONSNUMMER = new Set(["2021004748"])
 
+// The repository owner's own company identity, published in the Bolagsverket
+// register (Hägvall Labs AB, https://www.allabolag.se/foretag/hägvall-labs-ab/stockholm/-/2KJP9VYI0000).
+// Operational like OPERATIONAL_EMAILS, not fixture data.
+const OPERATIONAL_ORGANISATIONSNUMMER = new Set(["5595980110"])
+
 // PTS reserves these ranges for fictional use.
 // https://pts.se/internet-och-telefoni/telefonnummer-och-adressering/telefonnummer-till-bocker-och-filmer/
 const FICTIONAL_PHONE_RANGES = [
@@ -156,7 +161,10 @@ function approvedIdentity(value, kind) {
     )
   }
   const core = organisationCore(value)
-  return core !== undefined && TEST_ORGANISATIONSNUMMER.has(core)
+  return (
+    core !== undefined &&
+    (TEST_ORGANISATIONSNUMMER.has(core) || OPERATIONAL_ORGANISATIONSNUMMER.has(core))
+  )
 }
 
 function normalizePhone(value) {
