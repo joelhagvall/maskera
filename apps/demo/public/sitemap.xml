@@ -57,6 +57,13 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://maskera.dev/om</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/om" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/about" />
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://maskera.dev/en</loc>
     <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en" />
@@ -111,5 +118,12 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/security" />
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/en/about</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/om" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/about" />
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>

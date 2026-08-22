@@ -47,6 +47,7 @@ export function viewFromPath(pathname: string): View {
   if (path === paths.services) return "services"
   if (path === paths.accuracy) return "accuracy"
   if (path === paths.security) return "security"
+  if (path === paths.about) return "about"
   return "demo"
 }
 

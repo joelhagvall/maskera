@@ -8,12 +8,14 @@ export function Footer({
   onPolicy,
   onAccuracy,
   onSecurity,
+  onAbout,
 }: {
   onTransparency: () => void
   onTestData: () => void
   onPolicy: () => void
   onAccuracy: () => void
   onSecurity: () => void
+  onAbout: () => void
 }) {
   return (
     <footer className="footer">
@@ -55,6 +57,11 @@ export function Footer({
           <li>
             <a className="footer-link" href={viewPaths.testdata} onClick={navClick(onTestData)}>
               {copy.navigation.testData}
+            </a>
+          </li>
+          <li>
+            <a className="footer-link" href={viewPaths.about} onClick={navClick(onAbout)}>
+              {copy.navigation.about}
             </a>
           </li>
           <li>

@@ -284,6 +284,7 @@
     "transparency": "Privacy & transparency",
     "testData": "Test data",
     "privacyPolicy": "Privacy policy",
+    "about": "About & contact",
     "github": "GitHub"
   },
   "footer": {
@@ -868,5 +869,64 @@
     "servicesDescription": "Compare the open-source npm packages with Maskera Gateway, which runs on CPU in your own environment before your AI requests.",
     "siteName": "maskera",
     "servicesSchemaName": "Maskera for companies"
+  },
+  "about": {
+    "metaTitle": "about & contact · maskera",
+    "metaDescription": "About Maskera: what the tool does, who is behind it (Hägvall Labs AB) and how to contact us.",
+    "title": "About Maskera",
+    "lede": "Maskera hides Swedish personal data in text before it reaches an AI service, a log or analytics. This page describes what Maskera is, who is behind it and how to reach us.",
+    "tocLabel": "On this page",
+    "toc": [
+      {
+        "href": "#vad",
+        "label": "What Maskera is"
+      },
+      {
+        "href": "#anvanda",
+        "label": "Two ways to use it"
+      },
+      {
+        "href": "#bakom",
+        "label": "Who is behind it"
+      },
+      {
+        "href": "#kontakt",
+        "label": "Contact"
+      }
+    ],
+    "whatTitle": "What Maskera is",
+    "what": [
+      "Maskera combines deterministic rules for structured Swedish personal data (personal identity numbers, coordination numbers, organisation numbers, phone numbers, email addresses, postcodes, bankgiro, plusgiro, IBAN, card numbers, IP addresses and URLs) with a custom-trained Swedish NER model that finds names, places, organisations and street addresses in free text, including all-lowercase text.",
+      "Masking is reversible: every run produces a restoration key that stays with the caller, so the AI response can be unmasked locally. Everything runs where the text already is: in the browser, in Node.js or in Maskera Gateway on your own servers. No text is sent to Maskera to be masked."
+    ],
+    "useTitle": "Two ways to use it",
+    "use": [
+      "The npm packages maskera and @maskera/core are open source under the MIT licence and free to use in your own integrations. The model maskera-sv-ner is published openly on Hugging Face.",
+      "Maskera Gateway is the delivery for companies: a signed container with the model built in that runs in the customer's own environment, without a database or GPU, and masks AI traffic before it reaches the approved provider. The customer portal app.maskera.dev handles accounts, licences, payment and downloads. No customer text is processed there, and there is no Maskera-hosted masking service."
+    ],
+    "whoTitle": "Who is behind it",
+    "who": "Maskera is developed and operated by Hägvall Labs AB (Swedish company reg. no. 559598-0110), a Swedish limited company in Stockholm founded by Joel Hägvall. The company is the data controller for maskera.dev; how the website itself processes data is described in the privacy policy. The source code, training pipeline and benchmarks are public on GitHub so the results can be reviewed and reproduced.",
+    "contactTitle": "Contact",
+    "contact": [
+      {
+        "title": "Email",
+        "body": "hej@maskera.dev for questions about Gateway, pilots and licences, press and anything else. We answer in Swedish and English."
+      },
+      {
+        "title": "Bugs and suggestions",
+        "body": "Open an issue in the source repository on GitHub: https://github.com/joelhagvall/maskera/issues"
+      },
+      {
+        "title": "Vulnerabilities",
+        "body": "Report privately through GitHub's vulnerability reporting. Scope and process are described on the security page."
+      },
+      {
+        "title": "Company details",
+        "body": "Hägvall Labs AB, Swedish company reg. no. 559598-0110, Stockholm. Further contact details are available at hagvall-labs.com."
+      }
+    ],
+    "securityCta": "Security page",
+    "privacyCta": "Privacy policy",
+    "developersCta": "For developers"
   }
 }

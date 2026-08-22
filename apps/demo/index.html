@@ -15,6 +15,11 @@
     <link rel="alternate" hreflang="sv" href="https://maskera.dev/" />
     <link rel="alternate" hreflang="en" href="https://maskera.dev/en" />
     <link rel="alternate" hreflang="x-default" href="https://maskera.dev/" />
+    <!-- Machine-readable alternates for agents: the page as Markdown (also
+         served on Accept: text/markdown by middleware.ts) and the Gateway
+         OpenAPI contract (RFC 8631 service-desc). -->
+    <link rel="alternate" type="text/markdown" href="/index.md" />
+    <link rel="service-desc" type="application/vnd.oai.openapi+json" href="/openapi.json" />
     <!-- Light is the default: only an explicit toggle choice switches to
          dark, the system preference is not consulted. One meta, not two
          media-driven ones, or a system-dark visitor would get dark browser
@@ -74,13 +79,37 @@
             "@type": "Organization",
             "@id": "https://maskera.dev/#hagvall-labs",
             "name": "Hägvall Labs AB",
+            "legalName": "Hägvall Labs AB",
             "url": "https://hagvall-labs.com",
+            "email": "hej@maskera.dev",
+            "identifier": {
+              "@type": "PropertyValue",
+              "propertyID": "Swedish organisation number",
+              "value": "559598-0110"
+            },
             "founder": { "@id": "https://maskera.dev/#joel" },
             "address": {
               "@type": "PostalAddress",
               "addressLocality": "Stockholm",
               "addressCountry": "SE"
-            }
+            },
+            "contactPoint": [
+              {
+                "@type": "ContactPoint",
+                "contactType": "customer support",
+                "email": "hej@maskera.dev",
+                "url": "https://maskera.dev/om#kontakt",
+                "availableLanguage": ["sv", "en"]
+              },
+              {
+                "@type": "ContactPoint",
+                "contactType": "sales",
+                "email": "hej@maskera.dev",
+                "url": "https://maskera.dev/tjanster",
+                "availableLanguage": ["sv", "en"]
+              }
+            ],
+            "sameAs": ["https://github.com/joelhagvall/maskera"]
           },
           {
             "@type": "Person",

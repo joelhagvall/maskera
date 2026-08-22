@@ -10,11 +10,14 @@
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs"
 import { dirname, join, relative } from "node:path"
 import { fileURLToPath, pathToFileURL } from "node:url"
+import { htmlToMarkdown } from "./html-to-markdown.mjs"
 
 const root = fileURLToPath(new URL("..", import.meta.url))
 const dist = join(root, "dist")
 
-const { renderRoute } = await import(pathToFileURL(join(root, "dist-ssr", "entry-server.js")).href)
+const { renderRoute, routeInfo } = await import(
+  pathToFileURL(join(root, "dist-ssr", "entry-server.js")).href
+)
 
 function* htmlFiles(dir) {
   for (const name of readdirSync(dir)) {
@@ -66,10 +69,18 @@ for (const file of htmlFiles(dist)) {
   )
 
   if (!html.includes(EMPTY_ROOT)) throw new Error(`no empty #root in ${file}`)
-  html = html.replace(EMPTY_ROOT, () => `<div id="root">${renderRoute(pathname)}</div>`)
+  const markup = renderRoute(pathname)
+  html = html.replace(EMPTY_ROOT, () => `<div id="root">${markup}</div>`)
 
   writeFileSync(file, html)
+
+  // The page's text/markdown representation, next to it in dist/ (/ ->
+  // /index.md, /utvecklare -> /utvecklare.md). middleware.ts rewrites
+  // Accept: text/markdown requests here; the file is also fetchable directly.
+  const markdown = htmlToMarkdown(markup, routeInfo(pathname))
+  if (markdown.length < 500) throw new Error(`markdown for ${pathname} is implausibly short`)
+  writeFileSync(join(dist, pathname === "/" ? "index.md" : `${pathname.slice(1)}.md`), markdown)
   count += 1
 }
 
-console.log(`prerendered ${count} pages`)
+console.log(`prerendered ${count} pages (html + markdown)`)

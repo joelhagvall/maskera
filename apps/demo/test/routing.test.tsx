@@ -48,6 +48,7 @@ describe("useRoute: initial view from pathname", () => {
     ["/tjanster", "services"],
     ["/traffsakerhet", "accuracy"],
     ["/sakerhet", "security"],
+    ["/om", "about"],
     ["/utvecklare/", "dev"], // trailing slash
     ["/tjanster///", "services"], // repeated trailing slashes
     ["/okand-sida", "demo"], // unknown path falls back to home
@@ -72,6 +73,7 @@ describe("viewFromPath: localized paths", () => {
     ["/en/services", "services"],
     ["/en/accuracy", "accuracy"],
     ["/en/security", "security"],
+    ["/en/about", "about"],
     ["/en/security/", "security"],
   ] as const
 

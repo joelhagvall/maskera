@@ -1,4 +1,5 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react"
+import { About } from "./components/About"
 import { Accuracy } from "./components/Accuracy"
 import { Controls } from "./components/Controls"
 import { Developers } from "./components/Developers"
@@ -154,12 +155,14 @@ export function App({ initialView }: { initialView?: View }) {
       {view === "services" && <Services go={go} onCoverage={goCoverage} />}
       {view === "accuracy" && <Accuracy go={go} />}
       {view === "security" && <Security go={go} />}
+      {view === "about" && <About go={go} />}
       <Footer
         onTransparency={() => navigate("transparency")}
         onTestData={() => navigate("testdata")}
         onPolicy={() => navigate("privacy")}
         onAccuracy={() => navigate("accuracy")}
         onSecurity={() => navigate("security")}
+        onAbout={() => navigate("about")}
       />
     </div>
   )

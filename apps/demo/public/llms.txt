@@ -1,4 +1,4 @@
-# maskera
+# Maskera (maskera.dev)
 
 > Swedish-first, client-side PII redaction for AI apps. maskera finds and masks detected Swedish personal data (names, personnummer, addresses, phone numbers, and more) before text reaches an LLM, a log, or analytics. Everything runs on-device (browser via WebGPU/WASM, or Node); text and restore maps are not sent away for masking. The packages contain no telemetry. The demo counts anonymous, cookieless page views, never your content. The default setup fetches the model weights and WASM runtime once as static assets (both can be self-hosted), never your content. Redactions are reversible via a restore map that stays with the caller.
 
@@ -36,6 +36,25 @@ open-source packages and Gateway are the two deployments. The customer portal
 at app.maskera.dev is limited to accounts, licensing, billing, and Gateway
 downloads. Customer text is not processed there.
 
+## When to use Maskera
+
+Reach for Maskera when all of these hold:
+
+- The text is Swedish (or mixed Swedish/English) and may contain personal data: names, personnummer, samordningsnummer, organisationsnummer, addresses, phone numbers, e-mail, postnummer, bankgiro/plusgiro, IBAN, card numbers, IP addresses.
+- The text is about to leave a trust boundary: a prompt to an LLM, a log line, analytics, a ticket export, a support transcript, a training or evaluation corpus.
+- Masking must happen where the text already is (browser, Node.js, the customer's own servers) rather than in a third-party API, and it must be reversible for the caller (restore map) but not for the recipient.
+
+Best-fit jobs: pre-LLM redaction in chat and copilots, HR/recruiting screening, customer support and complaints, healthcare notes (`profile: "clinical"` keeps doses and measurements), legal and municipal case text, log scrubbing, building de-identified test data from real-looking Swedish text.
+
+Not a fit: non-Swedish text (English names work only incidentally), image/PDF OCR (feed Maskera the extracted text), a hosted "send us your text" API (none exists, by design), or guarantees of zero leaks (see the measured leak counts above and the accuracy page).
+
+## How an agent should call it
+
+- In code: `npm install maskera` (rules + NER, 43 MB model fetched once from Hugging Face or self-hosted) or `npm install @maskera/core` (rules only, zero dependencies, synchronous). Use `redact(text)` from core for rules only, or `createNerRecognizer()` + `redactWithNer(text, { recognizer })` from `maskera` for rules + NER. The result is `{ text, map, restore }`; keep `map`, send `text`, call `restore(reply)` on the LLM output.
+- In a company environment: Maskera Gateway exposes `POST /v1/mask` (text in, masked text + entity counts + optional restore map out) and `POST /v1/openai/chat/completions` (an OpenAI-compatible proxy that masks before the upstream and restores the answer). Contract: https://maskera.dev/openapi.json (redirects to the canonical https://app.maskera.dev/gateway/openapi.json). Authentication is a bearer Gateway API key or OIDC token; the Gateway runs on the customer's host (the spec's server URL is a local placeholder), never at maskera.dev.
+- On this site: every page has a Markdown rendering. Send `Accept: text/markdown` to any page URL, or fetch the `.md` sibling directly (`https://maskera.dev/index.md`, `https://maskera.dev/en/developers.md`, `https://maskera.dev/en/about.md`). Unknown paths return HTTP 404 with a Markdown (default), JSON (`Accept: application/json` or `/api/*`) or HTML body that lists these entry points. `maskera.dev/api/*` is not an API: it answers 404 in JSON with the same hints.
+- Errors from the Gateway are JSON: `{ "error": { "message": "..." } }` with the HTTP status carrying the category (400 invalid body, 401/403 auth, 413 too large, 422 unknown field, 502 upstream, 503 not ready). Messages never contain request payload.
+
 ## Docs
 
 - [README (English)](https://github.com/joelhagvall/maskera#readme): install, API, architecture
@@ -49,6 +68,16 @@ downloads. Customer text is not processed there.
 - [maskera on npm](https://www.npmjs.com/package/maskera): rules + Swedish NER model, core re-exported
 - [@maskera/core on npm](https://www.npmjs.com/package/@maskera/core): rules only, zero dependencies
 - [maskera-sv-ner on Hugging Face](https://huggingface.co/joelhagvall/maskera-sv-ner): the 43 MB Swedish NER ONNX model, training details
+
+## Machine-readable entry points
+
+- [Markdown renderings](https://maskera.dev/index.md): `.md` sibling of every page, also served on `Accept: text/markdown`
+- [Sitemap](https://maskera.dev/sitemap.xml): all pages in Swedish and English
+- [Gateway OpenAPI](https://maskera.dev/openapi.json): redirects to the canonical https://app.maskera.dev/gateway/openapi.json
+- [Benchmark contract](https://maskera.dev/benchmark-release.json): the machine-readable release measurements behind every number on this site ([schema](https://maskera.dev/benchmark-release.schema.json))
+- [Whitepaper (PDF)](https://maskera.dev/whitepaper.pdf): method and measurements
+- [About and contact](https://maskera.dev/en/about): operator (Hägvall Labs AB, org.nr 559598-0110, Stockholm), hej@maskera.dev, security reporting; Swedish: https://maskera.dev/om; `/about`, `/contact` and `/privacy` redirect here and to the privacy policy
+- [Developer docs](https://maskera.dev/en/developers): install, API and restore flow; Swedish: https://maskera.dev/utvecklare; `/developers` and `/docs` redirect here
 
 ## Optional
 

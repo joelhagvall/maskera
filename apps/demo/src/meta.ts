@@ -2,42 +2,11 @@
 // runtime router and Vite's generated static HTML shells both read this file,
 // so direct landings and client navigation cannot drift.
 
-import { activeLocale, copies, type Locale } from "./i18n"
+import { activeLocale, copies } from "./i18n"
 
-export type View =
-  | "demo"
-  | "transparency"
-  | "testdata"
-  | "privacy"
-  | "dev"
-  | "services"
-  | "accuracy"
-  | "security"
+import { type Locale, markdownPathFor, pathsByLocale, SITE_ORIGIN, type View } from "./paths"
 
-export const SITE_ORIGIN = "https://maskera.dev"
-
-const pathsByLocale: Record<Locale, Record<View, string>> = {
-  sv: {
-    demo: "/",
-    dev: "/utvecklare",
-    transparency: "/integritet",
-    testdata: "/testdata",
-    privacy: "/integritetspolicy",
-    services: "/tjanster",
-    accuracy: "/traffsakerhet",
-    security: "/sakerhet",
-  },
-  en: {
-    demo: "/en",
-    dev: "/en/developers",
-    transparency: "/en/privacy",
-    testdata: "/en/test-data",
-    privacy: "/en/privacy-policy",
-    services: "/en/services",
-    accuracy: "/en/accuracy",
-    security: "/en/security",
-  },
-}
+export { pathsByLocale, SITE_ORIGIN, type View }
 
 export function viewPath(view: View, locale: Locale = activeLocale): string {
   return pathsByLocale[locale][view]
@@ -97,6 +66,10 @@ export function getViewMeta(locale: Locale): Record<View, ViewMeta> {
       title: strings.security.metaTitle,
       description: strings.security.metaDescription,
     },
+    about: {
+      title: strings.about.metaTitle,
+      description: strings.about.metaDescription,
+    },
   }
 }
 
@@ -114,8 +87,52 @@ export const routeHtmlViews = [
   "services",
   "accuracy",
   "security",
+  "about",
 ] as const
 export type RouteHtmlView = (typeof routeHtmlViews)[number]
+
+/**
+ * The operator, as the home page's publisher and the about page's main entity.
+ * contactPoint and address let agents verify the business and answer contact
+ * questions without rendering the site (index.html carries the same data in
+ * its hand-authored @graph).
+ */
+export const ORGANIZATION_JSON_LD = {
+  "@type": "Organization",
+  "@id": `${SITE_ORIGIN}/#hagvall-labs`,
+  name: "Hägvall Labs AB",
+  legalName: "Hägvall Labs AB",
+  url: "https://hagvall-labs.com",
+  email: "hej@maskera.dev",
+  identifier: {
+    "@type": "PropertyValue",
+    propertyID: "Swedish organisation number",
+    value: "559598-0110",
+  },
+  founder: { "@type": "Person", name: "Joel Hägvall", url: "https://joelhagvall.com" },
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Stockholm",
+    addressCountry: "SE",
+  },
+  contactPoint: [
+    {
+      "@type": "ContactPoint",
+      contactType: "customer support",
+      email: "hej@maskera.dev",
+      url: `${SITE_ORIGIN}/en/about#kontakt`,
+      availableLanguage: ["sv", "en"],
+    },
+    {
+      "@type": "ContactPoint",
+      contactType: "sales",
+      email: "hej@maskera.dev",
+      url: `${SITE_ORIGIN}/en/services`,
+      availableLanguage: ["sv", "en"],
+    },
+  ],
+  sameAs: ["https://github.com/joelhagvall/maskera"],
+} as const
 
 function jsonLdFor(view: View, locale: Locale): object {
   const strings = copies[locale]
@@ -134,6 +151,8 @@ function jsonLdFor(view: View, locale: Locale): object {
         return strings.accuracy.title
       case "security":
         return strings.security.title
+      case "about":
+        return strings.about.title
       default:
         return strings.meta.siteName
     }
@@ -158,11 +177,7 @@ function jsonLdFor(view: View, locale: Locale): object {
         "@type": "Person",
         name: "Joel Hägvall",
       },
-      publisher: {
-        "@type": "Organization",
-        name: "Hägvall Labs AB",
-        url: "https://hagvall-labs.com",
-      },
+      publisher: ORGANIZATION_JSON_LD,
       sameAs: [
         "https://github.com/joelhagvall/maskera",
         "https://www.npmjs.com/package/maskera",
@@ -180,6 +195,19 @@ function jsonLdFor(view: View, locale: Locale): object {
       programmingLanguage: "TypeScript",
       runtimePlatform: ["Web browser", "Node.js"],
       license: "https://opensource.org/license/mit",
+    }
+  }
+
+  if (view === "about") {
+    return {
+      ...shared,
+      "@type": ["AboutPage", "ContactPage"],
+      mainEntity: ORGANIZATION_JSON_LD,
+      isPartOf: {
+        "@type": "WebSite",
+        name: strings.meta.siteName,
+        url: viewUrl("demo", locale),
+      },
     }
   }
 
@@ -248,6 +276,8 @@ export function renderRouteHtml(view: View, locale: Locale = activeLocale): stri
     <link rel="alternate" hreflang="sv" href="${alternateSv}" />
     <link rel="alternate" hreflang="en" href="${alternateEn}" />
     <link rel="alternate" hreflang="x-default" href="${alternateSv}" />
+    <link rel="alternate" type="text/markdown" href="${markdownPathFor(viewPath(view, locale))}" />
+    <link rel="service-desc" type="application/vnd.oai.openapi+json" href="/openapi.json" />
     <meta name="theme-color" content="#ffffff" />
     <script src="/theme-init.js"></script>
 

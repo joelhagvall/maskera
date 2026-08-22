@@ -46,6 +46,43 @@ describe("renderRouteHtml", () => {
     }
   })
 
+  it("names the operator's contact point in the home page JSON-LD", () => {
+    const html = renderRouteHtml("demo", "en")
+    const match = html.match(/<script type="application\/ld\+json">\s*([\s\S]*?)\s*<\/script>/)
+    const data = JSON.parse(match?.[1] ?? "")
+    expect(data.publisher["@type"]).toBe("Organization")
+    expect(data.publisher.address).toMatchObject({ "@type": "PostalAddress", addressCountry: "SE" })
+    expect(data.publisher.contactPoint[0]).toMatchObject({
+      "@type": "ContactPoint",
+      email: "hej@maskera.dev",
+    })
+  })
+
+  it("marks the about page as AboutPage and ContactPage with the operator as main entity", () => {
+    for (const locale of ["sv", "en"] as const) {
+      const html = renderRouteHtml("about", locale)
+      const match = html.match(/<script type="application\/ld\+json">\s*([\s\S]*?)\s*<\/script>/)
+      const data = JSON.parse(match?.[1] ?? "")
+      expect(data["@type"]).toEqual(["AboutPage", "ContactPage"])
+      expect(data.mainEntity.name).toBe("Hägvall Labs AB")
+      expect(data.mainEntity.contactPoint[0].email).toBe("hej@maskera.dev")
+    }
+  })
+
+  it("advertises the Markdown alternate and the OpenAPI service description on every shell", () => {
+    for (const view of routeHtmlViews) {
+      for (const locale of ["sv", "en"] as const) {
+        const html = renderRouteHtml(view, locale)
+        expect(html).toContain(
+          `<link rel="alternate" type="text/markdown" href="${new URL(viewUrl(view, locale)).pathname}.md" />`,
+        )
+        expect(html).toContain(
+          '<link rel="service-desc" type="application/vnd.oai.openapi+json" href="/openapi.json" />',
+        )
+      }
+    }
+  })
+
   it("only the developers page preloads its mono font and architecture images", () => {
     expect(renderRouteHtml("dev")).toContain("geist-mono-latin.woff2")
     expect(renderRouteHtml("dev")).toContain('href="/layers-sv.svg"')
