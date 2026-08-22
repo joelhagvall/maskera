@@ -1,5 +1,6 @@
 import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
+import { linkify } from "../linkify"
 import type { View } from "../routing"
 import { TopBar } from "./TopBar"
 
@@ -16,7 +17,7 @@ export function PrivacyPolicy({ go }: { go: (view: View) => void }) {
           <ul>
             {copy.privacy.items.map((item) => (
               <li key={item.title}>
-                <strong>{item.title}:</strong> {item.body}
+                <strong>{item.title}:</strong> {linkify(item.body)}
               </li>
             ))}
           </ul>
