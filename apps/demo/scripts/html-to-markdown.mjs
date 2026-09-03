@@ -60,10 +60,7 @@ function service() {
   turndown.addRule("listItem", {
     filter: "li",
     replacement: (content, node, options) => {
-      const body = content
-        .replace(/^\n+/, "")
-        .replace(/\n+$/, "\n")
-        .replace(/\n/gm, "\n  ")
+      const body = content.replace(/^\n+/, "").replace(/\n+$/, "\n").replace(/\n/gm, "\n  ")
       let prefix = `${options.bulletListMarker} `
       const parent = node.parentNode
       if (parent && parent.nodeName === "OL") {
