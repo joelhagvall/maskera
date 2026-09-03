@@ -1,0 +1,57 @@
+name: Security audit
+
+# Dependency audit in two shapes. On push/PR the audit step itself fails the
+# check when a new high-or-worse advisory appears (pnpm exits nonzero; the
+# accepted ignores live in auditConfig in pnpm-workspace.yaml). On a daily
+# schedule it instead opens (or updates) an issue, because advisories also
+# appear in old dependencies with no commit involved — which the push gate
+# can never catch. Daily is enough: advisories move slower than commits, and
+# the push gate already covers whatever a PR itself pulls in.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "37 5 * * *"
+  workflow_dispatch:
+
+# The audit itself only reads; the scheduled run needs issue access for the
+# failure report below. Fork PRs never reach that step (schedule-only).
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      # pnpm version comes from the "packageManager" field in package.json
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Audit dependencies (high and above)
+        run: pnpm audit --audit-level=high
+      - name: Open or update an issue on failure
+        if: failure() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Dependency audit failed"
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          body="Daily dependency audit failed on $(date -u +%F): a new high-or-worse advisory appeared that is not in the accepted ignores (auditConfig in pnpm-workspace.yaml).
+
+          Either bump the affected dependency (pnpm override if it is transitive) or, if the path is provably unreachable, add its GHSA to the ignore list with a comment saying why.
+
+          Run: $run_url"
+          existing=$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body"
+          fi
