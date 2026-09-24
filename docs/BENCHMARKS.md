@@ -18,7 +18,7 @@ locks the selected resolved dependency closure that executes the evaluation.
 Type-only peers and unrelated build, lint, browser-audit and test-tool updates
 are outside that closure and cannot masquerade as changed accuracy evidence.
 The frozen suite checksum is
-`92f210dd1c1d6435f99c18a4c8776b98bc1223ab703f3aab98ba21c4bf2e959f` and the
+`73702d2cf02edb97e633b669b564867f9f1321fa951d8faef4e18bb73131a41e` and the
 frozen evaluation-environment checksum is
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`.
 
@@ -142,7 +142,7 @@ exported chunks manually in the pinned LogosGuard surface, then run
 per-document outcomes, masked-text hashes and capture hashes are in
 [`benchmark-logosguard-2.4.4.json`](benchmark-logosguard-2.4.4.json).
 Product-comparison result checksum: `e348ca88b83cd347a43f03d98659cac2c1b127012cf51c6f92f11e89f8929b05`.
-Product-comparison suite checksum: `90c51464315c53fb6dd9e906b1dc5e81b5c4f8c8a7dc05bae63e354c7c5af709`.
+Product-comparison suite checksum: `63ee2fdec332f8d42593d3bcf6bfd32928753fdf2d8b9656898e63916361b32e`.
 Selected runtime-environment checksum:
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`;
 corpus checksum:
