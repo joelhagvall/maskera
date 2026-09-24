@@ -319,5 +319,5 @@ architecture, privacy model, training data and GDPR positioning:
 
 ## License
 
-Code: MIT © [Joel Hägvall](https://joelhagvall.com). Default model weights:
-MIT (base model KB-BERT is CC0). See [`NOTICE`](./NOTICE).
+Code: MIT. Default model weights: MIT (base model KB-BERT is CC0). See
+[`NOTICE`](./NOTICE).
