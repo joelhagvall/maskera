@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { resolve } from "node:path"
 import { describe, expect, it } from "vitest"
 import { OPENAPI_CANONICAL } from "../src/agent-responses"
@@ -50,6 +50,47 @@ describe("vercel.json", () => {
   })
 })
 
+describe("robots.txt", () => {
+  const robots = read("public/robots.txt")
+  // RFC 9309: consecutive User-agent lines share the rules that follow them.
+  const groups = robots
+    .split(/\n\s*\n/)
+    .map((block) => block.split("\n").filter((line) => !line.startsWith("#")))
+    .filter((lines) => lines.some((line) => line.startsWith("User-agent:")))
+    .map((lines) => ({
+      agents: lines.filter((l) => l.startsWith("User-agent:")).map((l) => l.slice(11).trim()),
+      rules: lines.filter((l) => !l.startsWith("User-agent:")),
+    }))
+  const groupFor = (agent: string) =>
+    groups.find((group) => group.agents.includes(agent)) ??
+    groups.find((group) => group.agents.includes("*"))
+
+  it("blocks AI training crawlers", () => {
+    for (const agent of ["GPTBot", "ClaudeBot", "Google-Extended", "Applebot-Extended", "CCBot"]) {
+      expect(groupFor(agent)?.rules, agent).toContain("Disallow: /")
+    }
+  })
+
+  it("lets search and AI answer crawlers in", () => {
+    for (const agent of [
+      "Googlebot",
+      "Bingbot",
+      "OAI-SearchBot",
+      "Claude-SearchBot",
+      "PerplexityBot",
+    ]) {
+      expect(groupFor(agent)?.agents, agent).toEqual(["*"])
+      expect(groupFor(agent)?.rules, agent).toContain("Allow: /")
+    }
+  })
+
+  it("states the same content signal in every group", () => {
+    for (const group of groups) {
+      expect(group.rules).toContain("Content-Signal: search=yes, ai-input=yes, ai-train=no")
+    }
+  })
+})
+
 describe("sitemap.xml", () => {
   const sitemap = read("public/sitemap.xml")
   const locs = [...sitemap.matchAll(/<loc>https:\/\/maskera\.dev([^<]*)<\/loc>/g)].map((m) =>
@@ -66,6 +107,7 @@ describe("sitemap.xml", () => {
       const en = `https://maskera.dev${pathsByLocale.en[view]}`
       expect(sitemap).toContain(`<xhtml:link rel="alternate" hreflang="en" href="${en}" />`)
       expect(sitemap).toContain(`<xhtml:link rel="alternate" hreflang="sv" href="${sv}" />`)
+      expect(sitemap).toContain(`<xhtml:link rel="alternate" hreflang="x-default" href="${sv}" />`)
     }
   })
 })
@@ -118,6 +160,38 @@ describe("index.html", () => {
     for (const point of org.contactPoint) {
       expect(point.email).toBe("hej@maskera.dev")
       expect(point.contactType).toBeTruthy()
+    }
+  })
+
+  it("links the manifest and a localized link-preview card", () => {
+    expect(html).toContain('<link rel="manifest" href="/manifest.webmanifest" />')
+    expect(html).toContain('<meta property="og:image" content="https://maskera.dev/og.png" />')
+    expect(html).toMatch(/property="og:image:alt"\s+content="[^"]+"/)
+    for (const file of ["og.png", "og-en.png", "manifest.webmanifest", "manifest-en.webmanifest"]) {
+      expect(existsSync(resolve(__dirname, "..", "public", file)), file).toBe(true)
+    }
+  })
+
+  it("keeps both manifests installable and pointing at existing icons", () => {
+    for (const [file, start] of [
+      ["manifest.webmanifest", "/"],
+      ["manifest-en.webmanifest", "/en"],
+    ] as const) {
+      const manifest = JSON.parse(read(`public/${file}`)) as {
+        name: string
+        start_url: string
+        display: string
+        icons: { src: string; sizes: string; purpose?: string }[]
+      }
+      expect(manifest.start_url).toBe(start)
+      expect(manifest.display).toBe("standalone")
+      expect(manifest.icons.some((icon) => icon.sizes === "512x512")).toBe(true)
+      expect(manifest.icons.some((icon) => icon.purpose === "maskable")).toBe(true)
+      for (const icon of manifest.icons) {
+        expect(existsSync(resolve(__dirname, "..", "public", icon.src.slice(1))), icon.src).toBe(
+          true,
+        )
+      }
     }
   })
 

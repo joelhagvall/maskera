@@ -9,14 +9,12 @@ import { navClick, useRoute, viewFromPath } from "../src/routing"
 
 /**
  * The title behaviour here guards a shipped SEO regression: index.html
- * carries the descriptive static title, and an unconditional
- * `document.title = "maskera"` on mount clobbered it for every JS-rendering
- * crawler. A fresh landing on the home view must therefore leave
- * document.title alone; the short brand title only takes over once the user
- * actually navigates.
+ * carries the descriptive static title, and a `document.title = "maskera"`
+ * on mount replaced it for every JS-rendering crawler (Google indexes the
+ * rendered title). The home view's runtime title must equal the static one.
  */
 
-const STATIC_TITLE = "Skydda personuppgifter innan texten skickas till AI"
+const STATIC_TITLE = "Skydda personuppgifter innan texten skickas till AI · maskera"
 vi.spyOn(window, "scrollTo").mockImplementation(() => {})
 
 beforeEach(() => {
@@ -85,41 +83,44 @@ describe("viewFromPath: localized paths", () => {
 })
 
 describe("useRoute: document.title", () => {
-  it("fresh landing on / replaces the static title with the bare brand", () => {
+  it("fresh landing on / keeps the descriptive static title", () => {
     const { unmount } = mountAt("/")
-    expect(document.title).toBe("maskera")
+    expect(document.title).toBe(STATIC_TITLE)
+    expect(readFileSync(resolve(process.cwd(), "index.html"), "utf8")).toContain(
+      `<title>${STATIC_TITLE}</title>`,
+    )
     unmount()
   })
 
   it("fresh landing on a sub-page sets its title immediately", () => {
     const { unmount } = mountAt("/utvecklare")
-    expect(document.title).toBe("för utvecklare · maskera")
+    expect(document.title).toBe("för utvecklare: svensk PII-maskering med npm · maskera")
     unmount()
   })
 
   it("sets the public-documentation titles on direct landings", () => {
     const accuracy = mountAt("/traffsakerhet")
-    expect(document.title).toBe("träffsäkerhet & testresultat · maskera")
+    expect(document.title).toBe("träffsäkerhet & testresultat för svensk PII · maskera")
     accuracy.unmount()
 
     const security = mountAt("/sakerhet")
-    expect(document.title).toBe("säkerhet · maskera")
+    expect(document.title).toBe("säkerhet: nätverksanrop och modellintegritet · maskera")
     security.unmount()
   })
 
   it("navigating away from home sets the sub-page title", () => {
     const { result, unmount } = mountAt("/")
     act(() => result.current.navigate("dev"))
-    expect(document.title).toBe("för utvecklare · maskera")
+    expect(document.title).toBe("för utvecklare: svensk PII-maskering med npm · maskera")
     expect(window.location.pathname).toBe("/utvecklare")
     unmount()
   })
 
-  it("navigating back home switches to the bare brand title", () => {
+  it("navigating back home restores the descriptive title", () => {
     const { result, unmount } = mountAt("/")
     act(() => result.current.navigate("services"))
     act(() => result.current.navigate("demo"))
-    expect(document.title).toBe("maskera")
+    expect(document.title).toBe(STATIC_TITLE)
     expect(window.location.pathname).toBe("/")
     unmount()
   })
@@ -131,7 +132,7 @@ describe("useRoute: document.title", () => {
       window.dispatchEvent(new PopStateEvent("popstate"))
     })
     expect(result.current.view).toBe("services")
-    expect(document.title).toBe("för företag · maskera")
+    expect(document.title).toBe("för företag: PII-maskering i er egen miljö · maskera")
     unmount()
   })
 })
@@ -159,7 +160,7 @@ describe("useRoute: route metadata", () => {
       "https://maskera.dev/utvecklare",
     )
     expect(document.querySelector<HTMLMetaElement>('meta[name="twitter:title"]')?.content).toBe(
-      "för utvecklare · maskera",
+      "för utvecklare: svensk PII-maskering med npm · maskera",
     )
     unmount()
   })
@@ -171,7 +172,7 @@ describe("useRoute: route metadata", () => {
       "https://maskera.dev/tjanster",
     )
     expect(document.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.content).toBe(
-      "för företag · maskera",
+      "för företag: PII-maskering i er egen miljö · maskera",
     )
     expect(
       document.querySelector<HTMLMetaElement>('meta[name="twitter:description"]')?.content,

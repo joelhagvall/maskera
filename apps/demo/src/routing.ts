@@ -1,6 +1,14 @@
 import { type MouseEvent, useEffect, useLayoutEffect, useRef, useState } from "react"
-import { activeLocale, localeFromPath, setActiveLocale, useLocale } from "./i18n"
-import { getViewMeta, getViewPaths, type View, viewPaths, viewUrl } from "./meta"
+import { activeLocale, copies, localeFromPath, setActiveLocale, useLocale } from "./i18n"
+import {
+  getViewMeta,
+  getViewPaths,
+  manifestPath,
+  ogImageUrl,
+  type View,
+  viewPaths,
+  viewUrl,
+} from "./meta"
 
 // Titles/descriptions live in meta.ts, shared with the generated static HTML
 // shells for the sub-pages (see vite.config.ts).
@@ -35,6 +43,13 @@ export function applyViewMeta(view: View, locale = activeLocale) {
   setMetaContent('meta[name="twitter:description"]', meta.description)
   setMetaContent('meta[property="og:locale"]', locale === "sv" ? "sv_SE" : "en_GB")
   setMetaContent('meta[property="og:locale:alternate"]', locale === "sv" ? "en_GB" : "sv_SE")
+  setMetaContent('meta[property="og:image"]', ogImageUrl(locale))
+  setMetaContent('meta[name="twitter:image"]', ogImageUrl(locale))
+  setMetaContent('meta[property="og:image:alt"]', copies[locale].meta.ogImageAlt)
+  setMetaContent('meta[name="twitter:image:alt"]', copies[locale].meta.ogImageAlt)
+  document
+    .querySelector<HTMLLinkElement>('link[rel="manifest"]')
+    ?.setAttribute("href", manifestPath(locale))
 }
 
 export function viewFromPath(pathname: string): View {
@@ -94,10 +109,9 @@ export function useRoute(initialView?: View) {
     }
   }, [])
 
-  // The bare brand title replaces index.html's descriptive static title as
-  // soon as the app mounts: the tab must read "maskera", also on a fresh
-  // landing. JS-rendering crawlers see the swap too; the descriptive tagline
-  // for SEO/sharing lives in the static og/twitter tags and page content.
+  // The home title is the descriptive one from index.html, not the bare
+  // brand: Google indexes the rendered title, so a swap to "maskera" on mount
+  // would replace the tagline in search results.
   useEffect(() => {
     applyViewMeta(view, locale)
   }, [view, locale])

@@ -29,6 +29,19 @@ export function viewUrl(view: View, locale: Locale = activeLocale): string {
   return new URL(viewPath(view, locale), SITE_ORIGIN).href
 }
 
+/**
+ * The link-preview card per locale, rendered by scripts/render-social-images.mjs
+ * from the hero title so a shared link shows the language of the page.
+ */
+export function ogImageUrl(locale: Locale): string {
+  return `${SITE_ORIGIN}/${locale === "sv" ? "og.png" : "og-en.png"}`
+}
+
+/** The web app manifest per locale: same app, localized name and start page. */
+export function manifestPath(locale: Locale): string {
+  return locale === "sv" ? "/manifest.webmanifest" : "/manifest-en.webmanifest"
+}
+
 export type ViewMeta = { title: string; description: string }
 
 export function getViewMeta(locale: Locale): Record<View, ViewMeta> {
@@ -234,11 +247,10 @@ function escapeHtml(value: string): string {
 export function renderRouteHtml(view: View, locale: Locale = activeLocale): string {
   const strings = copies[locale]
   const meta = getViewMeta(locale)[view]
-  // The generated English home gets a descriptive static title. React swaps
-  // it to the short brand title once the app mounts, matching the Swedish root.
-  const staticTitle = view === "demo" ? strings.header.title : meta.title
-  const title = escapeHtml(staticTitle)
+  const title = escapeHtml(meta.title)
   const description = escapeHtml(meta.description)
+  const ogImage = ogImageUrl(locale)
+  const ogImageAlt = escapeHtml(strings.meta.ogImageAlt)
   const url = viewUrl(view, locale)
   const alternateSv = viewUrl(view, "sv")
   const alternateEn = viewUrl(view, "en")
@@ -270,6 +282,7 @@ export function renderRouteHtml(view: View, locale: Locale = activeLocale): stri
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="${manifestPath(locale)}" />
     <title>${title}</title>
     <meta name="description" content="${description}" />
     <link rel="canonical" href="${url}" />
@@ -288,13 +301,16 @@ export function renderRouteHtml(view: View, locale: Locale = activeLocale): stri
     <meta property="og:url" content="${url}" />
     <meta property="og:title" content="${title}" />
     <meta property="og:description" content="${description}" />
-    <meta property="og:image" content="${SITE_ORIGIN}/og.png" />
+    <meta property="og:image" content="${ogImage}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content="${ogImageAlt}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${title}" />
     <meta name="twitter:description" content="${description}" />
-    <meta name="twitter:image" content="${SITE_ORIGIN}/og.png" />
+    <meta name="twitter:image" content="${ogImage}" />
+    <meta name="twitter:image:alt" content="${ogImageAlt}" />
 
     <script type="application/ld+json">
       ${structuredData}

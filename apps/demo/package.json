@@ -17,6 +17,7 @@
     "audit:a11y:review": "start-server-and-test preview http://127.0.0.1:4173 a11y:review",
     "a11y:run": "for route in / /utvecklare /integritet /testdata /integritetspolicy /tjanster /traffsakerhet /sakerhet /om /en /en/developers /en/privacy /en/test-data /en/privacy-policy /en/services /en/accuracy /en/security /en/about; do pa11y --config .pa11yrc.json --level error --threshold 0 \"http://127.0.0.1:4173$route\" || exit 1; done",
     "a11y:review": "for route in / /utvecklare /integritet /testdata /integritetspolicy /tjanster /traffsakerhet /sakerhet /om /en /en/developers /en/privacy /en/test-data /en/privacy-policy /en/services /en/accuracy /en/security /en/about; do pa11y --config .pa11yrc.json --level error --threshold 0 --include-warnings \"http://127.0.0.1:4173$route\" || exit 1; done",
+    "render:social": "node scripts/render-social-images.mjs",
     "record:demo": "node scripts/record-demo.mjs",
     "record:demo:1x1": "node scripts/record-demo-1x1.mjs",
     "record:linkedin": "node scripts/record-linkedin-demo.mjs",

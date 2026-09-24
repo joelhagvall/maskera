@@ -296,7 +296,7 @@
     "author": "Hägvall Labs AB"
   },
   "accuracy": {
-    "metaTitle": "träffsäkerhet & testresultat · maskera",
+    "metaTitle": "träffsäkerhet & testresultat för svensk PII · maskera",
     "metaDescription": "Se hur många svenska personuppgifter Maskera hittade, hur många som missades och exakt hur de aktuella testerna gjordes.",
     "title": "Träffsäkerhet, öppet redovisad",
     "lede": "Det viktigaste är hur många personuppgifter som står kvar efter maskeringen. Därför visar vi både F1 för exakta markeringar och fullständiga missar, med testtexter, metod och begränsningar öppna för granskning.",
@@ -613,7 +613,7 @@
     "demoCta": "Prova den aktuella modellen i webbläsardemon"
   },
   "security": {
-    "metaTitle": "säkerhet · maskera",
+    "metaTitle": "säkerhet: nätverksanrop och modellintegritet · maskera",
     "metaDescription": "Maskeras säkerhetsgränser, nätverksanrop, pinnade modellartefakter, säker återställning och privat rapportering av sårbarheter.",
     "title": "Säkerhet i maskera",
     "lede": "Säkerhet här handlar både om vad som aldrig ska lämna din miljö och om gränserna runt maskering och återställning. Här samlas den operativa säkerhetsbilden för npm-paketen och den öppna webbläsardemon.",
@@ -663,8 +663,8 @@
     "gatewayCta": "Läs om Maskera Gateway"
   },
   "transparency": {
-    "metaTitle": "integritet & transparens · maskera",
-    "metaDescription": "Se vad Maskera gör, vad som lämnar enheten, hur modellen tränats och vilka uppgifter den kan missa.",
+    "metaTitle": "integritet & transparens: vad lämnar enheten · maskera",
+    "metaDescription": "Se vad Maskera gör, vad som lämnar enheten, hur den svenska AI-modellen har tränats och vilka personuppgifter den kan missa.",
     "title": "Integritet & transparens",
     "lede": "Här ser du vad Maskera gör, vad som lämnar enheten, hur modellen tränats och vad den kan missa.",
     "tocLabel": "På den här sidan",
@@ -715,8 +715,8 @@
     }
   },
   "testData": {
-    "metaTitle": "testdata · maskera",
-    "metaDescription": "Kontrollera ursprunget för personnummer, telefonnummer, konton och andra testvärden i Maskeras webbläsardemo.",
+    "metaTitle": "testdata: påhittade personer och testvärden · maskera",
+    "metaDescription": "Kontrollera ursprunget för personnummer, telefonnummer, konton och andra testvärden i Maskeras webbläsardemo. Inga verkliga personers uppgifter används.",
     "title": "Testdata i demon",
     "lede": "Alla personer är påhittade. Uppgifter med verkliga format kommer från officiellt reserverade testvärden och kan kontrolleras här.",
     "intro": "Några värden är avsiktligt slarvigt skrivna, med tolv siffror, mellanslag eller versaler, eftersom riktig text ser ut så.",
@@ -755,8 +755,8 @@
     "demoCta": "Prova testvärdena i demon"
   },
   "privacy": {
-    "metaTitle": "integritetspolicy · maskera",
-    "metaDescription": "Integritetspolicy för maskera.dev: lokal textbehandling, cookiefri webbstatistik, hosting och dina rättigheter.",
+    "metaTitle": "integritetspolicy: lokal text, cookiefri statistik · maskera",
+    "metaDescription": "Integritetspolicy för maskera.dev: texten behandlas lokalt i webbläsaren, cookiefri webbstatistik, hosting hos Vercel och dina rättigheter.",
     "title": "Integritetspolicy",
     "lede": "Texten du maskerar behandlas lokalt och skickas inte till Maskera. Här beskrivs den begränsade behandling som själva webbplatsen gör.",
     "items": [
@@ -861,18 +861,19 @@
     "services": "Företag"
   },
   "meta": {
-    "demoTitle": "maskera",
+    "demoTitle": "Skydda personuppgifter innan texten skickas till AI · maskera",
     "demoDescription": "maskera döljer svenska personuppgifter innan text skickas till AI. Kör samma maskering i webbläsaren eller på egna servrar. Endast maskerad text går vidare.",
-    "devTitle": "för utvecklare · maskera",
+    "devTitle": "för utvecklare: svensk PII-maskering med npm · maskera",
     "devDescription": "Installera maskera för svensk PII-maskering lokalt i webbläsaren eller Node. Öppen källkod, TypeScript och en egentränad svensk AI-modell.",
-    "servicesTitle": "för företag · maskera",
-    "servicesDescription": "Jämför npm-paket med öppen källkod och Maskera Gateway, som körs på CPU i er egen miljö före era AI-anrop.",
+    "servicesTitle": "för företag: PII-maskering i er egen miljö · maskera",
+    "servicesDescription": "Jämför npm-paketen med öppen källkod och Maskera Gateway, som maskerar personuppgifter på CPU i er egen miljö före era AI-anrop.",
     "siteName": "maskera",
-    "servicesSchemaName": "Maskera för företag"
+    "servicesSchemaName": "Maskera för företag",
+    "ogImageAlt": "maskera: Skydda personuppgifter innan texten skickas till AI. En exempelmening där namn, personnummer och ort har ersatts med platshållare."
   },
   "about": {
-    "metaTitle": "om & kontakt · maskera",
-    "metaDescription": "Om Maskera: vad verktyget gör, vem som står bakom det (Hägvall Labs AB) och hur du kontaktar oss.",
+    "metaTitle": "om & kontakt: Hägvall Labs AB · maskera",
+    "metaDescription": "Om Maskera: vad verktyget gör, vem som står bakom det (Hägvall Labs AB i Stockholm) och hur du kontaktar oss på hej@maskera.dev.",
     "title": "Om Maskera",
     "lede": "Maskera döljer svenska personuppgifter i text innan den når en AI-tjänst, en logg eller analys. Här beskrivs vad Maskera är, vem som står bakom det och hur du når oss.",
     "tocLabel": "På den här sidan",

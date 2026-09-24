@@ -222,9 +222,6 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
   letter-spacing: -0.035em;
   max-width: 18ch;
 }
-.title-mobile-lines {
-  display: none;
-}
 .lede {
   margin: 18px 0 0;
   max-width: 60ch;
@@ -361,6 +358,25 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
   color: var(--muted-2);
   font-size: 11.5px;
   line-height: 1.4;
+}
+/* Desktop: the model status always gets its own single row under the tabs,
+   with the download note beside it rather than below. Loading, ready and
+   error then all take the same height, so the demo cards do not jump up when
+   the model is ready (a 0.22 CLS on the home page before). The phone layout
+   already stacks the status in its own column. */
+@media (min-width: 821px) {
+  .controls > .status,
+  .controls > .model-status-group {
+    flex-basis: 100%;
+  }
+  .model-status-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+  .model-download-note {
+    max-width: none;
+  }
 }
 .dot {
   width: 7px;
@@ -1078,11 +1094,7 @@ main:has(.prose-foot) + .footer {
 /* Use the deliberate reading units only when their 345px first line fits.
    Narrower screens keep the fluid title so no forced line wraps again. */
 @media (min-width: 385px) and (max-width: 560px) {
-  .title-fluid {
-    display: none;
-  }
-  .title-mobile-lines,
-  .title-mobile-line {
+  .title-line {
     display: block;
   }
 }

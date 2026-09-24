@@ -296,7 +296,7 @@
     "author": "Hägvall Labs AB"
   },
   "accuracy": {
-    "metaTitle": "accuracy & test results · maskera",
+    "metaTitle": "accuracy & test results for Swedish PII · maskera",
     "metaDescription": "See how much Swedish personal data Maskera found, how much was missed and exactly how the current tests were conducted.",
     "title": "Accuracy, reported openly",
     "lede": "What matters most is how much personal data remains after masking. We therefore report both exact-span F1 and complete misses, with the test texts, method and limitations open for review.",
@@ -613,7 +613,7 @@
     "demoCta": "Try the current model in the browser demo"
   },
   "security": {
-    "metaTitle": "security · maskera",
+    "metaTitle": "security: network requests and model integrity · maskera",
     "metaDescription": "Maskera's security boundaries, network requests, pinned model artefacts, safe restoration and private vulnerability reporting.",
     "title": "Security in maskera",
     "lede": "Security here covers both what must never leave your environment and the boundaries around masking and restoration. This page collects the operational security model for the npm packages and the open browser demo.",
@@ -663,8 +663,8 @@
     "gatewayCta": "Learn about Maskera Gateway"
   },
   "transparency": {
-    "metaTitle": "privacy & transparency · maskera",
-    "metaDescription": "See what Maskera does, what leaves the device, how the model was trained and which data it can miss.",
+    "metaTitle": "privacy & transparency: what leaves the device · maskera",
+    "metaDescription": "See what Maskera does, what leaves the device, how the Swedish AI model was trained and which personal data it can miss.",
     "title": "Privacy & transparency",
     "lede": "See what Maskera does, what leaves the device, how the model was trained and what it can miss.",
     "tocLabel": "On this page",
@@ -715,7 +715,7 @@
     }
   },
   "testData": {
-    "metaTitle": "test data · maskera",
+    "metaTitle": "test data: fictional people and test values · maskera",
     "metaDescription": "Verify the origin of Swedish personal identity numbers, phone numbers, accounts and other test values in Maskera's browser demo.",
     "title": "Test data in the demo",
     "lede": "Every person is fictional. Data in real formats comes from officially reserved test values and can be verified here.",
@@ -755,8 +755,8 @@
     "demoCta": "Try the test values in the demo"
   },
   "privacy": {
-    "metaTitle": "privacy policy · maskera",
-    "metaDescription": "Privacy policy for maskera.dev: local text processing, cookieless web analytics, hosting and your rights.",
+    "metaTitle": "privacy policy: local text, cookieless analytics · maskera",
+    "metaDescription": "Privacy policy for maskera.dev: text is processed locally in the browser, cookieless web analytics, hosting on Vercel and your rights.",
     "title": "Privacy policy",
     "lede": "The text you mask is processed locally and is not sent to Maskera. This page describes the limited processing performed by the website itself.",
     "items": [
@@ -861,18 +861,19 @@
     "services": "Companies"
   },
   "meta": {
-    "demoTitle": "maskera",
+    "demoTitle": "Protect personal data before it reaches AI · maskera",
     "demoDescription": "maskera hides Swedish personal data before text is sent to AI. Run the same masking in the browser or on your own servers. Only masked text is forwarded.",
-    "devTitle": "for developers · maskera",
+    "devTitle": "for developers: Swedish PII masking with npm · maskera",
     "devDescription": "Install maskera for local Swedish PII masking in the browser or Node. Open source, TypeScript and a custom-trained Swedish AI model.",
-    "servicesTitle": "for companies · maskera",
-    "servicesDescription": "Compare the open-source npm packages with Maskera Gateway, which runs on CPU in your own environment before your AI requests.",
+    "servicesTitle": "for companies: PII masking in your own environment · maskera",
+    "servicesDescription": "Compare the open-source npm packages with Maskera Gateway, which masks personal data on CPU in your own environment before your AI requests.",
     "siteName": "maskera",
-    "servicesSchemaName": "Maskera for companies"
+    "servicesSchemaName": "Maskera for companies",
+    "ogImageAlt": "maskera: Protect personal data before it reaches AI. A sample sentence where a name, a personal identity number and a town are replaced with placeholders."
   },
   "about": {
-    "metaTitle": "about & contact · maskera",
-    "metaDescription": "About Maskera: what the tool does, who is behind it (Hägvall Labs AB) and how to contact us.",
+    "metaTitle": "about & contact: Hägvall Labs AB · maskera",
+    "metaDescription": "About Maskera: what the tool does, who is behind it (Hägvall Labs AB in Stockholm) and how to reach us at hej@maskera.dev.",
     "title": "About Maskera",
     "lede": "Maskera hides Swedish personal data in text before it reaches an AI service, a log or analytics. This page describes what Maskera is, who is behind it and how to reach us.",
     "tocLabel": "On this page",

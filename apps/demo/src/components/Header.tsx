@@ -1,3 +1,4 @@
+import { Fragment } from "react"
 import copy, { activeLocale } from "../i18n"
 import { navClick, type View, viewPaths } from "../routing"
 import { TopBar } from "./TopBar"
@@ -6,19 +7,16 @@ export function Header({ go }: { go: (view: View) => void }) {
   return (
     <header className="header">
       <TopBar current="demo" go={go} />
+      {/* One copy of the heading text: crawlers and screen readers read the
+          same sentence once, and CSS turns the spans into the deliberate
+          phone line breaks. */}
       <h1 className="title">
-        <span className="sr-only">{copy.header.title}</span>
-        <span aria-hidden="true" className="title-fluid">
-          {copy.header.title}
-        </span>
-        <span aria-hidden="true" className="title-mobile-lines">
-          {copy.header.titleMobile.split("\n").map((line, index, lines) => (
-            <span className="title-mobile-line" key={`${index}-${line}`}>
-              {line}
-              {index < lines.length - 1 ? " " : null}
-            </span>
-          ))}
-        </span>
+        {copy.header.titleMobile.split("\n").map((line, index) => (
+          <Fragment key={`${index}-${line}`}>
+            {index > 0 ? " " : null}
+            <span className="title-line">{line}</span>
+          </Fragment>
+        ))}
       </h1>
       <p className="lede">
         {copy.header.lede} {copy.header.browserLead} <strong>{copy.header.browserEmphasis}</strong>.{" "}

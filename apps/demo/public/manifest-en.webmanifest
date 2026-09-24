@@ -1,0 +1,37 @@
+{
+  "id": "/en",
+  "name": "maskera: protect personal data before it reaches AI",
+  "short_name": "maskera",
+  "description": "Mask Swedish personal data in the browser before text is sent to AI.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/en",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "categories": ["security", "productivity", "developer"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

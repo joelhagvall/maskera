@@ -32,7 +32,7 @@ describe("renderRouteHtml", () => {
 
   it("escapes the ampersand in the transparency title", () => {
     expect(renderRouteHtml("transparency")).toContain(
-      "<title>integritet &amp; transparens · maskera</title>",
+      "<title>integritet &amp; transparens: vad lämnar enheten · maskera</title>",
     )
   })
 

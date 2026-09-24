@@ -21,4 +21,12 @@ describe("Header", () => {
     fireEvent.click(servicesLink)
     expect(go).toHaveBeenCalledWith("services")
   })
+
+  it("renders the hero heading text exactly once", () => {
+    const { container } = render(<Header go={vi.fn()} />)
+    // Crawlers read the h1's text content; responsive variants of the same
+    // sentence used to triple it.
+    expect(container.querySelector("h1")?.textContent).toBe(copy.header.title)
+    expect(copy.header.titleMobile.split("\n").join(" ")).toBe(copy.header.title)
+  })
 })
