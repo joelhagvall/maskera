@@ -4,7 +4,7 @@
   "description": "Swedish-first, zero-dependency PII detection & redaction. Runs in the browser, Node, and edge.",
   "type": "module",
   "license": "MIT",
-  "author": "Joel Hägvall",
+  "author": "Joel Hägvall (https://joelhagvall.com)",
   "keywords": [
     "pii",
     "redaction",

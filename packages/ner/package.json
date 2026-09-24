@@ -4,7 +4,7 @@
   "description": "Swedish-first, client-side PII redaction: deterministic rule detectors plus an optional ONNX/Transformers.js NER model for free-text names, places, organisations and street addresses.",
   "type": "module",
   "license": "MIT",
-  "author": "Joel Hägvall",
+  "author": "Joel Hägvall (https://joelhagvall.com)",
   "keywords": [
     "pii",
     "ner",
