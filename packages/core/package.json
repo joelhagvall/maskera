@@ -57,9 +57,9 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "fast-check": "^4.9.0",
+    "fast-check": "^4.10.2",
     "tsup": "^8.3.5",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   }
 }

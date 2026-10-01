@@ -29,7 +29,7 @@
   },
   "evaluation": {
     "command": "pnpm eval:release",
-    "suiteSha256": "73702d2cf02edb97e633b669b564867f9f1321fa951d8faef4e18bb73131a41e",
+    "suiteSha256": "cce9e4790413310b6358a0c900a8d56a651176b9ee3b7aca9e64c72ea31c9fb1",
     "files": [
       "apps/demo/scripts/evaluate-candidate-gates.mjs",
       "apps/demo/scripts/fetch-model.mjs",
@@ -149,7 +149,7 @@
     "manualStep": "Redact both exported text chunks with LogosGuard 2.4.4 in Chrome, Free plan, Balanced accuracy, and save the two returned files under tmp before scoring.",
     "resultFile": "docs/benchmark-logosguard-2.4.4.json",
     "resultSha256": "e348ca88b83cd347a43f03d98659cac2c1b127012cf51c6f92f11e89f8929b05",
-    "suiteSha256": "63ee2fdec332f8d42593d3bcf6bfd32928753fdf2d8b9656898e63916361b32e",
+    "suiteSha256": "95b480ffb59934f10131a6681a4f319ca4d505665cce3ac81a96eb354050d545",
     "files": [
       "apps/demo/scripts/fetch-model.mjs",
       "apps/demo/src/model-meta.json",
