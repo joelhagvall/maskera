@@ -3,12 +3,21 @@ packages:
   - "apps/*"
   - "examples"
 
-# extract-zip <=2.0.1 (GHSA-jmr9-qjv8-65gv, symlink path traversal) has no
-# patched release; pa11y pins puppeteer 24 -> @puppeteer/browsers 2.13.2, so
-# there is no upgrade path. It only ever unpacks Chrome-for-testing archives
-# downloaded from Google's official CDN during local dev/CI browser install —
-# attacker-controlled zips never reach it. Revisit when pa11y allows
-# puppeteer 25 (@puppeteer/browsers 3.x dropped extract-zip).
+# adm-zip and sharp sit inside the @huggingface/transformers closure that the
+# benchmark contract's evaluation.environment checksum freezes, so bumping them
+# would change the frozen release environment for code that never runs:
+# - adm-zip <=0.6.0 (GHSA-7q85-xj36-vmfc, GHSA-rcw4-f5rp-g42v,
+#   GHSA-j5f4-cc29-5x44, GHSA-8238-w5pm-2374) is only used by
+#   onnxruntime-node's install script, which is not in onlyBuiltDependencies
+#   and therefore never executes.
+# - sharp <0.35.4 (GHSA-rgj7-g3m4-5g8c, bundled libheif) only matters when
+#   decoding HEIF images; Maskera is text-only NER and never loads an image.
+# Drop these when the next model/benchmark release moves the environment
+# checksum anyway; bump the adm-zip and sharp overrides at the same time.
 auditConfig:
   ignoreGhsas:
-    - GHSA-jmr9-qjv8-65gv
+    - GHSA-7q85-xj36-vmfc
+    - GHSA-rcw4-f5rp-g42v
+    - GHSA-j5f4-cc29-5x44
+    - GHSA-8238-w5pm-2374
+    - GHSA-rgj7-g3m4-5g8c
