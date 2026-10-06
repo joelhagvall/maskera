@@ -58,7 +58,8 @@
       "@opentelemetry/core": "^2.8.0",
       "fast-uri": "3.1.8",
       "axios": "1.20.0",
-      "joi": "18.2.9"
+      "joi": "18.2.9",
+      "source-map-js": "1.2.2"
     },
     "onlyBuiltDependencies": [
       "esbuild",
