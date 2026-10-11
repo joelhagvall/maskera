@@ -13,6 +13,7 @@ test("the checked-in benchmark contract and carriers are synchronized", () => {
   const result = spawnSync(process.execPath, ["scripts/check-benchmark-sync.mjs"], {
     cwd: root,
     encoding: "utf8",
+    timeout: 60_000,
   })
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`)
   assert.match(result.stdout, /benchmark sync: v19 contract verified/)
@@ -28,6 +29,7 @@ test("a changed canonical metric produces an explicit drift failure", async () =
     const result = spawnSync(process.execPath, ["scripts/check-benchmark-sync.mjs"], {
       cwd: root,
       encoding: "utf8",
+      timeout: 60_000,
       env: { ...process.env, MASKERA_BENCHMARK_CONTRACT: changedContract },
     })
     assert.equal(result.status, 1)
@@ -49,6 +51,7 @@ test("an invalid metric type fails the published JSON Schema", async () => {
     const result = spawnSync(process.execPath, ["scripts/check-benchmark-sync.mjs"], {
       cwd: root,
       encoding: "utf8",
+      timeout: 60_000,
       env: { ...process.env, MASKERA_BENCHMARK_CONTRACT: changedContract },
     })
     assert.equal(result.status, 1)
@@ -70,6 +73,7 @@ test("a changed evaluation input checksum fails before release", async () => {
     const result = spawnSync(process.execPath, ["scripts/check-benchmark-sync.mjs"], {
       cwd: root,
       encoding: "utf8",
+      timeout: 60_000,
       env: { ...process.env, MASKERA_BENCHMARK_CONTRACT: changedContract },
     })
     assert.equal(result.status, 1)
@@ -90,6 +94,7 @@ test("a changed evaluation environment checksum fails before release", async () 
     const result = spawnSync(process.execPath, ["scripts/check-benchmark-sync.mjs"], {
       cwd: root,
       encoding: "utf8",
+      timeout: 60_000,
       env: { ...process.env, MASKERA_BENCHMARK_CONTRACT: changedContract },
     })
     assert.equal(result.status, 1)
@@ -175,6 +180,7 @@ test("production predeploy checks upstreams without requiring the old deployed s
     {
       cwd: root,
       encoding: "utf8",
+      timeout: 60_000,
       env: {
         ...process.env,
         VERCEL_ENV: "production",
