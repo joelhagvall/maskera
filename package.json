@@ -59,7 +59,8 @@
       "fast-uri": "3.1.8",
       "axios": "1.20.0",
       "joi": "18.2.9",
-      "source-map-js": "1.2.2"
+      "source-map-js": "1.2.2",
+      "follow-redirects": "1.16.1"
     },
     "onlyBuiltDependencies": [
       "esbuild",
