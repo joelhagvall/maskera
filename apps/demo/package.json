@@ -38,7 +38,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@types/turndown": "^5.0.6",
-    "@vitejs/plugin-react": "^6.1.1",
+    "@vitejs/plugin-react": "^6.1.2",
     "jsdom": "^29.1.1",
     "lighthouse": "^13.5.0",
     "pa11y": "^10.0.0",
