@@ -2100,6 +2100,9 @@ html[data-theme="dark"] .tok-f {
   margin: 0;
   padding-left: 4px;
 }
+.prose .ext-install-steps li::before {
+  content: none;
+}
 .prose .ext-install-steps strong {
   display: block;
   font-weight: 600;
