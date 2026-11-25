@@ -48,3 +48,4 @@ student-v*/
 
 # homograph name-list source downloads (SALDO is 71 MB)
 .cache/
+.tmp/

@@ -18,9 +18,17 @@ run_logged() {
   fi
 }
 
-cd /Users/joelhagvall/Documents/GitHub/maskera/training
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
+cd "$SCRIPT_DIR"
 export PYTORCH_ENABLE_MPS_FALLBACK=1 TOKENIZERS_PARALLELISM=false
-PY=.venv/bin/python
+if [ -n "${PY:-}" ]; then
+  :
+elif [ -x ".venv/bin/python" ]; then
+  PY=.venv/bin/python
+else
+  PY=python3
+fi
 CANDIDATE=${CANDIDATE:-v14}
 TEACHER=model-$CANDIDATE
 TEACHER_TRIMMED=$TEACHER-trimmed
@@ -86,18 +94,18 @@ $PY quantize_combo.py "$MODEL"
 # fix (for example a reviewed whole-word denylist addition) cannot be missed by
 # stale dist files while the weights themselves are graded correctly.
 echo "[6b/10] build current NER runtime for candidate gates..."
-cd /Users/joelhagvall/Documents/GitHub/maskera
+cd "$ROOT"
 pnpm --filter maskera build
 
 GATE_FAILURES=0
 echo "[7/10] G2 aggregate-only synthetic gold gate (q4)..."
-cd /Users/joelhagvall/Documents/GitHub/maskera/apps/demo
+cd "$ROOT/apps/demo"
 run_logged "../../training/$RUN_PREFIX-goldgates.log" \
-  env MASKERA_MODEL_PATH="$(pwd)/../../training" node scripts/evaluate-candidate-gates.mjs \
+  env MASKERA_MODEL_PATH="$ROOT/training" node scripts/evaluate-candidate-gates.mjs \
   || GATE_FAILURES=1
 
 echo "[8/10] G1 rotated rare-surname gate..."
-cd /Users/joelhagvall/Documents/GitHub/maskera
+cd "$ROOT"
 run_logged "training/$RUN_PREFIX-raresurnames-$CANDIDATE.log" \
   env MASKERA_AGGREGATE_ONLY=1 MASKERA_MODEL_PATH="$PWD/training" \
   node packages/ner/eval/benchmark-rare-surnames.mjs

@@ -9,7 +9,7 @@
  *
  * Optional environment variables:
  *   MASKERA_MODEL_PATH  directory containing the model folder
- *   MASKERA_MODEL       model folder name (default: maskera-sv-ner-v19)
+ *   MASKERA_MODEL       model folder name (default: maskera-sv-ner-v20)
  *   MASKERA_DTYPE       quantization dtype (default: q4)
  *   MASKERA_PROFILE     general or clinical (default: general)
  *   MASKERA_HIT_FLOOR   minimum full-hit rate (default: 0.98)
@@ -24,7 +24,7 @@ import { createNerRecognizer, redactWithNer } from "../../dist/index.js"
 
 const repoRoot = fileURLToPath(new URL("../../../../", import.meta.url))
 const corpusDirectory = new URL("./corpus/", import.meta.url)
-const model = process.env.MASKERA_MODEL ?? "maskera-sv-ner-v19"
+const model = process.env.MASKERA_MODEL ?? "maskera-sv-ner-v20"
 const modelPath = resolve(repoRoot, process.env.MASKERA_MODEL_PATH ?? "apps/demo/public/models")
 const dtype = process.env.MASKERA_DTYPE ?? "q4"
 const profile = process.env.MASKERA_PROFILE ?? "general"

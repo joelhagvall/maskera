@@ -2,34 +2,34 @@
   "$schema": "https://maskera.dev/benchmark-release.schema.json",
   "schemaVersion": 5,
   "status": "published",
-  "release": "v19",
-  "publishedAt": "2026-08-06",
-  "lastMeasuredAt": "2026-08-16",
+  "release": "v20",
+  "publishedAt": "2026-11-25",
+  "lastMeasuredAt": "2026-11-25",
   "scope": "Synthetic or author-coupled release gates, not an independent universal quality estimate.",
   "packages": {
-    "maskera": "0.10.2",
-    "core": "0.8.2"
+    "maskera": "0.11.0",
+    "core": "0.8.3"
   },
   "artifact": {
-    "model": "maskera-sv-ner-v19",
+    "model": "maskera-sv-ner-v20",
     "hubRepo": "joelhagvall/maskera-sv-ner",
-    "revision": "7a0063375d1baabf66cf9a357dad5f46aea7008e",
+    "revision": "bb35467e9310095a81bf4e3d5779586ea842507a",
     "dtype": "q4",
     "path": "onnx/model_q4.onnx",
-    "sha256": "6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66",
+    "sha256": "0a4ad3c3d87b0c53c67556177a668acfb8a91726a2af78e16a857403f6bed7fa",
     "bytes": 42705681,
-    "modelCardSha256": "6e644e78d667ab9bea9294989f0eaaa56bab9c3e60c0010241c083e11b0e773c"
+    "modelCardSha256": "1a8e8e099f93986a681c44cc8af6ad91b345ac565484c97e1becaf12128d8ab0"
   },
   "whitepaper": {
-    "version": "1.22",
+    "version": "1.23",
     "source": "docs/whitepaper/whitepaper.tex",
-    "sourceSha256": "d39d80b3356708c4fde0a120665f00c37f6684c2cccd05a7fc8636104999d6c5",
+    "sourceSha256": "00581d4270206358b2d39c8edcff619e27ad0d420563f1216e67afe445cad876",
     "pdf": "apps/demo/public/whitepaper.pdf",
-    "pdfSha256": "0a3221a805f63301e29ff0d4f380847799fdce9e2e28e686ed9346f7a5b2863d"
+    "pdfSha256": "59f90c415b94826d0ddf420b123732192b1d6cbf0dbacc3f368e1850f4ea3f51"
   },
   "evaluation": {
     "command": "pnpm eval:release",
-    "suiteSha256": "cce9e4790413310b6358a0c900a8d56a651176b9ee3b7aca9e64c72ea31c9fb1",
+    "suiteSha256": "8f56319f986214b220f576ad2f6171748b568578283100479b721bf2f1a20bc7",
     "files": [
       "apps/demo/scripts/evaluate-candidate-gates.mjs",
       "apps/demo/scripts/fetch-model.mjs",
@@ -86,13 +86,13 @@
     }
   },
   "comparison": {
-    "status": "current-v19-directional",
-    "measuredAt": "2026-08-11",
+    "status": "current-v20-directional",
+    "measuredAt": "2026-11-25",
     "scope": "Synthetic, author-coupled PER/LOC/ORG comparison. Address labels and Maskera product post-processing are excluded; this is not an independent universal quality estimate.",
     "command": "pnpm eval:kblab",
-    "resultFile": "docs/benchmark-kblab-v19.json",
-    "resultSha256": "8fb2752de3e5a7e3dcfa909f65b12c51f0891647bd7d87f72645e876c0ef7118",
-    "suiteSha256": "585f5aaf89636f6b00c6e9e043b45bb274d081041fe2ff3aa03a3161f4919b99",
+    "resultFile": "docs/benchmark-kblab-v20.json",
+    "resultSha256": "9ba7001c8f68a83550ac8b789cb0896a6ec4797610fc598b7d2d2796472ec477",
+    "suiteSha256": "b7d2962c24153be19ff6e9dc442731eb49732df760d159cb810d78f9f6bc05fa",
     "files": [
       "training/benchmark_competitors.py",
       "training/benchmark-requirements.txt",
@@ -113,10 +113,10 @@
     "models": {
       "maskera": {
         "id": "joelhagvall/maskera-sv-ner",
-        "revision": "7a0063375d1baabf66cf9a357dad5f46aea7008e",
+        "revision": "bb35467e9310095a81bf4e3d5779586ea842507a",
         "dtype": "q4",
         "path": "onnx/model_q4.onnx",
-        "sha256": "6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66",
+        "sha256": "0a4ad3c3d87b0c53c67556177a668acfb8a91726a2af78e16a857403f6bed7fa",
         "bytes": 42705681
       },
       "kblab": {
@@ -129,17 +129,33 @@
       }
     },
     "normal": {
-      "maskera": { "masked": 211, "maskedRecallPct": "100.0", "typedF1Pct": "87.1" },
-      "kblab": { "masked": 205, "maskedRecallPct": "97.2", "typedF1Pct": "89.4" }
+      "maskera": {
+        "masked": 211,
+        "maskedRecallPct": "100.0",
+        "typedF1Pct": "88.2"
+      },
+      "kblab": {
+        "masked": 205,
+        "maskedRecallPct": "97.2",
+        "typedF1Pct": "89.4"
+      }
     },
     "lowercase": {
-      "maskera": { "masked": 211, "maskedRecallPct": "100.0", "typedF1Pct": "85.7" },
-      "kblab": { "masked": 187, "maskedRecallPct": "88.6", "typedF1Pct": "83.2" }
+      "maskera": {
+        "masked": 211,
+        "maskedRecallPct": "100.0",
+        "typedF1Pct": "87.4"
+      },
+      "kblab": {
+        "masked": 187,
+        "maskedRecallPct": "88.6",
+        "typedF1Pct": "83.2"
+      }
     }
   },
   "redactionComparison": {
-    "status": "current-v19-directional",
-    "measuredAt": "2026-08-14",
+    "status": "current-v20-directional",
+    "measuredAt": "2026-11-25",
     "scope": "Synthetic, author-coupled Swedish end-product redaction comparison. It is not an independent universal quality estimate, and precision is not reported because every defensible entity is not exhaustively annotated.",
     "commands": {
       "export": "pnpm eval:logosguard:export",
@@ -148,8 +164,8 @@
     },
     "manualStep": "Redact both exported text chunks with LogosGuard 2.4.4 in Chrome, Free plan, Balanced accuracy, and save the two returned files under tmp before scoring.",
     "resultFile": "docs/benchmark-logosguard-2.4.4.json",
-    "resultSha256": "e348ca88b83cd347a43f03d98659cac2c1b127012cf51c6f92f11e89f8929b05",
-    "suiteSha256": "95b480ffb59934f10131a6681a4f319ca4d505665cce3ac81a96eb354050d545",
+    "resultSha256": "97bc535079d60af22ca5f952cc467816cc6c213a434e4d41f5e93d5480bb71f1",
+    "suiteSha256": "479e2db6a390ad597da6aa8bc77231421e25565faf02571bdc60fd78276c4c19",
     "files": [
       "apps/demo/scripts/fetch-model.mjs",
       "apps/demo/src/model-meta.json",
@@ -204,12 +220,12 @@
     "scoring": "material-character-survival",
     "systems": {
       "maskera": {
-        "version": "0.10.1 / maskera-sv-ner-v19",
-        "fullHits": 933,
-        "partialLeaks": 8,
-        "misses": 11,
-        "fullHitRatePct": "98.0",
-        "redactions": 1522
+        "version": "0.11.0 / maskera-sv-ner-v20",
+        "fullHits": 941,
+        "partialLeaks": 5,
+        "misses": 6,
+        "fullHitRatePct": "98.8",
+        "redactions": 1429
       },
       "logosguard": {
         "version": "2.4.4",
@@ -229,11 +245,11 @@
     "curated": {
       "documents": 149,
       "entities": 205,
-      "precisionPct": "95.3",
-      "recallPct": "98.5",
-      "spanF1Pct": "96.9",
-      "labeledF1Pct": "95.9",
-      "leaks": 1
+      "precisionPct": "99.0",
+      "recallPct": "100.0",
+      "spanF1Pct": "99.5",
+      "labeledF1Pct": "97.6",
+      "leaks": 0
     },
     "syntheticAdr": {
       "documents": 41,
@@ -242,58 +258,58 @@
       "precisionPct": "100.0",
       "recallPct": "100.0",
       "spanF1Pct": "100.0",
-      "labeledF1Pct": "96.5",
+      "labeledF1Pct": "98.2",
       "leaks": 0,
-      "addressPredictions": 36
+      "addressPredictions": 35
     },
     "linkedinStyle": {
       "documents": 32,
       "entities": 53,
-      "precisionPct": "75.8",
-      "recallPct": "88.7",
-      "spanF1Pct": "81.7",
-      "labeledF1Pct": "78.3",
+      "precisionPct": "96.4",
+      "recallPct": "100.0",
+      "spanF1Pct": "98.1",
+      "labeledF1Pct": "94.4",
       "leaks": 0,
-      "measuredAt": "2026-08-10"
+      "measuredAt": "2026-11-25"
     },
     "syntheticGold": {
-      "typeF1Pct": "93.08",
-      "typeRecallPct": "94.07",
-      "maskedRecallPct": "98.31",
+      "typeF1Pct": "94.54",
+      "typeRecallPct": "95.34",
+      "maskedRecallPct": "98.73",
       "typeF1FloorPct": "90.0",
       "typeRecallFloorPct": "92.0",
       "maskedRecallFloorPct": "97.0"
     },
     "rareSurnames": {
       "entities": 294,
-      "masked": 285,
-      "maskedRecallPct": "96.94",
-      "personTypedRecallPct": "82.65",
-      "leaks": 9
+      "masked": 284,
+      "maskedRecallPct": "96.60",
+      "personTypedRecallPct": "79.59",
+      "leaks": 10
     },
     "structuredRegression": {
       "documents": 258,
       "entities": 952,
-      "fullHits": 942,
-      "partialLeaks": 1,
-      "misses": 9,
-      "hitRatePct": "98.9",
-      "redactions": 1523,
-      "classifiedJunk": 276
+      "fullHits": 943,
+      "partialLeaks": 3,
+      "misses": 6,
+      "hitRatePct": "99.1",
+      "redactions": 1429,
+      "classifiedJunk": 172
     },
     "clinicalCareSubset": {
       "entities": 165,
       "generalHits": 165,
       "clinicalHits": 165,
-      "generalClassifiedJunk": 112,
-      "clinicalClassifiedJunk": 92
+      "generalClassifiedJunk": 44,
+      "clinicalClassifiedJunk": 35
     }
   },
   "historical": {
     "release": "v18",
     "measuredAt": "2026-07-19",
     "packageVersion": "0.6.4",
-    "status": "historical-only-not-a-v19-result",
+    "status": "historical-only-not-a-v20-result",
     "curated": {
       "documents": 149,
       "entities": 205,
@@ -315,7 +331,7 @@
     },
     "modelComparison": {
       "status": "historical-v18-aggregate",
-      "scope": "Dated comparison on independent Swedish encyclopedic prose. It is retained for transparency and must not be attributed to v19.",
+      "scope": "Dated comparison on independent Swedish encyclopedic prose. It is retained for transparency and must not be attributed to v20.",
       "corpus": {
         "name": "gold-real",
         "documents": 22,

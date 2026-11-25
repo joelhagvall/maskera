@@ -43,41 +43,61 @@ from transformers import (
 from transformers import set_seed
 
 # usage: distill.py [num_layers] [out_dir] [teacher_dir]
+# Optional multi-teacher ensemble: MASKERA_TEACHERS=model-a,model-b,model-c
 N_LAYERS = int(sys.argv[1]) if len(sys.argv) > 1 else 6
 OUT = sys.argv[2] if len(sys.argv) > 2 else "student-model"
 TEACHER = sys.argv[3] if len(sys.argv) > 3 else "model"
+TEACHER_DIRS = [
+    item.strip()
+    for item in os.environ.get("MASKERA_TEACHERS", "").split(",")
+    if item.strip()
+] or [TEACHER]
+PRIMARY_TEACHER = TEACHER_DIRS[0]
 MAX_LEN = 128
-ALPHA = 0.5        # weight on hard-label CE vs soft distillation
-TEMPERATURE = 2.0
+ALPHA = float(os.environ.get("MASKERA_ALPHA", "0.5"))  # weight on hard-label CE vs soft distillation
+TEMPERATURE = float(os.environ.get("MASKERA_TEMP", "2.0"))
+HIDDEN_WEIGHT = float(os.environ.get("MASKERA_HIDDEN_WEIGHT", "0.0"))
 # Seeded so runs are comparable (see train.py).
 SEED = int(os.environ.get("MASKERA_SEED", "1337"))
 set_seed(SEED)
 
-teacher_attestation_path = Path(TEACHER) / "privacy-attestation.json"
-if not teacher_attestation_path.is_file():
-    sys.exit(
-        f"{TEACHER} has no privacy-attestation.json; retrain the teacher with the "
-        "synthetic-only pipeline before distillation"
-    )
-subprocess.run(
-    ["node", "verify_attestation.mjs", str(teacher_attestation_path)], check=True
-)
-with teacher_attestation_path.open(encoding="utf-8") as handle:
-    teacher_attestation = json.load(handle)
-if teacher_attestation.get("dataPolicy") != "synthetic-task-data-only":
-    sys.exit(f"{TEACHER} does not carry the synthetic-only training policy")
+if not (0.0 <= ALPHA <= 1.0):
+    sys.exit(f"MASKERA_ALPHA must be in [0, 1]; got {ALPHA}")
+if TEMPERATURE <= 0:
+    sys.exit(f"MASKERA_TEMP must be > 0; got {TEMPERATURE}")
+if HIDDEN_WEIGHT < 0:
+    sys.exit(f"MASKERA_HIDDEN_WEIGHT must be >= 0; got {HIDDEN_WEIGHT}")
+
 subprocess.run(["node", "audit_data.mjs"], check=True)
 subprocess.run(
     ["node", "privacy_attestation.mjs", "data/privacy-attestation.json"], check=True
 )
 with Path("data/privacy-attestation.json").open(encoding="utf-8") as handle:
     current_attestation = json.load(handle)
-for split in ("train", "validation"):
-    if current_attestation.get(split) != teacher_attestation.get(split):
+
+teacher_attestation = None
+for teacher_dir in TEACHER_DIRS:
+    teacher_attestation_path = Path(teacher_dir) / "privacy-attestation.json"
+    if not teacher_attestation_path.is_file():
         sys.exit(
-            f"Current {split} data does not match {TEACHER}'s attested training data; "
-            "retrain the teacher instead of distilling across data lineages"
+            f"{teacher_dir} has no privacy-attestation.json; retrain the teacher with the "
+            "synthetic-only pipeline before distillation"
         )
+    subprocess.run(
+        ["node", "verify_attestation.mjs", str(teacher_attestation_path)], check=True
+    )
+    with teacher_attestation_path.open(encoding="utf-8") as handle:
+        t_att = json.load(handle)
+    if t_att.get("dataPolicy") != "synthetic-task-data-only":
+        sys.exit(f"{teacher_dir} does not carry the synthetic-only training policy")
+    for split in ("train", "validation"):
+        if current_attestation.get(split) != t_att.get(split):
+            sys.exit(
+                f"Current {split} data does not match {teacher_dir}'s attested training data; "
+                "retrain the teacher instead of distilling across data lineages"
+            )
+    if teacher_attestation is None:
+        teacher_attestation = t_att
 
 # --- v13: subword dropout (the decomposed-surname fix) ----------------------
 # The v12 publish hold: distillation runs with the full 50k vocab where rare
@@ -123,12 +143,23 @@ device = os.environ.get("MASKERA_DEVICE") or (
 )
 print(f"== device: {device}, seed: {SEED} ==")
 
-tokenizer = AutoTokenizer.from_pretrained(TEACHER)
+tokenizer = AutoTokenizer.from_pretrained(PRIMARY_TEACHER)
 
-# --- teacher (frozen) ---
-teacher = AutoModelForTokenClassification.from_pretrained(TEACHER).to(device).eval()
-for p in teacher.parameters():
-    p.requires_grad_(False)
+# --- teacher(s) (frozen) ---
+teachers = []
+for teacher_dir in TEACHER_DIRS:
+    t_model = AutoModelForTokenClassification.from_pretrained(teacher_dir).to(device).eval()
+    for p in t_model.parameters():
+        p.requires_grad_(False)
+    teachers.append(t_model)
+teacher = teachers[0]
+if len(teachers) > 1:
+    for idx, t_model in enumerate(teachers[1:], start=2):
+        if t_model.config.vocab_size != teacher.config.vocab_size:
+            sys.exit(f"Teacher #{idx} vocab_size does not match primary teacher {PRIMARY_TEACHER}")
+    print(f"== teacher ensemble: {len(teachers)} teachers ({', '.join(TEACHER_DIRS)}) ==")
+if HIDDEN_WEIGHT > 0:
+    print(f"== hidden-state distillation weight: {HIDDEN_WEIGHT} (primary teacher layers) ==")
 
 # --- student: shallower BERT, initialized from the teacher ---
 STUDENT_LAYERS = N_LAYERS
@@ -159,6 +190,49 @@ for s_idx, t_idx in enumerate(KEEP):
     )
 print(f"== student params: {sum(p.numel() for p in student.parameters()) / 1e6:.1f}M "
       f"(init from teacher layers {KEEP}) ==")
+
+# --- size round: continue from a distilled student --------------------------
+# MASKERA_INIT_STUDENT starts from an already distilled full-vocab student
+# instead of the teacher's layers, so a size lever (below) only has to recover
+# what it removed, not relearn the task.
+INIT_STUDENT = os.environ.get("MASKERA_INIT_STUDENT", "")
+if INIT_STUDENT:
+    init_attestation_path = Path(INIT_STUDENT) / "privacy-attestation.json"
+    subprocess.run(["node", "verify_attestation.mjs", str(init_attestation_path)], check=True)
+    with init_attestation_path.open(encoding="utf-8") as handle:
+        init_attestation = json.load(handle)
+    for split in ("train", "validation"):
+        if init_attestation.get(split) != teacher_attestation.get(split):
+            sys.exit(f"{INIT_STUDENT} was not distilled from {TEACHER}'s attested data")
+    student.load_state_dict(
+        AutoModelForTokenClassification.from_pretrained(INIT_STUDENT).state_dict()
+    )
+    print(f"== student init from distilled {INIT_STUDENT} ==")
+
+# --- size round: low-rank word embeddings (Rampart Edge's lever) ------------
+# The vocab x 768 table is the largest tensor in the shipped q4. With
+# MASKERA_EMBED_RANK=r it trains as a vocab x r lookup plus an r -> 768
+# projection, initialized from the SVD of the rows the student actually reads
+# (the trimmed inference vocab under subword dropout). The saved model merges
+# the two back into an ordinary rank-r table, so trim_vocab.py and
+# export_onnx.py run unchanged; factorize_embeddings.py then splits it again
+# exactly in the ONNX graph.
+EMBED_RANK = int(os.environ.get("MASKERA_EMBED_RANK", "0"))
+if EMBED_RANK:
+    table = student.bert.embeddings.word_embeddings.weight.data
+    rows = torch.arange(table.shape[0])
+    if DROPOUT_VOCAB:
+        trimmed = AutoTokenizer.from_pretrained(DROPOUT_VOCAB).get_vocab()
+        rows = torch.tensor(sorted(set(tokenizer.convert_tokens_to_ids(list(trimmed)))))
+    _, _, vt = torch.linalg.svd(table[rows].double(), full_matrices=False)
+    basis = vt[:EMBED_RANK].float()
+    lookup = torch.nn.Embedding(table.shape[0], EMBED_RANK, padding_idx=tcfg.pad_token_id)
+    lookup.weight.data = table @ basis.T
+    proj = torch.nn.Linear(EMBED_RANK, table.shape[1], bias=False)
+    proj.weight.data = basis.T.contiguous()
+    student.bert.embeddings.word_embeddings = torch.nn.Sequential(lookup, proj)
+    print(f"== low-rank embeddings: {table.shape[0]}x{EMBED_RANK} + "
+          f"{EMBED_RANK}x{table.shape[1]} (SVD over {len(rows)} rows) ==")
 
 raw = load_dataset("json", data_files={"train": "data/train.jsonl", "validation": "data/val.jsonl"})
 
@@ -315,7 +389,8 @@ class DistillTrainer(Trainer):
         t_lab = inputs.pop("t_labels")
         kl_mask = inputs.pop("kl_mask")
         per_consistency_mask = inputs.pop("per_consistency_mask")
-        outputs = model(**inputs)
+        use_hidden = HIDDEN_WEIGHT > 0 and model.training
+        outputs = model(**inputs, output_hidden_states=use_hidden)
         # CE on hard labels (ALL pieces, continuations I-). Preserve the
         # historical loss implementation exactly unless the v15 lever is on.
         if PER_CONSISTENCY_WEIGHT == 1:
@@ -334,18 +409,37 @@ class DistillTrainer(Trainer):
                 per_consistency_mask == 1, PER_CONSISTENCY_WEIGHT
             )
             hard = (token_loss[valid] * weights[valid]).sum() / weights[valid].sum()
-        with torch.no_grad():
-            t_logits = teacher(input_ids=t_ids, attention_mask=t_att).logits
         # Word-aligned KL: first subtoken of each kept word on both sides, so
         # the masked positions correspond 1:1 in order even when the student's
         # sequence is longer (dropout decomposition).
         s_mask = kl_mask == 1
         t_mask = t_lab != -100
-        s = F.log_softmax(outputs.logits[s_mask] / TEMPERATURE, dim=-1)
-        t = F.softmax(t_logits[t_mask] / TEMPERATURE, dim=-1)
+        t_probs_sum = None
+        primary_t_hidden = None
+        with torch.no_grad():
+            for idx, t_model in enumerate(teachers):
+                t_out = t_model(
+                    input_ids=t_ids,
+                    attention_mask=t_att,
+                    output_hidden_states=(use_hidden and idx == 0),
+                )
+                probs = F.softmax(t_out.logits[t_mask].float() / TEMPERATURE, dim=-1)
+                t_probs_sum = probs if t_probs_sum is None else (t_probs_sum + probs)
+                if use_hidden and idx == 0:
+                    primary_t_hidden = t_out.hidden_states
+        s = F.log_softmax(outputs.logits[s_mask].float() / TEMPERATURE, dim=-1)
+        t = t_probs_sum / len(teachers)
         assert s.shape[0] == t.shape[0], "student/teacher labeled positions desynced"
         soft = F.kl_div(s, t, reduction="batchmean") * (TEMPERATURE**2)
         loss = ALPHA * hard + (1 - ALPHA) * soft
+        if use_hidden and primary_t_hidden is not None:
+            # Cosine alignment on matched encoder layers at word-aligned positions.
+            h_loss = 0.0
+            for s_idx, t_idx in enumerate(KEEP):
+                s_h = outputs.hidden_states[s_idx + 1][s_mask].float()
+                t_h = primary_t_hidden[t_idx + 1][t_mask].float()
+                h_loss = h_loss + (1.0 - F.cosine_similarity(s_h, t_h, dim=-1)).mean()
+            loss = loss + HIDDEN_WEIGHT * (h_loss / len(KEEP))
         return (loss, outputs) if return_outputs else loss
 
 
@@ -380,17 +474,23 @@ if DISTILL_BATCH < 1 or GRAD_ACCUM < 1:
 if DISTILL_BATCH * GRAD_ACCUM != 32:
     print(f"== NOTE: effective batch {DISTILL_BATCH * GRAD_ACCUM} != historical 32 ==")
 
+def _native_bf16():
+    return device == "cuda" and torch.cuda.is_bf16_supported() and torch.cuda.get_device_capability()[0] >= 8
+
+
+PRECISION = os.environ.get("MASKERA_PRECISION", "auto")
 args = TrainingArguments(
     output_dir=OUT,
     eval_strategy="epoch",
     save_strategy="epoch",
-    learning_rate=3e-5,
+    learning_rate=float(os.environ.get("MASKERA_DISTILL_LR", "3e-5")),
     per_device_train_batch_size=DISTILL_BATCH,
     gradient_accumulation_steps=GRAD_ACCUM,
     per_device_eval_batch_size=64,
-    num_train_epochs=4,
+    num_train_epochs=float(os.environ.get("MASKERA_DISTILL_EPOCHS", "4")),
     weight_decay=0.01,
     warmup_ratio=0.1,
+    lr_scheduler_type=os.environ.get("MASKERA_LR_SCHEDULER", "linear"),
     logging_steps=50,
     save_total_limit=1,
     load_best_model_at_end=True,
@@ -398,6 +498,9 @@ args = TrainingArguments(
     report_to="none",
     seed=SEED,
     use_cpu=device == "cpu",
+    bf16=(PRECISION == "bf16" or (PRECISION == "auto" and _native_bf16())),
+    fp16=(PRECISION == "fp16" or (PRECISION == "auto" and device == "cuda" and not _native_bf16())),
+    dataloader_num_workers=int(os.environ.get("MASKERA_NUM_WORKERS", "0")),
     # The t_* teacher fields are not in the model signature; the default
     # column pruning would silently drop them before the collator runs.
     remove_unused_columns=False,
@@ -437,6 +540,12 @@ for pred, lab in zip(p, preds.label_ids):
     tp.append(b)
 print(classification_report(tl, tp))
 
+if EMBED_RANK:
+    lookup, proj = student.bert.embeddings.word_embeddings
+    merged = torch.nn.Embedding(lookup.num_embeddings, proj.out_features,
+                                padding_idx=tcfg.pad_token_id).to(lookup.weight.device)
+    merged.weight.data = lookup.weight.data @ proj.weight.data.T
+    student.bert.embeddings.word_embeddings = merged
 trainer.save_model(OUT)
 tokenizer.save_pretrained(OUT)
 shutil.copy2("data/privacy-attestation.json", os.path.join(OUT, "privacy-attestation.json"))

@@ -10,7 +10,7 @@ That release contract lives in
 the human report, package/model pins, public carrier files and whitepaper match
 that contract. Live canaries additionally compare npm, Hugging Face, GitHub,
 maskera.dev and app.maskera.dev; any mismatch is a release/deploy failure.
-Release CI also reruns every current v19 evaluation with `pnpm eval:release`
+Release CI also reruns every current v20 evaluation with `pnpm eval:release`
 and requires the recomputed result object to match the contract exactly. Two
 checksums make the reproduction boundary explicit: the suite checksum locks
 the corpora, scorers, runners and runtime source; the environment checksum
@@ -18,16 +18,16 @@ locks the selected resolved dependency closure that executes the evaluation.
 Type-only peers and unrelated build, lint, browser-audit and test-tool updates
 are outside that closure and cannot masquerade as changed accuracy evidence.
 The frozen suite checksum is
-`cce9e4790413310b6358a0c900a8d56a651176b9ee3b7aca9e64c72ea31c9fb1` and the
+`8f56319f986214b220f576ad2f6171748b568578283100479b721bf2f1a20bc7` and the
 frozen evaluation-environment checksum is
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`.
 
-- **Published:** 2026-08-06
+- **Published:** 2026-11-25
 - **Artifact:** [`joelhagvall/maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner),
   `onnx/model_q4.onnx` (`dtype: "q4"`, the default and what the demo ships),
-  sha256 `6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66`,
-  Hub revision `7a0063375d1baabf66cf9a357dad5f46aea7008e`, 42,705,681 bytes.
-  This is the attested privacy-clean v19 release; see
+  sha256 `0a4ad3c3d87b0c53c67556177a668acfb8a91726a2af78e16a857403f6bed7fa`,
+  Hub revision `bb35467e9310095a81bf4e3d5779586ea842507a`, 42,705,681 bytes.
+  This is the attested privacy-clean v20 release; see
   [training/README.md](../training/README.md).
 - **Pipeline:** the shipped `maskera` path (model + `reconstruct()`
   post-processing), graded by
@@ -36,18 +36,17 @@ frozen evaluation-environment checksum is
   see [method notes](#method-notes) for why older overlap-based numbers read higher.
 
 > **Comparison boundary:** the dated public-model comparison tables below still
-> describe historical v18 and must not be attributed to v19. Published v19 has
+> describe historical v18 and must not be attributed to v20. Published v20 has
 > its own release snapshot immediately below. Raw external eval copies and the
 > earlier real-looking address surfaces remain excluded from the checkout.
-> Those historical comparison rows used `maskera@0.6.4`; the current v19 npm
+> Those historical comparison rows used `maskera@0.6.4`; the current v20 npm
 > release is versioned separately and does not relabel them.
 
-## Published privacy-clean v19 release
+## Published privacy-clean v20 release
 
-- **Measured:** 2026-08-06; the LinkedIn-style row was re-measured on
-  2026-08-10 from a clean build of the current packaged pipeline.
-- **Artifact:** `student-v19-privacy-precision2-onnx`, published as Hub revision
-  `b1aa7e799fa4839f8668dda691e893706e971523`; q4,
+- **Measured:** 2026-11-25 from a clean build of the current packaged pipeline.
+- **Artifact:** `student-v20b-s777-onnx`, published as Hub revision
+  `bb35467e9310095a81bf4e3d5779586ea842507a`; q4,
   42,705,681 bytes, evaluated through the current packaged reconstruction and
   default whole-word precision guard.
 - **Release state:** every defined gate passes; the Hub, npm source pin and demo
@@ -55,21 +54,20 @@ frozen evaluation-environment checksum is
 
 | synthetic release set | precision | recall | span F1 | labeled F1 | leaks |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| curated, 149 documents / 205 entities | 95.3% | 98.5% | 96.9% | 95.9% | 1/205 (0.5%) |
-| synthetic ADR, 41 documents / 57 entities | 100.0% | 100.0% | **100.0%** | 96.5% | **0/57 (0.0%)** |
-| LinkedIn-style, 32 documents / 53 entities | 75.8% | 88.7% | 81.7% | 78.3% | **0/53 (0.0%)** |
+| curated, 149 documents / 205 entities | 99.0% | 100.0% | 99.5% | 97.6% | 0/205 (0.0%) |
+| synthetic ADR, 41 documents / 57 entities | 100.0% | 100.0% | **100.0%** | 98.2% | **0/57 (0.0%)** |
+| LinkedIn-style, 32 documents / 53 entities | 96.4% | 100.0% | 98.1% | 94.4% | **0/53 (0.0%)** |
 
 The synthetic ADR set contains 35 marked street-address spans. All 35 are
-found, labeled ADDRESS, and matched exactly, including the house number. One
-gold organisation is covered at the exact span but typed ADDRESS, so
-ADDRESS-only precision is 35/36 (97.2%) and whole-corpus labeled F1 is 96.5%
-even though label-agnostic span precision, recall and F1 are all 100.0%. The
-curated miss is one broad public geographic region, not a person, contact,
-identifier, or street address.
+found, labeled ADDRESS, and matched exactly, including the house number, with
+35/35 (100.0%) ADDRESS-only precision. One gold location is covered at its exact
+span and typed ORGANIZATION, so whole-corpus labeled F1 is 98.2% while
+label-agnostic span precision, recall and F1 are all 100.0%. Curated,
+synthetic ADR and LinkedIn-style all record zero leaks.
 
-### Current v19 comparison with KBLab lowermix
+### Current v20 comparison with KBLab lowermix
 
-Measured 2026-08-11 on the privacy-safe, hand-authored synthetic gold set:
+Measured 2026-11-25 on the privacy-safe, hand-authored synthetic gold set:
 121 Swedish texts with 211 cross-model-comparable PER / LOC / ORG entities.
 The same texts were also forced to lowercase. Both models ran through the same
 Transformers token-classification pipeline with overlap matching. Maskera used
@@ -80,50 +78,51 @@ post-processing and its ADDRESS class are excluded.
 
 | casing | model | masked at all | typed F1 |
 | --- | --- | ---: | ---: |
-| original | **Maskera v19 q4** | **100.0% (211/211)** | 87.1% |
+| original | **Maskera v20 q4** | **100.0% (211/211)** | 88.2% |
 | original | KBLab lowermix fp32 | 97.2% (205/211) | **89.4%** |
-| lowercase | **Maskera v19 q4** | **100.0% (211/211)** | **85.7%** |
+| lowercase | **Maskera v20 q4** | **100.0% (211/211)** | **87.4%** |
 | lowercase | KBLab lowermix fp32 | 88.6% (187/211) | 83.2% |
 
 For masking, the safety result is whether an entity was covered at all:
 Maskera covered all 211 entities in both runs; KBLab missed 6 with original
 casing and 24 in lowercase. KBLab had the higher typed F1 on original casing
-by 2.3 percentage points; Maskera led lowercase typed F1 by 2.5 points.
+by 1.2 percentage points; Maskera led lowercase typed F1 by 4.2 points.
 
 This is a **directional, author-coupled comparison**, not an independent
 universal ranking: Maskera's developer wrote the corpus, even though it is
 held out of training and outside the generator's templates. The q4-vs-fp32
 choice compares the artifacts users can actually obtain, not equal numeric
 precision. Reproduce with `pnpm eval:kblab`; the machine result is
-[`benchmark-kblab-v19.json`](benchmark-kblab-v19.json). Comparison suite
-checksum: `585f5aaf89636f6b00c6e9e043b45bb274d081041fe2ff3aa03a3161f4919b99`.
+[`benchmark-kblab-v20.json`](benchmark-kblab-v20.json). Comparison suite
+checksum: `b7d2962c24153be19ff6e9dc442731eb49732df760d159cb810d78f9f6bc05fa`.
 Python environment checksum:
 `3e87b961ccb80856a45610d6b8d637b2fa3cc57b479794116ad912e63603c1ff`.
 
-### Current v19 end-product comparison with LogosGuard
+### Current v20 end-product comparison with LogosGuard
 
-Measured 2026-08-14 on the privacy-safe Swedish domain-regression corpus: 258
+Measured 2026-11-25 on the privacy-safe Swedish domain-regression corpus: 258
 synthetic texts across 19 categories with 952 annotated PII strings, including
 names, street addresses, personnummer, samordningsnummer, phone numbers, email,
 banking identifiers, and government, healthcare and legal language. Maskera
-0.10.0 ran the published v19 q4 artifact through the complete local JavaScript
+0.11.0 ran the published v20 q4 artifact through the complete local JavaScript
 pipeline on CPU. LogosGuard 2.4.4 ran through its Chrome file-redaction flow on
-the Free plan with `Balanced (recommended)` accuracy.
+the Free plan with `Balanced (recommended)` accuracy (same captured files from
+2026-08-14).
 
 Both products use the same strict material-character scorer here. A full hit
 requires every Unicode letter or digit from the annotated value to be removed;
 retaining some characters is a partial leak, while retaining them all is a
 clear-text miss. This deliberately stricter definition re-scores Maskera at
-933/8/11 rather than reusing the structured regression runner's 942/1/9 row
+941/5/6 rather than reusing the structured regression runner's 943/3/6 row
 below.
 
 | product | fully masked | partial leaks | clear-text misses |
 | --- | ---: | ---: | ---: |
-| **Maskera v19 q4** | **98.0% (933/952)** | 8 | 11 |
+| **Maskera v20 q4** | **98.8% (941/952)** | 5 | 6 |
 | LogosGuard 2.4.4 | 63.7% (606/952) | 49 | 297 |
 
-Maskera fully removed 327 more annotated values. Some material remained in 19
-Maskera cases and 346 LogosGuard cases, a 34.3 percentage-point difference in
+Maskera fully removed 335 more annotated values. Some material remained in 11
+Maskera cases and 346 LogosGuard cases, a 35.1 percentage-point difference in
 full-hit rate. Precision is not reported: the corpus is intentionally complete
 for its 952 expected values, but not exhaustively annotated for every
 defensible name, place or organisation.
@@ -141,8 +140,8 @@ exported chunks manually in the pinned LogosGuard surface, then run
 `pnpm eval:logosguard:maskera` and `pnpm eval:logosguard:score`. Privacy-clean
 per-document outcomes, masked-text hashes and capture hashes are in
 [`benchmark-logosguard-2.4.4.json`](benchmark-logosguard-2.4.4.json).
-Product-comparison result checksum: `e348ca88b83cd347a43f03d98659cac2c1b127012cf51c6f92f11e89f8929b05`.
-Product-comparison suite checksum: `95b480ffb59934f10131a6681a4f319ca4d505665cce3ac81a96eb354050d545`.
+Product-comparison result checksum: `97bc535079d60af22ca5f952cc467816cc6c213a434e4d41f5e93d5480bb71f1`.
+Product-comparison suite checksum: `479e2db6a390ad597da6aa8bc77231421e25565faf02571bdc60fd78276c4c19`.
 Selected runtime-environment checksum:
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`;
 corpus checksum:
@@ -150,36 +149,34 @@ corpus checksum:
 
 Two additional aggregate gates also pass:
 
-| gate | v19 result | release floor |
+| gate | v20 result | release floor |
 | --- | ---: | ---: |
-| synthetic gold, type F1 | 93.08% | 90.0% |
-| synthetic gold, type recall | 94.07% | 92.0% |
-| synthetic gold, masked recall | 98.31% | 97.0% |
-| decomposing rare surnames, masked recall | 96.94% (285/294; 9 leaks) | >94.9% |
-| decomposing rare surnames, PER-typed recall | 82.65% | reported, not gated |
+| synthetic gold, type F1 | 94.54% | 90.0% |
+| synthetic gold, type recall | 95.34% | 92.0% |
+| synthetic gold, masked recall | 98.73% | 97.0% |
+| decomposing rare surnames, masked recall | 96.60% (284/294; 10 leaks) | >94.9% |
+| decomposing rare surnames, PER-typed recall | 79.59% | reported, not gated |
 
-This release fixes the initial privacy-clean run's over-masking on the ADR
-set. The clean sweep is a pipeline result: before the current narrow runtime
-precision guard, the same q4 weights scored 98.3% span F1 there. The guard
-drops only configured whole-word surfaces; multi-word entities containing the
-same words are unaffected. v19 does not improve every aggregate:
-rare-surname masked recall is lower than the initial privacy-clean attempt but
-still clears its historical safety floor. Treat the figures as release
-gates on synthetic or author-coupled data, not as an independent universal
-quality claim.
+v20 distills a 6-layer KB-BERT student from a 3-seed teacher ensemble trained on
+108,400 attested synthetic rows and 6,900 disjoint validation rows, adding
+balanced clinical-retention, lowercase homograph-name, and register-precision
+contrast families. Compared with v19, curated span F1 rises from 96.9% (1 leak)
+to 99.5% (0 leaks), LinkedIn-style span F1 rises from 81.7% to 98.1% (0 leaks),
+and synthetic-gold type F1 rises from 93.08% to 94.54%. Rare-surname masked
+recall is 96.60% (10 leaks vs v19's 9), clearing the >94.9% floor cleanly.
+Treat the figures as release gates on synthetic or author-coupled data, not as
+an independent universal quality claim.
 
-## Structured-detector regression corpus (core rules + v19 hybrid)
+## Structured-detector regression corpus (core rules + v20 hybrid)
 
-- **Measured:** 2026-08-16, after the Luhn-fallback, international-phone,
-  address-boundary, contextual account, domain-precision and
-  whitespace-around-separator changes.
+- **Measured:** 2026-11-25 on the published `maskera-sv-ner-v20` q4 artifact.
 - **Corpus:** 258 synthetic Swedish texts across 19 categories, with 952
   annotated PII strings. The privacy-safe corpus and its runner are tracked in
   [`packages/ner/eval/domain-regression/`](../packages/ner/eval/domain-regression/);
   structured values use the authority-published fixtures documented in
   [`docs/TEST_DATA.md`](TEST_DATA.md), and the prose was never sourced from
   customer, patient or case records.
-- **Pipeline:** `maskera-sv-ner-v19` q4 on CPU through `redactWithNer`, with the
+- **Pipeline:** `maskera-sv-ner-v20` q4 on CPU through `redactWithNer`, with the
   deterministic core rules and NER layer enabled.
 - **Scope:** author-coupled regression coverage, not an independent benchmark
   or a universal quality claim. The 98.0% full-hit floor is a repository
@@ -187,21 +184,13 @@ quality claim.
 
 | run | full hits | partial leaks | clear-text misses | hit rate | classified junk redactions |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| tracked privacy-safe baseline, general default | **942** | **1** | **9** | **98.9%** | 276 / 1,523 (18.1%) |
+| tracked privacy-safe baseline, general default | **943** | **3** | **6** | **99.1%** | 172 / 1,429 (12.0%) |
 
-The 63 recovered full hits are predominantly format-correct but Luhn-invalid
-personnummer/samordningsnummer, plus international phone numbers. The remaining
-9 misses are malformed/OCR identifiers and NER misses in code-switched or
-spoken-number text. The two hits recovered on 2026-08-16 are the two fragments
-of a phone number written with whitespace around its dash ("070 - 174-06 83"),
-which the structured detectors previously split at the space. Three contextual domestic-account examples that were
-previously unannotated are now explicit annotations backed by Bankgirot's
-published test file. Sanitizing and tracking the corpus changes its annotation
-and redaction totals, so the retired ignored-scratch results (874/1/74 before
-the detector work and 937/1/11 afterwards) are historical diagnostics, not
-rows directly comparable with this baseline. Clinical precision is measured
-separately because the `profile: "clinical"` policy is opt-in rather than part
-of this default-pipeline run.
+Compared with v19 (942/1/9, 98.9%, 276 classified junk candidates), v20 raises
+full hits to 943 (99.1%) while cutting unannotated candidate junk redactions by
+37.7% (276 to 172). Clinical precision is measured separately because the
+`profile: "clinical"` policy is opt-in rather than part of this
+default-pipeline run.
 
 Reproduce locally with the bundled demo model (the commands build the packages
 first):
@@ -215,21 +204,22 @@ Set `MASKERA_REPORT=tmp/pii-domain.md` to write an ignored detailed report.
 `MASKERA_MODEL_PATH`, `MASKERA_MODEL`, `MASKERA_DTYPE` and
 `MASKERA_HIT_FLOOR` override the documented defaults.
 
-The official v19 NER release eval was rerun against the bundled q4 artifact on
-the same date: curated span F1 **96.9%** (1/205 leaks), unchanged from the
-published snapshot.
+The official v20 NER release eval was rerun against the bundled q4 artifact on
+the same date: curated span F1 **99.5%** (0/205 leaks), matching the published
+snapshot.
 
 ### Clinical profile comparison
 
 The same run was repeated with `profile: "clinical"` and compared on the three
 care categories (`sjukhus`, `vard-psyk`, `vard-remiss`): 165 annotated PII
-strings in total. The profile removed 20 model-only clinical false positives
-without changing masking recall on those annotations.
+strings in total. Compared with v19 (112 general / 92 clinical classified junk),
+v20 reduces unannotated clinical junk by 60.7% in the general profile and 62.0%
+in the clinical profile while maintaining 165/165 masking recall.
 
 | profile | full hits | partial leaks | clear-text misses | classified junk redactions |
 | --- | ---: | ---: | ---: | ---: |
-| general default | **165** | **0** | **0** | 112 |
-| `clinical` | **165** | **0** | **0** | **92** (−17.9%) |
+| general default | **165** | **0** | **0** | 44 |
+| `clinical` | **165** | **0** | **0** | **35** (−20.5%) |
 
 This is a synthetic, author-coupled regression comparison, not a clinical
 safety claim. “Classified junk” is the report's coarse heuristic for
@@ -238,9 +228,9 @@ a domain-authored gold set.
 
 ## Curated corpus (upper bound, regression tracker)
 
-> **Historical v18 snapshot — not a v19 result.** This and the following
+> **Historical v18 snapshot — not a v20 result.** This and the following
 > dated comparison sections are retained for transparency. The live Hub
-> default now serves v19, whose current release battery is reported above.
+> default now serves v20, whose current release battery is reported above.
 
 149 hand-authored Swedish sentences, 205 free-text entities
 (PERSON / LOCATION / ORGANIZATION), including hard negatives and
@@ -745,7 +735,7 @@ MASKERA_REMOTE=1 node packages/ner/eval/bench-latency.mjs
 # The demo's model dir is gitignored; fetch the published model into it first:
 hf download joelhagvall/maskera-sv-ner config.json tokenizer.json tokenizer_config.json \
   special_tokens_map.json vocab.txt onnx/model_q4.onnx \
-  --local-dir apps/demo/public/models/maskera-sv-ner-v19
+  --local-dir apps/demo/public/models/maskera-sv-ner-v20
 BENCH=1 pnpm --filter demo build
 npm --prefix /tmp/bench install puppeteer-core
 cd apps/demo && NODE_PATH=/tmp/bench/node_modules node scripts/bench-browser.mjs

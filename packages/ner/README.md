@@ -214,7 +214,7 @@ yourself (they're static files) and point the recognizer at them:
 
 ```ts
 createNerRecognizer({
-  model: "maskera-sv-ner-v19", // version the folder name: the browser caches by URL
+  model: "maskera-sv-ner-v20", // version the folder name: the browser caches by URL
   localModelPath: "/models/",   // same-origin path (or a CDN reverse-proxied here)
   allowLocalModels: true,
   allowRemoteModels: false,     // never touch the Hub
@@ -223,7 +223,7 @@ createNerRecognizer({
 
 Copy the files from the
 [Hub repo](https://huggingface.co/joelhagvall/maskera-sv-ner) (config,
-tokenizer, `onnx/model_q4.onnx`) into `public/models/maskera-sv-ner-v19/`
+tokenizer, `onnx/model_q4.onnx`) into `public/models/maskera-sv-ner-v20/`
 (version the folder name, the browser caches model files by URL). This is
 exactly how the maskera demo runs, fully offline after first load. Use a
 same-origin path such as `/models/`; Transformers.js 4.2's tokenizer metadata
@@ -252,33 +252,35 @@ highlighting.
 The default (and only bundled default) model is
 [maskera-sv-ner](https://huggingface.co/joelhagvall/maskera-sv-ner)
 (`MASKERA_SV_NER_MODEL`, MIT, 43 MB q4): PER/LOC/ORG/ADR, distilled from
-KB-BERT. Published v19 uses only 64,000 attested generator-produced task rows
-plus 4,760 disjoint validation rows and has passed every defined release gate.
+KB-BERT. Published v20 uses only 108,400 attested generator-produced task rows
+plus 6,900 disjoint validation rows (3-seed teacher ensemble) and has passed
+every defined release gate.
 On its revised synthetic ADR set the current pipeline covers all 57
-gold spans exactly with zero leaks, including all 35 marked addresses; one
-organisation is typed ADDRESS, so labeled F1 is 96.5%. On the packaged gold
-curated set v19 reaches 96.9% span F1 with 1/205 leaks, and on the
-LinkedIn-style set it reaches 81.7% with 0/53 leaks (re-measured 2026-08-10).
+gold spans exactly with zero leaks, including all 35 marked addresses (35/35
+ADDRESS precision); one location is typed ORGANIZATION, so labeled F1 is 98.2%.
+On the packaged gold curated set v20 reaches 99.5% span F1 with 0/205 leaks,
+and on the LinkedIn-style set it reaches 98.1% with 0/53 leaks (measured
+2026-11-25).
 On the packaged gold corpus historical v18 scored 99.8% span-F1 with a 0.0%
 leak rate; on independent real text, 94.7% and 3.4% (measured 2026-07-19).
-Those historical comparisons do not automatically transfer to v19. The
+Those historical comparisons do not automatically transfer to v20. The
 canonical, dated release tables live in
 [docs/BENCHMARKS.md](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md).
-The current v19 q4 artifact was compared separately on 2026-08-11 with KBLab
+The current v20 q4 artifact was compared separately on 2026-11-25 with KBLab
 lowermix fp32 on the same 121 synthetic, hand-authored Swedish texts (211
 PER/LOC/ORG entities, overlap matching). Maskera masked 211/211 both with
 original casing and lowercased; KBLab masked 205/211 and 187/211. KBLab led
-typed F1 on original casing (89.4% vs 87.1%); Maskera led lowercase typed F1
-(85.7% vs 83.2%). Because Maskera's developer wrote the corpus, treat this as
+typed F1 on original casing (89.4% vs 88.2%); Maskera led lowercase typed F1
+(87.4% vs 83.2%). Because Maskera's developer wrote the corpus, treat this as
 directional regression evidence rather than an independent ranking.
-The full v19 hybrid was also compared on 2026-08-14 with LogosGuard 2.4.4 in
+The full v20 hybrid was also compared on 2026-11-25 with LogosGuard 2.4.4 in
 Chrome, Free/`Balanced`, across 258 synthetic Swedish domain texts with 952
 annotated PII strings. Using the same strict full-removal scorer, Maskera fully
-removed 933/952 (98.0%) and LogosGuard 606/952 (63.7%); partial/clear-text leaks
-were 8/11 and 49/297. This comparison is author-coupled and does not report
+removed 941/952 (98.8%) and LogosGuard 606/952 (63.7%); partial/clear-text leaks
+were 5/6 and 49/297. This comparison is author-coupled and does not report
 precision; the per-document outcomes, capture hashes and encoding caveat are
 in the canonical benchmark report.
-v19's training-data scope, identifier rejection, provenance hashes,
+v20's training-data scope, identifier rejection, provenance hashes,
 and separate KB-BERT pretraining caveat are documented in
 [TRAINING_DATA_PROTECTION.md](https://github.com/joelhagvall/maskera/blob/main/docs/TRAINING_DATA_PROTECTION.md).
 Run the eval yourself:
@@ -288,7 +290,7 @@ pnpm -C packages/ner build
 MASKERA_REMOTE=1 node packages/ner/eval/run-eval.mjs
 ```
 
-For the complete hybrid path (rules plus v19), the repository also contains a
+For the complete hybrid path (rules plus v20), the repository also contains a
 tracked, privacy-safe 258-text Swedish domain regression corpus:
 
 ```bash

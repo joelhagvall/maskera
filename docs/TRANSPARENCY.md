@@ -26,8 +26,9 @@ are.
 
 ## How the model was trained (honestly)
 
-- **Published v19 is the privacy-clean artifact.** Its task-specific training
-  uses 64,000 generated rows and 4,760 disjoint validation rows. Historical v18
+- **Published v20 is the privacy-clean artifact.** Its task-specific training
+  uses 108,400 generated rows and 6,900 disjoint validation rows (distilled from
+  a 3-seed KB-BERT teacher ensemble). Historical v18
   used generated sentences plus documented, openly licensed public Swedish
   corpora; its dated comparison tables remain for transparency.
 - **Structured identifiers fail closed.** Every row is rejected if it contains
@@ -35,7 +36,7 @@ are.
   URL, public IP, payment identifier, long account/card-like number, or postal
   code. Even officially reserved detector-test values are excluded from model
   training. The scanner reports categories, not the matched value.
-- **Exact provenance is bound to published v19.** The data row
+- **Exact provenance is bound to published v20.** The data row
   counts and SHA-256 hashes are bound to the generator's code hash. Training, trimming,
   distillation, ONNX export, and publication require the resulting
   `privacy-attestation.json`; a converter append or manual edit breaks the
@@ -50,23 +51,23 @@ are.
 
 ## How good is it, really
 
-- The public-comparison tables describe historical v18, while the current v19
+- The public-comparison tables describe historical v18, while the current v20
   release snapshot records 100.0%
   label-agnostic span F1 and 0/57 leaks on the revised synthetic ADR set,
-  96.9% span F1 and 1/205 leaks on curated, and 81.7% span F1 with 0/53
+  99.5% span F1 and 0/205 leaks on curated, and 98.1% span F1 with 0/53
   leaks on the LinkedIn-style set. All defined gates pass, but these are
   synthetic or author-coupled checks, not independent universal estimates.
-  A current v19 comparison re-run on 2026-08-11 against KBLab lowermix uses
+  A current v20 comparison re-run on 2026-11-25 against KBLab lowermix uses
   121 hand-authored synthetic Swedish texts with 211 comparable PER/LOC/ORG
   entities. Maskera q4 masked 211/211 both with original casing and lowercased;
   KBLab fp32 masked 205/211 and 187/211. KBLab led typed F1 on original casing
-  (89.4% vs 87.1%), while Maskera led lowercase typed F1 (85.7% vs 83.2%). The
+  (89.4% vs 88.2%), while Maskera led lowercase typed F1 (87.4% vs 83.2%). The
   corpus shares Maskera's developer, so this is directional, not independent.
-  A separate end-product comparison on 2026-08-14 used 258 synthetic Swedish
+  A separate end-product comparison on 2026-11-25 used 258 synthetic Swedish
   domain texts with 952 annotated PII strings and one strict full-removal
-  scorer. Maskera v19 fully removed 933/952 (98.0%); LogosGuard 2.4.4 in
+  scorer. Maskera v20 fully removed 941/952 (98.8%); LogosGuard 2.4.4 in
   Chrome, Free/`Balanced`, removed 606/952 (63.7%). Partial/clear-text leaks
-  were 8/11 and 49/297. This corpus is also author-coupled and not exhaustively
+  were 5/6 and 49/297. This corpus is also author-coupled and not exhaustively
   annotated for precision; the canonical report records the file-encoding
   caveat, per-document outcomes and capture hashes.
   The canonical, dated numbers live in [`docs/BENCHMARKS.md`](BENCHMARKS.md);
@@ -92,7 +93,7 @@ No. Redaction is local. Only model weights and the runtime are fetched, never
 your content.
 
 **What was the model trained on?**
-Published v19 uses only generated task sentences in Maskera's task-specific
+Published v20 uses only generated task sentences in Maskera's task-specific
 training and ships exact data/audit-code hashes with its weights. The separate
 KB-BERT pretraining boundary is documented in the
 [training-data protection policy](TRAINING_DATA_PROTECTION.md).

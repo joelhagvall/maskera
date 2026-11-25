@@ -8,7 +8,7 @@ import copy from "../src/i18n/sv.json"
 
 const benchmarkSource = readFileSync(resolve(process.cwd(), "../../docs/BENCHMARKS.md"), "utf8")
 const comparisonSource = JSON.parse(
-  readFileSync(resolve(process.cwd(), "../../docs/benchmark-kblab-v19.json"), "utf8"),
+  readFileSync(resolve(process.cwd(), "../../docs/benchmark-kblab-v20.json"), "utf8"),
 )
 const redactionComparisonSource = JSON.parse(
   readFileSync(resolve(process.cwd(), "../../docs/benchmark-logosguard-2.4.4.json"), "utf8"),
@@ -119,7 +119,7 @@ describe("Accuracy", () => {
       screen
         .getByRole("link", { name: new RegExp(copy.accuracy.comparisonCta) })
         .getAttribute("href"),
-    ).toBe("https://github.com/joelhagvall/maskera/blob/main/docs/benchmark-kblab-v19.json")
+    ).toBe("https://github.com/joelhagvall/maskera/blob/main/docs/benchmark-kblab-v20.json")
     expect(
       screen.getByRole("link", { name: new RegExp(copy.accuracy.scriptsCta) }).getAttribute("href"),
     ).toBe("https://github.com/joelhagvall/maskera/blob/main/training/benchmark_competitors.py")
@@ -135,14 +135,14 @@ describe("Accuracy", () => {
   })
 
   it("pins the Maskera provenance to the benchmark source of truth", () => {
-    expect(benchmarkSource).toContain("Published:** 2026-08-06")
-    expect(benchmarkSource).toContain("b1aa7e799fa4839f8668dda691e893706e971523")
+    expect(benchmarkSource).toContain("Published:** 2026-11-25")
+    expect(benchmarkSource).toContain("bb35467e9310095a81bf4e3d5779586ea842507a")
     expect(benchmarkSource).toContain("42,705,681 bytes")
-    expect(copy.accuracy.provenance[0]).toContain("2026-08-06")
-    expect(copy.accuracy.provenance[0]).toContain("v19")
+    expect(copy.accuracy.provenance[0]).toContain("2026-11-25")
+    expect(copy.accuracy.provenance[0]).toContain("v20")
     expect(copy.accuracy.provenance[0]).toContain("43 MB")
     expect(copy.accuracy.currentStats.map((stat) => stat.value)).toEqual([
-      "96,9 % / 1 av 205",
+      "99,5 % / 0 av 205",
       "100,0 % / 0 av 57",
     ])
     expect(copy.accuracy.currentStats.map((stat) => stat.label)).toEqual([
@@ -152,9 +152,9 @@ describe("Accuracy", () => {
     expect(copy.accuracy.currentTitle).toBe("Aktuella testresultat")
     expect(copy.accuracy.provenance).toHaveLength(1)
     expect(copy.accuracy.limits[0]).toContain("Testmängderna")
-    expect(comparisonSource.measuredAt).toBe("2026-08-11")
+    expect(comparisonSource.measuredAt).toBe("2026-11-25")
     expect(comparisonSource.artifacts["joelhagvall/maskera-sv-ner"].sha256).toBe(
-      "6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66",
+      "0a4ad3c3d87b0c53c67556177a668acfb8a91726a2af78e16a857403f6bed7fa",
     )
     expect(
       comparisonSource.artifacts["KBLab/bert-base-swedish-lowermix-reallysimple-ner"].sha256,
@@ -163,13 +163,13 @@ describe("Accuracy", () => {
     expect(comparisonSource.runs[0].results[1].redactionHits).toBe(205)
     expect(comparisonSource.runs[1].results[0].redactionHits).toBe(211)
     expect(comparisonSource.runs[1].results[1].redactionHits).toBe(187)
-    expect(redactionComparisonSource.measuredAt).toBe("2026-08-14")
+    expect(redactionComparisonSource.measuredAt).toBe("2026-11-25")
     expect(redactionComparisonSource.corpus).toMatchObject({ texts: 258, annotations: 952 })
     expect(redactionComparisonSource.systems.maskera.totals).toMatchObject({
-      hits: 933,
-      partials: 8,
-      misses: 11,
-      fullHitRatePct: "98.0",
+      hits: 941,
+      partials: 5,
+      misses: 6,
+      fullHitRatePct: "98.8",
     })
     expect(redactionComparisonSource.systems.logosguard.totals).toMatchObject({
       hits: 606,

@@ -1,5 +1,18 @@
 # maskera
 
+## 0.11.0
+
+### Minor Changes
+
+- Pin `maskera-sv-ner` v20 (`bb35467e9310095a81bf4e3d5779586ea842507a`) with updated SHA-256 integrity digests and refreshed benchmark documentation.
+
+  `maskera-sv-ner` v20 is distilled from a 3-seed KB-BERT teacher ensemble over 108,400 attested synthetic training rows and 6,900 validation rows, improving curated span F1 to 99.5% (0/205 leaks), LinkedIn-style span F1 to 98.1% (0/53 leaks), synthetic ADR labeled F1 to 98.2% (35/35 exact addresses, 0/57 leaks), and structured domain regression to 943/952 (99.1%) with 38% fewer unannotated false-flag candidates.
+
+### Patch Changes
+
+- Updated dependencies
+  - @maskera/core@0.8.3
+
 ## 0.10.2
 
 ### Patch Changes

@@ -335,7 +335,7 @@ export function Accuracy({ go }: { go: (view: View) => void }) {
               </li>
               <li>
                 <a
-                  href={GITHUB + "/blob/main/docs/benchmark-kblab-v19.json"}
+                  href={GITHUB + "/blob/main/docs/benchmark-kblab-v20.json"}
                   target="_blank"
                   rel="noreferrer"
                 >

@@ -16,7 +16,7 @@ test("the checked-in benchmark contract and carriers are synchronized", () => {
     timeout: 60_000,
   })
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`)
-  assert.match(result.stdout, /benchmark sync: v19 contract verified/)
+  assert.match(result.stdout, /benchmark sync: v20 contract verified/)
 })
 
 test("a changed canonical metric produces an explicit drift failure", async () => {

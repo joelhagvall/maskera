@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "measuredAt": "2026-08-14",
+  "measuredAt": "2026-11-25",
   "corpus": {
     "name": "Maskera privacy-safe Swedish domain regression corpus",
     "sourceDirectory": "packages/ner/eval/domain-regression/corpus",
@@ -19,31 +19,31 @@
   "systems": {
     "maskera": {
       "name": "Maskera",
-      "version": "0.10.1 / maskera-sv-ner-v19",
+      "version": "0.11.0 / maskera-sv-ner-v20",
       "surface": "Local JavaScript pipeline, q4 ONNX on CPU, general profile",
       "artifact": {
-        "model": "maskera-sv-ner-v19",
+        "model": "maskera-sv-ner-v20",
         "dtype": "q4",
         "path": "onnx/model_q4.onnx",
-        "sha256": "6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66",
+        "sha256": "0a4ad3c3d87b0c53c67556177a668acfb8a91726a2af78e16a857403f6bed7fa",
         "bytes": 42705681
       },
       "files": [
         {
           "path": "tmp/maskera-domain.redacted.jsonl",
-          "sha256": "ed25252545f77c8c0a5820477dd49b332870c542b075b6de103b18d0b9c2732f",
-          "bytes": 83039
+          "sha256": "dd6f932771040d953c421ce861da13934940a84582d0b50efd2a95239a7473c1",
+          "bytes": 83621
         }
       ],
       "totals": {
         "texts": 258,
         "annotations": 952,
-        "hits": 933,
-        "partials": 8,
-        "misses": 11,
-        "redactions": 1522,
-        "fullHitRatePct": "98.0",
-        "leakRatePct": "2.0"
+        "hits": 941,
+        "partials": 5,
+        "misses": 6,
+        "redactions": 1429,
+        "fullHitRatePct": "98.8",
+        "leakRatePct": "1.2"
       },
       "categories": {
         "bank-forsakring": {
@@ -52,7 +52,7 @@
           "hits": 85,
           "partials": 0,
           "misses": 0,
-          "redactions": 107,
+          "redactions": 104,
           "fullHitRatePct": "100.0"
         },
         "support": {
@@ -61,7 +61,7 @@
           "hits": 10,
           "partials": 1,
           "misses": 0,
-          "redactions": 19,
+          "redactions": 18,
           "fullHitRatePct": "90.9"
         },
         "sjukhus": {
@@ -70,7 +70,7 @@
           "hits": 16,
           "partials": 0,
           "misses": 0,
-          "redactions": 32,
+          "redactions": 26,
           "fullHitRatePct": "100.0"
         },
         "epost": {
@@ -79,7 +79,7 @@
           "hits": 15,
           "partials": 0,
           "misses": 0,
-          "redactions": 34,
+          "redactions": 28,
           "fullHitRatePct": "100.0"
         },
         "chatt": {
@@ -88,7 +88,7 @@
           "hits": 9,
           "partials": 0,
           "misses": 0,
-          "redactions": 16,
+          "redactions": 17,
           "fullHitRatePct": "100.0"
         },
         "hr": {
@@ -97,7 +97,7 @@
           "hits": 18,
           "partials": 0,
           "misses": 0,
-          "redactions": 29,
+          "redactions": 30,
           "fullHitRatePct": "100.0"
         },
         "ekonomi": {
@@ -106,7 +106,7 @@
           "hits": 15,
           "partials": 0,
           "misses": 0,
-          "redactions": 25,
+          "redactions": 27,
           "fullHitRatePct": "100.0"
         },
         "forum": {
@@ -115,7 +115,7 @@
           "hits": 7,
           "partials": 0,
           "misses": 0,
-          "redactions": 15,
+          "redactions": 16,
           "fullHitRatePct": "100.0"
         },
         "edge": {
@@ -124,7 +124,7 @@
           "hits": 20,
           "partials": 0,
           "misses": 0,
-          "redactions": 32,
+          "redactions": 31,
           "fullHitRatePct": "100.0"
         },
         "blandat-webb": {
@@ -133,17 +133,17 @@
           "hits": 54,
           "partials": 0,
           "misses": 0,
-          "redactions": 83,
+          "redactions": 79,
           "fullHitRatePct": "100.0"
         },
         "edge2": {
           "texts": 20,
           "annotations": 65,
-          "hits": 54,
+          "hits": 58,
           "partials": 2,
-          "misses": 9,
-          "redactions": 93,
-          "fullHitRatePct": "83.1"
+          "misses": 5,
+          "redactions": 97,
+          "fullHitRatePct": "89.2"
         },
         "hyra-fastighet": {
           "texts": 18,
@@ -151,17 +151,17 @@
           "hits": 77,
           "partials": 0,
           "misses": 0,
-          "redactions": 106,
+          "redactions": 109,
           "fullHitRatePct": "100.0"
         },
         "intern-chatt": {
           "texts": 18,
           "annotations": 46,
-          "hits": 45,
+          "hits": 46,
           "partials": 0,
-          "misses": 1,
+          "misses": 0,
           "redactions": 64,
-          "fullHitRatePct": "97.8"
+          "fullHitRatePct": "100.0"
         },
         "juridik": {
           "texts": 19,
@@ -169,7 +169,7 @@
           "hits": 109,
           "partials": 0,
           "misses": 0,
-          "redactions": 182,
+          "redactions": 173,
           "fullHitRatePct": "100.0"
         },
         "kansliga": {
@@ -178,7 +178,7 @@
           "hits": 80,
           "partials": 0,
           "misses": 0,
-          "redactions": 114,
+          "redactions": 115,
           "fullHitRatePct": "100.0"
         },
         "myndighet": {
@@ -187,7 +187,7 @@
           "hits": 84,
           "partials": 0,
           "misses": 0,
-          "redactions": 108,
+          "redactions": 107,
           "fullHitRatePct": "100.0"
         },
         "skola": {
@@ -202,11 +202,11 @@
         "telefon-transkript": {
           "texts": 18,
           "annotations": 28,
-          "hits": 23,
-          "partials": 4,
+          "hits": 25,
+          "partials": 2,
           "misses": 1,
-          "redactions": 58,
-          "fullHitRatePct": "82.1"
+          "redactions": 55,
+          "fullHitRatePct": "89.3"
         },
         "vard-psyk": {
           "texts": 20,
@@ -214,17 +214,17 @@
           "hits": 73,
           "partials": 0,
           "misses": 0,
-          "redactions": 121,
+          "redactions": 109,
           "fullHitRatePct": "100.0"
         },
         "vard-remiss": {
           "texts": 18,
           "annotations": 76,
-          "hits": 75,
-          "partials": 1,
+          "hits": 76,
+          "partials": 0,
           "misses": 0,
-          "redactions": 191,
-          "fullHitRatePct": "98.7"
+          "redactions": 131,
+          "fullHitRatePct": "100.0"
         }
       },
       "documents": [
@@ -293,8 +293,8 @@
         {
           "id": "bank-forsakring-03",
           "category": "bank-forsakring",
-          "maskedSha256": "4aa47e9b9eb7277e4045c295d446fecc07be67947a06f15fd63c0c5f96641de8",
-          "redactions": 8,
+          "maskedSha256": "a35c85c99a1b79037ed9d3e077aa42860da632a9ec1efadff86683245a8d5f29",
+          "redactions": 7,
           "annotations": [
             {
               "materialCharacters": 16,
@@ -329,7 +329,7 @@
         {
           "id": "bank-forsakring-04",
           "category": "bank-forsakring",
-          "maskedSha256": "d44c0b8072c725cae8dcbe7a725148d9525ff106b51964dcc29e8ee5cc20685d",
+          "maskedSha256": "6dd380a56aa286910f3d3c95afd13940cdbf94247b38944dd0ec89570755b005",
           "redactions": 8,
           "annotations": [
             {
@@ -437,7 +437,7 @@
         {
           "id": "bank-forsakring-07",
           "category": "bank-forsakring",
-          "maskedSha256": "8c62de4c08396223d774e85e9fbbf78fb3c1c73aedbe9786c51e9f252baa2049",
+          "maskedSha256": "fd15d819c2c433b7ea2ac9391d9793f719d2919b31dae1557e144a31b8f4becc",
           "redactions": 5,
           "annotations": [
             {
@@ -468,8 +468,8 @@
         {
           "id": "bank-forsakring-08",
           "category": "bank-forsakring",
-          "maskedSha256": "1e6d64133fb2bba30b07d635a9eadcb29eb4cc883dafcabcd64f6ca24050c0e9",
-          "redactions": 5,
+          "maskedSha256": "841d89b107b72cea6fe7e2652f0c211276fe5e9fe41148fe718aa4b5d61badde",
+          "redactions": 4,
           "annotations": [
             {
               "materialCharacters": 14,
@@ -710,8 +710,8 @@
         {
           "id": "bank-forsakring-15",
           "category": "bank-forsakring",
-          "maskedSha256": "f85571775a0a6a6dfe0f6b9ecdc9b4efeb2138aad9db4d7492778fac88ea0e71",
-          "redactions": 7,
+          "maskedSha256": "a4ecdcbc224dd078d140cae4bb86c961032bd949d3f4119345a6ce20f3a7b913",
+          "redactions": 6,
           "annotations": [
             {
               "materialCharacters": 16,
@@ -746,7 +746,7 @@
         {
           "id": "bank-forsakring-16",
           "category": "bank-forsakring",
-          "maskedSha256": "fdf9f410695f58b230eb8d3a0540a7f3be75d2d0aaaab7e31b5f71160909ca21",
+          "maskedSha256": "3e36592836afb90cc3587e4f8133b0b49951c72ccee8cc6f94346f3e8094875a",
           "redactions": 7,
           "annotations": [
             {
@@ -880,7 +880,7 @@
         {
           "id": "support-02",
           "category": "support",
-          "maskedSha256": "b0315c651fdfdae8495932beae64b7db62bb191e8cd4f5040e2db9fdc6e8a276",
+          "maskedSha256": "22e7dd61e1353c9f902deab3b4c8d1ad32ceae04e9ab3fce3d75f6afe268289d",
           "redactions": 6,
           "annotations": [
             {
@@ -927,8 +927,8 @@
         {
           "id": "support-04",
           "category": "support",
-          "maskedSha256": "a056bebdfc0d8c0aa94475416be7e7fe3897538284a8f32d46b9620764234c8a",
-          "redactions": 7,
+          "maskedSha256": "f97122c1703e17d5bd31d4440bf2fd86c3e3d37411bd68da7cad8e9c5e551c4a",
+          "redactions": 6,
           "annotations": [
             {
               "materialCharacters": 26,
@@ -953,8 +953,8 @@
         {
           "id": "vard-01",
           "category": "sjukhus",
-          "maskedSha256": "898ae1098632831ff03e7f50ea0529fa40c2b52bcbc8c97d6938f2e3456eee58",
-          "redactions": 10,
+          "maskedSha256": "78ea2e7bdfa2fa31ed9cbbe4337ca90149117e81e59ee802ce6788544d4cc35e",
+          "redactions": 7,
           "annotations": [
             {
               "materialCharacters": 14,
@@ -989,8 +989,8 @@
         {
           "id": "vard-02",
           "category": "sjukhus",
-          "maskedSha256": "85c0ecdc21ddb42fbf5c58b8eca7bda014f63eb7338d25fa1656c14b4305c097",
-          "redactions": 7,
+          "maskedSha256": "ac74587f01acca46f0b35edb6f55359fb36b40be22cf02c667e476cfb7d7bd8e",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 13,
@@ -1015,8 +1015,8 @@
         {
           "id": "vard-03",
           "category": "sjukhus",
-          "maskedSha256": "c3fbf2be68e3325682bbd1b52f5052061363f4874aa2d9c0c8fcb0426cfc7d6f",
-          "redactions": 9,
+          "maskedSha256": "2838c2798d25527aaac01f6a9d07487ce06e558c214f4c0bfb54690da2c51a3d",
+          "redactions": 8,
           "annotations": [
             {
               "materialCharacters": 14,
@@ -1077,8 +1077,8 @@
         {
           "id": "epost-01",
           "category": "epost",
-          "maskedSha256": "2b7d520ce9744850213543cc3ec288610049e7ee009c08ba1c95752c2391f4e2",
-          "redactions": 10,
+          "maskedSha256": "dd61e00aa980de4dcf75ed15539f6cc4f7ecc1e96eb734d962262be55f651740",
+          "redactions": 8,
           "annotations": [
             {
               "materialCharacters": 15,
@@ -1134,8 +1134,8 @@
         {
           "id": "epost-03",
           "category": "epost",
-          "maskedSha256": "19e12a2f18a1ec0c51e9f3ce27d08c20171cde911222d9a64d51b745a8152420",
-          "redactions": 9,
+          "maskedSha256": "7260f0a7f029ab741cd0df0b3f0f2453765b4cabe30033a9db79f22f6419fcc2",
+          "redactions": 8,
           "annotations": [
             {
               "materialCharacters": 14,
@@ -1165,8 +1165,8 @@
         {
           "id": "epost-04",
           "category": "epost",
-          "maskedSha256": "89b6c6c300fae83f543db2ea7bd86b09d1b91174de7befd8ed8abcc98bdbdba2",
-          "redactions": 10,
+          "maskedSha256": "00f9bf5e869432cf496230ddd7a20917aacf7cf58fdcac5f42c0e056a9f4e867",
+          "redactions": 7,
           "annotations": [
             {
               "materialCharacters": 13,
@@ -1222,8 +1222,8 @@
         {
           "id": "chatt-02",
           "category": "chatt",
-          "maskedSha256": "ded894f07a8f968c8be0a855782bfadd0232e60f4053b3295b3b944a38298f2b",
-          "redactions": 3,
+          "maskedSha256": "3b06b744a03a0e6a7d7ef4c84a7a025e582b542e82211910d51631e53b6eb92f",
+          "redactions": 4,
           "annotations": [
             {
               "materialCharacters": 14,
@@ -1326,8 +1326,8 @@
         {
           "id": "hr-02",
           "category": "hr",
-          "maskedSha256": "57a4f7733e62344dbc11e5c4498146a6ffab3515e37830bc75c43fc188b51cb3",
-          "redactions": 7,
+          "maskedSha256": "8922b18de0cb00a635b7f18a22e6424bb5d840cff8262338eee7911f9c1398a9",
+          "redactions": 8,
           "annotations": [
             {
               "materialCharacters": 12,
@@ -1419,8 +1419,8 @@
         {
           "id": "ekonomi-01",
           "category": "ekonomi",
-          "maskedSha256": "2eb9f99689d727a664174a00704242c0987c362f9a6ebda210d3c9ca77d45741",
-          "redactions": 5,
+          "maskedSha256": "2908fa41a0ce59581d4e408031bdc50b47799f5ff21cc98917479a7634f2aaab",
+          "redactions": 7,
           "annotations": [
             {
               "materialCharacters": 14,
@@ -1471,7 +1471,7 @@
         {
           "id": "ekonomi-03",
           "category": "ekonomi",
-          "maskedSha256": "75d8eb07cebd4f9270742f38185a01a39194572f745a4b9330affd92eb758b09",
+          "maskedSha256": "beddbca58bb0a139893dca2180930fda8565ead86ed68f0a43f3f09c201bf35c",
           "redactions": 8,
           "annotations": [
             {
@@ -1538,8 +1538,8 @@
         {
           "id": "forum-01",
           "category": "forum",
-          "maskedSha256": "21845810a91e556e868563ad4cc12965e63712e8232f57b5f547618cbe1b73f6",
-          "redactions": 4,
+          "maskedSha256": "0abee3de1742de0533bc6963cc062e3dc1b2e75d9ae774027ec95d7710f23fc3",
+          "redactions": 6,
           "annotations": [
             {
               "materialCharacters": 14,
@@ -1559,8 +1559,8 @@
         {
           "id": "forum-02",
           "category": "forum",
-          "maskedSha256": "2450d169221b93d7d987a0436c9ca761b5150a7521fe492d4f7077923b626f11",
-          "redactions": 4,
+          "maskedSha256": "5cc5f71cf731f71450128438d76cdf0cee3c8cfa3aa5ba3fafd6c13b0aae5af9",
+          "redactions": 3,
           "annotations": [
             {
               "materialCharacters": 14,
@@ -1580,8 +1580,8 @@
         {
           "id": "forum-03",
           "category": "forum",
-          "maskedSha256": "8b5ce60edf1beb757eba16499b73d6a87c4bd6bd7aef75313373903d1b0bd52f",
-          "redactions": 5,
+          "maskedSha256": "1469286b241da5674f1630a618124e07195c2a54f734e398e8fe6db021b3fed1",
+          "redactions": 4,
           "annotations": [
             {
               "materialCharacters": 12,
@@ -1596,8 +1596,8 @@
         {
           "id": "forum-04",
           "category": "forum",
-          "maskedSha256": "74503eeefc111320dcca93d1c1e68eb22cfa3796fc73590e1514e53843e0a232",
-          "redactions": 2,
+          "maskedSha256": "d083c0bfd1af575f325f4ab3b2a07d54c163585d108c00cca1919acb41664cfa",
+          "redactions": 3,
           "annotations": [
             {
               "materialCharacters": 12,
@@ -1690,8 +1690,8 @@
         {
           "id": "edge-04",
           "category": "edge",
-          "maskedSha256": "ea5521d8f78914948c7d6d55763583f7ee20faace0e7d5632e7a65082d15e843",
-          "redactions": 6,
+          "maskedSha256": "55885da78c64f93b2214d7ff895afc5671aab30786b29b3a852db86707193fb5",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 18,
@@ -1747,7 +1747,7 @@
         {
           "id": "edge-06",
           "category": "edge",
-          "maskedSha256": "677bd03ff55fe6cc3a8a5d7c8a920bc7108ea13a12b3645539f6b04a31ab2b74",
+          "maskedSha256": "6862d60cd145e1711900a65d6e461a1dc1ef5e8e79d660d50d2b25298ada55f1",
           "redactions": 5,
           "annotations": [
             {
@@ -1794,8 +1794,8 @@
         {
           "id": "blandat-webb-01",
           "category": "blandat-webb",
-          "maskedSha256": "af6b2d7ea63771e5f87609cc53cdc06a90e842e60068407da9acd3cc5792c10c",
-          "redactions": 5,
+          "maskedSha256": "a33cd4d7c148ecb2c939e40430922f5b3268c7ce268570878829da04c3d3a9eb",
+          "redactions": 6,
           "annotations": [
             {
               "materialCharacters": 13,
@@ -1820,7 +1820,7 @@
         {
           "id": "blandat-webb-02",
           "category": "blandat-webb",
-          "maskedSha256": "43f136902d311cfe414e5747c6d419d3d9c1cd95632ff147b1efaa8fee0ff390",
+          "maskedSha256": "fa8070902e05266a3d79f9e581da4f14b06bc34b2f7600aefc38cd4c5c8d897e",
           "redactions": 4,
           "annotations": [
             {
@@ -1846,8 +1846,8 @@
         {
           "id": "blandat-webb-03",
           "category": "blandat-webb",
-          "maskedSha256": "060f53283bc9ed97ab24804bcfa7640bfe92b4da4900a0d0bf5dd26ca6c3a2bb",
-          "redactions": 4,
+          "maskedSha256": "895ecc142840e00f216ce17947291afc94233e9336c008397431574bb188096c",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 5,
@@ -1872,8 +1872,8 @@
         {
           "id": "blandat-webb-04",
           "category": "blandat-webb",
-          "maskedSha256": "3d8d1f9daf77cae93175cbfdd05bdac448303c8fefb5810a0afbc6b1001d250c",
-          "redactions": 8,
+          "maskedSha256": "3c8472e8ac25c67defaa3971cf115edd03e9a1f8492877b6d269556476c189a2",
+          "redactions": 6,
           "annotations": [
             {
               "materialCharacters": 13,
@@ -1903,8 +1903,8 @@
         {
           "id": "blandat-webb-05",
           "category": "blandat-webb",
-          "maskedSha256": "3da3b52f23c1eefb5fb9683393bd0d6feac6ddd3769f2680201787a82264b917",
-          "redactions": 6,
+          "maskedSha256": "c1843c8d60e4ab466967e2d892977fe682cd43fd5e91952029bc055ddc0cfaff",
+          "redactions": 3,
           "annotations": [
             {
               "materialCharacters": 14,
@@ -1929,8 +1929,8 @@
         {
           "id": "blandat-webb-06",
           "category": "blandat-webb",
-          "maskedSha256": "4d4739281290276518a93b04c09e0093040d5f5308033a6e39a0b29ab5d7d5f7",
-          "redactions": 6,
+          "maskedSha256": "a13abce101549d69cfeabc1343d57a11c9145669233fa9c246056827d9809692",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 9,
@@ -1981,8 +1981,8 @@
         {
           "id": "blandat-webb-08",
           "category": "blandat-webb",
-          "maskedSha256": "e49ae14bfbdb01baceec7524e3e8583d152c0b1903bdb0b668e2c951f7dca588",
-          "redactions": 7,
+          "maskedSha256": "89170b06baeb34c5747fbcf165d4c4b21f2e22540b2644207bebed35fed8edf2",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 6,
@@ -2012,8 +2012,8 @@
         {
           "id": "blandat-webb-09",
           "category": "blandat-webb",
-          "maskedSha256": "9ed5e2ed7ba0a0cd57c3120d4927ba5e17127cf0e21e0e95f1a78dfc75958c25",
-          "redactions": 3,
+          "maskedSha256": "c12c0eaaed38a6ab491cdedbebf9576189a82e91801315a444eb6a9e6a7df890",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 10,
@@ -2080,8 +2080,8 @@
         {
           "id": "blandat-webb-12",
           "category": "blandat-webb",
-          "maskedSha256": "ff5bcd3e13d921b5c75707065b8b1b8873b1a64f8b5072ceca82ea306b710bc5",
-          "redactions": 3,
+          "maskedSha256": "8a01925dab218ebd7f734263e4eec2ce3e266a310c259eb5c220f73c0c7528ad",
+          "redactions": 2,
           "annotations": [
             {
               "materialCharacters": 7,
@@ -2153,8 +2153,8 @@
         {
           "id": "blandat-webb-15",
           "category": "blandat-webb",
-          "maskedSha256": "e4c5ce2170d81ea86dedc90e5e098f16db72097d02fd090c1f8a19be07c8ca7f",
-          "redactions": 6,
+          "maskedSha256": "c5277e5cca7310fec3cf10bcacbfc058728ffe6a4c6b1b4b46d2f980405b7974",
+          "redactions": 7,
           "annotations": [
             {
               "materialCharacters": 12,
@@ -2179,8 +2179,8 @@
         {
           "id": "blandat-webb-16",
           "category": "blandat-webb",
-          "maskedSha256": "24791bad6e4b71a4ac213f21971e8e4b60e255fe1a8103c34c1013ed491caa6a",
-          "redactions": 3,
+          "maskedSha256": "c2def1765945582b1583be6e89621317c981d3bd5009d21bb8888c5fd6569b08",
+          "redactions": 4,
           "annotations": [
             {
               "materialCharacters": 18,
@@ -2205,8 +2205,8 @@
         {
           "id": "blandat-webb-17",
           "category": "blandat-webb",
-          "maskedSha256": "117bdcf0b805f75217a516c940de9e11e08f385acd0ae4ef14b9a232c7eeceb1",
-          "redactions": 7,
+          "maskedSha256": "68c79d2a0e7ef49a254e1a9f64313e12e97d9c470343590e5b77c20e5fd8738d",
+          "redactions": 6,
           "annotations": [
             {
               "materialCharacters": 15,
@@ -2314,8 +2314,8 @@
         {
           "id": "edge2-03",
           "category": "edge2",
-          "maskedSha256": "d08741e8cea506a437655832ac29c3c2b66aee8a3945d85bc39e6d51ec6f2b93",
-          "redactions": 4,
+          "maskedSha256": "997060cdc0e7ae798b8bf4b5b36728cd5447f37ed288c3ff33f31552931774ea",
+          "redactions": 3,
           "annotations": [
             {
               "materialCharacters": 10,
@@ -2449,8 +2449,8 @@
         {
           "id": "edge2-08",
           "category": "edge2",
-          "maskedSha256": "65a01fe565b6608324ae575f60b76cff5b68c6be8f28a2de8f6d9ef138770148",
-          "redactions": 8,
+          "maskedSha256": "2a0c5a9c8ce835e762d365f7d3a795b632d00d700cd96995839578aea1a58f34",
+          "redactions": 7,
           "annotations": [
             {
               "materialCharacters": 13,
@@ -2470,8 +2470,8 @@
         {
           "id": "edge2-09",
           "category": "edge2",
-          "maskedSha256": "9802cd2aabc3965084a573657fb96c72f92f7d48476c63c559bc47377fd0f80c",
-          "redactions": 3,
+          "maskedSha256": "6c18f5eb80e803e3722920e4f7e7ec746c09002990812d5e1232de6c74080371",
+          "redactions": 4,
           "annotations": [
             {
               "materialCharacters": 9,
@@ -2496,8 +2496,8 @@
         {
           "id": "edge2-10",
           "category": "edge2",
-          "maskedSha256": "1d95138f213aa340bc843d382dda4b40396cb2568473fe0e02a7ff7d61c57e46",
-          "redactions": 4,
+          "maskedSha256": "b91a8ae6c487b826f0d2bca90fe8ecb51d4395e06a89304d84459eea029f9bbf",
+          "redactions": 6,
           "annotations": [
             {
               "materialCharacters": 9,
@@ -2527,13 +2527,13 @@
         {
           "id": "edge2-11",
           "category": "edge2",
-          "maskedSha256": "eb367676882278a70400d3530a81d28a2852fa20c4527e0024a45e19a6472ab2",
-          "redactions": 1,
+          "maskedSha256": "cabeab8d0f4daa02ae17c1bcb915de50449900f1fdefce50098709efed33022a",
+          "redactions": 3,
           "annotations": [
             {
               "materialCharacters": 9,
-              "retainedCharacters": 9,
-              "outcome": "miss"
+              "retainedCharacters": 0,
+              "outcome": "hit"
             },
             {
               "materialCharacters": 6,
@@ -2547,23 +2547,23 @@
             },
             {
               "materialCharacters": 3,
-              "retainedCharacters": 3,
-              "outcome": "miss"
+              "retainedCharacters": 0,
+              "outcome": "hit"
             },
             {
               "materialCharacters": 7,
-              "retainedCharacters": 7,
-              "outcome": "miss"
+              "retainedCharacters": 0,
+              "outcome": "hit"
             },
             {
               "materialCharacters": 4,
-              "retainedCharacters": 4,
-              "outcome": "miss"
+              "retainedCharacters": 0,
+              "outcome": "hit"
             }
           ],
-          "hits": 0,
+          "hits": 4,
           "partials": 0,
-          "misses": 6
+          "misses": 2
         },
         {
           "id": "edge2-12",
@@ -2610,7 +2610,7 @@
         {
           "id": "edge2-14",
           "category": "edge2",
-          "maskedSha256": "87fceda5e1674b2c2bbe37d860fd98458a1d9fc246d8d0924feb23333470b598",
+          "maskedSha256": "bd3ec0c86dfccdb2a887c4df9e2dd45fbdd88f884d301877c087a272fbd56ca6",
           "redactions": 4,
           "annotations": [
             {
@@ -2678,8 +2678,8 @@
         {
           "id": "edge2-17",
           "category": "edge2",
-          "maskedSha256": "d8df15cf01c36a7398bda48d245ac9aec21085dce6b26c2a2b5ab57d4a67e134",
-          "redactions": 5,
+          "maskedSha256": "169c3aad1798c87ec19f06d6f4c9fdc1598d19faa122fd36a79f2232d9e5ea21",
+          "redactions": 4,
           "annotations": [
             {
               "materialCharacters": 10,
@@ -2709,7 +2709,7 @@
         {
           "id": "edge2-18",
           "category": "edge2",
-          "maskedSha256": "6c9d5a136355fdfe2ae274085e10f2c8b3af251183a3d3404e00ad3fb4e5a178",
+          "maskedSha256": "8b7c2dae489795017b562dff4468f496f5a229dbbc1bddb3a741571df5e25673",
           "redactions": 5,
           "annotations": [
             {
@@ -2719,8 +2719,8 @@
             },
             {
               "materialCharacters": 7,
-              "retainedCharacters": 0,
-              "outcome": "hit"
+              "retainedCharacters": 4,
+              "outcome": "partial"
             },
             {
               "materialCharacters": 10,
@@ -2733,20 +2733,20 @@
               "outcome": "hit"
             }
           ],
-          "hits": 4,
-          "partials": 0,
+          "hits": 3,
+          "partials": 1,
           "misses": 0
         },
         {
           "id": "edge2-19",
           "category": "edge2",
-          "maskedSha256": "e1014b3c6ea65c1597b39979b0baa54f321305d8bac2d739fc61d622bdd9eada",
-          "redactions": 5,
+          "maskedSha256": "f5a46077d7016b133e2298fd1affbbfefe2ab3d967e1e3852e202857f29f2d60",
+          "redactions": 6,
           "annotations": [
             {
               "materialCharacters": 18,
-              "retainedCharacters": 4,
-              "outcome": "partial"
+              "retainedCharacters": 0,
+              "outcome": "hit"
             },
             {
               "materialCharacters": 13,
@@ -2759,15 +2759,15 @@
               "outcome": "hit"
             }
           ],
-          "hits": 2,
-          "partials": 1,
+          "hits": 3,
+          "partials": 0,
           "misses": 0
         },
         {
           "id": "edge2-20",
           "category": "edge2",
-          "maskedSha256": "876a9aace1e53374c480583c7042db0006dd5f3cfb43e8172910bc03bad81874",
-          "redactions": 10,
+          "maskedSha256": "6ff5071fac59246fc8b280a75f8a2bf16dd7c785672a2f335fa6364bfed729e6",
+          "redactions": 11,
           "annotations": [
             {
               "materialCharacters": 6,
@@ -2807,8 +2807,8 @@
         {
           "id": "hyra-fastighet-01",
           "category": "hyra-fastighet",
-          "maskedSha256": "d708b984754d41bb02290388d1f0430b89ef16b4902840799ea743952fa16fc6",
-          "redactions": 6,
+          "maskedSha256": "fc454f0f9a4830cf72069baeeb24e7c676ae907a6d4e7b37114ad6048c4c922e",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 14,
@@ -2833,7 +2833,7 @@
         {
           "id": "hyra-fastighet-02",
           "category": "hyra-fastighet",
-          "maskedSha256": "a851f8d5c2d80387d72c2a0ca7bf9ccef88e1a4d967eed54b7f989d886ac1e92",
+          "maskedSha256": "3b4bd43283670534e3fc9445485c84e39455c1f4e2e586d08e16c576427aa6b4",
           "redactions": 6,
           "annotations": [
             {
@@ -2864,8 +2864,8 @@
         {
           "id": "hyra-fastighet-03",
           "category": "hyra-fastighet",
-          "maskedSha256": "28cc86d93e2c54b3b1f20ef5d396a59da70efe6cba9365d3e280ff0e48eef45a",
-          "redactions": 4,
+          "maskedSha256": "f1690937a4ee0573a6c32f39db42cc43c27038659ed69bc2ef786279c8a2a1f5",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 13,
@@ -2890,8 +2890,8 @@
         {
           "id": "hyra-fastighet-04",
           "category": "hyra-fastighet",
-          "maskedSha256": "70da352fba2a8b20be6e58ba8e23d907be0a620cf734b1d2560cb3ab9239911b",
-          "redactions": 7,
+          "maskedSha256": "a141ed36b9869b224d640e769410a4669f4bf440c669f4dc296ab6c60d0525b2",
+          "redactions": 8,
           "annotations": [
             {
               "materialCharacters": 17,
@@ -2931,8 +2931,8 @@
         {
           "id": "hyra-fastighet-05",
           "category": "hyra-fastighet",
-          "maskedSha256": "273e9c527548de855d60b1f49935648d620b912959334cdb121a855f60540698",
-          "redactions": 7,
+          "maskedSha256": "31df3be030270b570275bee135f6a726d8169af3b4d5ac8e0b10df0ee282d5da",
+          "redactions": 6,
           "annotations": [
             {
               "materialCharacters": 13,
@@ -2993,8 +2993,8 @@
         {
           "id": "hyra-fastighet-07",
           "category": "hyra-fastighet",
-          "maskedSha256": "18cb6bb052ebeae439fdaad34204824f0b0cb04c5cb606f11cafc8ec62c7b366",
-          "redactions": 5,
+          "maskedSha256": "df981e2a009c061dd31614dc23f75d97bfdaa1ab504fd504761cb71d9de53026",
+          "redactions": 6,
           "annotations": [
             {
               "materialCharacters": 10,
@@ -3086,8 +3086,8 @@
         {
           "id": "hyra-fastighet-10",
           "category": "hyra-fastighet",
-          "maskedSha256": "09eef1ec150692406061e6f369d9ef01d730615dac6126e908b6457ece802102",
-          "redactions": 8,
+          "maskedSha256": "f02505b66e5b59e7e259e06d33efa91188cdf624d7482679c9a70ca7597b4ef3",
+          "redactions": 9,
           "annotations": [
             {
               "materialCharacters": 15,
@@ -3225,7 +3225,7 @@
         {
           "id": "hyra-fastighet-14",
           "category": "hyra-fastighet",
-          "maskedSha256": "fc4cb71f101b2dce19855b38db6fab61de16d9eec3148c19dbae6ab99603289c",
+          "maskedSha256": "fe0066585e9f8021639302dbdb9b3232739256cfd80a9aed405555274e742f36",
           "redactions": 7,
           "annotations": [
             {
@@ -3261,8 +3261,8 @@
         {
           "id": "hyra-fastighet-15",
           "category": "hyra-fastighet",
-          "maskedSha256": "7556a92dc72e5faee30bf4985ef747020a2afa1773c4e52495f54b59e28f0019",
-          "redactions": 7,
+          "maskedSha256": "2aa4486a6f0d6fe92ea11c9bffe4c7ceccf310f0ba4d7b4f1cdaea3ced412ae1",
+          "redactions": 8,
           "annotations": [
             {
               "materialCharacters": 13,
@@ -3359,7 +3359,7 @@
         {
           "id": "hyra-fastighet-18",
           "category": "hyra-fastighet",
-          "maskedSha256": "33555f62a671490083a992b47b4e87a08b28d7b578ab5d405fe97bc91a5f0bae",
+          "maskedSha256": "2f1b6be3d5f369279fda618bff68e867571dc8ed8d373c653fba8025f99bbc69",
           "redactions": 5,
           "annotations": [
             {
@@ -3390,8 +3390,8 @@
         {
           "id": "intern-chatt-01",
           "category": "intern-chatt",
-          "maskedSha256": "f4a36957e0a61af5493b66d6b5ace9f8da1b37dec163895530b9a45968270c34",
-          "redactions": 5,
+          "maskedSha256": "3628c85e6a889fa870f254d435b5ed45b349b141efdf9f90f3b605c445f746f9",
+          "redactions": 3,
           "annotations": [
             {
               "materialCharacters": 5,
@@ -3453,7 +3453,7 @@
         {
           "id": "intern-chatt-04",
           "category": "intern-chatt",
-          "maskedSha256": "57b09110f95e615dbbdbb63885f2874d9f3b824092a8f6fdccee4b187b1227af",
+          "maskedSha256": "c7ac2bbee40e34df69ef2e0169a211820943ab1b45b4de7d06c4eadb23f93b47",
           "redactions": 4,
           "annotations": [
             {
@@ -3526,8 +3526,8 @@
         {
           "id": "intern-chatt-07",
           "category": "intern-chatt",
-          "maskedSha256": "fa1b3456e2e015be2f7e8b7b05ed4165e816015e244da518ffd8261a6d2f6fd5",
-          "redactions": 3,
+          "maskedSha256": "39f8a2ba1cd4abe122f19b0d3e19829adfccdf0ad67ce921ae878f8020d53be2",
+          "redactions": 2,
           "annotations": [
             {
               "materialCharacters": 13,
@@ -3594,8 +3594,8 @@
         {
           "id": "intern-chatt-10",
           "category": "intern-chatt",
-          "maskedSha256": "0088acbd90afba2cbefa0e85816c8c9bbf0a6acccd999138f0165bc9a91cd025",
-          "redactions": 4,
+          "maskedSha256": "506522fec80c126be89a3e6a7d99c49060473a0e0bfbb1345373210c4febcb00",
+          "redactions": 7,
           "annotations": [
             {
               "materialCharacters": 3,
@@ -3614,8 +3614,8 @@
             },
             {
               "materialCharacters": 4,
-              "retainedCharacters": 4,
-              "outcome": "miss"
+              "retainedCharacters": 0,
+              "outcome": "hit"
             },
             {
               "materialCharacters": 10,
@@ -3623,14 +3623,14 @@
               "outcome": "hit"
             }
           ],
-          "hits": 4,
+          "hits": 5,
           "partials": 0,
-          "misses": 1
+          "misses": 0
         },
         {
           "id": "intern-chatt-11",
           "category": "intern-chatt",
-          "maskedSha256": "c867ab27344b071b13c249d0e6b3f6d907e13100a69d4a62c01b8fa053e7c1b0",
+          "maskedSha256": "b3027e593c1a59413016c573bc383300b266920f1653dc8c987812e7448a2142",
           "redactions": 5,
           "annotations": [
             {
@@ -3651,8 +3651,8 @@
         {
           "id": "intern-chatt-12",
           "category": "intern-chatt",
-          "maskedSha256": "2bc8ae75c8c55fc6502c205f914dbcfffba0e959ccbb80eeb0712edd4ea90c3f",
-          "redactions": 2,
+          "maskedSha256": "7e7457cd355d25c01d3e689305afc15b32e5b303cf2fdc28ae094c72ff5b31bc",
+          "redactions": 3,
           "annotations": [
             {
               "materialCharacters": 10,
@@ -3672,8 +3672,8 @@
         {
           "id": "intern-chatt-13",
           "category": "intern-chatt",
-          "maskedSha256": "d2658a995cf88dd6b6480b07d0945ad9dad5e0f52d2ec3f6bd63a5cc5297220c",
-          "redactions": 6,
+          "maskedSha256": "d98b22900cb3e1164c136895ee515382011e2c3bbfcd2349b17e15befb45c805",
+          "redactions": 7,
           "annotations": [
             {
               "materialCharacters": 16,
@@ -3698,8 +3698,8 @@
         {
           "id": "intern-chatt-14",
           "category": "intern-chatt",
-          "maskedSha256": "e0c04cdf4979c5b449076b175dae84f4a9edc28d2f4c0bc8860b188cd1d03c08",
-          "redactions": 5,
+          "maskedSha256": "2ced8473b631a9032ab3be31e8a94196512fb043a4bfeeab68885892e735463d",
+          "redactions": 4,
           "annotations": [
             {
               "materialCharacters": 10,
@@ -3761,8 +3761,8 @@
         {
           "id": "intern-chatt-17",
           "category": "intern-chatt",
-          "maskedSha256": "3cbe1b7ddfae691e7b51a2a7984d818f85fa408b625a68ae398324513ce59cd6",
-          "redactions": 6,
+          "maskedSha256": "b3a8dcd2c775f12225d634cc17ac3b79b006bfa30281807d6fdc7ab0a3c7a793",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 10,
@@ -3818,8 +3818,8 @@
         {
           "id": "juridik-01",
           "category": "juridik",
-          "maskedSha256": "7a4271777d0214b29ea6bb2f33e9649f968cd0b32cb38bf4feccfdb19e5690d2",
-          "redactions": 7,
+          "maskedSha256": "a508c43b61a064c541b92e3e7a21f104ae4c786aad1882a98061cb53c58b170c",
+          "redactions": 6,
           "annotations": [
             {
               "materialCharacters": 14,
@@ -3890,8 +3890,8 @@
         {
           "id": "juridik-03",
           "category": "juridik",
-          "maskedSha256": "7b101148f10eb674f261794134bc89cb1ff1254b7716e723a837eaeabf71e0cf",
-          "redactions": 9,
+          "maskedSha256": "9d905e8e7493a65d73230a94ea243e34259d9e1f35d2c5fdc2859bf026158edc",
+          "redactions": 7,
           "annotations": [
             {
               "materialCharacters": 12,
@@ -3916,8 +3916,8 @@
         {
           "id": "juridik-04",
           "category": "juridik",
-          "maskedSha256": "d07986f20a1c5494ea34d5a99447c28749b229777db13f8da6ab89501cc448a0",
-          "redactions": 12,
+          "maskedSha256": "d23257b82a069aeccdd58fa2b076061ab1a9d6dd22fd56a9675f3c5e60409513",
+          "redactions": 11,
           "annotations": [
             {
               "materialCharacters": 12,
@@ -4008,7 +4008,7 @@
         {
           "id": "juridik-06",
           "category": "juridik",
-          "maskedSha256": "10917c7fedce87409f1251fe790b3f0e8903ecd8af769f462c08d54fd2a37224",
+          "maskedSha256": "852af6f6cf44d240f87422e627d54c5710a6b0ac02b254555006f2091a3855bb",
           "redactions": 7,
           "annotations": [
             {
@@ -4039,8 +4039,8 @@
         {
           "id": "juridik-07",
           "category": "juridik",
-          "maskedSha256": "4d4fe06169efcaef6094ffc91673397b91f0bb6e29fd668f0d217934efb15a23",
-          "redactions": 11,
+          "maskedSha256": "06cd6fc1e455003f671e45af80cebb0d9a956f8c10083ad5e9f9dae687b97643",
+          "redactions": 12,
           "annotations": [
             {
               "materialCharacters": 12,
@@ -4080,7 +4080,7 @@
         {
           "id": "juridik-08",
           "category": "juridik",
-          "maskedSha256": "0227dbb3a3b7d221f41301eddac50296ba999a49f31598f1d8b8ef2154f3909b",
+          "maskedSha256": "00e744e0585c8ce2d0b34b9dd0acb1f7995fb138c1e14206b7e140ba8be1b1f7",
           "redactions": 10,
           "annotations": [
             {
@@ -4172,7 +4172,7 @@
         {
           "id": "juridik-10",
           "category": "juridik",
-          "maskedSha256": "d87b9064e7d2042ffd1b75c1abcb1b1e2c60181500000ac41837ded43c52b590",
+          "maskedSha256": "811d2993dccef4c1566bfddbeb4aace50cb70ae88230674e1194c92228f1017b",
           "redactions": 11,
           "annotations": [
             {
@@ -4280,8 +4280,8 @@
         {
           "id": "juridik-13",
           "category": "juridik",
-          "maskedSha256": "bbc3a9b3b7931a5e797d4c5c37b71935e9c609e210a7331f883e293439339fd8",
-          "redactions": 8,
+          "maskedSha256": "765722ff6e17ba5eb91f619716dab2613e47929a647999728ce51dcb708b9550",
+          "redactions": 7,
           "annotations": [
             {
               "materialCharacters": 14,
@@ -4321,8 +4321,8 @@
         {
           "id": "juridik-14",
           "category": "juridik",
-          "maskedSha256": "f84893ebdacbf1310a0c7b767f01c97e4efc8dba1db601b0bd8767f2505b3b2e",
-          "redactions": 11,
+          "maskedSha256": "0d9fe9ca359503f39656ed3959134fcb25be3380b1938cc02eaba0de60d8ba61",
+          "redactions": 10,
           "annotations": [
             {
               "materialCharacters": 17,
@@ -4398,8 +4398,8 @@
         {
           "id": "juridik-16",
           "category": "juridik",
-          "maskedSha256": "5d9150bccae96969e05efd28c250b9cb23ab9889043e9e7bb712b319bbd7624c",
-          "redactions": 11,
+          "maskedSha256": "6accfc418b4b8b2a592118d73f7a28e4fc4b3318df101b371479e2502c816d37",
+          "redactions": 10,
           "annotations": [
             {
               "materialCharacters": 16,
@@ -4439,8 +4439,8 @@
         {
           "id": "juridik-17",
           "category": "juridik",
-          "maskedSha256": "0aa71961ee10b051b84369ae0e6a3e21b86a427935c20c87986a74b018fcf079",
-          "redactions": 10,
+          "maskedSha256": "f25754ef7969da07e91b34dd9b75d847a84765a0be6d15ca9542fd0f14674155",
+          "redactions": 9,
           "annotations": [
             {
               "materialCharacters": 10,
@@ -4475,8 +4475,8 @@
         {
           "id": "juridik-18",
           "category": "juridik",
-          "maskedSha256": "abbb41f9445f241dd833dea19a8db61470a31ef628a454beea9a9b6870626c8d",
-          "redactions": 16,
+          "maskedSha256": "dc129bd8ead5c472b7daf33e1e419b9a484aa56a4ee9729f4e9ddd76ee8e42f0",
+          "redactions": 15,
           "annotations": [
             {
               "materialCharacters": 17,
@@ -4536,8 +4536,8 @@
         {
           "id": "juridik-19",
           "category": "juridik",
-          "maskedSha256": "2d5d7d0bd0b402b080d17e1e218121423d977b98646fed799f95889b801e85c9",
-          "redactions": 11,
+          "maskedSha256": "aee234547791ab878a6f91e6f75fbccbdfc7e3f824a307da248812044c0db644",
+          "redactions": 10,
           "annotations": [
             {
               "materialCharacters": 13,
@@ -4608,8 +4608,8 @@
         {
           "id": "kansliga-02",
           "category": "kansliga",
-          "maskedSha256": "8195160b519ceae08977750eb6ff8fd1e76fd82ff24c56b48572d368f90fc000",
-          "redactions": 5,
+          "maskedSha256": "f4895cb126daa1156e84b892db4d3b57ccd37fb6b9165db64de8ba91d778f0a1",
+          "redactions": 6,
           "annotations": [
             {
               "materialCharacters": 16,
@@ -4727,8 +4727,8 @@
         {
           "id": "kansliga-06",
           "category": "kansliga",
-          "maskedSha256": "0d9b5fbcf5531f9aa321187af0b90989e8a8f3fb817740a5ab418ed48dd9d88c",
-          "redactions": 4,
+          "maskedSha256": "08fa88f2ce1b13c9e04e3132a8bd496b78573b708cee5e9d6589d100ed8da8eb",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 5,
@@ -4789,8 +4789,8 @@
         {
           "id": "kansliga-08",
           "category": "kansliga",
-          "maskedSha256": "b1d6a732f37298f2e1ab60c34646bcf4dd51c7005dcdbfdcb4a6435d7e13f96f",
-          "redactions": 9,
+          "maskedSha256": "6622f7f7be10da45049c5e032cd39615a4c4bb573385128d729865ea86ea0749",
+          "redactions": 8,
           "annotations": [
             {
               "materialCharacters": 9,
@@ -4830,8 +4830,8 @@
         {
           "id": "kansliga-09",
           "category": "kansliga",
-          "maskedSha256": "a9009506875025fe015739a300a032c0639014c9b9134f68360341fc3be51815",
-          "redactions": 6,
+          "maskedSha256": "ebbebeb0c9848146eaa3896ec7fe69901288b322d49160a1797f7c2c644a923c",
+          "redactions": 7,
           "annotations": [
             {
               "materialCharacters": 10,
@@ -4892,7 +4892,7 @@
         {
           "id": "kansliga-11",
           "category": "kansliga",
-          "maskedSha256": "3e5012babea46e1993f31ef55511bcee8da1829d5d6d5eaf2f5f8155bd20be29",
+          "maskedSha256": "c371f835dfbc523bcdf9ad5899cd9bf22f0da0e3c738b3fd0163d0b6a7c83a76",
           "redactions": 11,
           "annotations": [
             {
@@ -4964,8 +4964,8 @@
         {
           "id": "kansliga-13",
           "category": "kansliga",
-          "maskedSha256": "f7d6cbea8404fc2fd993809e0d4ff62a55520385374e8fb79654823b0ce0069a",
-          "redactions": 6,
+          "maskedSha256": "1241e6caf2394407d708b261784393801ecf60a92374d1504b87d3a0ca4d65cb",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 4,
@@ -4990,7 +4990,7 @@
         {
           "id": "kansliga-14",
           "category": "kansliga",
-          "maskedSha256": "93e85f2f1cfb80bcc8f4ec03002cdd875a66784292e2406ad798d9dd38af76ad",
+          "maskedSha256": "8db300016395625e116405d2f4753e882b16ff3edb8f14f925a4345de91e722d",
           "redactions": 6,
           "annotations": [
             {
@@ -5021,7 +5021,7 @@
         {
           "id": "kansliga-15",
           "category": "kansliga",
-          "maskedSha256": "8eae7c73554c3a2af1dcbf706c7086b46e044448e0df864aa5461cf4babf306a",
+          "maskedSha256": "47577e3383920830f091c429b6c4af347c5251938b298bd8f0848899b68dfe86",
           "redactions": 7,
           "annotations": [
             {
@@ -5196,8 +5196,8 @@
         {
           "id": "myndighet-02",
           "category": "myndighet",
-          "maskedSha256": "06cb9de55a5500c2aa2f8f6b6407fbfeba7506076b047f313aa95864631b5056",
-          "redactions": 4,
+          "maskedSha256": "159efaaf45258c96a5ea7d552f97859e65a4c4d905d30f24f709d992a891921f",
+          "redactions": 3,
           "annotations": [
             {
               "materialCharacters": 14,
@@ -5217,8 +5217,8 @@
         {
           "id": "myndighet-03",
           "category": "myndighet",
-          "maskedSha256": "d4d0c6e9536a4e1945ccfd972852110522f98dc3b0ae749665fd30b52c9d3c84",
-          "redactions": 9,
+          "maskedSha256": "b3e6811f455cdc8f190048d0afaf1690f8e11090af406fc90746b2d87744dc5a",
+          "redactions": 8,
           "annotations": [
             {
               "materialCharacters": 12,
@@ -5258,7 +5258,7 @@
         {
           "id": "myndighet-04",
           "category": "myndighet",
-          "maskedSha256": "d9e7e76d3a6722fc35bb11559d06c6dd4fd8244b8ccc11b7e1dca0a91b0365ee",
+          "maskedSha256": "cb440fa576ad2c6b17420c361e6322d9c068e5b2baa12fa29b49f44e0e185e3b",
           "redactions": 6,
           "annotations": [
             {
@@ -5382,7 +5382,7 @@
         {
           "id": "myndighet-08",
           "category": "myndighet",
-          "maskedSha256": "9e763db16c5c0658e08d78a5c8684e3f1b78af55b4a5d1402f944c14590961e6",
+          "maskedSha256": "ad7d7f2652884bacf292ff02d701b4eead4a457799b1de486fe524632d38bf7d",
           "redactions": 5,
           "annotations": [
             {
@@ -5547,8 +5547,8 @@
         {
           "id": "myndighet-13",
           "category": "myndighet",
-          "maskedSha256": "3122f207782c60596b6655363e5a0d63992c553940b685d370fb0c4cfc11dd7b",
-          "redactions": 4,
+          "maskedSha256": "e28061dc3e15f7259800de7a39d146a0b4369998358843e0f39d84a7cd3ce388",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 10,
@@ -5614,8 +5614,8 @@
         {
           "id": "myndighet-15",
           "category": "myndighet",
-          "maskedSha256": "b161a1371ebe2aeea980ae31880ab0f08cd403a2d888bfe0f87440cfa715a028",
-          "redactions": 4,
+          "maskedSha256": "4dc6e32bdb83886b995c4bbbf98b9cc02eb1961760f79bb7885d4845ca3b1443",
+          "redactions": 3,
           "annotations": [
             {
               "materialCharacters": 15,
@@ -5640,7 +5640,7 @@
         {
           "id": "myndighet-16",
           "category": "myndighet",
-          "maskedSha256": "c4afc399d65177d4a9154b78be310fa66d034287270ab22d1de1b2e6e0c84d1a",
+          "maskedSha256": "65cc9575902b4dc587d5202299857c4efbbf287a59367f8f9dca3dfa81d792f2",
           "redactions": 8,
           "annotations": [
             {
@@ -5676,8 +5676,8 @@
         {
           "id": "myndighet-17",
           "category": "myndighet",
-          "maskedSha256": "e26483ab9f8db92f7e641a74c570470a4f8e0b6ab7a06b24af40d320b3ba860e",
-          "redactions": 5,
+          "maskedSha256": "9b83365f974ce0bb168acd6aabfaca8ce7f3d69f3b924a0318079376fa797524",
+          "redactions": 6,
           "annotations": [
             {
               "materialCharacters": 18,
@@ -5976,7 +5976,7 @@
         {
           "id": "skola-07",
           "category": "skola",
-          "maskedSha256": "bf60517a2ab9a92c23593fc6acccb9e3ffce381626d10225e9b7ae8bbf83e467",
+          "maskedSha256": "50ce80af089ead5f35fff3e21b96c209b35ad5b2659c121db84594789e9d0398",
           "redactions": 5,
           "annotations": [
             {
@@ -6007,8 +6007,8 @@
         {
           "id": "skola-08",
           "category": "skola",
-          "maskedSha256": "a58f6a07d07e0d1c2692a25218526e9c3f0e1a0fe529441b25212754265b73ad",
-          "redactions": 7,
+          "maskedSha256": "b145693b13ad460ecc3b315f968ace635d16e82bd0a1c93d4adc5bdfadd14289",
+          "redactions": 9,
           "annotations": [
             {
               "materialCharacters": 14,
@@ -6116,8 +6116,8 @@
         {
           "id": "skola-12",
           "category": "skola",
-          "maskedSha256": "432837abdce197a0c4061cf4cef9ea20a9823feb781c292400f0dcd65c1fcc79",
-          "redactions": 7,
+          "maskedSha256": "c78e47e7685e9690072842b284dd782051f8f720f63ab9596ad6cd0c645aad4a",
+          "redactions": 6,
           "annotations": [
             {
               "materialCharacters": 13,
@@ -6178,8 +6178,8 @@
         {
           "id": "skola-14",
           "category": "skola",
-          "maskedSha256": "25b143c4e644a5b870a604b3fc9db8dffcf0e9465bd794b39926319786f9b355",
-          "redactions": 5,
+          "maskedSha256": "d6510542ae0e3135334f069d06741347da460e1aaafe8223b81bf46f45e3e49f",
+          "redactions": 4,
           "annotations": [
             {
               "materialCharacters": 5,
@@ -6297,7 +6297,7 @@
         {
           "id": "skola-18",
           "category": "skola",
-          "maskedSha256": "38ec61fa6618be6e9fd4f2d0b51add9160c3c70c054ed12413ee57183138ed53",
+          "maskedSha256": "fef1c7b291cd7121c8c6603d1066a0420566b5ce124bb6a993ad04166c1ecf1c",
           "redactions": 8,
           "annotations": [
             {
@@ -6328,8 +6328,8 @@
         {
           "id": "telefon-transkript-01",
           "category": "telefon-transkript",
-          "maskedSha256": "ba77d53cc0203c129ad2ccc05fe727ddfccce5ae695d18aeba01fcfcc463d48a",
-          "redactions": 6,
+          "maskedSha256": "4c1d0c02bef73b2d131700bbee2649a435dc7678e022e4554ffa833342656583",
+          "redactions": 4,
           "annotations": [
             {
               "materialCharacters": 19,
@@ -6360,13 +6360,13 @@
         {
           "id": "telefon-transkript-03",
           "category": "telefon-transkript",
-          "maskedSha256": "2d98710fc92a58a6c46f72ea89f36889e4803503408512de4e30ce9b737a480d",
+          "maskedSha256": "a5d0f7cd8c1bcce905380221937ea17ec89f35174a0ea453889284e4d3491573",
           "redactions": 4,
           "annotations": [
             {
               "materialCharacters": 41,
-              "retainedCharacters": 3,
-              "outcome": "partial"
+              "retainedCharacters": 0,
+              "outcome": "hit"
             },
             {
               "materialCharacters": 14,
@@ -6374,14 +6374,14 @@
               "outcome": "hit"
             }
           ],
-          "hits": 1,
-          "partials": 1,
+          "hits": 2,
+          "partials": 0,
           "misses": 0
         },
         {
           "id": "telefon-transkript-04",
           "category": "telefon-transkript",
-          "maskedSha256": "f88c3305acf0cbfd07de1a5eb489d963a772ca67788f9150f9b2a20402bf7428",
+          "maskedSha256": "75f3782b97043d7200af5f87d18fccbe6da7d211c2de973d95075c62d4ed0200",
           "redactions": 4,
           "annotations": [
             {
@@ -6402,8 +6402,8 @@
         {
           "id": "telefon-transkript-05",
           "category": "telefon-transkript",
-          "maskedSha256": "fc5bb667c4efaf31d8e201eb9afa2ff4009b3d9ffa9abe3e620dbbb559b828dd",
-          "redactions": 1,
+          "maskedSha256": "684370e14173c6ce026d575a2515ede91ae88869d92d4d78e6f4a8f2b09976ef",
+          "redactions": 0,
           "annotations": [
             {
               "materialCharacters": 31,
@@ -6418,8 +6418,8 @@
         {
           "id": "telefon-transkript-06",
           "category": "telefon-transkript",
-          "maskedSha256": "5db05ed62971d49e5d2ca18c38654cbafa97c07edb5bedaacc9db347ee382d50",
-          "redactions": 5,
+          "maskedSha256": "722d80c7ec8a8e6fe36dfb2f25f6ae0fe236329d5023cae75e81ed765ec5dc97",
+          "redactions": 4,
           "annotations": [
             {
               "materialCharacters": 15,
@@ -6476,13 +6476,13 @@
         {
           "id": "telefon-transkript-09",
           "category": "telefon-transkript",
-          "maskedSha256": "6bac62913f23129310cb1c71fe16e2f9a094da8796d5a42e9df7ead627111ebc",
-          "redactions": 6,
+          "maskedSha256": "fbf9eb38090a6c726215295751ad255e509db8bcd7b429f731c678bbbb2c0a3a",
+          "redactions": 8,
           "annotations": [
             {
               "materialCharacters": 38,
-              "retainedCharacters": 3,
-              "outcome": "partial"
+              "retainedCharacters": 0,
+              "outcome": "hit"
             },
             {
               "materialCharacters": 11,
@@ -6490,8 +6490,8 @@
               "outcome": "hit"
             }
           ],
-          "hits": 1,
-          "partials": 1,
+          "hits": 2,
+          "partials": 0,
           "misses": 0
         },
         {
@@ -6539,8 +6539,8 @@
         {
           "id": "telefon-transkript-12",
           "category": "telefon-transkript",
-          "maskedSha256": "f32ee7802398842190117bffc3df8360559d106c3a7d87674a1ab0b5e1de001b",
-          "redactions": 4,
+          "maskedSha256": "f45695b2e18caeda5ae0c9976a4a3f953347351a5f7686fcf5076849b66078c7",
+          "redactions": 3,
           "annotations": [
             {
               "materialCharacters": 8,
@@ -6571,8 +6571,8 @@
         {
           "id": "telefon-transkript-14",
           "category": "telefon-transkript",
-          "maskedSha256": "6e39781c096fe80f0507ec1a9fc42f855231480bee4b11270f8f0d78ac624b8f",
-          "redactions": 3,
+          "maskedSha256": "1d9895e67da54d98b2044dc14467111ae902443c364b1dc55b9c7715b4bfe243",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 15,
@@ -6581,7 +6581,7 @@
             },
             {
               "materialCharacters": 36,
-              "retainedCharacters": 8,
+              "retainedCharacters": 13,
               "outcome": "partial"
             }
           ],
@@ -6592,8 +6592,8 @@
         {
           "id": "telefon-transkript-15",
           "category": "telefon-transkript",
-          "maskedSha256": "23ae5f0c99b7636e2148d4390f4efa71fdd966d68da8e1d329417815a60ab985",
-          "redactions": 3,
+          "maskedSha256": "324dd74501d432bcc4d3a24ea07280278670825726e745569a881da69ffba063",
+          "redactions": 2,
           "annotations": [
             {
               "materialCharacters": 10,
@@ -6624,8 +6624,8 @@
         {
           "id": "telefon-transkript-17",
           "category": "telefon-transkript",
-          "maskedSha256": "3a06a3422b5efadcc2744c106ecd741cd832512d4f732c7b30dd91fb5d460868",
-          "redactions": 4,
+          "maskedSha256": "9a7182a61c4123041d5758c9306e9016f2c62d163d393fd8d0b67b4aac895e54",
+          "redactions": 3,
           "annotations": [
             {
               "materialCharacters": 8,
@@ -6645,7 +6645,7 @@
         {
           "id": "telefon-transkript-18",
           "category": "telefon-transkript",
-          "maskedSha256": "f808ea226be3e39c4a89df5f96cb87c2d3ddb33f9f00d27bd0757d11aaadda29",
+          "maskedSha256": "d7d7f15c2a740bdf1f4c4a79956e3c30cd390f473142dde9de54ee0baf7e5ef8",
           "redactions": 4,
           "annotations": [
             {
@@ -6666,8 +6666,8 @@
         {
           "id": "vard-psyk-01",
           "category": "vard-psyk",
-          "maskedSha256": "cfefa48bd81d806dc39db674fa20db927504b797927c905bd15eca87d9408c3a",
-          "redactions": 5,
+          "maskedSha256": "4684a64e1dd45117ca5d45ed62e3969f3d04f4dcb072ed349d61e18b199b11dd",
+          "redactions": 2,
           "annotations": [
             {
               "materialCharacters": 11,
@@ -6723,7 +6723,7 @@
         {
           "id": "vard-psyk-03",
           "category": "vard-psyk",
-          "maskedSha256": "fec461a78156ab352fe1bf029432a873fea73d01560cd6b94c72c22fdd6da61c",
+          "maskedSha256": "3b31394062100cc98de619166238a44da08f8af3ce339fb7e8b62e7796e30a7a",
           "redactions": 6,
           "annotations": [
             {
@@ -6754,7 +6754,7 @@
         {
           "id": "vard-psyk-04",
           "category": "vard-psyk",
-          "maskedSha256": "dfe938af08203156e3944d8e64e5390034b96fef6e581a01fb3e4d4488fdead3",
+          "maskedSha256": "f0148fad47e5b3ab117b516a4a1510263f3a3b25cd8b5e32b29ca4a38bb2f6ba",
           "redactions": 4,
           "annotations": [
             {
@@ -6780,8 +6780,8 @@
         {
           "id": "vard-psyk-05",
           "category": "vard-psyk",
-          "maskedSha256": "d57212f1d637196121afa962c44e43907e2a28b2077920d82544deeac5df4359",
-          "redactions": 9,
+          "maskedSha256": "9e02327247c1969209f48a8a7173f412c26a7aaa0123552595df638f295a1f0f",
+          "redactions": 7,
           "annotations": [
             {
               "materialCharacters": 10,
@@ -6847,8 +6847,8 @@
         {
           "id": "vard-psyk-07",
           "category": "vard-psyk",
-          "maskedSha256": "a302702627a9d24ce46873321e601e98bbac39ad0c570163d300e6a8be27e3f8",
-          "redactions": 4,
+          "maskedSha256": "9cbbe71c77b1c727ec86fabf915aa29b389e7716c97d986dc88e63c053dc9e38",
+          "redactions": 3,
           "annotations": [
             {
               "materialCharacters": 10,
@@ -6894,7 +6894,7 @@
         {
           "id": "vard-psyk-09",
           "category": "vard-psyk",
-          "maskedSha256": "70d7f1b7e52bc9eb122e7d6f03f9ae7a6a6d5365fed95a6543ed2706f61ba272",
+          "maskedSha256": "089fc4f97d0d24f173750c4658b96a61bf264f98d675533f89e91d95f55a458c",
           "redactions": 6,
           "annotations": [
             {
@@ -6925,8 +6925,8 @@
         {
           "id": "vard-psyk-10",
           "category": "vard-psyk",
-          "maskedSha256": "06a9f3254e046621ce4cf3d59f3433e390895dfcd98bd1269f9e5464cbccdaef",
-          "redactions": 6,
+          "maskedSha256": "7b222ca483709e5fa8d8330384e71bcf62f84f6c3ed31d3bdacde617661eae38",
+          "redactions": 7,
           "annotations": [
             {
               "materialCharacters": 14,
@@ -6956,8 +6956,8 @@
         {
           "id": "vard-psyk-11",
           "category": "vard-psyk",
-          "maskedSha256": "4fc223429102ff94515c140adafd3ad6f6f6f7bea7bf69cac27f30d125722e2c",
-          "redactions": 6,
+          "maskedSha256": "2c51445e37c6aa8975fa09d47ea0b49916d7a4ff4062532798f801c055ecaa94",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 10,
@@ -6987,8 +6987,8 @@
         {
           "id": "vard-psyk-12",
           "category": "vard-psyk",
-          "maskedSha256": "d03a4db12e96bf4b54ba221c88db78464a28f1ad0bc54f24cc2d28b6b09c4161",
-          "redactions": 3,
+          "maskedSha256": "2c3283ae36ad232b54d4ea073eafa00f7dc83d1164f1cd8c60562dfd2e8aa31f",
+          "redactions": 4,
           "annotations": [
             {
               "materialCharacters": 14,
@@ -7008,8 +7008,8 @@
         {
           "id": "vard-psyk-13",
           "category": "vard-psyk",
-          "maskedSha256": "38e43ae808b82a7998387c0c1b2ef7113b7a7fd4eb979b32653ca08bd6e25443",
-          "redactions": 10,
+          "maskedSha256": "0fe4f4a4bf6b71a00369736216b73489bbc6e6a07e1ea11139606197f1a2e0b6",
+          "redactions": 9,
           "annotations": [
             {
               "materialCharacters": 11,
@@ -7075,8 +7075,8 @@
         {
           "id": "vard-psyk-15",
           "category": "vard-psyk",
-          "maskedSha256": "581966f9f2e64e5179e5f58d61f7358a5132b5c78f48b1f4ff4ec690d6be105a",
-          "redactions": 4,
+          "maskedSha256": "0dbfb5a7fbef2acda49a235c7094f46028dfb1c3f0c51e9c94f4ba9fae55e0f6",
+          "redactions": 3,
           "annotations": [
             {
               "materialCharacters": 12,
@@ -7101,8 +7101,8 @@
         {
           "id": "vard-psyk-16",
           "category": "vard-psyk",
-          "maskedSha256": "cb75c03722e1a37020a86550e36b603f0e8781bc61a4aa51a3190956f4b4e173",
-          "redactions": 13,
+          "maskedSha256": "4a3b2685473e0c6c170de811a88b6082fe4e24cbf08b9dc45752e54c7c1a8123",
+          "redactions": 11,
           "annotations": [
             {
               "materialCharacters": 5,
@@ -7142,8 +7142,8 @@
         {
           "id": "vard-psyk-17",
           "category": "vard-psyk",
-          "maskedSha256": "c08da53ac919c6daadb18e7c99876ea37545070fb0f233652d846c6300cfdd8c",
-          "redactions": 8,
+          "maskedSha256": "4cfd3c8173cdf6bd1e0c7a51a1271348eeeeb4922b5bbac20324d58737c0b4f6",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 15,
@@ -7168,8 +7168,8 @@
         {
           "id": "vard-psyk-18",
           "category": "vard-psyk",
-          "maskedSha256": "d28a376a443a07f535417881bf7e6b5addab30e7d5dfa66ba05e53f8423e8f2f",
-          "redactions": 6,
+          "maskedSha256": "bae39cab5ef0a85e0eef43854f430f6e44c5966bc0044f75dfcbc9bc76223fd0",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 14,
@@ -7225,8 +7225,8 @@
         {
           "id": "vard-psyk-20",
           "category": "vard-psyk",
-          "maskedSha256": "97c8130a85b77b2509db71f7e078d35030eb105d96c20aaa8ef2f1bb5873ef07",
-          "redactions": 8,
+          "maskedSha256": "2b38a29e99e4bd7e3025f57c286224590aa20a878452e3d34fb207e903fd708b",
+          "redactions": 9,
           "annotations": [
             {
               "materialCharacters": 13,
@@ -7251,8 +7251,8 @@
         {
           "id": "vard-remiss-01",
           "category": "vard-remiss",
-          "maskedSha256": "ffcfd79fb57bff88dafe9b658a9642101a4288e0b462e5aa5ed8086e5ccb5197",
-          "redactions": 8,
+          "maskedSha256": "f2f417a84c62f7456aee50d9ce72d47b249f5187602caff4fa6802278fd7118f",
+          "redactions": 6,
           "annotations": [
             {
               "materialCharacters": 15,
@@ -7282,8 +7282,8 @@
         {
           "id": "vard-remiss-02",
           "category": "vard-remiss",
-          "maskedSha256": "20202e132ed114d17efe6ab2263c225a8eac35e6e16f96f2a4df15c03c54c814",
-          "redactions": 9,
+          "maskedSha256": "90380e997a0c75964d1fd7d476932aad33282b71033d508b21dcf3194340af30",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 13,
@@ -7313,8 +7313,8 @@
         {
           "id": "vard-remiss-03",
           "category": "vard-remiss",
-          "maskedSha256": "4a05ebe8fd25e745315f7c7f7e9d3b62ec054c54bc30d2c84dadc8d77fb60806",
-          "redactions": 12,
+          "maskedSha256": "3727c765cd11a68025823f2c2ca0924e95fb0d978ef4dc28e8fe6ea447062bf7",
+          "redactions": 10,
           "annotations": [
             {
               "materialCharacters": 17,
@@ -7339,8 +7339,8 @@
         {
           "id": "vard-remiss-04",
           "category": "vard-remiss",
-          "maskedSha256": "cc7c6813909e0723f555fc726a1cb6009011205c38d5da527675deabacd0c6ac",
-          "redactions": 10,
+          "maskedSha256": "5054d2f1f2f8a1938e841b801eed0d9fdce0c5c3d81ffe3f4b0373fcbbf3bbd5",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 13,
@@ -7370,8 +7370,8 @@
         {
           "id": "vard-remiss-05",
           "category": "vard-remiss",
-          "maskedSha256": "adefdc04e0487f980e2ed4769026e276577769d5758035c7393be299c18c56f5",
-          "redactions": 15,
+          "maskedSha256": "556fa9a11e80aeba0d413799d8ce6db14f55f326ba965c92c1ebe55bdc16d51f",
+          "redactions": 11,
           "annotations": [
             {
               "materialCharacters": 16,
@@ -7400,19 +7400,19 @@
             },
             {
               "materialCharacters": 9,
-              "retainedCharacters": 2,
-              "outcome": "partial"
+              "retainedCharacters": 0,
+              "outcome": "hit"
             }
           ],
-          "hits": 5,
-          "partials": 1,
+          "hits": 6,
+          "partials": 0,
           "misses": 0
         },
         {
           "id": "vard-remiss-06",
           "category": "vard-remiss",
-          "maskedSha256": "2bf8323d97edbc9cfdf2476cf820f95f9c2be0bb8eb88ecd632d4e0604b42310",
-          "redactions": 13,
+          "maskedSha256": "0aba1f0664585b7e5fd429663e73509ba4797fc70359442f4649fea396e2bd11",
+          "redactions": 8,
           "annotations": [
             {
               "materialCharacters": 13,
@@ -7447,8 +7447,8 @@
         {
           "id": "vard-remiss-07",
           "category": "vard-remiss",
-          "maskedSha256": "d880ac65de070853305eeed546ef8d88eeab3b7e48664ad78aab3226c1141b30",
-          "redactions": 5,
+          "maskedSha256": "dbc1a701cddc68f8fdadd4cfd011483377ccbc7cefe41352bc8ba72961d8d21c",
+          "redactions": 4,
           "annotations": [
             {
               "materialCharacters": 13,
@@ -7473,7 +7473,7 @@
         {
           "id": "vard-remiss-08",
           "category": "vard-remiss",
-          "maskedSha256": "32c1b0ac26f748997567000a7251bb62f0bf6c9cf84a6f25806755990ccd1639",
+          "maskedSha256": "b00fce04ee7cb75b4cabb958c1e0624a7d095948dea84b2d7a00e642cf54835f",
           "redactions": 7,
           "annotations": [
             {
@@ -7509,8 +7509,8 @@
         {
           "id": "vard-remiss-09",
           "category": "vard-remiss",
-          "maskedSha256": "70b4516aa430598eaceb9fd9a50e490aca5496525db054ba65b930631c38464b",
-          "redactions": 11,
+          "maskedSha256": "91a9b37631701747068bc36fade5d13fe2cb3393cee875a7e9fc3fe3da4df4d6",
+          "redactions": 9,
           "annotations": [
             {
               "materialCharacters": 18,
@@ -7545,8 +7545,8 @@
         {
           "id": "vard-remiss-10",
           "category": "vard-remiss",
-          "maskedSha256": "42c56e86213cfebe2aaf4d8dd76d5989cf3acb8f1fe5c6063cc0ea64115e5e0d",
-          "redactions": 6,
+          "maskedSha256": "d7278001291bd98c59e07783dca19eeb25c460facf3611e7efd262ce77d6b147",
+          "redactions": 4,
           "annotations": [
             {
               "materialCharacters": 17,
@@ -7571,8 +7571,8 @@
         {
           "id": "vard-remiss-11",
           "category": "vard-remiss",
-          "maskedSha256": "4d687018d29910795834d904a56755dbeea89b257e1090323e615d0fd23e452e",
-          "redactions": 14,
+          "maskedSha256": "9fad3554f842138674d4399983fbad0b2ca0ccfa8f6290d552ec8b4220421956",
+          "redactions": 11,
           "annotations": [
             {
               "materialCharacters": 7,
@@ -7602,8 +7602,8 @@
         {
           "id": "vard-remiss-12",
           "category": "vard-remiss",
-          "maskedSha256": "5a901c7bde77b5d1119135a7c58e65e72d09d3e58166e6ddf0ea093486846a6c",
-          "redactions": 9,
+          "maskedSha256": "a1a18bbd4ca7b8b3d618d4fdf5a3c736aa4058a9220d7563ccbe02b1436793ca",
+          "redactions": 6,
           "annotations": [
             {
               "materialCharacters": 16,
@@ -7633,8 +7633,8 @@
         {
           "id": "vard-remiss-13",
           "category": "vard-remiss",
-          "maskedSha256": "22e6146443316ad849465fee37f8e23fceda4abe03e2ff3edcc2539fe405faea",
-          "redactions": 22,
+          "maskedSha256": "2834e65b8c019f0a23f558b0566f1fa1d14a947bb347e3832085ceb429104e29",
+          "redactions": 15,
           "annotations": [
             {
               "materialCharacters": 16,
@@ -7684,8 +7684,8 @@
         {
           "id": "vard-remiss-14",
           "category": "vard-remiss",
-          "maskedSha256": "135265001b2f23252b6fd5a1b38534b382cd4d9e3f492ba56d0ed003505740cd",
-          "redactions": 8,
+          "maskedSha256": "3fb27e301910143d98ad875b66a4bbfaf9736450ac2fed9e01e90755acde519f",
+          "redactions": 5,
           "annotations": [
             {
               "materialCharacters": 13,
@@ -7710,8 +7710,8 @@
         {
           "id": "vard-remiss-15",
           "category": "vard-remiss",
-          "maskedSha256": "f736d013b7f735294d1394346c604824d9ef7a2cc4ce1913f99c881587f0cb15",
-          "redactions": 14,
+          "maskedSha256": "0e8af9b1d9cfd81ebe9f9fcf6a841102bae655b494c8460e1c3016196f284b6c",
+          "redactions": 7,
           "annotations": [
             {
               "materialCharacters": 16,
@@ -7746,8 +7746,8 @@
         {
           "id": "vard-remiss-16",
           "category": "vard-remiss",
-          "maskedSha256": "6e285490ce1e50fdb123fb141330fe0b749da5c9edc71cd20421a3100e2a4242",
-          "redactions": 8,
+          "maskedSha256": "ae31e6ca4c9e9664e1da0db0a320fc79e127068fdb16aa7fadfe60111852c71f",
+          "redactions": 6,
           "annotations": [
             {
               "materialCharacters": 18,
@@ -7777,8 +7777,8 @@
         {
           "id": "vard-remiss-17",
           "category": "vard-remiss",
-          "maskedSha256": "8ce0a8b84a394bceed562129021dc66be30a5bb9d4ed4f000a87e090848fe373",
-          "redactions": 10,
+          "maskedSha256": "3d976eef2d2107b55f4d0e9a84068b9e958866aedd6d850a2bd225d4985e3187",
+          "redactions": 8,
           "annotations": [
             {
               "materialCharacters": 9,
@@ -7808,8 +7808,8 @@
         {
           "id": "vard-remiss-18",
           "category": "vard-remiss",
-          "maskedSha256": "09570e299209a09ab65887e563ecd1245a02844c388b5948d80c71f0ce87be84",
-          "redactions": 10,
+          "maskedSha256": "9ed3a9e143ece70894abc7a103a942ebdeb83fdae0743668d7caff95cc1dabd3",
+          "redactions": 4,
           "annotations": [
             {
               "materialCharacters": 10,

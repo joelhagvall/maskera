@@ -20,7 +20,7 @@ const outputPath = resolve(
   repoRoot,
   outputFlag >= 0 ? process.argv[outputFlag + 1] : "tmp/maskera-domain.redacted.jsonl",
 )
-const model = process.env.MASKERA_MODEL ?? "maskera-sv-ner-v19"
+const model = process.env.MASKERA_MODEL ?? "maskera-sv-ner-v20"
 const modelPath = resolve(repoRoot, process.env.MASKERA_MODEL_PATH ?? "apps/demo/public/models")
 const dtype = process.env.MASKERA_DTYPE ?? "q4"
 const profile = process.env.MASKERA_PROFILE ?? "general"

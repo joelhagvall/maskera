@@ -51,41 +51,41 @@ option and clear starting prices.
 ## The model is the point
 
 [`maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner) is our
-own Swedish NER model. The published v19 artifact is rebuilt from the pinned
-KB-BERT checkpoint using only 64,000 attested generator-produced task rows and
-4,760 disjoint validation rows, then distilled and shrunk to a **43 MB** ONNX that runs in the browser
+own Swedish NER model. The published v20 artifact is rebuilt from the pinned
+KB-BERT checkpoint using only 108,400 attested generator-produced task rows and
+6,900 disjoint validation rows, distilled from a 3-seed teacher ensemble and shrunk to a **43 MB** ONNX that runs in the browser
 (WebGPU/WASM) and in Node. It catches what regex never can: free-text names,
 places, organisations and street addresses, including all-lowercase chat text
 ("hej jag heter provnamn maskera"), ALL CAPS and genitive forms, because that is
 how people actually type.
 
-> **v19 release gates:** span F1 **96.9%** on curated (1/205 leaks), **100.0%**
+> **v20 release gates:** span F1 **99.5%** on curated (0/205 leaks), **100.0%**
 > label-agnostic span F1 on the revised synthetic ADR set (0/57 leaks),
-> **81.7%** on the LinkedIn-style set (0/53 leaks; re-measured 2026-08-10),
-> and **96.94%** rare-surname masked recall (q4; release measured 2026-08-06). One
+> **98.1%** on the LinkedIn-style set (0/53 leaks),
+> and **96.60%** rare-surname masked recall (q4; release measured 2026-11-25). One
 > canonical, dated, reproducible table:
 > **[docs/BENCHMARKS.md](docs/BENCHMARKS.md)**; every other number in this
 > repo defers to it.
 
-The current v19 q4 artifact was also re-run on 2026-08-11 against KBLab's
+The current v20 q4 artifact was also re-run on 2026-11-25 against KBLab's
 case-robust lowermix NER model on the same 121 hand-authored synthetic Swedish
 texts (211 PER/LOC/ORG entities, overlap matching). Maskera masked 211/211
 with original casing and 211/211 lowercased; KBLab masked 205/211 and 187/211.
-KBLab led typed F1 on original casing (89.4% vs 87.1%); Maskera led lowercase
-typed F1 (85.7% vs 83.2%). This is a directional, author-coupled comparison,
+KBLab led typed F1 on original casing (89.4% vs 88.2%); Maskera led lowercase
+typed F1 (87.4% vs 83.2%). This is a directional, author-coupled comparison,
 not an independent ranking. The broader dated public-model comparison still
-belongs to v18 and does not automatically transfer to v19. Tables, exact model
+belongs to v18 and does not automatically transfer to v20. Tables, exact model
 revisions, method and caveats:
 [docs/BENCHMARKS.md](docs/BENCHMARKS.md). The
 training pipeline and the round-by-round journey are fully reproducible: see
 [`training/`](training/). Every push to this repo re-grades the published
 model in CI against a gold corpus with an F1 floor and a leak-rate ceiling.
 
-The complete products were also compared on 2026-08-14 across 258 synthetic
+The complete products were also compared on 2026-11-25 across 258 synthetic
 Swedish domain texts with 952 annotated PII strings. With one strict scorer,
-Maskera v19 fully removed **933/952 (98.0%)**; LogosGuard 2.4.4 in Chrome,
+Maskera v20 fully removed **941/952 (98.8%)**; LogosGuard 2.4.4 in Chrome,
 Free/`Balanced`, fully removed **606/952 (63.7%)**. Partial/clear-text leaks
-were 8/11 and 49/297 respectively. This author-coupled comparison does not
+were 5/6 and 49/297 respectively. This author-coupled comparison does not
 report precision or constitute an independent ranking; its per-document
 outcomes, capture hashes, settings, encoding caveat and checksums are in
 [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
@@ -178,12 +178,13 @@ perfect. The canonical numbers and their caveats live in
 where: 100% on-device, the only network calls are one-time fetches of the
 model and the WASM runtime (never your text), and self-hostable. The published
 v18 training sources remain documented as historical provenance. Published
-v19 passed every defined release gate using 64,000 generated training rows and
-4,760 disjoint validation rows, with
+v20 passed every defined release gate using 108,400 generated training rows and
+6,900 disjoint validation rows, with
 structured-identifier rejection and exact data/code hashes in a privacy
 attestation. On the revised synthetic ADR set it covers all 57 gold spans
-exactly with zero leaks, including all 35 marked addresses; one organisation is
-typed ADDRESS, so labeled F1 is 96.5%. The complete release snapshot,
+exactly with zero leaks, including all 35 marked addresses (35/35 ADDRESS
+precision); one location is typed ORGANIZATION, so labeled F1 is 98.2%. The
+complete release snapshot,
 scope, and separate KB-BERT pretraining caveat are documented in
 [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md) and
 [`docs/TRAINING_DATA_PROTECTION.md`](docs/TRAINING_DATA_PROTECTION.md).

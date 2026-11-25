@@ -31,11 +31,11 @@ const DEST = resolve(dirname(fileURLToPath(import.meta.url)), "../public/models"
 // these with: shasum -a 256 <file>
 const FILES = {
   "config.json": "9a4345c97bba5b637fbb07779d56d45b0bac707bc413b623c99caa51bde125cc",
-  "tokenizer.json": "a600e32448f4ebb0bffcd4cfd69ead75b2f982058ea65b15d9e3e535c1e83ae1",
+  "tokenizer.json": "ad3fd31044f9ab6aca0ff752b22a90acb9a520f0dfe2395165726fa7542a1a0d",
   "tokenizer_config.json": "3cf57fee187ab68479948ee43ecdb9054869fa9c232783f4f32d00a01669db4a",
   "special_tokens_map.json": "5d5b662e421ea9fac075174bb0688ee0d9431699900b90662acd44b2a350503a",
-  "vocab.txt": "8bf12559050ca14571d3108164a6a6a6100b1342bf39142d68079b21288202f2",
-  "onnx/model_q4.onnx": "6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66",
+  "vocab.txt": "9c360f3292ce07fae4315fbd708ea15f942e6bd1ce22b870812b370051ee583c",
+  "onnx/model_q4.onnx": "0a4ad3c3d87b0c53c67556177a668acfb8a91726a2af78e16a857403f6bed7fa",
 }
 
 const sha256 = (buf) => createHash("sha256").update(buf).digest("hex")

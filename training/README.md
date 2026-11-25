@@ -6,19 +6,19 @@ rule layer can't catch: **PER** (person), **LOC** (place), **ORG**
 phone, IBAN…) stays with `@maskera/core`'s deterministic detectors.
 
 > **Numbers note.** This file is the training *journal*: the tables below are
-> round-by-round history (v1 → v19), measured with the Python harness
+> round-by-round history (v1 -> v20), measured with the Python harness
 > (overlap matching), kept for the lessons they carry. The canonical, dated
 > numbers for the **published** artifact live in
 > [`docs/BENCHMARKS.md`](../docs/BENCHMARKS.md), measured with the stricter
 > exact-span JS harness CI gates on. When the two disagree, BENCHMARKS.md wins.
-> Naming: the published Hub artifact is the **v19** privacy-clean round and is
-> byte-identical to the demo's `maskera-sv-ner-v19` folder. v1-v18 remain
+> Naming: the published Hub artifact is the **v20** privacy-clean round and is
+> byte-identical to the demo's `maskera-sv-ner-v20` folder. v1-v19 remain
 > historical journal entries.
 
-> **Current end-product comparison.** On 2026-08-14 the complete v19 hybrid
-> fully removed 933/952 (98.0%) annotated values across 258 synthetic Swedish
+> **Current end-product comparison.** On 2026-11-25 the complete v20 hybrid
+> fully removed 941/952 (98.8%) annotated values across 258 synthetic Swedish
 > domain texts; LogosGuard 2.4.4 in Chrome, Free/`Balanced`, removed 606/952
-> (63.7%). Partial/clear-text leaks were 8/11 and 49/297. This is
+> (63.7%). Partial/clear-text leaks were 5/6 and 49/297. This is
 > author-coupled evidence without a precision claim; settings, per-document
 > outcomes and capture hashes live in [`docs/BENCHMARKS.md`](../docs/BENCHMARKS.md).
 
@@ -1453,8 +1453,35 @@ shares Maskera's developer, so this is a directional regression comparison,
 not an independent universal ranking. Run `pnpm eval:kblab`; the exact result
 is tracked in `docs/benchmark-kblab-v19.json`.
 
+**Release state (v19, superseded by v20):** published on the Hub at revision
+`7a0063375d1baabf66cf9a357dad5f46aea7008e`.
+
+### v20 multi-teacher contrast round (PUBLISHED 2026-11-25)
+
+Rebuilt from the pinned KB-BERT revision using only `training/generate_data.mjs`
+with three balanced contrast families (clinical retention, lowercase
+homograph names, register precision): 90,000 base train / 5,000 base val,
+2,400/300 balanced replay, 5,600/560 hard negatives, 4,000/400 clinical
+contrast, 2,400/240 homograph contrast, and 4,000/400 register contrast
+(108,400 train / 6,900 disjoint val rows, 0 duplicates, 0.00% overlap). Three
+KB-BERT teachers (seeds 1337, 2024, 42) were distilled into the 6-layer
+20k-vocab student (`student-v20b-s777-onnx`, q4 42,705,681 bytes).
+
+| Gate | Result |
+| --- | --- |
+| synthetic gold | type F1 94.54%; type recall 95.34%; masked recall 98.73% |
+| rare surnames | 96.60% masked (284/294), 79.59% PER-typed, 10 leaks |
+| curated | 99.0% precision, 100.0% recall, 99.5% span F1, 0/205 leaks |
+| revised synthetic ADR | 100.0% span precision/recall/F1, 0/57 leaks; all 35 addresses exact (35/35 ADDRESS precision), 98.2% labeled F1 |
+| LinkedIn-style | 96.4% precision, 100.0% recall, 98.1% span F1, 0/53 leaks |
+
+On the 2026-11-25 KBLab lowermix comparison (121 texts, 211 PER/LOC/ORG
+entities, overlap matching), Maskera masked 211/211 with original casing and
+211/211 lowercased; KBLab masked 205/211 and 187/211. Typed F1 was 88.2% vs
+89.4% with original casing and 87.4% vs 83.2% lowercased (`docs/benchmark-kblab-v20.json`).
+
 **Release state:** published on the Hub at revision
-`7a0063375d1baabf66cf9a357dad5f46aea7008e`; the npm source pin, demo hashes
+`bb35467e9310095a81bf4e3d5779586ea842507a`; the npm source pin, demo hashes
 and versioned demo folder all target the same artifact.
 
 ## Publish to Hugging Face (single hosted source)

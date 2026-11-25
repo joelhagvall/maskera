@@ -139,11 +139,11 @@
         "lowercase"
       ],
       "properties": {
-        "status": { "const": "current-v19-directional" },
+        "status": { "type": "string", "pattern": "^current-v[0-9]+-directional$" },
         "measuredAt": { "$ref": "#/$defs/date" },
         "scope": { "type": "string", "minLength": 1 },
         "command": { "const": "pnpm eval:kblab" },
-        "resultFile": { "const": "docs/benchmark-kblab-v19.json" },
+        "resultFile": { "type": "string", "pattern": "^docs/benchmark-kblab-v[0-9]+\\.json$" },
         "resultSha256": { "$ref": "#/$defs/sha256" },
         "suiteSha256": { "$ref": "#/$defs/sha256" },
         "files": {
@@ -212,7 +212,7 @@
         "systems"
       ],
       "properties": {
-        "status": { "const": "current-v19-directional" },
+        "status": { "type": "string", "pattern": "^current-v[0-9]+-directional$" },
         "measuredAt": { "$ref": "#/$defs/date" },
         "scope": { "type": "string", "minLength": 1 },
         "commands": {

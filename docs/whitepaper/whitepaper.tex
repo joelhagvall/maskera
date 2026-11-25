@@ -26,7 +26,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{August 14, 2026 \quad\textperiodcentered\quad Whitepaper v1.22}
+\date{November 25, 2026 \quad\textperiodcentered\quad Whitepaper v1.23}
 
 \begin{document}
 \maketitle
@@ -235,12 +235,13 @@ both answers are public.
         documented, openly licensed public Swedish corpora. No customer data
         was used. The dated sources remain in the v18 model card and training
         journal.
-  \item \textbf{Published privacy-clean v19:} the current release passed
-        every defined release gate using 64,000 generated training rows
-        and 4,760 disjoint validation rows. Customer data, logs,
+  \item \textbf{Published privacy-clean v20:} the current release passed
+        every defined release gate using 108,400 generated training rows
+        and 6,900 disjoint validation rows (distilled from a 3-seed KB-BERT
+        teacher ensemble). Customer data, logs,
         forum posts, news, scraped text, public NER corpora and pseudo-labels
         are excluded from its task-specific training.
-  \item \textbf{v19 identifier exclusion:} a fail-closed scanner rejects every
+  \item \textbf{v20 identifier exclusion:} a fail-closed scanner rejects every
         row containing an IBAN or account-shaped string, identity or
         organisation number, phone, e-mail, URL, public IP, payment
         identifier, long account/card-like number or postal code. Every ADR
@@ -250,7 +251,7 @@ both answers are public.
         deterministic-rule test suite.
   \item \textbf{No user data:} nothing from people who use maskera enters
         training; no such collection exists.
-  \item \textbf{Attested v19 provenance:} exact train/validation row counts and
+  \item \textbf{Attested v20 provenance:} exact train/validation row counts and
         SHA-256 hashes are bound to the generator code hash. The audit-code
         hashes and data hashes travel with the published weights in
         \pkg{privacy-attestation.json}. Training, trimming, distillation,
@@ -262,7 +263,7 @@ both answers are public.
         and re-create every step.
 \end{itemize}
 
-The v19 attestation covers Maskera's task-specific data. It does not assert that
+The v20 attestation covers Maskera's task-specific data. It does not assert that
 the third-party KB-BERT checkpoint was itself pretrained on synthetic-only
 text. CC0 grants copyright permissions but is not a GDPR determination; that
 base-model boundary is documented explicitly in the repository's training
@@ -274,11 +275,11 @@ not determine which obligations apply.
 
 \section{Measured quality}
 
-The first tables below are the current privacy-clean v19 release snapshot.
+The first tables below are the current privacy-clean v20 release snapshot.
 After an explicit page break, the remaining quality and public-model
 comparison tables are retained as historical v18 evidence measured on
 \textbf{2026-07-19} with \pkg{maskera} version \pkg{0.6.4}. They must not be
-attributed to v19. Those measurements use q4 quantisation from v18 and
+attributed to v20. Those measurements use q4 quantisation from v18 and
 \textbf{exact character spans}, the strict criterion under which both start
 and end offsets must match. The canonical, always-current document is
 \pkg{docs/}\allowbreak\pkg{BENCHMARKS.md} in
@@ -288,11 +289,10 @@ heavily is \textbf{leakage}: the share of entities missed entirely and thus
 left unmasked. The appendix retains category-level failure modes only; raw
 external sentences were removed from the checkout.
 
-\subsection{Published v19 release snapshot}
+\subsection{Published v20 release snapshot}
 
-On \textbf{2026-08-06}, the attested q4 release plus the current packaged
-runtime passed every defined release gate. The LinkedIn-style row was
-re-measured from a clean build on \textbf{2026-08-10}. The published artifact is
+On \textbf{2026-11-25}, the attested q4 release plus the current packaged
+runtime passed every defined release gate. The published artifact is
 42,705,681 bytes. These synthetic or author-coupled checks are a release
 battery, not an independent universal quality estimate:
 
@@ -302,30 +302,30 @@ battery, not an independent universal quality estimate:
 \toprule
 Set & Precision & Recall & Span $F_1$ & Labeled $F_1$ & Leaks \\
 \midrule
-Curated (205) & 95.3\% & 98.5\% & 96.9\% & 95.9\% & 1 \\
-Synthetic ADR (57) & 100.0\% & 100.0\% & 100.0\% & 96.5\% & 0 \\
-LinkedIn-style (53) & 75.8\% & 88.7\% & 81.7\% & 78.3\% & 0 \\
+Curated (205) & 99.0\% & 100.0\% & 99.5\% & 97.6\% & 0 \\
+Synthetic ADR (57) & 100.0\% & 100.0\% & 100.0\% & 98.2\% & 0 \\
+LinkedIn-style (53) & 96.4\% & 100.0\% & 98.1\% & 94.4\% & 0 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 All 35 explicitly marked address spans in the revised ADR set are exact and
-labeled ADDRESS. One gold organisation is covered at the exact span but typed
-ADDRESS, which makes ADDRESS-only precision 35/36 and explains the lower
-labeled score. The rare-surname safety gate reaches 96.94\% masked recall
-(285/294), above its historical 94.9\% floor. The Hub artifact and source
+labeled ADDRESS (35/35 ADDRESS-only precision). One gold location is covered
+at the exact span and typed ORGANIZATION, which explains the 98.2\% labeled
+score. The rare-surname safety gate reaches 96.60\% masked recall
+(284/294), above its historical 94.9\% floor. The Hub artifact and source
 package pin target revision
-\pkg{7a0063375d1baabf66cf9a357dad5f46aea7008e}.
+\pkg{bb35467e9310095a81bf4e3d5779586ea842507a}.
 
-The broader synthetic-gold gate records 93.08\% type $F_1$, 94.07\% type
-recall, and 98.31\% masked recall. CI gates both an $F_1$ floor and a leakage
+The broader synthetic-gold gate records 94.54\% type $F_1$, 95.34\% type
+recall, and 98.73\% masked recall. CI gates both an $F_1$ floor and a leakage
 ceiling; leakage remains the primary privacy metric because it counts values
 left entirely unmasked.
 
 \newpage
-\subsection{Current v19 comparison with KBLab lowermix}
+\subsection{Current v20 comparison with KBLab lowermix}
 
-On \textbf{2026-08-11}, the published 43\,MB q4 artifact and KBLab's published
+On \textbf{2026-11-25}, the published 43\,MB q4 artifact and KBLab's published
 496\,MB fp32 \pkg{bert-base-swedish-lowermix-reallysimple-ner} were run through
 the same Transformers token-classification pipeline on 121 hand-authored
 synthetic Swedish texts containing 211 comparable PER/LOC/ORG entities. The
@@ -338,29 +338,29 @@ product post-processing and its ADDRESS class are excluded.
 \toprule
 Casing & Model & Masked at all & Typed $F_1$ \\
 \midrule
-Original & \textbf{Maskera v19 q4} & \textbf{100.0\% (211/211)} & 87.1\% \\
+Original & \textbf{Maskera v20 q4} & \textbf{100.0\% (211/211)} & 88.2\% \\
 Original & KBLab lowermix fp32 & 97.2\% (205/211) & \textbf{89.4\%} \\
-Lowercase & \textbf{Maskera v19 q4} & \textbf{100.0\% (211/211)} & \textbf{85.7\%} \\
+Lowercase & \textbf{Maskera v20 q4} & \textbf{100.0\% (211/211)} & \textbf{87.4\%} \\
 Lowercase & KBLab lowermix fp32 & 88.6\% (187/211) & 83.2\% \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 Maskera covered all 211 entities in both runs. KBLab led typed $F_1$ on
-original casing by 2.3 percentage points; Maskera led lowercase typed $F_1$ by
-2.5 points. This is a \textbf{directional, author-coupled comparison}, not an
+original casing by 1.2 percentage points; Maskera led lowercase typed $F_1$ by
+4.2 points. This is a \textbf{directional, author-coupled comparison}, not an
 independent universal ranking: Maskera's developer wrote the corpus. Exact
 model revisions, the pinned Python environment, machine output, and the
 \pkg{pnpm eval:kblab} command are published beside the canonical benchmark.
 
-\subsection{Current v19 end-product comparison with LogosGuard}
+\subsection{Current v20 end-product comparison with LogosGuard}
 
-On \textbf{2026-08-14}, the complete local Maskera v19 pipeline and
+On \textbf{2026-11-25}, the complete local Maskera v20 pipeline and
 LogosGuard 2.4.4's Chrome file-redaction flow (Free plan,
-\pkg{Balanced (recommended)}) were run on the same 258 synthetic Swedish
-domain texts with 952 annotated PII strings. The set includes names, addresses,
-personnummer, samordningsnummer, phone numbers, banking identifiers, and
-government, healthcare, and legal language.
+\pkg{Balanced (recommended)}, same captured files from 2026-08-14) were run on
+the same 258 synthetic Swedish domain texts with 952 annotated PII strings. The
+set includes names, addresses, personnummer, samordningsnummer, phone numbers,
+banking identifiers, and government, healthcare, and legal language.
 
 Both products were graded with the same strict material-character definition:
 a full hit removes every letter and digit from an annotated value, a partial
@@ -372,13 +372,13 @@ leak retains some, and a clear-text miss retains all.
 \toprule
 Product & Fully masked & Partial leaks & Clear-text misses \\
 \midrule
-\textbf{Maskera v19 q4} & \textbf{98.0\% (933/952)} & 8 & 11 \\
+\textbf{Maskera v20 q4} & \textbf{98.8\% (941/952)} & 5 & 6 \\
 LogosGuard 2.4.4 & 63.7\% (606/952) & 49 & 297 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Maskera fully removed 327 more annotated values, a 34.3 percentage-point
+Maskera fully removed 335 more annotated values, a 35.1 percentage-point
 difference in full-hit rate. This remains \textbf{directional,
 author-coupled evidence}, not an independent ranking: Maskera's developer
 wrote the synthetic corpus, and the corpus is not exhaustively annotated for
@@ -444,7 +444,7 @@ and the exact span including the house number is recovered on \textbf{35 of
 35} addresses. These are historical v18 results. The earlier ordinary
 street/number surfaces were replaced on 2026-08-06 by explicit synthetic
 markers, so the historical result does not transfer to the replacement. That
-replacement has been measured separately in the published v19 snapshot above; it
+replacement has been measured separately in the published v20 snapshot above; it
 does not relabel this historical v18 table. The previous release's
 one documented exception (the ordinary word \emph{Festen}
 over-redacted in one distractor sentence) was fixed in v18, which
@@ -679,7 +679,7 @@ Everything claimed in this document can be checked without asking us:
   \item \textbf{The model:} published openly on Hugging Face
         (\pkg{joelhagvall/maskera-sv-ner}) with a model card. The shipped
         artifact is \pkg{onnx/model\_q4.onnx}, SHA-256\\
-        {\footnotesize\texttt{6f4bf061e9af6827e4ffe82bcfcb84709daa84c5f5ed7a05c2083a3e535fda66}};\\
+        {\footnotesize\texttt{0a4ad3c3d87b0c53c67556177a668acfb8a91726a2af78e16a857403f6bed7fa}};\\
         the current hash always lives in \pkg{docs/BENCHMARKS.md}.
   \item \textbf{The numbers:} canonical in \pkg{docs/BENCHMARKS.md},
         dated and reproducible.

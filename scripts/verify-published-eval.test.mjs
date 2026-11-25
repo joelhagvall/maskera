@@ -104,15 +104,9 @@ test("release reproduction ignores measurement metadata from independently dated
   contract.lastMeasuredAt = "2026-08-11"
   contract.metrics.linkedinStyle.measuredAt = "2026-08-10"
 
-  assert.deepEqual(expectedSnapshot(contract).linkedinStyle, {
-    documents: 32,
-    entities: 53,
-    precisionPct: "75.8",
-    recallPct: "88.7",
-    spanF1Pct: "81.7",
-    labeledF1Pct: "78.3",
-    leaks: 0,
-  })
+  const { measuredAt: _, ...expectedLinkedin } = contract.metrics.linkedinStyle
+  assert.deepEqual(expectedSnapshot(contract).linkedinStyle, expectedLinkedin)
+  assert.equal("measuredAt" in expectedSnapshot(contract).linkedinStyle, false)
 })
 
 test("deployment reproduction skips only outside production", () => {

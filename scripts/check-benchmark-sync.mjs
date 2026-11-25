@@ -213,7 +213,7 @@ await expectFragments("docs/BENCHMARKS.md", [
   ["comparison suite checksum", `Comparison suite\nchecksum: \`${comparison.suiteSha256}\``],
   [
     "redaction comparison Maskera row",
-    `| **Maskera v19 q4** | **${redactionComparison.systems.maskera.fullHitRatePct}% (${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations})** | ${redactionComparison.systems.maskera.partialLeaks} | ${redactionComparison.systems.maskera.misses} |`,
+    `| **Maskera ${contract.release} q4** | **${redactionComparison.systems.maskera.fullHitRatePct}% (${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations})** | ${redactionComparison.systems.maskera.partialLeaks} | ${redactionComparison.systems.maskera.misses} |`,
   ],
   [
     "redaction comparison LogosGuard row",
@@ -622,7 +622,7 @@ await expectFragments("README.md", [
   ],
   [
     "root LogosGuard comparison",
-    `Maskera v19 fully removed **${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%)**; LogosGuard ${redactionComparison.systems.logosguard.version} in Chrome`,
+    `Maskera ${contract.release} fully removed **${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%)**; LogosGuard ${redactionComparison.systems.logosguard.version} in Chrome`,
   ],
 ])
 await expectFragments("packages/core/README.md", [
@@ -741,7 +741,7 @@ await expectFragments("docs/TRANSPARENCY.md", [
   ],
   [
     "transparency LogosGuard comparison",
-    `Maskera v19 fully removed ${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%); LogosGuard ${redactionComparison.systems.logosguard.version} in`,
+    `Maskera ${contract.release} fully removed ${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%); LogosGuard ${redactionComparison.systems.logosguard.version} in`,
   ],
 ])
 await expectFragments("docs/PRODUCTION.md", [
@@ -761,7 +761,7 @@ await expectFragments("docs/PRODUCTION.md", [
   ],
   [
     "production LogosGuard comparison",
-    `Maskera v19 fully removed ${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%);\nLogosGuard ${redactionComparison.systems.logosguard.version} in Chrome`,
+    `Maskera ${contract.release} fully removed ${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%);\nLogosGuard ${redactionComparison.systems.logosguard.version} in Chrome`,
   ],
 ])
 await expectFragments(whitepaper.source, [
@@ -781,7 +781,7 @@ await expectFragments(whitepaper.source, [
   ],
   [
     "whitepaper LogosGuard Maskera row",
-    `\\textbf{Maskera v19 q4} & \\textbf{${redactionComparison.systems.maskera.fullHitRatePct}\\% (${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations})} & ${redactionComparison.systems.maskera.partialLeaks} & ${redactionComparison.systems.maskera.misses}`,
+    `\\textbf{Maskera ${contract.release} q4} & \\textbf{${redactionComparison.systems.maskera.fullHitRatePct}\\% (${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations})} & ${redactionComparison.systems.maskera.partialLeaks} & ${redactionComparison.systems.maskera.misses}`,
   ],
   [
     "whitepaper LogosGuard row",

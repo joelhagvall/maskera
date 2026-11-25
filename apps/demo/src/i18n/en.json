@@ -317,13 +317,13 @@
     "metricsBody": "A complete miss means that a piece of personal data remains in plain text. Precision shows how often a detection was correct, while recall shows what proportion of all personal data was found. Exact-span F1 combines the two. Complete misses are reported separately.",
     "externalLinkLabel": "Open external source page",
     "currentTitle": "Current test results",
-    "currentBody": "The published model was measured on synthetic Swedish test sets on 2026-08-06. The results show the model's known strengths and limits.",
+    "currentBody": "The published model was measured on synthetic Swedish test sets on 2026-11-25. The results show the model's known strengths and limits.",
     "currentStats": [
-      { "value": "96.9% / 1 of 205", "label": "mixed Swedish test texts: F1 / misses" },
+      { "value": "99.5% / 0 of 205", "label": "mixed Swedish test texts: F1 / misses" },
       { "value": "100.0% / 0 of 57", "label": "synthetic addresses: F1 / misses" }
     ],
     "redactionComparisonTitle": "End-to-end test with LogosGuard",
-    "redactionComparisonBody": "LogosGuard is a Chrome extension for masking in the browser, not a standalone NER model. This therefore compares LogosGuard's complete file-masking flow with Maskera's complete local pipeline. Maskera v19 and LogosGuard 2.4.4 were run on 2026-08-14 over the same 258 synthetic Swedish texts with 952 labelled pieces of personal data, including names, addresses, Swedish personal and coordination numbers, phone numbers, and government, healthcare and legal language. LogosGuard ran on the free plan with Balanced accuracy. Both systems used the same strict measure: a full hit requires every letter and digit from the labelled value to be removed.",
+    "redactionComparisonBody": "LogosGuard is a Chrome extension for masking in the browser, not a standalone NER model. This therefore compares LogosGuard's complete file-masking flow with Maskera's complete local pipeline. Maskera v20 (2026-11-25) and LogosGuard 2.4.4 (2026-08-14) were run over the same 258 synthetic Swedish texts with 952 labelled pieces of personal data, including names, addresses, Swedish personal and coordination numbers, phone numbers, and government, healthcare and legal language. LogosGuard ran on the free plan with Balanced accuracy. Both systems used the same strict measure: a full hit requires every letter and digit from the labelled value to be removed.",
     "redactionComparisonTable": {
       "system": "System",
       "fullHits": "Fully masked",
@@ -332,11 +332,11 @@
     },
     "redactionComparisonRows": [
       {
-        "system": "Maskera v19 q4",
+        "system": "Maskera v20 q4",
         "href": "https://huggingface.co/joelhagvall/maskera-sv-ner",
-        "fullHits": "933 of 952 (98.0%)",
-        "partialLeaks": "8",
-        "misses": "11",
+        "fullHits": "941 of 952 (98.8%)",
+        "partialLeaks": "5",
+        "misses": "6",
         "ours": true
       },
       {
@@ -347,10 +347,10 @@
         "misses": "297"
       }
     ],
-    "redactionComparisonSummary": "Maskera fully masked 327 more of the 952 labelled values. Some material remained in 19 cases with Maskera and 346 cases with LogosGuard — a 34.3 percentage-point difference in full-hit rate.",
+    "redactionComparisonSummary": "Maskera fully masked 335 more of the 952 labelled values. Some material remained in 11 cases with Maskera and 346 cases with LogosGuard, a 35.1 percentage-point difference in full-hit rate.",
     "redactionComparisonLimit": "Maskera's developer wrote the synthetic test set, so this is author-coupled evidence rather than an independent ranking. The corpus is not exhaustively annotated for precision. LogosGuard's file export also converted Swedish UTF-8 characters into Windows-1252 mojibake; the characters were restored before scoring.",
     "comparisonTitle": "Compared with KBLab",
-    "comparisonBody": "Maskera is a small Swedish NER model built for local masking. KBLab lowermix is a full-size Swedish BERT model whose casing mix makes it more robust on text without capitals. Maskera's published 43 MB q4 model and KBLab lowermix's 496 MB fp32 model were run on 2026-08-11 over the same 121 synthetic Swedish texts with 211 names, places and organisations. An entity counts as masked when a detection overlaps it; typed F1 additionally requires the correct category.",
+    "comparisonBody": "Maskera is a small Swedish NER model built for local masking. KBLab lowermix is a full-size Swedish BERT model whose casing mix makes it more robust on text without capitals. Maskera's published 43 MB q4 model and KBLab lowermix's 496 MB fp32 model were run on 2026-11-25 over the same 121 synthetic Swedish texts with 211 names, places and organisations. An entity counts as masked when a detection overlaps it; typed F1 additionally requires the correct category.",
     "comparisonTable": {
       "system": "System",
       "masked": "Masked",
@@ -361,10 +361,10 @@
         "title": "Original casing",
         "rows": [
           {
-            "system": "Maskera v19 q4",
+            "system": "Maskera v20 q4",
             "href": "https://huggingface.co/joelhagvall/maskera-sv-ner",
             "masked": "211 of 211 (100.0%)",
-            "typedF1": "87.1%",
+            "typedF1": "88.2%",
             "ours": true
           },
           {
@@ -379,10 +379,10 @@
         "title": "The same texts lowercased",
         "rows": [
           {
-            "system": "Maskera v19 q4",
+            "system": "Maskera v20 q4",
             "href": "https://huggingface.co/joelhagvall/maskera-sv-ner",
             "masked": "211 of 211 (100.0%)",
-            "typedF1": "85.7%",
+            "typedF1": "87.4%",
             "ours": true
           },
           {
@@ -587,12 +587,12 @@
       }
     ],
     "historicalComparisonSummary": "In the dated v18 run, Maskera had the highest typed F1 on originally cased text. On lowercase text, KBLab lowermix had the highest masking recall while Maskera had the highest typed F1.",
-    "historicalComparisonLimit": "These are historical v18 results and must not be read as v19 scores. The independent raw corpus was removed before the privacy-clean v19 release, so the aggregates are retained for transparency but cannot be reproduced document by document from today's checkout. Separate system tests including Presidio, Privacy Filter, EU PII Safeguard and Blindfold use different runs and are reported in BENCHMARKS.md.",
+    "historicalComparisonLimit": "These are historical v18 results and must not be read as v20 scores. The independent raw corpus was removed before the privacy-clean v19/v20 release line, so the aggregates are retained for transparency but cannot be reproduced document by document from today's checkout. Separate system tests including Presidio, Privacy Filter, EU PII Safeguard and Blindfold use different runs and are reported in BENCHMARKS.md.",
     "interpretationTitle": "How to interpret the results",
     "interpretation": [
-      "No labelled data was left entirely in plain text in the synthetic address test. The mixed Swedish text test missed 1 of 205.",
-      "The only miss was a broad public geographic region, not a person, contact detail, identifier or street address.",
-      "All 35 street addresses were found with an exact span, including the house number."
+      "No labelled data was left in plain text in either the mixed Swedish text test (0 of 205) or the synthetic address test (0 of 57).",
+      "All 35 street addresses were found with an exact span and 35 of 35 address precision, including the house number.",
+      "These test sets verify regression protection on known patterns rather than guaranteeing coverage across all Swedish free text."
     ],
     "limitsTitle": "What these tests do not show",
     "limits": [
@@ -602,7 +602,7 @@
     ],
     "sourcesTitle": "Sources and reproduction",
     "provenance": [
-      "Published maskera-sv-ner v19 (q4, about 43 MB) was measured on the synthetic release gates on 2026-08-06."
+      "Published maskera-sv-ner v20 (q4, about 43 MB) was measured on the synthetic release gates on 2026-11-25."
     ],
     "sourcesBody": "The test texts, method, runner scripts and complete Maskera results are available in the open repository. BENCHMARKS.md is the source of truth if a number elsewhere differs.",
     "benchmarksCta": "Read the benchmark source",
@@ -701,10 +701,10 @@
     "fullDocsPrefix": "The complete technical disclosure and all source code are available on GitHub.",
     "fullDocsCta": "Read the full document",
     "training": {
-      "syntheticTitle": "Published v19 is the privacy-clean model.",
-      "syntheticBody": "v19 passed every release gate with 64,000 generated training rows and 4,760 separated validation rows. IBANs, personal and organisation numbers, phone numbers, emails, account and payment identifiers, public IP addresses, postcodes and realistic street-address pairs are blocked before training. Historical v18 also used documented, openly licensed Swedish corpora and is reported separately.",
+      "syntheticTitle": "Published v20 is the privacy-clean model.",
+      "syntheticBody": "v20 passed every release gate with 108,400 generated training rows and 6,900 separated validation rows (distilled from a 3-seed KB-BERT teacher ensemble). IBANs, personal and organisation numbers, phone numbers, emails, account and payment identifiers, public IP addresses, postcodes and realistic street-address pairs are blocked before training. Historical v18 also used documented, openly licensed Swedish corpora and is reported separately.",
       "policyCta": "Read the technical data-protection policy",
-      "attestationBody": "Every published v19 artefact carries the same attestation with row counts and SHA-256 hashes for the exact data, generator and audit code. The published provenance is summarised in the",
+      "attestationBody": "Every published v20 artefact carries the same attestation with row counts and SHA-256 hashes for the exact data, generator and audit code. The published provenance is summarised in the",
       "modelCardCta": "model card",
       "baseTitle": "Base model:",
       "baseBody": "KB-BERT from the National Library of Sweden, published under CC0.",

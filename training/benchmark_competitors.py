@@ -138,7 +138,7 @@ def sha256_file(path):
 
 MASKERA_MODEL = os.environ.get("MASKERA_COMPETITOR_MODEL", "joelhagvall/maskera-sv-ner")
 MASKERA_REVISION = os.environ.get(
-    "MASKERA_COMPETITOR_REVISION", "7a0063375d1baabf66cf9a357dad5f46aea7008e"
+    "MASKERA_COMPETITOR_REVISION", "bb35467e9310095a81bf4e3d5779586ea842507a"
 )
 MASKERA_ONNX_FILE = os.environ.get("MASKERA_COMPETITOR_ONNX_FILE", "model_q4.onnx")
 KBLAB_LOWERMIX_MODEL = "KBLab/bert-base-swedish-lowermix-reallysimple-ner"

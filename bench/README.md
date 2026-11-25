@@ -13,30 +13,29 @@ safety-critical number for redaction.
 > comparable to the table below. `export-corpora.mjs` now exports only the
 > synthetic curated and ADR sets.
 
-> **Published v19 snapshot (2026-08-06; LinkedIn row re-measured
-> 2026-08-10):** the attested privacy-clean release
+> **Published v20 snapshot (2026-11-25):** the attested privacy-clean release
 > passed every defined gate. On the revised synthetic ADR
 > corpus its current q4 pipeline reaches 100.0% label-agnostic span precision,
 > recall and F1 with 0/57 leaks; all 35 marked addresses are exact and labeled
-> ADDRESS. One gold organisation is typed ADDRESS, yielding 96.5% labeled F1
-> and 35/36 ADDRESS-only precision. Curated span F1 is 96.9% with 1/205 leaks;
-> LinkedIn-style span F1 is 81.7% with 0/53 leaks. This is not a competitor
-> re-run; the full release snapshot and caveats are in
+> ADDRESS (35/35 ADDRESS-only precision). One gold location is typed
+> ORGANIZATION, yielding 98.2% labeled F1. Curated span F1 is 99.5% with 0/205 leaks;
+> LinkedIn-style span F1 is 98.1% with 0/53 leaks. This is not a
+> competitor re-run; the full release snapshot and caveats are in
 > [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
 
-> **Current v19 KBLab comparison (2026-08-11):** on 121 hand-authored
+> **Current v20 KBLab comparison (2026-11-25):** on 121 hand-authored
 > synthetic Swedish texts with 211 comparable PER/LOC/ORG entities, Maskera q4
 > masked 211/211 with original casing and 211/211 lowercased. KBLab lowermix
-> fp32 masked 205/211 and 187/211. Typed F1 was 87.1% vs 89.4% original and
-> 85.7% vs 83.2% lowercased. This uses overlap matching and is author-coupled,
+> fp32 masked 205/211 and 187/211. Typed F1 was 88.2% vs 89.4% original and
+> 87.4% vs 83.2% lowercased. This uses overlap matching and is author-coupled,
 > not an independent ranking. Reproduce with `pnpm eval:kblab`; see
-> [`docs/benchmark-kblab-v19.json`](../docs/benchmark-kblab-v19.json).
+> [`docs/benchmark-kblab-v20.json`](../docs/benchmark-kblab-v20.json).
 
-> **Current v19 LogosGuard comparison (2026-08-14):** on 258 synthetic
+> **Current v20 LogosGuard comparison (2026-11-25):** on 258 synthetic
 > Swedish domain texts with 952 annotated PII strings, the same strict scorer
-> counted 933/952 (98.0%) fully removed for Maskera q4 and 606/952 (63.7%) for
+> counted 941/952 (98.8%) fully removed for Maskera q4 and 606/952 (63.7%) for
 > LogosGuard 2.4.4 in Chrome, Free/`Balanced`. Partial/clear-text leaks were
-> 8/11 and 49/297. This is author-coupled evidence without a precision claim;
+> 5/6 and 49/297. This is author-coupled evidence without a precision claim;
 > see the per-document outcomes, capture hashes and encoding caveat in
 > [`docs/benchmark-logosguard-2.4.4.json`](../docs/benchmark-logosguard-2.4.4.json).
 

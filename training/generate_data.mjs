@@ -19,7 +19,7 @@
  * Usage: node generate_data.mjs [trainCount] [valCount]
  */
 import { createHash } from "node:crypto"
-import { appendFileSync, readFileSync, writeFileSync } from "node:fs"
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 
 let seed = Number(process.env.DATA_SEED ?? 1337) >>> 0
 if (!Number.isInteger(Number(process.env.DATA_SEED ?? 1337))) {
@@ -67,6 +67,16 @@ const BALANCED_REPLAY_VAL_ROWS = Number(process.env.BALANCED_REPLAY_VAL_ROWS ?? 
 // copied from the held-out ADR corpus.
 const HARD_NEGATIVE_TRAIN_ROWS = Number(process.env.HARD_NEGATIVE_TRAIN_ROWS ?? 0)
 const HARD_NEGATIVE_VAL_ROWS = Number(process.env.HARD_NEGATIVE_VAL_ROWS ?? 0)
+// v20 contrast families: opt-in, balanced positive/negative rows targeting the
+// four measured v19 weaknesses (telegraphic clinical over-redaction + eponyms,
+// lowercase homograph first names, LinkedIn/freetext precision + ALL-CAPS/short
+// ORG + Swedish regions). Zero-row default keeps earlier recipes byte-identical.
+const CLINICAL_CONTRAST_TRAIN_ROWS = Number(process.env.CLINICAL_CONTRAST_TRAIN_ROWS ?? 0)
+const CLINICAL_CONTRAST_VAL_ROWS = Number(process.env.CLINICAL_CONTRAST_VAL_ROWS ?? 0)
+const HOMOGRAPH_CONTRAST_TRAIN_ROWS = Number(process.env.HOMOGRAPH_CONTRAST_TRAIN_ROWS ?? 0)
+const HOMOGRAPH_CONTRAST_VAL_ROWS = Number(process.env.HOMOGRAPH_CONTRAST_VAL_ROWS ?? 0)
+const REGISTER_PRECISION_TRAIN_ROWS = Number(process.env.REGISTER_PRECISION_TRAIN_ROWS ?? 0)
+const REGISTER_PRECISION_VAL_ROWS = Number(process.env.REGISTER_PRECISION_VAL_ROWS ?? 0)
 
 for (const [name, value] of [
   ["LC_AUG", LC_AUG],
@@ -86,6 +96,12 @@ for (const [name, value] of [
   ["BALANCED_REPLAY_VAL_ROWS", BALANCED_REPLAY_VAL_ROWS],
   ["HARD_NEGATIVE_TRAIN_ROWS", HARD_NEGATIVE_TRAIN_ROWS],
   ["HARD_NEGATIVE_VAL_ROWS", HARD_NEGATIVE_VAL_ROWS],
+  ["CLINICAL_CONTRAST_TRAIN_ROWS", CLINICAL_CONTRAST_TRAIN_ROWS],
+  ["CLINICAL_CONTRAST_VAL_ROWS", CLINICAL_CONTRAST_VAL_ROWS],
+  ["HOMOGRAPH_CONTRAST_TRAIN_ROWS", HOMOGRAPH_CONTRAST_TRAIN_ROWS],
+  ["HOMOGRAPH_CONTRAST_VAL_ROWS", HOMOGRAPH_CONTRAST_VAL_ROWS],
+  ["REGISTER_PRECISION_TRAIN_ROWS", REGISTER_PRECISION_TRAIN_ROWS],
+  ["REGISTER_PRECISION_VAL_ROWS", REGISTER_PRECISION_VAL_ROWS],
 ]) {
   if (!Number.isInteger(value) || value < 0) {
     throw new Error(`${name} must be a non-negative integer; got ${value}`)
@@ -109,6 +125,24 @@ for (const [name, value] of [
   // BALANCED_SUBFAMILIES below: bare-PER, LOC, ORG, ADR, common-word negative).
   if (value % 5 !== 0) {
     throw new Error(`${name} must be divisible by 5 (one row per subfamily); got ${value}`)
+  }
+}
+for (const [name, value] of [
+  ["CLINICAL_CONTRAST_TRAIN_ROWS", CLINICAL_CONTRAST_TRAIN_ROWS],
+  ["CLINICAL_CONTRAST_VAL_ROWS", CLINICAL_CONTRAST_VAL_ROWS],
+  ["REGISTER_PRECISION_TRAIN_ROWS", REGISTER_PRECISION_TRAIN_ROWS],
+  ["REGISTER_PRECISION_VAL_ROWS", REGISTER_PRECISION_VAL_ROWS],
+]) {
+  if (value % 4 !== 0) {
+    throw new Error(`${name} must be divisible by 4 (one row per contrast subfamily); got ${value}`)
+  }
+}
+for (const [name, value] of [
+  ["HOMOGRAPH_CONTRAST_TRAIN_ROWS", HOMOGRAPH_CONTRAST_TRAIN_ROWS],
+  ["HOMOGRAPH_CONTRAST_VAL_ROWS", HOMOGRAPH_CONTRAST_VAL_ROWS],
+]) {
+  if (value % 2 !== 0) {
+    throw new Error(`${name} must be divisible by 2 (paired name-use and word-use); got ${value}`)
   }
 }
 
@@ -1151,6 +1185,12 @@ const hardGenericOrg = () =>
     "syntetflödets mottagare",
     "övningens kontaktpunkt",
     "testets samordnare",
+    "elektrikern",
+    "snickaren",
+    "teknikern",
+    "vaktmästaren",
+    "kuriren",
+    "fastighetsskötaren",
   ])
 const hardGenericLoc = () =>
   pick([
@@ -1198,6 +1238,10 @@ const hardCommonNoun = () =>
     "Mötet",
     "Provet",
     "Vårdcentralen",
+    "Orten",
+    "Samhället",
+    "Tätorten",
+    "Bygden",
   ])
 const hardAdjective = () =>
   pick([
@@ -1252,6 +1296,285 @@ const hardMarker = () => {
     : surface
 }
 
+// v20 contrast slots: telegraphic clinical register, medical eponyms (both
+// diagnosis and surname roles), homograph first names (paired with natural
+// ordinary-word sentences), Swedish regions (excluding eval-only Norrland),
+// short Swedish/Nordic brands (excluding eval probes PostNord/KTH/Voi/Knowit/
+// Northmill), and social/recruiter non-entity terms.
+const CLIN_SYMPTOMS = [
+  "bröstsmärta",
+  "yrsel",
+  "andfåddhet",
+  "huvudvärk",
+  "illamående",
+  "buksmärta",
+  "ledvärk",
+  "feber",
+  "hosta",
+  "domningar",
+  "svullnad",
+  "trötthet",
+  "klåda",
+  "ryggvärk",
+  "hjärtklappning",
+  "synbortfall",
+]
+const CLIN_DIAGNOSES = [
+  "höftledsartros",
+  "knäledsartros",
+  "nyckelbensskada",
+  "handledsfraktur",
+  "fotledsdistorsion",
+  "lunginflammation",
+  "urinvägsinfektion",
+  "bihåleinflammation",
+  "blindtarmsinflammation",
+  "gallstensanfall",
+  "förmaksflimmer",
+  "hjärtsvikt",
+  "migränanfall",
+  "diskbråck",
+  "bältros",
+  "hudinfektion",
+  "hjärnskakning",
+  "blodbrist",
+  "astmaförsämring",
+  "njurstensanfall",
+  "magkatarr",
+  "seninflammation",
+]
+const CLIN_BODY_PARTS = [
+  "höger axel",
+  "vänster underarm",
+  "höger handled",
+  "vänster fotled",
+  "höger knä",
+  "vänster höft",
+  "ländryggen",
+  "bröstkorgen",
+  "nacken",
+  "vänster armbåge",
+  "höger lår",
+  "vänster underben",
+  "tummen",
+  "nyckelbenet",
+]
+const CLIN_PROCEDURES = [
+  "titthålsoperation",
+  "gipsbehandling",
+  "röntgenkontroll",
+  "ultraljudsundersökning",
+  "datortomografi",
+  "magnetkameraundersökning",
+  "blodprovstagning",
+  "såromläggning",
+  "fysioterapi",
+  "spirometri",
+  "gastroskopi",
+  "artroskopi",
+]
+const CLIN_DRUGS = [
+  "smärtlindring",
+  "antibiotikakur",
+  "kortisonbehandling",
+  "blodförtunnande läkemedel",
+  "inhalationsbehandling",
+  "febernedsättande",
+  "magskyddande tabletter",
+  "lokalbedövning",
+  "järntillskott",
+  "ögondroppar",
+]
+const CLIN_EPONYM_DIAGNOSES = [
+  "Alzheimers sjukdom",
+  "Parkinsons sjukdom",
+  "Crohns sjukdom",
+  "Cushings syndrom",
+  "Graves sjukdom",
+  "Addisons sjukdom",
+  "Hodgkins lymfom",
+  "Bechterews sjukdom",
+  "Sjögrens syndrom",
+  "Raynauds fenomen",
+  "Bells pares",
+  "Tourettes syndrom",
+  "Downs syndrom",
+  "Marfans syndrom",
+  "Pagets sjukdom",
+  "Hashimotos tyreoidit",
+  "Kawasakis sjukdom",
+  "Bakers cysta",
+  "Mortons neurom",
+  "Dupuytrens kontraktur",
+  "Ménières sjukdom",
+  "Hirschsprungs sjukdom",
+  "Guillain-Barrés syndrom",
+  "Wernickes encefalopati",
+]
+const EPONYM_SURNAMES = [
+  "Parkinson",
+  "Crohn",
+  "Alzheimer",
+  "Sjögren",
+  "Bell",
+  "Cushing",
+  "Baker",
+  "Morton",
+  "Paget",
+  "Addison",
+  "Hodgkin",
+  "Marfan",
+]
+const HOMOGRAPH_NAMES = [
+  "bo",
+  "dag",
+  "liv",
+  "bror",
+  "tom",
+  "max",
+  "dan",
+  "axel",
+  "jack",
+  "karl",
+  "fred",
+  "ann",
+  "sten",
+  "juni",
+  "maj",
+  "klara",
+  "linda",
+  "stig",
+  "björn",
+  "per",
+  "rosa",
+  "urban",
+  "knut",
+  "saga",
+  "lova",
+  "rita",
+  "mina",
+  "tina",
+  "sanna",
+  "lena",
+]
+const REGIONS = [
+  "Svealand",
+  "Götaland",
+  "Skåne",
+  "Småland",
+  "Blekinge",
+  "Halland",
+  "Bohuslän",
+  "Dalsland",
+  "Västergötland",
+  "Östergötland",
+  "Södermanland",
+  "Uppland",
+  "Västmanland",
+  "Närke",
+  "Värmland",
+  "Dalarna",
+  "Gästrikland",
+  "Hälsingland",
+  "Medelpad",
+  "Ångermanland",
+  "Härjedalen",
+  "Jämtland",
+  "Västerbotten",
+  "Norrbotten",
+  "Lappland",
+  "Gotland",
+  "Öland",
+]
+const SHORT_ORGS = [
+  "Klarna",
+  "Spotify",
+  "Telia",
+  "Tele2",
+  "Bring",
+  "Schenker",
+  "Budbee",
+  "Instabox",
+  "Vattenfall",
+  "Fortum",
+  "Folksam",
+  "Skandia",
+  "Avanza",
+  "Nordnet",
+  "Swedbank",
+  "Nordea",
+  "SEB",
+  "Fortnox",
+  "Visma",
+  "Sinch",
+  "Kry",
+  "Mindler",
+  "Hemnet",
+  "Blocket",
+  "Tradera",
+  "Apotea",
+  "Lyko",
+  "Mathem",
+  "Foodora",
+  "Wolt",
+  "SAS",
+  "SJ",
+  "SL",
+  "SVT",
+  "SR",
+  "TV4",
+  "DN",
+  "SvD",
+  "Chalmers",
+  "KI",
+  "LiU",
+  "UU",
+  "LU",
+  "GU",
+]
+const SOCIAL_NON_ENTITIES = [
+  "utvecklare",
+  "systemutvecklare",
+  "produktchef",
+  "mjukvaruarkitekt",
+  "projektledare",
+  "fintech",
+  "energisektorn",
+  "molntjänster",
+  "maskininlärning",
+  "AI",
+  "branschmässan",
+  "konferensen",
+  "caféet",
+  "kollegor",
+  "lagret",
+  "garantin",
+  "orosanmälan",
+  "lånelöfte",
+  "regionchef",
+  "avdelningschef",
+  "utvecklingsteamet",
+  "marknadsavdelningen",
+  "kalkylblad",
+  "stugan",
+]
+const clinSymptom = () => pick(CLIN_SYMPTOMS)
+const clinDiag = () => pick(CLIN_DIAGNOSES)
+const clinBody = () => pick(CLIN_BODY_PARTS)
+const clinProc = () => pick(CLIN_PROCEDURES)
+const clinDrug = () => pick(CLIN_DRUGS)
+const clinEponym = () => pick(CLIN_EPONYM_DIAGNOSES)
+const clinAge = () => `${4 + Math.floor(rand() * 85)}`
+const clinGrade = () => `grad ${1 + Math.floor(rand() * 3)}`
+const eponymPerson = () => `${pick(FIRST)} ${pick(EPONYM_SURNAMES)}`
+const homographPer = () => {
+  const n = pick(HOMOGRAPH_NAMES)
+  return chance(0.65) ? n : n[0].toUpperCase() + n.slice(1)
+}
+const regionLoc = () => pick(REGIONS)
+const shortOrg = () => pick(SHORT_ORGS)
+const socialTerm = () => pick(SOCIAL_NON_ENTITIES)
+
 const SLOTS = {
   PER: person,
   LOC: place,
@@ -1272,6 +1595,19 @@ const SLOTS = {
   HARDNOUN: hardCommonNoun,
   HARDADJ: hardAdjective,
   HARDMARKER: hardMarker,
+  CLINSYMP: clinSymptom,
+  CLINDIAG: clinDiag,
+  CLINBODY: clinBody,
+  CLINPROC: clinProc,
+  CLINDRUG: clinDrug,
+  CLINEPONYM: clinEponym,
+  CLINAGE: clinAge,
+  CLINGRADE: clinGrade,
+  EPONYMPER: eponymPerson,
+  HOMOPER: homographPer,
+  REGION: regionLoc,
+  SHORTORG: shortOrg,
+  SOCIALTERM: socialTerm,
 }
 // Slot name -> BIO tag type, for slots that are surface variants of a base type.
 // COMMON maps to "O": the balanced-replay negative is a capitalised ordinary
@@ -1292,6 +1628,19 @@ const SLOT_TAG = {
   HARDNOUN: "O",
   HARDADJ: "O",
   HARDMARKER: "O",
+  CLINSYMP: "O",
+  CLINDIAG: "O",
+  CLINBODY: "O",
+  CLINPROC: "O",
+  CLINDRUG: "O",
+  CLINEPONYM: "O",
+  CLINAGE: "O",
+  CLINGRADE: "O",
+  EPONYMPER: "PER",
+  HOMOPER: "PER",
+  REGION: "LOC",
+  SHORTORG: "ORG",
+  SOCIALTERM: "O",
 }
 const TEMPLATES = [
   "Patient {PER} inkom akut med bröstsmärta.",
@@ -1655,6 +2004,10 @@ const HARD_NUMERIC_NEG_TEMPLATES = [
   "Kontrollen fortsätter från {HARDNUM} efter lunch.",
   "Testledaren antecknade {HARDNUM} i sammanställningen.",
   "Övningen pausades kort vid {HARDNUM}.",
+  "Huset ligger vid {HARDNUM} men saknar skyltat gatunamn.",
+  "De bor i längan med {HARDNUM} längst bort på gården.",
+  "Leveransen lämnades vid {HARDNUM} bakom förrådet.",
+  "Porten har {HARDNUM} på den gamla skissen över området.",
 ]
 const HARD_FLOOR_NEG_TEMPLATES = [
   "Hissen stannar på {HARDFLOOR} innan den går vidare.",
@@ -1663,6 +2016,10 @@ const HARD_FLOOR_NEG_TEMPLATES = [
   "Kontrollen börjar på {HARDFLOOR} efter lunch.",
   "Övningsgruppen samlas på {HARDFLOOR} i provhuset.",
   "Kartongen lämnades på {HARDFLOOR} under testet.",
+  "Nyckeln till förrådet hämtas på {HARDFLOOR} på morgonen.",
+  "Skrivaren står på {HARDFLOOR} bredvid kopiatorn.",
+  "Larmet testades på {HARDFLOOR} utan anmärkning.",
+  "Besökarna väntar på {HARDFLOOR} tills rundturen börjar.",
 ]
 const HARD_GENERIC_ORG_NEG_TEMPLATES = [
   "Fråga {HARDORG} om provpaketet finns kvar.",
@@ -1671,6 +2028,10 @@ const HARD_GENERIC_ORG_NEG_TEMPLATES = [
   "Vi väntar på svar från {HARDORG} innan kontrollen fortsätter.",
   "Provleveransen hämtas senare av {HARDORG}.",
   "Det syntetiska ärendet ligger fortfarande hos {HARDORG}.",
+  "Kan {HARDORG} titta förbi före klockan tre i eftermiddag?",
+  "Bokningen bekräftades direkt av {HARDORG} via telefon.",
+  "Ärendet har skickats vidare till {HARDORG} för åtgärd.",
+  "Meddela {HARDORG} om leveransen blir försenad i morgon.",
 ]
 const HARD_GENERIC_LOC_NEG_TEMPLATES = [
   "Vi väntar vid {HARDLOC} tills testet börjar.",
@@ -1679,6 +2040,10 @@ const HARD_GENERIC_LOC_NEG_TEMPLATES = [
   "Provpaketet lämnades innanför {HARDLOC} under kontrollen.",
   "Testgruppen gick förbi {HARDLOC} före lunch.",
   "Skyltningen saknades runt {HARDLOC} i övningsmiljön.",
+  "Bussen stannar precis framför {HARDLOC} varje halvtimme.",
+  "Det var halt på marken vid {HARDLOC} i morse.",
+  "Alla kartonger flyttades från {HARDLOC} till förrådet.",
+  "Städningen kring {HARDLOC} blev klar innan stängning.",
 ]
 const HARD_COMMON_NOUN_NEG_TEMPLATES = [
   "{HARDNOUN} var kvar under det syntetiska testet.",
@@ -1687,6 +2052,10 @@ const HARD_COMMON_NOUN_NEG_TEMPLATES = [
   "{HARDNOUN} flyttades innan provet startade.",
   "{HARDNOUN} nämndes i den aggregerade rapporten.",
   "{HARDNOUN} ingick inte i nästa kontroll.",
+  "{HARDNOUN} granskades av arbetsgruppen efter lunch.",
+  "{HARDNOUN} saknades på listan över godkända objekt.",
+  "{HARDNOUN} öppnades igen efter en kort paus.",
+  "{HARDNOUN} dokumenterades i protokollet för kvartalet.",
 ]
 const HARD_ADJECTIVE_NEG_TEMPLATES = [
   "Cykeln stod {HARDADJ} under hela testet.",
@@ -1695,6 +2064,10 @@ const HARD_ADJECTIVE_NEG_TEMPLATES = [
   "Provutrustningen verkade {HARDADJ} vid inspektionen.",
   "Kartongen blev {HARDADJ} innan testet avslutades.",
   "Testytan var fortfarande {HARDADJ} efter lunch.",
+  "Hissen förblev {HARDADJ} ända fram till kvällen.",
+  "Förrådet rapporterades {HARDADJ} vid morgonrundan.",
+  "Grinden stod {HARDADJ} trots ny skyltning vid entrén.",
+  "Utrustningen lämnades {HARDADJ} under hela helgen.",
 ]
 const HARD_MARKER_NEG_TEMPLATES = [
   "Kontrollen fortsatte längs {HARDMARKER} efter lunch.",
@@ -1712,6 +2085,225 @@ const HARD_NEGATIVE_SUBFAMILIES = [
   HARD_COMMON_NOUN_NEG_TEMPLATES,
   HARD_ADJECTIVE_NEG_TEMPLATES,
   HARD_MARKER_NEG_TEMPLATES,
+]
+
+// v20 contrast family 1: telegraphic clinical register and eponyms (4-way balanced).
+const CLIN_ANON_NEG_TEMPLATES = [
+  "Kvinna {CLINAGE} år söker för {CLINSYMP}. {CLINDIAG} utan komplikationer.",
+  "Man {CLINAGE} år med {CLINDIAG} efter fall i trappa. Röntgen av {CLINBODY} normal.",
+  "Flicka {CLINAGE} år inkommer med {CLINSYMP} och {CLINDIAG}. Behandlas med {CLINDRUG}.",
+  "Pojke {CLINAGE} år, {CLINDIAG} {CLINGRADE} på {CLINBODY}. Planerad {CLINPROC} i narkos.",
+  "Äldre kvinna med {CLINDIAG} i {CLINBODY}, följs upp på vårdcentral efter {CLINPROC}.",
+  "Ung man med misstänkt {CLINDIAG}, insatt på {CLINDRUG} efter provtagning.",
+  "Akut {CLINDIAG} utan feber. Konservativ behandling med {CLINDRUG} och återbesök.",
+  "{CLINDIAG} {CLINGRADE} efter vridvåld mot {CLINBODY}. Ingen skelettskada på röntgen.",
+]
+const CLIN_EPONYM_NEG_TEMPLATES = [
+  "Utredning för misstänkt {CLINEPONYM} pågår på medicinmottagningen.",
+  "Kvinna {CLINAGE} år följs regelbundet för {CLINEPONYM}, stabilt förlopp.",
+  "Man {CLINAGE} år med känd {CLINEPONYM}, justering av {CLINDRUG}.",
+  "Remiss för bedömning av {CLINEPONYM} efter två månaders {CLINSYMP}.",
+  "Diagnos: {CLINEPONYM}. Planerad {CLINPROC} inom fyra veckor.",
+  "Ingen försämring av {CLINEPONYM} vid dagens kontroll på avdelningen.",
+]
+const CLIN_POS_TEMPLATES = [
+  "Kvinna {CLINAGE} år, {PER}, söker för {CLINSYMP}. Bedömd av läkare {PER} på {ORG}.",
+  "Man {CLINAGE} år ({PER}) inkom med {CLINDIAG} i {CLINBODY}, remitteras till {ORG} i {LOC}.",
+  "Pat {PER} har {CLINDIAG} och behandlas med {CLINDRUG}.",
+  "Journalanteckning för {PER}: {CLINDIAG}, uppföljning via {ORG} efter {CLINPROC}.",
+  "Patient {PER} utreds för {CLINEPONYM} på mottagningen i {LOC}.",
+  "Anhörig {PER} meddelar att {PER} mår bättre efter {CLINPROC}.",
+]
+const CLIN_EPONYM_PERSON_TEMPLATES = [
+  "Patient {EPONYMPER} bokade återbesök för {CLINSYMP}.",
+  "{EPONYMPER} ringde vårdcentralen om sin remiss till {ORG}.",
+  "Läkaren {EPONYMPER} bedömde röntgenbilden av {CLINBODY}.",
+  "Hör av dig till {EPONYMPER} angående svaret på provtagningen i {LOC}.",
+  "Pat {EPONYMPER} inkommer med {CLINDIAG} och {CLINSYMP}.",
+  "{EPONYMPER} har fått tid för {CLINPROC} på {ORG}.",
+]
+const CLINICAL_CONTRAST_SUBFAMILIES = [
+  CLIN_ANON_NEG_TEMPLATES,
+  CLIN_EPONYM_NEG_TEMPLATES,
+  CLIN_POS_TEMPLATES,
+  CLIN_EPONYM_PERSON_TEMPLATES,
+]
+
+// v20 contrast family 2: homograph first names paired 1:1 with ordinary word use.
+// Sentences are deliberately distinct from training/gen_homograph_name_eval.mjs.
+const HOMOGRAPH_NAME_TEMPLATES = [
+  "skickade vidare frågan till {HOMOPER} på kontoret",
+  "kan {HOMOPER} titta på fakturan innan lunch?",
+  "jag pratade med {HOMOPER} om leveransen i morse",
+  "hälsa {HOMOPER} att paketet ligger i receptionen",
+  "enligt {HOMOPER} skickades ordern redan i måndags",
+  "vi väntar på återkoppling från {HOMOPER} angående ärendet",
+  "be {HOMOPER} höra av sig till kundservice under dagen",
+  "det var {HOMOPER} som skrev under avtalet i fredags",
+  "hej, {HOMOPER} behöver hjälp med inloggningen i portalen",
+  "kollegan {HOMOPER} tar över ärendet i eftermiddag",
+  "när kommer {HOMOPER} tillbaka från semestern?",
+  "{HOMOPER} och {PER} höll i genomgången på {ORG}",
+  "jag lämnade kvittot hos {HOMOPER} innan jag gick hem",
+  "fråga {HOMOPER} om nyckeln till förrådet finns kvar",
+]
+const HOMOGRAPH_WORD_TEMPLATES = [
+  "vi planerar att bo på landet under sommaren",
+  "fåglarna byggde ett bo högt uppe i björken",
+  "det blev en lång dag på kontoret innan allt var klart",
+  "varje dag kommer nya ärenden in till kundservice",
+  "det kändes som ett helt nytt liv efter flytten",
+  "det var fullt med liv på gatan under marknaden",
+  "hennes yngre bror jobbar som snickare på heltid",
+  "min äldre bror hjälpte till med att bära möblerna",
+  "hyllan var helt tom när vi kom fram efter lunch",
+  "kaffekannan stod tom i pentryt hela eftermiddagen",
+  "lokalen rymmer max tjugo deltagare åt gången",
+  "leveransen dröjer max tre arbetsdagar enligt beskedet",
+  "hela dan gick åt till planering och långa möten",
+  "vi hann knappt äta lunch på hela dan i går",
+  "han skadade vänster axel under fotbollsträningen",
+  "väskan hängde tungt över min axel på vägen hem",
+  "det blev ett djupt jack i bordsskivan vid flytten",
+  "ett litet jack i lacken syntes efter stenskottet",
+  "en äldre karl frågade efter vägen mot stationen",
+  "det var en trevlig karl som hjälpte oss i kassan",
+  "efter år av konflikt slöts äntligen fred mellan parterna",
+  "de hoppades på långvarig fred i hela området",
+  "det känns lite ann i år men rutinen fungerar bra",
+  "han snubblade på en lös sten längs grusvägen",
+  "muren runt trädgården är byggd av gammal sten",
+  "kursen startar i början av juni för alla nya",
+  "semestern bokades in till mitten av juni i år",
+  "i slutet av maj öppnar utomhusbadet för säsongen",
+  "deklarationen ska vara inskickad senast i maj",
+  "vi kommer att klara tidsplanen utan övertid",
+  "det var svårt att klara provet på första försöket",
+  "glöm inte att linda in glasen i tidningspapper",
+  "sjuksköterskan fick linda fotleden stadigt efter skadan",
+  "vi följde en smal stig genom tallskogen mot sjön",
+  "en ny stig har trampats upp bakom idrottsplatsen",
+  "spår efter en björn hittades i skogen i morse",
+  "en stor björn sågs nära myren tidigt på morgonen",
+  "kostnaden räknas per påbörjad månad i avtalet",
+  "vi skickar bekräftelsen per post inom tre dagar",
+  "hon köpte en rosa regnjacka inför höstresan",
+  "kuvertet hade en rosa etikett på framsidan",
+  "planeringen gäller tät och urban bebyggelse vid spåret",
+  "projektet fokuserar på hållbar urban utveckling",
+  "repet hade en hård knut i änden som inte gick upp",
+  "det tog lång tid att lösa upp en blöt knut",
+  "barnen lyssnade på en gammal saga före läggdags",
+  "boken började som en klassisk saga om vintern",
+  "jag kan inte lova något exakt datum innan beskedet kommer",
+  "vi vill inte lova mer än vi faktiskt kan hålla",
+  "arkitekten ska rita om planlösningen till nästa möte",
+  "barnet ville rita en karta över hela gården",
+  "alla mina anteckningar försvann vid omstarten",
+  "jag hittar inte mina nycklar i jackfickan just nu",
+  "låt bären tina långsamt i kylskåpet över natten",
+  "snön började tina redan i början av mars",
+  "berättelsen bygger på sanna händelser från arkivet",
+  "hon ville veta den sanna orsaken bakom driftstoppet",
+  "krämen gjorde händerna mjuka och lena efter kylan",
+  "stenarna i bäcken var alldeles lena av vattnet",
+]
+const HOMOGRAPH_WORD_LEAD = [
+  "",
+  "obs,",
+  "tips:",
+  "kort notering:",
+  "enligt protokollet:",
+  "som sagt,",
+  "tyvärr,",
+  "just nu:",
+  "påminnelse:",
+  "status:",
+  "inför mötet:",
+  "efter lunch:",
+]
+const HOMOGRAPH_WORD_TAIL = [
+  "",
+  "enligt planen",
+  "enligt beskedet",
+  "som utlovat",
+  "under veckan",
+  "inför helgen",
+  "innan stängning",
+  "utan större problem",
+  "om allt går vägen",
+  "enligt senaste kontrollen",
+  "enligt den nya rutinen",
+  "sa hon i telefon",
+  "noterades i loggen",
+  "enligt arbetsgruppen",
+  "före årsskiftet",
+]
+function buildHomographWordExample() {
+  const base = pick(HOMOGRAPH_WORD_TEMPLATES)
+  const lead = pick(HOMOGRAPH_WORD_LEAD)
+  const tail = pick(HOMOGRAPH_WORD_TAIL)
+  const sentence = [lead, base, tail].filter(Boolean).join(" ")
+  const tokens = tokenizeFiller(sentence)
+  const tags = tokens.map(() => "O")
+  if (tokens.length) {
+    const r = rand()
+    if (r < LC_AUG) {
+      for (let k = 0; k < tokens.length; k++) tokens[k] = tokens[k].toLowerCase()
+    } else if (r < LC_AUG + UC_AUG) {
+      for (let k = 0; k < tokens.length; k++) tokens[k] = tokens[k].toUpperCase()
+    } else if (chance(0.5)) {
+      tokens[0] = tokens[0][0].toUpperCase() + tokens[0].slice(1)
+    }
+    if (chance(0.6)) {
+      tokens.push(".")
+      tags.push("O")
+    }
+  }
+  return { tokens, tags }
+}
+const HOMOGRAPH_CONTRAST_SUBFAMILIES = [HOMOGRAPH_NAME_TEMPLATES, buildHomographWordExample]
+
+// v20 contrast family 3: social/recruiter/freetext precision + regions + short/CAPS ORG.
+const REGISTER_SOCIAL_NEG_TEMPLATES = [
+  "Letar efter en driven {SOCIALTERM} som vill arbeta med {SOCIALTERM}.",
+  "Stolt över vårt arbete inom {SOCIALTERM} och {SOCIALTERM} under året.",
+  "Grattis till alla {SOCIALTERM} som gjort ett fantastiskt jobb på {SOCIALTERM}.",
+  "Swisha gärna beloppet och bekräfta kvittot när {SOCIALTERM} är klar.",
+  "Orosanmälan och {SOCIALTERM} hanteras enligt gällande rutin på {SOCIALTERM}.",
+  "Garantin gäller i två år, lämna tillbaka varan på {SOCIALTERM}.",
+  "Välkommen till {SOCIALTERM} där vi diskuterar {SOCIALTERM} och {SOCIALTERM}.",
+  "Det var halkig väg fram till {SOCIALTERM} så ta det försiktigt vid halka.",
+]
+const REGISTER_SOCIAL_POS_TEMPLATES = [
+  "Stolt över vårt samarbete med {PER} på {SHORTORG} i {LOC}.",
+  "Grattis {PER} till nya rollen som {SOCIALTERM} på {SHORTORG}!",
+  "Letar efter en ny {SOCIALTERM} till {SHORTORG}, hör av dig till {PER}.",
+  "Träffade {PER} och {SOCIALTERM} från {SHORTORG} på {SOCIALTERM} i {LOC}.",
+  "Tack {PER} för ett bra samtal på {SOCIALTERM} om {SOCIALTERM} och {SHORTORG}.",
+  "{PER} blir ny {SOCIALTERM} hos {SHORTORG} med placering i {REGION}.",
+]
+const REGISTER_REGION_ORG_TEMPLATES = [
+  "{PER} på {ORG} forskar om utvecklingen i {REGION}.",
+  "Leveranserna till {REGION} och {LOC} sköts numera av {SHORTORG}.",
+  "Kundtjänsten hos {SHORTORG} betjänar hela {REGION} under vardagar.",
+  "Efter flytten till {REGION} började {PER} jobba hos {SHORTORG}.",
+  "Vädret i {REGION} påverkade trafiken som drivs av {SHORTORG}.",
+  "Samarbetet mellan {SHORTORG} och {SHORTORG} omfattar kontor i {REGION}.",
+]
+const REGISTER_CAPS_TEMPLATES = [
+  "PAKETET SKICKAS MED {SHORTORG} TILL TERMINALEN I {LOC}.",
+  "KONTAKTA {PER} PÅ {SHORTORG} OMGÅENDE ANGÅENDE ORDERN.",
+  "LEVERANSEN FRÅN {SHORTORG} TILL {PER} I {LOC} ÄR FÖRSENAD.",
+  "ORDER BEKRÄFTAD AV {SHORTORG}, MOTTAGARE {PER} I {REGION}.",
+  "MEDDELANDE TILL {PER} ANGÅENDE ÄRENDET HOS {SHORTORG}.",
+  "FAKTURAN FRÅN {SHORTORG} GÄLLER LEVERANS TILL {ADR} I {LOC}.",
+]
+const REGISTER_PRECISION_SUBFAMILIES = [
+  REGISTER_SOCIAL_NEG_TEMPLATES,
+  REGISTER_SOCIAL_POS_TEMPLATES,
+  REGISTER_REGION_ORG_TEMPLATES,
+  REGISTER_CAPS_TEMPLATES,
 ]
 
 function tokenizeFiller(str) {
@@ -1858,7 +2450,27 @@ function appendHardNegativeSet(path, n) {
   return attempts - n
 }
 
+function appendSubfamilySet(path, n, subfamilies, label) {
+  const lines = []
+  let attempts = 0
+  while (lines.length < n) {
+    const source = subfamilies[lines.length % subfamilies.length]
+    const example = typeof source === "function" ? source() : buildExample(source)
+    const line = JSON.stringify(example)
+    attempts++
+    if (usedExamples.has(line)) continue
+    usedExamples.add(line)
+    lines.push(line)
+    if (attempts > n * 100) {
+      throw new Error(`Could not generate ${n} unique ${label} examples after ${attempts} attempts`)
+    }
+  }
+  if (lines.length) appendFileSync(path, `${lines.join("\n")}\n`)
+  return attempts - n
+}
+
 const dir = new URL("./data/", import.meta.url)
+mkdirSync(dir, { recursive: true })
 const trainPath = new URL("train.jsonl", dir)
 const valPath = new URL("val.jsonl", dir)
 const trainDuplicates = writeSet(trainPath, trainCount)
@@ -1869,11 +2481,63 @@ const balancedTrainDuplicates = appendBalancedSet(trainPath, BALANCED_REPLAY_TRA
 const balancedValDuplicates = appendBalancedSet(valPath, BALANCED_REPLAY_VAL_ROWS)
 const hardNegativeTrainDuplicates = appendHardNegativeSet(trainPath, HARD_NEGATIVE_TRAIN_ROWS)
 const hardNegativeValDuplicates = appendHardNegativeSet(valPath, HARD_NEGATIVE_VAL_ROWS)
+const clinicalTrainDuplicates = appendSubfamilySet(
+  trainPath,
+  CLINICAL_CONTRAST_TRAIN_ROWS,
+  CLINICAL_CONTRAST_SUBFAMILIES,
+  "clinical-contrast",
+)
+const clinicalValDuplicates = appendSubfamilySet(
+  valPath,
+  CLINICAL_CONTRAST_VAL_ROWS,
+  CLINICAL_CONTRAST_SUBFAMILIES,
+  "clinical-contrast",
+)
+const homographTrainDuplicates = appendSubfamilySet(
+  trainPath,
+  HOMOGRAPH_CONTRAST_TRAIN_ROWS,
+  HOMOGRAPH_CONTRAST_SUBFAMILIES,
+  "homograph-contrast",
+)
+const homographValDuplicates = appendSubfamilySet(
+  valPath,
+  HOMOGRAPH_CONTRAST_VAL_ROWS,
+  HOMOGRAPH_CONTRAST_SUBFAMILIES,
+  "homograph-contrast",
+)
+const registerTrainDuplicates = appendSubfamilySet(
+  trainPath,
+  REGISTER_PRECISION_TRAIN_ROWS,
+  REGISTER_PRECISION_SUBFAMILIES,
+  "register-precision",
+)
+const registerValDuplicates = appendSubfamilySet(
+  valPath,
+  REGISTER_PRECISION_VAL_ROWS,
+  REGISTER_PRECISION_SUBFAMILIES,
+  "register-precision",
+)
 
 function fileDescription(path, rows) {
   const bytes = readFileSync(path)
   return { rows, sha256: createHash("sha256").update(bytes).digest("hex") }
 }
+
+const extraTrainRows =
+  CLINICAL_CONTRAST_TRAIN_ROWS + HOMOGRAPH_CONTRAST_TRAIN_ROWS + REGISTER_PRECISION_TRAIN_ROWS
+const extraValRows =
+  CLINICAL_CONTRAST_VAL_ROWS + HOMOGRAPH_CONTRAST_VAL_ROWS + REGISTER_PRECISION_VAL_ROWS
+const v20Config =
+  extraTrainRows > 0 || extraValRows > 0
+    ? {
+        clinicalContrastTrainRows: CLINICAL_CONTRAST_TRAIN_ROWS,
+        clinicalContrastValidationRows: CLINICAL_CONTRAST_VAL_ROWS,
+        homographContrastTrainRows: HOMOGRAPH_CONTRAST_TRAIN_ROWS,
+        homographContrastValidationRows: HOMOGRAPH_CONTRAST_VAL_ROWS,
+        registerPrecisionTrainRows: REGISTER_PRECISION_TRAIN_ROWS,
+        registerPrecisionValidationRows: REGISTER_PRECISION_VAL_ROWS,
+      }
+    : {}
 
 // This manifest binds the claimed provenance to the exact generated bytes.
 // privacy_attestation.mjs refuses to attest data after any converter, manual
@@ -1896,6 +2560,7 @@ const sourceManifest = {
     balancedReplayValidationRows: BALANCED_REPLAY_VAL_ROWS,
     hardNegativeTrainRows: HARD_NEGATIVE_TRAIN_ROWS,
     hardNegativeValidationRows: HARD_NEGATIVE_VAL_ROWS,
+    ...v20Config,
     lowercaseAugmentation: LC_AUG,
     uppercaseAugmentation: UC_AUG,
   },
@@ -1904,26 +2569,38 @@ const sourceManifest = {
     trainCount +
       BARE_DECLARATIVE_TRAIN_ROWS +
       BALANCED_REPLAY_TRAIN_ROWS +
-      HARD_NEGATIVE_TRAIN_ROWS,
+      HARD_NEGATIVE_TRAIN_ROWS +
+      extraTrainRows,
   ),
   validation: fileDescription(
     valPath,
-    valCount + BARE_DECLARATIVE_VAL_ROWS + BALANCED_REPLAY_VAL_ROWS + HARD_NEGATIVE_VAL_ROWS,
+    valCount +
+      BARE_DECLARATIVE_VAL_ROWS +
+      BALANCED_REPLAY_VAL_ROWS +
+      HARD_NEGATIVE_VAL_ROWS +
+      extraValRows,
   ),
 }
 writeFileSync(new URL("source-manifest.json", dir), `${JSON.stringify(sourceManifest, null, 2)}\n`)
 
 console.log(
   `Wrote ${trainCount} base + ${BARE_DECLARATIVE_TRAIN_ROWS} bare-declarative + ` +
-    `${BALANCED_REPLAY_TRAIN_ROWS} balanced-replay + ${HARD_NEGATIVE_TRAIN_ROWS} hard-negative train; ` +
+    `${BALANCED_REPLAY_TRAIN_ROWS} balanced-replay + ${HARD_NEGATIVE_TRAIN_ROWS} hard-negative + ` +
+    `${CLINICAL_CONTRAST_TRAIN_ROWS} clinical + ${HOMOGRAPH_CONTRAST_TRAIN_ROWS} homograph + ` +
+    `${REGISTER_PRECISION_TRAIN_ROWS} register train; ` +
     `${valCount} base + ${BARE_DECLARATIVE_VAL_ROWS} bare-declarative + ` +
-    `${BALANCED_REPLAY_VAL_ROWS} balanced-replay + ${HARD_NEGATIVE_VAL_ROWS} hard-negative val examples`,
+    `${BALANCED_REPLAY_VAL_ROWS} balanced-replay + ${HARD_NEGATIVE_VAL_ROWS} hard-negative + ` +
+    `${CLINICAL_CONTRAST_VAL_ROWS} clinical + ${HOMOGRAPH_CONTRAST_VAL_ROWS} homograph + ` +
+    `${REGISTER_PRECISION_VAL_ROWS} register val examples`,
 )
 console.log(
-  `Uniqueness: skipped ${trainDuplicates} duplicate train + ${valDuplicates} duplicate/overlapping val + ` +
-    `${bareTrainDuplicates} duplicate bare train + ${bareValDuplicates} duplicate/overlapping bare val + ` +
-    `${balancedTrainDuplicates} duplicate balanced train + ${balancedValDuplicates} duplicate/overlapping balanced val + ` +
-    `${hardNegativeTrainDuplicates} duplicate hard-negative train + ${hardNegativeValDuplicates} duplicate/overlapping hard-negative val rows`,
+  `Uniqueness: skipped ${trainDuplicates} base-t / ${valDuplicates} base-v / ` +
+    `${bareTrainDuplicates + bareValDuplicates} bare / ` +
+    `${balancedTrainDuplicates + balancedValDuplicates} balanced / ` +
+    `${hardNegativeTrainDuplicates + hardNegativeValDuplicates} hard-neg / ` +
+    `${clinicalTrainDuplicates + clinicalValDuplicates} clinical / ` +
+    `${homographTrainDuplicates + homographValDuplicates} homograph / ` +
+    `${registerTrainDuplicates + registerValDuplicates} register duplicates`,
 )
 console.log(
   `Gazetteers: ${FIRST.length} first, ${LAST.length} last, ${CITIES.length} cities, ${ORGS.length} orgs, ${TEMPLATES.length} templates`,

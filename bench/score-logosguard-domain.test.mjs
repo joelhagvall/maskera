@@ -31,16 +31,16 @@ test("the published product comparison has internally consistent totals", () => 
   }
 })
 
-test("the frozen comparison matches the measured v19 and LogosGuard totals", () => {
+test("the frozen comparison matches the measured v20 and LogosGuard totals", () => {
   assert.deepEqual(result.systems.maskera.totals, {
     texts: 258,
     annotations: 952,
-    hits: 933,
-    partials: 8,
-    misses: 11,
-    redactions: 1522,
-    fullHitRatePct: "98.0",
-    leakRatePct: "2.0",
+    hits: 941,
+    partials: 5,
+    misses: 6,
+    redactions: 1429,
+    fullHitRatePct: "98.8",
+    leakRatePct: "1.2",
   })
   assert.deepEqual(result.systems.logosguard.totals, {
     texts: 258,

@@ -125,21 +125,33 @@ def compute_metrics(eval_pred):
     }
 
 
+def _native_bf16():
+    return device == "cuda" and torch.cuda.is_bf16_supported() and torch.cuda.get_device_capability()[0] >= 8
+
+
+PRECISION = os.environ.get("MASKERA_PRECISION", "auto")
 args = TrainingArguments(
     output_dir=OUT_DIR,
     eval_strategy="epoch",
     save_strategy="epoch",
-    learning_rate=3e-5,
-    per_device_train_batch_size=16,
-    per_device_eval_batch_size=32,
-    num_train_epochs=3,
+    learning_rate=float(os.environ.get("MASKERA_TRAIN_LR", "3e-5")),
+    per_device_train_batch_size=int(os.environ.get("MASKERA_TRAIN_BATCH", "16")),
+    gradient_accumulation_steps=int(os.environ.get("MASKERA_TRAIN_GRAD_ACCUM", "1")),
+    per_device_eval_batch_size=int(os.environ.get("MASKERA_EVAL_BATCH", "32")),
+    num_train_epochs=float(os.environ.get("MASKERA_TRAIN_EPOCHS", "3")),
     weight_decay=0.01,
+    warmup_ratio=float(os.environ.get("MASKERA_WARMUP_RATIO", "0.0")),
+    lr_scheduler_type=os.environ.get("MASKERA_LR_SCHEDULER", "linear"),
+    label_smoothing_factor=float(os.environ.get("MASKERA_LABEL_SMOOTHING", "0.0")),
     logging_steps=50,
     save_total_limit=1,
     load_best_model_at_end=True,
     metric_for_best_model="f1",
     report_to="none",
     seed=SEED,
+    bf16=(PRECISION == "bf16" or (PRECISION == "auto" and _native_bf16())),
+    fp16=(PRECISION == "fp16" or (PRECISION == "auto" and device == "cuda" and not _native_bf16())),
+    dataloader_num_workers=int(os.environ.get("MASKERA_NUM_WORKERS", "0")),
 )
 
 trainer = Trainer(

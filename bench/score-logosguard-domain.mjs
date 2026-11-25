@@ -43,7 +43,7 @@ const maskeraPackage = JSON.parse(
 )
 const maskeraArtifactFile = resolve(
   repoRoot,
-  "apps/demo/public/models/maskera-sv-ner-v19/onnx/model_q4.onnx",
+  "apps/demo/public/models/maskera-sv-ner-v20/onnx/model_q4.onnx",
 )
 const maskeraArtifact = readFileSync(maskeraArtifactFile)
 
@@ -86,7 +86,7 @@ const logosGuard = scoreSystem(corpus, logosGuardPredictions, {
 
 const result = {
   schemaVersion: 1,
-  measuredAt: "2026-08-14",
+  measuredAt: "2026-11-25",
   corpus: {
     name: "Maskera privacy-safe Swedish domain regression corpus",
     sourceDirectory: "packages/ner/eval/domain-regression/corpus",
@@ -109,10 +109,10 @@ const result = {
   systems: {
     maskera: {
       name: "Maskera",
-      version: `${maskeraPackage.version} / maskera-sv-ner-v19`,
+      version: `${maskeraPackage.version} / maskera-sv-ner-v20`,
       surface: "Local JavaScript pipeline, q4 ONNX on CPU, general profile",
       artifact: {
-        model: "maskera-sv-ner-v19",
+        model: "maskera-sv-ner-v20",
         dtype: "q4",
         path: "onnx/model_q4.onnx",
         sha256: sha256(maskeraArtifact),
