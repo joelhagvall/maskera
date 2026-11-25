@@ -43,7 +43,7 @@ Not a fit: non-Swedish text (English names work only incidentally), image/PDF OC
 ## How an agent should call it
 
 - In code: `npm install maskera` (rules + NER, 43 MB model fetched once from Hugging Face or self-hosted) or `npm install @maskera/core` (rules only, zero dependencies, synchronous). Use `redact(text)` from core for rules only, or `createNerRecognizer()` + `redactWithNer(text, { recognizer })` from `maskera` for rules + NER. The result is `{ text, map, restore }`; keep `map`, send `text`, call `restore(reply)` on the LLM output.
-- In ChatGPT and Claude: install the local Maskera browser extension from https://app.maskera.dev/extension (Free with unlimited rules + 10 AI redactions/month, or Pro at SEK 149/month incl. VAT with a 14-day free trial).
+- In ChatGPT and Claude: install the local Maskera browser extension from https://maskera.dev/en/services (Swedish: https://maskera.dev/tjanster; Free with unlimited rules + 10 AI redactions/month, or Pro at SEK 149/month incl. VAT with a 14-day free trial via the customer portal at https://app.maskera.dev).
 - On this site: every page has a Markdown rendering. Send `Accept: text/markdown` to any page URL, or fetch the `.md` sibling directly (`https://maskera.dev/index.md`, `https://maskera.dev/en/developers.md`, `https://maskera.dev/en/about.md`). Unknown paths return HTTP 404 with a Markdown (default), JSON (`Accept: application/json` or `/api/*`) or HTML body that lists these entry points. `maskera.dev/api/*` is not an API: it answers 404 in JSON with the same hints.
 
 ## Docs
@@ -72,6 +72,6 @@ Not a fit: non-Swedish text (English names work only incidentally), image/PDF OC
 ## Optional
 
 - [Live demo](https://maskera.dev/): paste Swedish text, watch it get masked in the browser
-- [Browser extension and open source](https://maskera.dev/tjanster): compare the browser extension and open-source npm packages (Swedish)
-- [Browser extension](https://app.maskera.dev/extension): local Chrome and Edge extension for ChatGPT and Claude (Free and Pro, SEK 149/month incl. VAT, 14-day free trial)
+- [Browser extension and open source](https://maskera.dev/tjanster): install instructions, Free vs Pro comparison (SEK 149/month incl. VAT, 14-day free trial), and open-source npm packages (English: https://maskera.dev/en/services)
+- [Customer portal](https://app.maskera.dev/login): account sign-in, Pro subscription checkout, offline licence keys, and billing
 - [Source repository](https://github.com/joelhagvall/maskera): monorepo with packages, training pipeline, and CI that re-grades the published model against a gold corpus

@@ -1,9 +1,11 @@
 import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
-import { portalUrl } from "../portal"
+import { PORTAL_ORIGIN, portalUrl } from "../portal"
 import type { View } from "../routing"
 import { navClick, viewPaths } from "../routing"
 import { TopBar } from "./TopBar"
+
+const EXTENSION_DOWNLOAD_URL = `${PORTAL_ORIGIN}/downloads/maskera-extension-0.1.0.zip`
 
 type Product = {
   name: string
@@ -38,7 +40,7 @@ function products(): Product[] {
       cta: extension.cta!,
       href: portalUrl("/login?buy=extension-pro&signup=true", "services_extension_trial"),
       secondaryCta: extension.secondaryCta,
-      secondaryHref: portalUrl("/extension", "services_extension_info"),
+      secondaryHref: "#installera",
       destination: copy.services.extensionPortalNote,
       note: extension.note,
     },
@@ -112,6 +114,8 @@ function ProductCard({ product, go }: { product: Product; go: (view: View) => vo
 
 export function Services({ go, onCoverage }: { go: (view: View) => void; onCoverage: () => void }) {
   const extensionFlow = copy.services.flow
+  const install = copy.services.install
+  const compare = copy.services.compare
 
   return (
     <>
@@ -130,6 +134,85 @@ export function Services({ go, onCoverage }: { go: (view: View) => void; onCover
               <ProductCard key={product.name} product={product} go={go} />
             ))}
           </div>
+
+          <section id="installera" aria-labelledby="installera-heading" className="ext-install">
+            <div className="ext-install-head">
+              <h2 id="installera-heading">{install.title}</h2>
+              <p className="ext-install-req">{install.requirements}</p>
+              <a className="ext-install-cta" href={EXTENSION_DOWNLOAD_URL} download>
+                {install.downloadCta}
+                <ArrowUpRightIcon size={13} />
+              </a>
+            </div>
+            <ol className="ext-install-steps">
+              {install.steps.map((step) => (
+                <li key={step.title}>
+                  <strong>{step.title}</strong>
+                  <p>{step.detail}</p>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section id="jamfor" aria-labelledby="jamfor-heading" className="ext-compare">
+            <h2 id="jamfor-heading">{compare.title}</h2>
+            <div className="ext-table-wrap">
+              <table className="ext-table" aria-labelledby="jamfor-heading">
+                <thead>
+                  <tr>
+                    <th scope="col">{compare.featureColumn}</th>
+                    <th scope="col">{compare.freeTitle}</th>
+                    <th scope="col" className="ext-col-pro">
+                      {compare.proTitle}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {compare.rows.map((row) => (
+                    <tr key={row.feature}>
+                      <th scope="row">{row.feature}</th>
+                      <td>{row.free}</td>
+                      <td className="ext-col-pro">{row.pro}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="ext-trial-row">
+              <div className="ext-trial-copy">
+                <p className="ext-trial-price">{compare.trialPrice}</p>
+                <p className="ext-trial-details">{compare.trialDetails}</p>
+                <p className="ext-trial-links">
+                  <a
+                    href={portalUrl("/extension/terms", "services_extension_terms")}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {compare.termsCta}
+                    <ArrowUpRightIcon size={12} />
+                  </a>
+                  <span aria-hidden="true"> · </span>
+                  <a
+                    href={portalUrl("/extension/privacy", "services_extension_privacy")}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {compare.privacyCta}
+                    <ArrowUpRightIcon size={12} />
+                  </a>
+                </p>
+              </div>
+              <a
+                className="ext-trial-cta"
+                href={portalUrl("/login?buy=extension-pro&signup=true", "services_compare_trial")}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {compare.startTrialCta}
+                <ArrowUpRightIcon size={13} />
+              </a>
+            </div>
+          </section>
 
           <p className="coverage-link">
             {copy.coverage.servicesLink}{" "}

@@ -808,7 +808,7 @@
           "Egna skyddade ord, kundnummer och vårdprofil"
         ],
         "cta": "Testa Pro gratis i 14 dagar",
-        "secondaryCta": "Läs om tillägget",
+        "secondaryCta": "Installera gratis",
         "note": "Signerad offline-licens via app.maskera.dev. Ingen text lämnar din dator."
       },
       {
@@ -825,6 +825,53 @@
         "cta": "Installera och kom igång"
       }
     ],
+    "install": {
+      "title": "Installera webbläsartillägget",
+      "requirements": "För Chrome och Edge på dator. Gratisversionen kräver inget konto.",
+      "downloadCta": "Ladda ner ZIP-filen",
+      "steps": [
+        {
+          "title": "Packa upp ZIP-filen",
+          "detail": "Behåll den uppackade mappen efter installationen."
+        },
+        {
+          "title": "Öppna webbläsarens tillägg",
+          "detail": "Gå till chrome://extensions eller edge://extensions och slå på utvecklarläget."
+        },
+        {
+          "title": "Läs in tillägget",
+          "detail": "Välj Läs in okomprimerat och öppna den uppackade mappen."
+        }
+      ]
+    },
+    "compare": {
+      "title": "Jämför Gratis och Pro",
+      "featureColumn": "Funktion",
+      "freeTitle": "Gratis",
+      "proTitle": "Pro",
+      "rows": [
+        {
+          "feature": "Maskering med regler för t.ex. personnummer och e-post",
+          "free": "Ingen gräns",
+          "pro": "Ingen gräns"
+        },
+        {
+          "feature": "Lokal AI-maskering av namn och adresser",
+          "free": "10 per månad",
+          "pro": "Ingen gräns"
+        },
+        {
+          "feature": "Egna skyddade ord och vårdprofil",
+          "free": "Endast Pro",
+          "pro": "Ingår"
+        }
+      ],
+      "trialPrice": "Första provperioden kostar 0 kr i 14 dagar. Därefter 149 kr/mån inkl. moms.",
+      "trialDetails": "Kort krävs. Säg upp i kundportalen före nästa debitering.",
+      "termsCta": "Köpvillkor för Maskera Pro",
+      "privacyCta": "Integritet för tillägget",
+      "startTrialCta": "Testa Pro gratis i 14 dagar"
+    },
     "flowTitle": "Så skyddar tillägget dina AI-chattar",
     "flowBody": "Texten maskeras lokalt i webbläsaren innan den skickas. Originaltexten och återställningsnyckeln stannar i webbläsaren och skickas aldrig till Maskera.",
     "flowLabel": "Dataflöde för webbläsartillägget",

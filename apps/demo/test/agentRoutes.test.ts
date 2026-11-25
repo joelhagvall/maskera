@@ -124,7 +124,8 @@ describe("llms.txt", () => {
   })
 
   it("points at the browser extension, the Markdown renderings and the about page", () => {
-    expect(llms).toContain("https://app.maskera.dev/extension")
+    expect(llms).toContain("https://maskera.dev/tjanster")
+    expect(llms).toContain("https://app.maskera.dev")
     expect(llms).not.toContain("Gateway")
     expect(llms).toContain("Accept: text/markdown")
     expect(llms).toContain("https://maskera.dev/index.md")

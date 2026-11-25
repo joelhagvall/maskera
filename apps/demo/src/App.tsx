@@ -146,7 +146,7 @@ export function App({ initialView }: { initialView?: View }) {
             {Object.keys(ner.result.map).length > 0 && (
               <RestoreDemo key={active.id} result={ner.result} scenarioId={active.id} />
             )}
-            <ExtensionPromo />
+            <ExtensionPromo go={go} />
           </main>
         </>
       )}

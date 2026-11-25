@@ -808,7 +808,7 @@
           "Custom protected words, case numbers and clinical profile"
         ],
         "cta": "Try Pro free for 14 days",
-        "secondaryCta": "Learn about the extension",
+        "secondaryCta": "Install for free",
         "note": "Signed offline licence from app.maskera.dev. No text leaves your device."
       },
       {
@@ -825,6 +825,53 @@
         "cta": "Install and get started"
       }
     ],
+    "install": {
+      "title": "Install the browser extension",
+      "requirements": "For desktop Chrome and Edge. The free version requires no account.",
+      "downloadCta": "Download the ZIP file",
+      "steps": [
+        {
+          "title": "Unzip the download",
+          "detail": "Keep the extracted folder after installation."
+        },
+        {
+          "title": "Open your browser's extensions",
+          "detail": "Go to chrome://extensions or edge://extensions and turn on Developer mode."
+        },
+        {
+          "title": "Load the extension",
+          "detail": "Choose Load unpacked and select the extracted folder."
+        }
+      ]
+    },
+    "compare": {
+      "title": "Compare Free and Pro",
+      "featureColumn": "Feature",
+      "freeTitle": "Free",
+      "proTitle": "Pro",
+      "rows": [
+        {
+          "feature": "Rule-based masking for personal IDs and email",
+          "free": "Unlimited",
+          "pro": "Unlimited"
+        },
+        {
+          "feature": "Local AI masking for names and addresses",
+          "free": "10 per month",
+          "pro": "Unlimited"
+        },
+        {
+          "feature": "Custom protected words and clinical profile",
+          "free": "Pro only",
+          "pro": "Included"
+        }
+      ],
+      "trialPrice": "Your first 14 days of Pro cost SEK 0. Then SEK 149/month including VAT.",
+      "trialDetails": "A card is required. Cancel in the customer portal before the next charge.",
+      "termsCta": "Maskera Pro terms of sale",
+      "privacyCta": "Extension privacy",
+      "startTrialCta": "Try Pro free for 14 days"
+    },
     "flowTitle": "How the extension protects your AI chats",
     "flowBody": "Text is masked locally in your browser before it is sent. The original text and restoration key stay in your browser and are never sent to Maskera.",
     "flowLabel": "Browser extension data flow",

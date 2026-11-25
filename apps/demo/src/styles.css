@@ -2048,6 +2048,155 @@ html[data-theme="dark"] .tok-f {
   background: var(--gray-100);
   border-radius: var(--radius-sm);
 }
+/* Extension install card + Free vs Pro comparison table on /tjanster. */
+.ext-install {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 28px;
+  margin-top: 32px;
+  padding: 24px;
+  background: var(--gray-100);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.prose .ext-install-head h2 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+.prose .ext-install-req {
+  margin: 8px 0 16px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.prose .ext-install-cta,
+.prose .ext-trial-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 9px 15px;
+  font: 500 13.5px var(--sans);
+  color: var(--bg);
+  background: var(--fg);
+  border: 1px solid var(--fg);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.prose .ext-install-cta:hover,
+.prose .ext-trial-cta:hover {
+  opacity: 0.85;
+}
+.prose .ext-install-steps {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 14px;
+  font-size: 14px;
+}
+.prose .ext-install-steps li {
+  margin: 0;
+  padding-left: 4px;
+}
+.prose .ext-install-steps strong {
+  display: block;
+  font-weight: 600;
+  color: var(--fg);
+}
+.prose .ext-install-steps p {
+  margin: 3px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.ext-compare {
+  margin-top: 40px;
+}
+.ext-table-wrap {
+  margin-top: 16px;
+  overflow-x: auto;
+}
+.ext-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+.ext-table th,
+.ext-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.ext-table thead th {
+  font-weight: 600;
+  color: var(--fg);
+}
+.ext-table thead th:first-child {
+  font-weight: 500;
+  color: var(--muted);
+  width: 48%;
+}
+.ext-table tbody th {
+  font-weight: 500;
+  color: var(--fg);
+}
+.ext-table tbody td {
+  color: var(--muted);
+}
+.ext-table .ext-col-pro {
+  background: var(--gray-100);
+  color: var(--fg);
+}
+.ext-trial-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 18px;
+}
+.ext-trial-copy {
+  max-width: 56ch;
+}
+.prose .ext-trial-price {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.prose .ext-trial-details {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.prose .ext-trial-links {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.prose .ext-trial-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+@media (max-width: 720px) {
+  .ext-install {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 18px;
+  }
+  .ext-trial-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .prose .ext-install-cta,
+  .prose .ext-trial-cta {
+    min-height: 44px;
+  }
+}
+
 .implementation-help {
   display: flex;
   align-items: center;

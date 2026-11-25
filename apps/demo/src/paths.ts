@@ -70,6 +70,8 @@ export const ALIAS_REDIRECTS: Readonly<Record<string, string>> = {
   "/contact": "/en/about#kontakt",
   "/privacy": "/en/privacy-policy",
   "/docs": "/en/developers",
+  "/tillagg": "/tjanster",
+  "/extension": "/en/services",
 }
 
 /** Machine-readable files served from the site root (public/ or build output). */

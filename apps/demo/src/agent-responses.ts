@@ -10,7 +10,7 @@ const LINKS = {
   sitemap: `${SITE_ORIGIN}/sitemap.xml`,
   docs: `${SITE_ORIGIN}/en/developers`,
   docsMarkdown: `${SITE_ORIGIN}/en/developers.md`,
-  extension: "https://app.maskera.dev/extension",
+  extension: `${SITE_ORIGIN}/en/services`,
   about: `${SITE_ORIGIN}/en/about`,
   source: "https://github.com/joelhagvall/maskera",
 } as const

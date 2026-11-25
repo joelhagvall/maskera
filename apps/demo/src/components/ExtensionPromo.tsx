@@ -1,8 +1,9 @@
 import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
 import { portalUrl } from "../portal"
+import { navClick, type View, viewPaths } from "../routing"
 
-export function ExtensionPromo() {
+export function ExtensionPromo({ go }: { go: (view: View) => void }) {
   return (
     <section className="extension-band" aria-labelledby="extension-promo-title">
       <div className="extension-band-copy">
@@ -24,12 +25,10 @@ export function ExtensionPromo() {
         </a>
         <a
           className="extension-cta extension-cta-secondary"
-          href={portalUrl("/extension", "demo_extension_info")}
-          target="_blank"
-          rel="noreferrer"
+          href={viewPaths.services}
+          onClick={navClick(() => go("services"))}
         >
           {copy.extensionPromo.secondaryCta}
-          <ArrowUpRightIcon size={13} />
         </a>
       </div>
     </section>

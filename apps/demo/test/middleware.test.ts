@@ -116,7 +116,7 @@ describe("agent-friendly 404s", () => {
       for (const link of [
         "https://maskera.dev/llms.txt",
         "https://maskera.dev/sitemap.xml",
-        "https://app.maskera.dev/extension",
+        "https://maskera.dev/en/services",
         "https://maskera.dev/en/developers",
         "https://maskera.dev/en/about",
         "Accept: text/markdown",
@@ -141,7 +141,7 @@ describe("agent-friendly 404s", () => {
       expect(body.error.status).toBe(404)
       expect(body.error.message).toContain(path)
       expect(body.error.hint).toContain("no HTTP masking API")
-      expect(body.error.links.extension).toBe("https://app.maskera.dev/extension")
+      expect(body.error.links.extension).toBe("https://maskera.dev/en/services")
       expect(body.error.links.llms).toBe("https://maskera.dev/llms.txt")
     }
   })

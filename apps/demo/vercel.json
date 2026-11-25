@@ -25,6 +25,16 @@
       "source": "/docs",
       "destination": "/en/developers",
       "permanent": true
+    },
+    {
+      "source": "/tillagg",
+      "destination": "/tjanster",
+      "permanent": true
+    },
+    {
+      "source": "/extension",
+      "destination": "/en/services",
+      "permanent": true
     }
   ],
   "rewrites": [
