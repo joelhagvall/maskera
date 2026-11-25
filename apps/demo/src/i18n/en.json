@@ -215,7 +215,7 @@
     "heading": "What is masked?",
     "linkCta": "See exactly what is masked.",
     "developersLink": "The model categories and default rule-engine detectors are listed category by category.",
-    "servicesLink": "The browser extension uses the same Swedish model and base rules, with custom protected words and a clinical profile in Pro.",
+    "servicesLink": "The browser extension uses the same Swedish model and base rules, with custom protected words in Pro.",
     "lede": "The complete maskera npm package and the browser extension combine fixed rules with the Swedish AI model. Their default choices differ as shown below.",
     "groups": [
       {
@@ -804,8 +804,8 @@
         "points": [
           "All masking runs locally in Chrome and Edge",
           "Unlimited Swedish AI masking in Pro",
-          "Restores placeholders automatically in AI replies",
-          "Custom protected words, case numbers and clinical profile"
+          "Restores placeholders in AI replies with one click",
+          "Custom protected words, case numbers and project names"
         ],
         "cta": "Try Pro free for 14 days",
         "secondaryCta": "Install for free",
@@ -861,7 +861,7 @@
           "pro": "Unlimited"
         },
         {
-          "feature": "Custom protected words and clinical profile",
+          "feature": "Custom protected words (case IDs, projects, etc.)",
           "free": "Pro only",
           "pro": "Included"
         }

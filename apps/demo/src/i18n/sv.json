@@ -215,7 +215,7 @@
     "heading": "Vad maskeras?",
     "linkCta": "Se exakt vad som maskeras.",
     "developersLink": "Modellens kategorier och regelmotorns standarddetektorer finns samlade kategori för kategori.",
-    "servicesLink": "Webbläsartillägget använder samma svenska modell och grundregler, med egna skyddade ord och vårdprofil i Pro.",
+    "servicesLink": "Webbläsartillägget använder samma svenska modell och grundregler, med egna skyddade ord i Pro.",
     "lede": "Det fullständiga npm-paketet maskera och webbläsartillägget kombinerar fasta regler med den svenska AI-modellen. Skillnaderna i standardval framgår nedan.",
     "groups": [
       {
@@ -804,8 +804,8 @@
         "points": [
           "All maskering körs lokalt i Chrome och Edge",
           "Obegränsad svensk AI-maskering i Pro",
-          "Återställer platshållare automatiskt i AI-svaren",
-          "Egna skyddade ord, kundnummer och vårdprofil"
+          "Återställer platshållare i AI-svaren med ett klick",
+          "Egna skyddade ord, kundnummer och projektnamn"
         ],
         "cta": "Testa Pro gratis i 14 dagar",
         "secondaryCta": "Installera gratis",
@@ -861,7 +861,7 @@
           "pro": "Ingen gräns"
         },
         {
-          "feature": "Egna skyddade ord och vårdprofil",
+          "feature": "Egna skyddade ord (kundnummer, projekt, m.m.)",
           "free": "Endast Pro",
           "pro": "Ingår"
         }
