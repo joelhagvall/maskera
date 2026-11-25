@@ -8,7 +8,7 @@ import { TopBar } from "./TopBar"
 const ADVISORY_URL = GITHUB + "/security/advisories/new"
 const ISSUES_URL = GITHUB + "/issues"
 const PRODUCTION_URL = GITHUB + "/blob/main/docs/PRODUCTION.md"
-const GATEWAY_URL = "https://app.maskera.dev/gateway"
+const EXTENSION_PRIVACY_URL = "https://app.maskera.dev/extension/privacy"
 
 export function Security({ go }: { go: (view: View) => void }) {
   return (
@@ -68,9 +68,9 @@ export function Security({ go }: { go: (view: View) => void }) {
           </p>
 
           <p className="prose-foot">
-            {copy.security.gatewayBody}{" "}
-            <a href={GATEWAY_URL}>
-              {copy.security.gatewayCta}
+            {copy.security.extensionBody}{" "}
+            <a href={EXTENSION_PRIVACY_URL}>
+              {copy.security.extensionCta}
               <ArrowUpRightIcon size={13} />
             </a>
           </p>

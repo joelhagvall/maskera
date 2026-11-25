@@ -79,7 +79,6 @@ describe("pass-through", () => {
     "/robots.txt",
     "/whitepaper.pdf",
     "/benchmark-release.json",
-    "/openapi.json",
     "/favicon.ico",
     "/og.png",
     "/theme-init.js",
@@ -103,7 +102,7 @@ describe("pass-through", () => {
 })
 
 describe("agent-friendly 404s", () => {
-  it("defaults to a Markdown body that points at llms.txt, the sitemap, docs and the OpenAPI contract", async () => {
+  it("defaults to a Markdown body that points at llms.txt, the sitemap, the browser extension and docs", async () => {
     for (const accept of [null, "*/*", "text/markdown"]) {
       const response = call("/some-path-that-does-not-exist", { accept })
       expect(response.status).toBe(404)
@@ -117,8 +116,8 @@ describe("agent-friendly 404s", () => {
       for (const link of [
         "https://maskera.dev/llms.txt",
         "https://maskera.dev/sitemap.xml",
+        "https://app.maskera.dev/extension",
         "https://maskera.dev/en/developers",
-        "https://maskera.dev/openapi.json",
         "https://maskera.dev/en/about",
         "Accept: text/markdown",
       ]) {
@@ -142,7 +141,7 @@ describe("agent-friendly 404s", () => {
       expect(body.error.status).toBe(404)
       expect(body.error.message).toContain(path)
       expect(body.error.hint).toContain("no HTTP masking API")
-      expect(body.error.links.openapi).toBe("https://maskera.dev/openapi.json")
+      expect(body.error.links.extension).toBe("https://app.maskera.dev/extension")
       expect(body.error.links.llms).toBe("https://maskera.dev/llms.txt")
     }
   })

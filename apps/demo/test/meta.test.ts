@@ -69,15 +69,12 @@ describe("renderRouteHtml", () => {
     }
   })
 
-  it("advertises the Markdown alternate and the OpenAPI service description on every shell", () => {
+  it("advertises the Markdown alternate on every shell", () => {
     for (const view of routeHtmlViews) {
       for (const locale of ["sv", "en"] as const) {
         const html = renderRouteHtml(view, locale)
         expect(html).toContain(
           `<link rel="alternate" type="text/markdown" href="${new URL(viewUrl(view, locale)).pathname}.md" />`,
-        )
-        expect(html).toContain(
-          '<link rel="service-desc" type="application/vnd.oai.openapi+json" href="/openapi.json" />',
         )
       }
     }

@@ -5,21 +5,18 @@
 
 import { SITE_ORIGIN } from "./paths"
 
-export const OPENAPI_PATH = "/openapi.json"
-export const OPENAPI_CANONICAL = "https://app.maskera.dev/gateway/openapi.json"
-
 const LINKS = {
   llms: `${SITE_ORIGIN}/llms.txt`,
   sitemap: `${SITE_ORIGIN}/sitemap.xml`,
   docs: `${SITE_ORIGIN}/en/developers`,
   docsMarkdown: `${SITE_ORIGIN}/en/developers.md`,
-  openapi: `${SITE_ORIGIN}${OPENAPI_PATH}`,
+  extension: "https://app.maskera.dev/extension",
   about: `${SITE_ORIGIN}/en/about`,
   source: "https://github.com/joelhagvall/maskera",
 } as const
 
 const NO_API_HINT =
-  "maskera.dev hosts no HTTP masking API: masking runs in your own browser, Node.js process or self-hosted Maskera Gateway. Use the npm packages (maskera, @maskera/core) or Gateway, whose API is described by /openapi.json."
+  "maskera.dev hosts no HTTP masking API: masking runs locally in your browser, with the Maskera browser extension for Chrome and Edge, or in your own Node.js process via the npm packages (maskera, @maskera/core)."
 
 function escapeHtml(value: string): string {
   return value
@@ -45,7 +42,7 @@ export function notFoundMarkdown(pathname: string): string {
   const path = displayPath(pathname)
   return `# 404: nothing at ${path} on maskera.dev
 
-maskera.dev is the public site for Maskera: Swedish-first, client-side PII redaction for AI apps (open-source npm packages plus the self-hosted Maskera Gateway). The path \`${path}\` does not exist here.
+maskera.dev is the public site for Maskera: Swedish-first, client-side PII redaction for AI apps (open-source npm packages plus the local browser extension for ChatGPT and Claude). The path \`${path}\` does not exist here.
 
 ${NO_API_HINT}
 
@@ -53,8 +50,8 @@ Where to look next:
 
 - Start here: ${LINKS.llms} (what Maskera is, when to use it, how to call it)
 - Sitemap: ${LINKS.sitemap}
+- Browser extension: ${LINKS.extension}
 - Developer docs: ${LINKS.docs} (Swedish: ${SITE_ORIGIN}/utvecklare), Markdown: ${LINKS.docsMarkdown}
-- Gateway OpenAPI: ${LINKS.openapi} (redirects to ${OPENAPI_CANONICAL})
 - About and contact: ${LINKS.about}
 - Source code: ${LINKS.source}
 
@@ -109,7 +106,7 @@ const STRINGS: Record<"sv" | "en", Strings> = {
   sv: {
     lang: "sv",
     title: "Sidan finns inte",
-    lede: "Det finns ingen sida på den här adressen. maskera.dev maskerar svenska personuppgifter innan text når AI, direkt i webbläsaren eller på egna servrar.",
+    lede: "Det finns ingen sida på den här adressen. maskera.dev maskerar svenska personuppgifter innan text når AI, direkt i webbläsaren eller i egen kod.",
     home: "Till startsidan",
     docs: "För utvecklare",
     about: "Om Maskera och kontakt",
@@ -118,7 +115,7 @@ const STRINGS: Record<"sv" | "en", Strings> = {
   en: {
     lang: "en",
     title: "Page not found",
-    lede: "There is no page at this address. maskera.dev masks Swedish personal data before text reaches AI, in the browser or on your own servers.",
+    lede: "There is no page at this address. maskera.dev masks Swedish personal data before text reaches AI, directly in the browser or in your own code.",
     home: "Go to the start page",
     docs: "For developers",
     about: "About Maskera and contact",

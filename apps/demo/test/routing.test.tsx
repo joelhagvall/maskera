@@ -132,20 +132,22 @@ describe("useRoute: document.title", () => {
       window.dispatchEvent(new PopStateEvent("popstate"))
     })
     expect(result.current.view).toBe("services")
-    expect(document.title).toBe("för företag: PII-maskering i er egen miljö · maskera")
+    expect(document.title).toBe(
+      "webbläsartillägg och öppen källkod: lokal svensk PII-maskering · maskera",
+    )
     unmount()
   })
 })
 
 describe("useRoute: route metadata", () => {
-  it("positions the home page as both browser-based and self-hosted", () => {
+  it("positions the home page as local browser, extension and npm masking", () => {
     const indexSource = readFileSync(resolve(process.cwd(), "index.html"), "utf8")
 
     expect(viewMeta.demo.description).toContain("webbläsaren")
-    expect(viewMeta.demo.description).toContain("egna servrar")
+    expect(viewMeta.demo.description).toContain("tillägget")
     expect(viewMeta.demo.description).toContain("Endast maskerad text")
     expect(indexSource).toContain(viewMeta.demo.description)
-    expect(indexSource).toContain("Skydda originaldata när ni använder AI")
+    expect(indexSource).toContain("Skydda personuppgifter när du använder AI")
   })
 
   it("sets canonical, description and social metadata on a direct sub-page landing", () => {
@@ -172,11 +174,11 @@ describe("useRoute: route metadata", () => {
       "https://maskera.dev/tjanster",
     )
     expect(document.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.content).toBe(
-      "för företag: PII-maskering i er egen miljö · maskera",
+      "webbläsartillägg och öppen källkod: lokal svensk PII-maskering · maskera",
     )
     expect(
       document.querySelector<HTMLMetaElement>('meta[name="twitter:description"]')?.content,
-    ).toContain("Maskera Gateway")
+    ).toContain("webbläsartillägg")
     unmount()
   })
 })

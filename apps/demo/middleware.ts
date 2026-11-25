@@ -12,7 +12,7 @@
 // 2. Real 404s with a useful body: unknown extensionless paths get a 404 in
 //    Markdown (default), JSON (Accept: application/json, or anything under
 //    /api/) or HTML (browsers), each pointing at llms.txt, the sitemap, the
-//    docs and the OpenAPI contract instead of Vercel's bare NOT_FOUND text.
+//    browser extension and the docs instead of Vercel's bare NOT_FOUND text.
 // 3. Everything with a file extension (assets, fonts, models, the .md files
 //    themselves, llms.txt, the PDF) and every vercel.json redirect alias
 //    passes straight through.

@@ -1,34 +1,14 @@
 import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
+import { portalUrl } from "../portal"
 import type { View } from "../routing"
 import { navClick, viewPaths } from "../routing"
 import { TopBar } from "./TopBar"
 
-const BOOKING_EMAIL = "hej@maskera.dev"
-const PORTAL = "https://app.maskera.dev"
-
-function bookingEmail(subjectLine: string) {
-  const subject = encodeURIComponent(subjectLine)
-  return `mailto:${BOOKING_EMAIL}?subject=${subject}`
-}
-
-function portal(path: string, content: string) {
-  const url = new URL(path, PORTAL)
-  url.searchParams.set("utm_source", "maskera_dev")
-  url.searchParams.set("utm_medium", "referral")
-  url.searchParams.set("utm_content", content)
-  return url.href
-}
-
 type Product = {
   name: string
   price: string
-  /** The low-commitment entry offer and the card's PRIMARY price line: the
-      pilot is the realistic first purchase (same narrative as
-      app.maskera.dev/pricing), so it renders big and the annual license
-      becomes the secondary line under it. Terms carry the credit condition
-      in quieter type. */
-  pilot?: { price: string; terms: string }
+  subPrice?: { label: string; terms: string }
   tagline: string
   points: string[]
   cta: string
@@ -42,31 +22,32 @@ type Product = {
 }
 
 function products(): Product[] {
+  const [extension, openSource] = copy.services.products
+
   return [
-    // Gateway is featured: it is the product on sale today.
     {
-      name: copy.services.products[0].name,
-      price: copy.services.products[0].price,
-      pilot: {
-        price: copy.services.products[0].pilotPrice!,
-        terms: copy.services.products[0].pilotTerms!,
+      name: extension.name,
+      price: extension.price,
+      subPrice: {
+        label: extension.freeLine!,
+        terms: extension.trialTerms!,
       },
-      tagline: copy.services.products[0].tagline,
+      tagline: extension.tagline,
       featured: true,
-      points: copy.services.products[0].points,
-      cta: copy.services.gatewayInterestCta,
-      href: bookingEmail(copy.services.gatewayEmailSubject),
-      secondaryCta: copy.services.gatewayDocsCta,
-      secondaryHref: portal("/gateway", "business_gateway"),
-      destination: copy.services.gatewayContactNote,
-      note: copy.services.products[0].note,
+      points: extension.points,
+      cta: extension.cta!,
+      href: portalUrl("/login?buy=extension-pro&signup=true", "services_extension_trial"),
+      secondaryCta: extension.secondaryCta,
+      secondaryHref: portalUrl("/extension", "services_extension_info"),
+      destination: copy.services.extensionPortalNote,
+      note: extension.note,
     },
     {
-      name: copy.services.products[1].name,
-      price: copy.services.products[1].price,
-      tagline: copy.services.products[1].tagline,
-      points: copy.services.products[1].points,
-      cta: copy.services.products[1].cta!,
+      name: openSource.name,
+      price: openSource.price,
+      tagline: openSource.tagline,
+      points: openSource.points,
+      cta: openSource.cta!,
       href: viewPaths.dev,
       view: "dev",
     },
@@ -75,27 +56,19 @@ function products(): Product[] {
 
 function ProductCard({ product, go }: { product: Product; go: (view: View) => void }) {
   const onClick = product.view ? navClick(() => go(product.view as View)) : undefined
-  // Gateway interest goes directly to email; only the secondary docs action
-  // leaves for the customer portal, marked by the outbound arrow.
   const external = product.href.startsWith("http")
   const secondaryExternal = product.secondaryHref?.startsWith("http") ?? false
 
   return (
     <section className={`pkg${product.featured ? " featured" : ""}`}>
       <h2 className="pkg-name">{product.name}</h2>
-      {product.pilot ? (
-        <>
-          <p className="pkg-price">{product.pilot.price}</p>
-          <p className="pkg-pilot">
-            <span className="pkg-annual">
-              {copy.services.products[0].annualPrefix} {product.price}
-            </span>
-            <span className="pkg-pilot-terms">{product.pilot.terms}</span>
-          </p>
-        </>
-      ) : (
-        <p className="pkg-price">{product.price}</p>
-      )}
+      <p className="pkg-price">{product.price}</p>
+      {product.subPrice ? (
+        <p className="pkg-pilot">
+          <span className="pkg-annual">{product.subPrice.label}</span>
+          <span className="pkg-pilot-terms">{product.subPrice.terms}</span>
+        </p>
+      ) : null}
       <p className="pkg-tag">{product.tagline}</p>
       <ul>
         {product.points.map((point) => (
@@ -126,19 +99,19 @@ function ProductCard({ product, go }: { product: Product; go: (view: View) => vo
           </a>
         ) : null}
       </div>
-      {/* Ghost copy keeps both cards' CTA rows on one baseline. */}
+      {/* Ghost copy keeps every card's CTA row on one baseline. */}
       <p
         className={`pkg-dest${product.destination ? "" : " pkg-dest-ghost"}`}
         aria-hidden={!product.destination}
       >
-        {product.destination ?? copy.services.gatewayContactNote}
+        {product.destination ?? copy.services.extensionPortalNote}
       </p>
     </section>
   )
 }
 
 export function Services({ go, onCoverage }: { go: (view: View) => void; onCoverage: () => void }) {
-  const gatewayFlow = copy.services.flow
+  const extensionFlow = copy.services.flow
 
   return (
     <>
@@ -170,7 +143,7 @@ export function Services({ go, onCoverage }: { go: (view: View) => void; onCover
           <div className="flow-band">
             <p className="flow-band-label">{copy.services.flowLabel}</p>
             <div className="flow">
-              {gatewayFlow.map((step, index) => (
+              {extensionFlow.map((step, index) => (
                 <span className="flow-item" key={step}>
                   {index > 0 ? (
                     <span className="flow-arrow" aria-hidden="true">

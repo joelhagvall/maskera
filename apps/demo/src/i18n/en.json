@@ -6,9 +6,9 @@
     "browserLead": "All masking happens",
     "browserEmphasis": "directly in your browser",
     "browserPrivacy": "Your text and the key containing the original data never leave your device.",
-    "localProduction": "For companies, the same masking runs in your own environment. No text is sent to Maskera; the original data stays with you and only masked text is forwarded to the AI service.",
-    "localProductionMobile": "Companies run the masking in their own environment. No text is sent to Maskera.",
-    "servicesCta": "How it works for companies",
+    "localProduction": "Want to use the same local masking directly in ChatGPT and Claude? The browser extension masks your text before you send and restores the reply on screen.",
+    "localProductionMobile": "Mask directly in ChatGPT and Claude with the browser extension. Everything runs locally.",
+    "servicesCta": "Browser extension and open source",
     "servicesCtaMobile": "Learn more"
   },
   "demo": {
@@ -215,8 +215,8 @@
     "heading": "What is masked?",
     "linkCta": "See exactly what is masked.",
     "developersLink": "The model categories and default rule-engine detectors are listed category by category.",
-    "servicesLink": "Gateway uses the same Swedish model and base rules. Vehicle registration numbers are also included in Gateway's default policy.",
-    "lede": "The complete maskera npm package and Gateway combine fixed rules with the Swedish AI model. Their default choices differ as shown below.",
+    "servicesLink": "The browser extension uses the same Swedish model and base rules, with custom protected words and a clinical profile in Pro.",
+    "lede": "The complete maskera npm package and the browser extension combine fixed rules with the Swedish AI model. Their default choices differ as shown below.",
     "groups": [
       {
         "id": "model",
@@ -264,7 +264,7 @@
     "notes": [
       {
         "title": "Vehicle registration numbers",
-        "text": "The ready-made rule is enabled in the demo and Gateway's default policy. It is optional in the npm package defaults because the same format can also be a booking or case number."
+        "text": "The ready-made rule is enabled in the demo. It is optional in the npm package defaults because the same format can also be a booking or case number."
       },
       {
         "title": "Custom formats",
@@ -278,7 +278,7 @@
   },
   "navigation": {
     "developers": "For developers",
-    "services": "For companies",
+    "services": "Browser extension",
     "accuracy": "Accuracy",
     "security": "Security",
     "transparency": "Privacy & transparency",
@@ -659,8 +659,8 @@
     "productionTitle": "Production operation",
     "productionBody": "The production guide covers secure integration, fallback to rules, logging, self-hosting, domain-specific test corpora and the production checklist. Maskera is a data-minimisation layer, not a guarantee of compliance or complete detection.",
     "productionCta": "Read the production guide",
-    "gatewayBody": "This page covers the npm packages and open demo. Gateway also has its own authentication, delivery and operating model, documented in the customer portal.",
-    "gatewayCta": "Learn about Maskera Gateway"
+    "extensionBody": "This page covers the npm packages and open demo. The browser extension's local data handling and licence model are documented in the customer portal.",
+    "extensionCta": "Read the extension privacy policy"
   },
   "transparency": {
     "metaTitle": "privacy & transparency: what leaves the device · maskera",
@@ -789,35 +789,33 @@
     "updated": "Last updated 21 August 2026."
   },
   "services": {
-    "title": "Maskera for companies",
-    "lede": "Choose Gateway for a signed enterprise delivery with support in your own environment. Choose the npm packages if you want to build and maintain the integration yourself.",
-    "sublede": "Gateway is available as a 60-day pilot or annual licence. You start with a technical review.",
-    "gatewayInterestCta": "Book a technical review",
-    "gatewayEmailSubject": "Technical review of Maskera Gateway",
-    "gatewayDocsCta": "Learn about Gateway",
-    "gatewayContactNote": "Opens a new email to hej@maskera.dev",
+    "title": "Browser extension and open source",
+    "lede": "Choose the browser extension to mask directly in ChatGPT and Claude, or the npm packages if you want to build masking into your own code.",
+    "sublede": "All masking runs locally on your device. Pro starts with a 14-day free trial through app.maskera.dev.",
+    "extensionPortalNote": "Create an account and activate on app.maskera.dev",
     "products": [
       {
-        "id": "gateway",
-        "name": "Maskera Gateway",
-        "price": "SEK 149,000/year",
-        "pilotPrice": "60-day pilot: SEK 49,000",
-        "pilotTerms": "The full amount is deducted from the first annual licence when the same organisation buys it within 30 days after the pilot ends.",
-        "annualPrefix": "Annual licence:",
-        "tagline": "For organisations that want a signed delivery, shared rules and support.",
+        "id": "extension",
+        "name": "Browser extension",
+        "price": "SEK 149/month",
+        "freeLine": "Free: SEK 0/month (rules + 10 AI/month)",
+        "trialTerms": "Pro starts with a 14-day free trial, incl. VAT. No lock-in.",
+        "tagline": "For people who want to mask text directly in ChatGPT and Claude.",
         "points": [
-          "Signed container for Docker or Kubernetes",
-          "Masks AI traffic before it leaves your network",
-          "No GPU or database; the 43 MB Swedish model is included",
-          "Shared rules, enterprise login and security updates"
+          "All masking runs locally in Chrome and Edge",
+          "Unlimited Swedish AI masking in Pro",
+          "Restores placeholders automatically in AI replies",
+          "Custom protected words, case numbers and clinical profile"
         ],
-        "note": "Runs in your environment on as little as 2 CPU cores and 2 GB RAM. Prices exclude VAT."
+        "cta": "Try Pro free for 14 days",
+        "secondaryCta": "Learn about the extension",
+        "note": "Signed offline licence from app.maskera.dev. No text leaves your device."
       },
       {
         "id": "open",
         "name": "Open source",
         "price": "SEK 0",
-        "tagline": "For teams that want to build and maintain the integration themselves.",
+        "tagline": "For developers and teams who want to build masking into their own code.",
         "points": [
           "Runs in the browser or Node",
           "The text and the key containing the original data stay in your environment",
@@ -827,14 +825,14 @@
         "cta": "Install and get started"
       }
     ],
-    "flowTitle": "How Gateway protects the AI flow",
-    "flowBody": "Text is masked before every AI request, without an external Maskera API. The original text and restoration key stay in your environment.",
-    "flowLabel": "Gateway data flow",
+    "flowTitle": "How the extension protects your AI chats",
+    "flowBody": "Text is masked locally in your browser before it is sent. The original text and restoration key stay in your browser and are never sent to Maskera.",
+    "flowLabel": "Browser extension data flow",
     "flow": [
-      "Your application: original text",
-      "Gateway: masks in your environment",
-      "AI service: masked text only",
-      "Gateway: restores the response"
+      "You write in ChatGPT or Claude",
+      "Extension masks locally in your browser",
+      "AI service sees masked text only",
+      "Extension restores the reply on screen"
     ],
     "considerTitle": "Good to know before choosing",
     "considerations": [
@@ -844,9 +842,16 @@
       },
       {
         "title": "No lock-in at the core.",
-        "body": "The open-source packages are MIT-licensed and continue to work without Gateway or consulting support."
+        "body": "The open-source packages are MIT-licensed and work independently without a subscription or lock-in."
       }
     ]
+  },
+  "extensionPromo": {
+    "eyebrow": "Chrome and Edge",
+    "title": "Use the same masking directly in ChatGPT and Claude",
+    "body": "The browser extension masks names, personal identity numbers and addresses locally before you send and restores the reply on screen. Free with unlimited rules and 10 AI redactions/month, or Pro for SEK 149/month incl. VAT with a 14-day free trial.",
+    "primaryCta": "Try Pro free for 14 days",
+    "secondaryCta": "Learn about the extension"
   },
   "theme": {
     "toggle": "Switch between light and dark mode"
@@ -858,17 +863,17 @@
   "topBar": {
     "backHome": "Back to the home page",
     "developers": "Developers",
-    "services": "Companies"
+    "services": "Extension"
   },
   "meta": {
     "demoTitle": "Protect personal data before it reaches AI · maskera",
-    "demoDescription": "maskera hides Swedish personal data before text is sent to AI. Run the same masking in the browser or on your own servers. Only masked text is forwarded.",
+    "demoDescription": "maskera hides Swedish personal data before text is sent to AI. Run the same local masking in the browser, with the extension for ChatGPT and Claude, or via npm. Only masked text is forwarded.",
     "devTitle": "for developers: Swedish PII masking with npm · maskera",
     "devDescription": "Install maskera for local Swedish PII masking in the browser or Node. Open source, TypeScript and a custom-trained Swedish AI model.",
-    "servicesTitle": "for companies: PII masking in your own environment · maskera",
-    "servicesDescription": "Compare the open-source npm packages with Maskera Gateway, which masks personal data on CPU in your own environment before your AI requests.",
+    "servicesTitle": "browser extension and open source: local Swedish PII masking · maskera",
+    "servicesDescription": "Compare Maskera's browser extension for ChatGPT and Claude with the open-source npm packages. All masking runs locally without sending text to Maskera.",
     "siteName": "maskera",
-    "servicesSchemaName": "Maskera for companies",
+    "servicesSchemaName": "Maskera browser extension and open source",
     "ogImageAlt": "maskera: Protect personal data before it reaches AI. A sample sentence where a name, a personal identity number and a town are replaced with placeholders."
   },
   "about": {
@@ -898,12 +903,12 @@
     "whatTitle": "What Maskera is",
     "what": [
       "Maskera combines deterministic rules for structured Swedish personal data (personal identity numbers, coordination numbers, organisation numbers, phone numbers, email addresses, postcodes, bankgiro, plusgiro, IBAN, card numbers, IP addresses and URLs) with a custom-trained Swedish NER model that finds names, places, organisations and street addresses in free text, including all-lowercase text.",
-      "Masking is reversible: every run produces a restoration key that stays with the caller, so the AI response can be unmasked locally. Everything runs where the text already is: in the browser, in Node.js or in Maskera Gateway on your own servers. No text is sent to Maskera to be masked."
+      "Masking is reversible: every run produces a restoration key that stays local, so the AI response can be unmasked on screen or in your code. Everything runs where the text already is: in the browser or in Node.js. No text is sent to Maskera to be masked."
     ],
     "useTitle": "Two ways to use it",
     "use": [
       "The npm packages maskera and @maskera/core are open source under the MIT licence and free to use in your own integrations. The model maskera-sv-ner is published openly on Hugging Face.",
-      "Maskera Gateway is the delivery for companies: a signed container with the model built in that runs in the customer's own environment, without a database or GPU, and masks AI traffic before it reaches the approved provider. The customer portal app.maskera.dev handles accounts, licences, payment and downloads. No customer text is processed there, and there is no Maskera-hosted masking service."
+      "The browser extension for Chrome and Edge runs the same local masking directly in ChatGPT and Claude. The free tier includes unlimited rules and 10 local AI redactions per month; Pro (SEK 149/month incl. VAT, 14-day free trial) activates with a signed offline licence from app.maskera.dev. The customer portal app.maskera.dev handles accounts, licences and payment. No customer text is processed there, and there is no Maskera-hosted masking service."
     ],
     "whoTitle": "Who is behind it",
     "who": "Maskera is developed and operated by Hägvall Labs AB (Swedish company reg. no. 559598-0110), a Swedish limited company in Stockholm founded by Joel Hägvall. The company is the data controller for maskera.dev; how the website itself processes data is described in the privacy policy. The source code, training pipeline and benchmarks are public on GitHub so the results can be reviewed and reproduced.",
@@ -911,7 +916,7 @@
     "contact": [
       {
         "title": "Email",
-        "body": "hej@maskera.dev for questions about Gateway, pilots and licences, press and anything else. We answer in Swedish and English."
+        "body": "hej@maskera.dev for questions about the browser extension, licences, press and anything else. We answer in Swedish and English."
       },
       {
         "title": "Bugs and suggestions",

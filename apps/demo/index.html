@@ -10,17 +10,15 @@
     <title>Skydda personuppgifter innan texten skickas till AI · maskera</title>
     <meta
       name="description"
-      content="maskera döljer svenska personuppgifter innan text skickas till AI. Kör samma maskering i webbläsaren eller på egna servrar. Endast maskerad text går vidare."
+      content="maskera döljer svenska personuppgifter innan text skickas till AI. Kör samma lokala maskering i webbläsaren, med tillägget för ChatGPT och Claude, eller via npm. Endast maskerad text går vidare."
     />
     <link rel="canonical" href="https://maskera.dev/" />
     <link rel="alternate" hreflang="sv" href="https://maskera.dev/" />
     <link rel="alternate" hreflang="en" href="https://maskera.dev/en" />
     <link rel="alternate" hreflang="x-default" href="https://maskera.dev/" />
-    <!-- Machine-readable alternates for agents: the page as Markdown (also
-         served on Accept: text/markdown by middleware.ts) and the Gateway
-         OpenAPI contract (RFC 8631 service-desc). -->
+    <!-- Machine-readable alternate for agents: the page as Markdown (also
+         served on Accept: text/markdown by middleware.ts). -->
     <link rel="alternate" type="text/markdown" href="/index.md" />
-    <link rel="service-desc" type="application/vnd.oai.openapi+json" href="/openapi.json" />
     <!-- Light is the default: only an explicit toggle choice switches to
          dark, the system preference is not consulted. One meta, not two
          media-driven ones, or a system-dark visitor would get dark browser
@@ -39,7 +37,7 @@
     <meta property="og:title" content="Skydda personuppgifter innan texten skickas till AI · maskera" />
     <meta
       property="og:description"
-      content="Skydda originaldata när ni använder AI. Kör maskeringen i webbläsaren eller på egna servrar innan texten går vidare."
+      content="Skydda personuppgifter när du använder AI. Kör maskeringen lokalt i webbläsaren, med tillägget för ChatGPT och Claude, eller via npm."
     />
     <meta property="og:image" content="https://maskera.dev/og.png" />
     <meta property="og:image:width" content="1200" />
@@ -53,7 +51,7 @@
     <meta name="twitter:title" content="Skydda personuppgifter innan texten skickas till AI · maskera" />
     <meta
       name="twitter:description"
-      content="Skydda originaldata när ni använder AI. Kör maskeringen i webbläsaren eller på egna servrar innan texten går vidare."
+      content="Skydda personuppgifter när du använder AI. Kör maskeringen lokalt i webbläsaren, med tillägget för ChatGPT och Claude, eller via npm."
     />
     <meta name="twitter:image" content="https://maskera.dev/og.png" />
     <meta
@@ -70,7 +68,7 @@
             "@id": "https://maskera.dev/#app",
             "name": "maskera",
             "url": "https://maskera.dev/",
-            "description": "Svenskt webbverktyg som maskerar personuppgifter innan text når AI. Kör samma öppna modell och npm-paket på egna servrar.",
+            "description": "Svenskt webbverktyg som maskerar personuppgifter lokalt innan text når AI, med webbläsartillägg för ChatGPT och Claude samt npm-paket i öppen källkod.",
             "applicationCategory": "SecurityApplication",
             "operatingSystem": "Any",
             "browserRequirements": "Requires JavaScript",

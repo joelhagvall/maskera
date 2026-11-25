@@ -290,7 +290,6 @@ export function renderRouteHtml(view: View, locale: Locale = activeLocale): stri
     <link rel="alternate" hreflang="en" href="${alternateEn}" />
     <link rel="alternate" hreflang="x-default" href="${alternateSv}" />
     <link rel="alternate" type="text/markdown" href="${markdownPathFor(viewPath(view, locale))}" />
-    <link rel="service-desc" type="application/vnd.oai.openapi+json" href="/openapi.json" />
     <meta name="theme-color" content="#ffffff" />
     <script src="/theme-init.js"></script>
 

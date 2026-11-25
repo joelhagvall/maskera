@@ -25,11 +25,6 @@
       "source": "/docs",
       "destination": "/en/developers",
       "permanent": true
-    },
-    {
-      "source": "/openapi.json",
-      "destination": "https://app.maskera.dev/gateway/openapi.json",
-      "permanent": true
     }
   ],
   "rewrites": [

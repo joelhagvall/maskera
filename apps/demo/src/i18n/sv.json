@@ -6,9 +6,9 @@
     "browserLead": "All maskering sker",
     "browserEmphasis": "direkt i din webbläsare",
     "browserPrivacy": "Din text och nyckeln med originaluppgifterna lämnar inte enheten.",
-    "localProduction": "För företag körs samma maskering i er egen miljö. Ingen text skickas till Maskera; originaldata stannar hos er och endast maskerad text går vidare till AI‑tjänsten.",
-    "localProductionMobile": "Företag kör maskeringen i sin egen miljö. Ingen text skickas till Maskera.",
-    "servicesCta": "Så fungerar det för företag",
+    "localProduction": "Vill du använda samma lokala maskering direkt i ChatGPT och Claude? Webbläsartillägget maskerar texten innan du skickar och återställer svaret på skärmen.",
+    "localProductionMobile": "Maskera direkt i ChatGPT och Claude med webbläsartillägget. Allt sker lokalt.",
+    "servicesCta": "Webbläsartillägg och öppen källkod",
     "servicesCtaMobile": "Läs mer"
   },
   "demo": {
@@ -215,8 +215,8 @@
     "heading": "Vad maskeras?",
     "linkCta": "Se exakt vad som maskeras.",
     "developersLink": "Modellens kategorier och regelmotorns standarddetektorer finns samlade kategori för kategori.",
-    "servicesLink": "Gateway använder samma svenska modell och grundregler. Registreringsnummer ingår dessutom i Gateways standardpolicy.",
-    "lede": "Det fullständiga npm-paketet maskera och Gateway kombinerar fasta regler med den svenska AI-modellen. Skillnaderna i standardval framgår nedan.",
+    "servicesLink": "Webbläsartillägget använder samma svenska modell och grundregler, med egna skyddade ord och vårdprofil i Pro.",
+    "lede": "Det fullständiga npm-paketet maskera och webbläsartillägget kombinerar fasta regler med den svenska AI-modellen. Skillnaderna i standardval framgår nedan.",
     "groups": [
       {
         "id": "model",
@@ -264,7 +264,7 @@
     "notes": [
       {
         "title": "Registreringsnummer",
-        "text": "Den färdiga regeln är aktiverad i demon och Gateways standardpolicy. I npm-paketets standard är den valbar, eftersom samma form också kan vara ett boknings- eller ärendenummer."
+        "text": "Den färdiga regeln är aktiverad i demon. I npm-paketets standard är den valbar, eftersom samma form också kan vara ett boknings- eller ärendenummer."
       },
       {
         "title": "Egna format",
@@ -278,7 +278,7 @@
   },
   "navigation": {
     "developers": "För utvecklare",
-    "services": "För företag",
+    "services": "Webbläsartillägg",
     "accuracy": "Träffsäkerhet",
     "security": "Säkerhet",
     "transparency": "Integritet & transparens",
@@ -659,8 +659,8 @@
     "productionTitle": "Drift i produktion",
     "productionBody": "Produktionsguiden går igenom säker inkoppling, fallback till regler, loggning, egen hosting, domänspecifika testkorpusar och checklistan för drift. Maskera är ett lager för dataminimering, inte en garanti för regelefterlevnad eller fullständig upptäckt.",
     "productionCta": "Läs produktionsguiden",
-    "gatewayBody": "Den här sidan gäller npm-paketen och den öppna demon. Gateway har dessutom egen autentisering, leverans och driftmodell som dokumenteras i kundportalen.",
-    "gatewayCta": "Läs om Maskera Gateway"
+    "extensionBody": "Den här sidan gäller npm-paketen och den öppna demon. Webbläsartilläggets lokala databehandling och licensmodell dokumenteras i kundportalen.",
+    "extensionCta": "Läs om webbläsartilläggets integritet"
   },
   "transparency": {
     "metaTitle": "integritet & transparens: vad lämnar enheten · maskera",
@@ -789,54 +789,52 @@
     "updated": "Senast uppdaterad 21 augusti 2026."
   },
   "services": {
-    "title": "Maskera för företag",
-    "lede": "Välj Gateway för en signerad företagsleverans med support i er egen miljö. Välj npm-paketen om ni vill bygga och underhålla integrationen själva.",
-    "sublede": "Gateway finns som 60-dagars pilot eller årslicens. Ni börjar med en teknisk genomgång.",
-    "gatewayInterestCta": "Boka teknisk genomgång",
-    "gatewayEmailSubject": "Teknisk genomgång av Maskera Gateway",
-    "gatewayDocsCta": "Läs om Gateway",
-    "gatewayContactNote": "Öppnar ett nytt mejl till hej@maskera.dev",
+    "title": "Webbläsartillägg och öppen källkod",
+    "lede": "Välj webbläsartillägget för att maskera direkt i ChatGPT och Claude, eller npm-paketen om du vill bygga in maskeringen i egen kod.",
+    "sublede": "All maskering körs lokalt på din enhet. Pro börjar med 14 dagars gratis provperiod via app.maskera.dev.",
+    "extensionPortalNote": "Skapa konto och aktivera på app.maskera.dev",
     "products": [
       {
-        "id": "gateway",
-        "name": "Maskera Gateway",
-        "price": "149 000 kr/år",
-        "pilotPrice": "60-dagars pilot: 49 000 kr",
-        "pilotTerms": "Hela beloppet dras av från den första årslicensen när samma organisation köper den inom 30 dagar efter pilotens slut.",
-        "annualPrefix": "Årslicens:",
-        "tagline": "För verksamheter som vill ha en signerad leverans, gemensamma regler och support.",
+        "id": "extension",
+        "name": "Webbläsartillägg",
+        "price": "149 kr/mån",
+        "freeLine": "Gratis: 0 kr/mån (regler + 10 AI/mån)",
+        "trialTerms": "Pro börjar med 14 dagars gratis provperiod, inkl. moms. Ingen bindningstid.",
+        "tagline": "För dig som vill maskera text direkt i ChatGPT och Claude.",
         "points": [
-          "Signerad container för Docker eller Kubernetes",
-          "Maskerar AI-trafiken innan den lämnar ert nätverk",
-          "Ingen GPU eller databas; den svenska modellen på 43 MB ingår",
-          "Gemensamma regler, företagsinloggning och säkerhetsuppdateringar"
+          "All maskering körs lokalt i Chrome och Edge",
+          "Obegränsad svensk AI-maskering i Pro",
+          "Återställer platshållare automatiskt i AI-svaren",
+          "Egna skyddade ord, kundnummer och vårdprofil"
         ],
-        "note": "Kör i er miljö på så lite som 2 CPU-kärnor och 2 GB RAM. Priser exkl. moms."
+        "cta": "Testa Pro gratis i 14 dagar",
+        "secondaryCta": "Läs om tillägget",
+        "note": "Signerad offline-licens via app.maskera.dev. Ingen text lämnar din dator."
       },
       {
         "id": "open",
         "name": "Öppen källkod",
         "price": "0 kr",
-        "tagline": "För team som vill bygga och underhålla integrationen själva.",
+        "tagline": "För utvecklare och team som vill bygga in maskeringen i egen kod.",
         "points": [
           "Kör i webbläsaren eller Node",
-          "Texten och nyckeln med originaluppgifterna stannar i er miljö",
+          "Texten och nyckeln med originaluppgifterna stannar i din miljö",
           "MIT-licens, utan användningsavgift eller inlåsning",
           "Svensk modell och färdiga regler för vanliga personuppgifter"
         ],
         "cta": "Installera och kom igång"
       }
     ],
-    "flowTitle": "Så skyddar Gateway AI-flödet",
-    "flowBody": "Texten maskeras före varje AI-anrop, utan ett externt Maskera-API. Originaltexten och återställningsnyckeln stannar i er miljö.",
-    "flowLabel": "Dataflöde för Gateway",
+    "flowTitle": "Så skyddar tillägget dina AI-chattar",
+    "flowBody": "Texten maskeras lokalt i webbläsaren innan den skickas. Originaltexten och återställningsnyckeln stannar i webbläsaren och skickas aldrig till Maskera.",
+    "flowLabel": "Dataflöde för webbläsartillägget",
     "flow": [
-      "Er applikation: originaltext",
-      "Gateway: maskerar i er miljö",
-      "AI-tjänsten: endast maskerad text",
-      "Gateway: återställer svaret"
+      "Du skriver i ChatGPT eller Claude",
+      "Tillägget maskerar lokalt i webbläsaren",
+      "AI-tjänsten ser bara maskerad text",
+      "Tillägget återställer svaret på skärmen"
     ],
-    "considerTitle": "Bra att veta innan ni väljer",
+    "considerTitle": "Bra att veta innan du väljer",
     "considerations": [
       {
         "title": "Maskering minskar risk, men är inte en garanti.",
@@ -844,9 +842,16 @@
       },
       {
         "title": "Ingen inlåsning i kärnan.",
-        "body": "Paketen med öppen källkod är MIT-licensierade och fortsätter fungera utan Gateway eller konsultstöd."
+        "body": "Paketen med öppen källkod är MIT-licensierade och fungerar fristående utan abonnemang eller inlåsning."
       }
     ]
+  },
+  "extensionPromo": {
+    "eyebrow": "Chrome och Edge",
+    "title": "Använd samma maskering direkt i ChatGPT och Claude",
+    "body": "Webbläsartillägget maskerar namn, personnummer och adresser lokalt innan du skickar och återställer svaret på skärmen. Gratis med obegränsade regler och 10 AI-maskeringar/mån, eller Pro för 149 kr/mån inkl. moms med 14 dagars gratis provperiod.",
+    "primaryCta": "Testa Pro gratis i 14 dagar",
+    "secondaryCta": "Läs om tillägget"
   },
   "theme": {
     "toggle": "Växla mellan ljust och mörkt läge"
@@ -858,17 +863,17 @@
   "topBar": {
     "backHome": "Tillbaka till startsidan",
     "developers": "Utvecklare",
-    "services": "Företag"
+    "services": "Tillägg"
   },
   "meta": {
     "demoTitle": "Skydda personuppgifter innan texten skickas till AI · maskera",
-    "demoDescription": "maskera döljer svenska personuppgifter innan text skickas till AI. Kör samma maskering i webbläsaren eller på egna servrar. Endast maskerad text går vidare.",
+    "demoDescription": "maskera döljer svenska personuppgifter innan text skickas till AI. Kör samma lokala maskering i webbläsaren, med tillägget för ChatGPT och Claude, eller via npm. Endast maskerad text går vidare.",
     "devTitle": "för utvecklare: svensk PII-maskering med npm · maskera",
     "devDescription": "Installera maskera för svensk PII-maskering lokalt i webbläsaren eller Node. Öppen källkod, TypeScript och en egentränad svensk AI-modell.",
-    "servicesTitle": "för företag: PII-maskering i er egen miljö · maskera",
-    "servicesDescription": "Jämför npm-paketen med öppen källkod och Maskera Gateway, som maskerar personuppgifter på CPU i er egen miljö före era AI-anrop.",
+    "servicesTitle": "webbläsartillägg och öppen källkod: lokal svensk PII-maskering · maskera",
+    "servicesDescription": "Jämför Maskeras webbläsartillägg för ChatGPT och Claude med npm-paketen i öppen källkod. All maskering sker lokalt utan att text skickas till Maskera.",
     "siteName": "maskera",
-    "servicesSchemaName": "Maskera för företag",
+    "servicesSchemaName": "Maskera webbläsartillägg och öppen källkod",
     "ogImageAlt": "maskera: Skydda personuppgifter innan texten skickas till AI. En exempelmening där namn, personnummer och ort har ersatts med platshållare."
   },
   "about": {
@@ -898,12 +903,12 @@
     "whatTitle": "Vad Maskera är",
     "what": [
       "Maskera kombinerar deterministiska regler för strukturerade svenska personuppgifter (personnummer, samordningsnummer, organisationsnummer, telefonnummer, e-post, postnummer, bankgiro, plusgiro, IBAN, kortnummer, IP-adresser och webbadresser) med en egentränad svensk NER-modell som hittar namn, platser, organisationer och gatuadresser i fritext, även i text utan versaler.",
-      "Maskeringen är reversibel: varje körning ger en återställningsnyckel som stannar hos den som anropar, så att AI-svaret kan avmaskeras lokalt. Allt körs där texten redan finns, i webbläsaren, i Node.js eller i Maskera Gateway på egna servrar. Ingen text skickas till Maskera för att maskeras."
+      "Maskeringen är reversibel: varje körning ger en återställningsnyckel som stannar lokalt, så att AI-svaret kan avmaskeras på skärmen eller i din kod. Allt körs där texten redan finns, i webbläsaren eller i Node.js. Ingen text skickas till Maskera för att maskeras."
     ],
     "useTitle": "Två sätt att använda det",
     "use": [
       "npm-paketen maskera och @maskera/core är öppen källkod under MIT-licens och kan användas fritt i egna integrationer. Modellen maskera-sv-ner publiceras öppet på Hugging Face.",
-      "Maskera Gateway är leveransen för företag: en signerad container med modellen inbyggd som körs i kundens egen miljö, utan databas eller GPU, och maskerar AI-trafik innan den når den godkända leverantören. Kundportalen app.maskera.dev hanterar konton, licenser, betalning och nedladdningar. Ingen kundtext behandlas där, och det finns ingen Maskera-driven maskeringstjänst."
+      "Webbläsartillägget för Chrome och Edge kör samma lokala maskering direkt i ChatGPT och Claude. Grundläget är gratis med obegränsade regler och 10 lokala AI-maskeringar i månaden; Pro (149 kr/mån inkl. moms, 14 dagars gratis provperiod) aktiveras med en signerad offline-licens från app.maskera.dev. Kundportalen app.maskera.dev hanterar konton, licenser och betalning. Ingen kundtext behandlas där, och det finns ingen Maskera-driven maskeringstjänst."
     ],
     "whoTitle": "Vem som står bakom",
     "who": "Maskera utvecklas och drivs av Hägvall Labs AB (org.nr 559598-0110), ett svenskt aktiebolag i Stockholm grundat av Joel Hägvall. Bolaget är personuppgiftsansvarigt för maskera.dev; hur webbplatsen själv behandlar uppgifter beskrivs i integritetspolicyn. Källkoden, träningspipelinen och benchmarken ligger öppet på GitHub så att resultaten kan granskas och återskapas.",
@@ -911,7 +916,7 @@
     "contact": [
       {
         "title": "E-post",
-        "body": "hej@maskera.dev för frågor om Gateway, pilot och licens, press och allt annat. Vi svarar på svenska och engelska."
+        "body": "hej@maskera.dev för frågor om webbläsartillägget, licenser, press och allt annat. Vi svarar på svenska och engelska."
       },
       {
         "title": "Buggar och förslag",

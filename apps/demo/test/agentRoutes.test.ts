@@ -1,7 +1,6 @@
 import { existsSync, readFileSync } from "node:fs"
 import { resolve } from "node:path"
 import { describe, expect, it } from "vitest"
-import { OPENAPI_CANONICAL } from "../src/agent-responses"
 import { ALIAS_REDIRECTS, PAGE_PATHS, pathsByLocale } from "../src/paths"
 
 /**
@@ -31,14 +30,6 @@ describe("vercel.json", () => {
       const target = destination.split("#")[0]
       expect(PAGE_PATHS).toContain(target)
     }
-  })
-
-  it("redirects /openapi.json to the canonical Gateway contract", () => {
-    expect(vercel.redirects).toContainEqual({
-      source: "/openapi.json",
-      destination: OPENAPI_CANONICAL,
-      permanent: true,
-    })
   })
 
   it("labels the Markdown siblings text/markdown", () => {
@@ -132,9 +123,9 @@ describe("llms.txt", () => {
     expect(llms).toContain("## Machine-readable entry points")
   })
 
-  it("points at the OpenAPI contract, the Markdown renderings and the about page", () => {
-    expect(llms).toContain("https://maskera.dev/openapi.json")
-    expect(llms).toContain(OPENAPI_CANONICAL)
+  it("points at the browser extension, the Markdown renderings and the about page", () => {
+    expect(llms).toContain("https://app.maskera.dev/extension")
+    expect(llms).not.toContain("Gateway")
     expect(llms).toContain("Accept: text/markdown")
     expect(llms).toContain("https://maskera.dev/index.md")
     expect(llms).toContain("https://maskera.dev/en/about")
@@ -195,10 +186,7 @@ describe("index.html", () => {
     }
   })
 
-  it("advertises the Markdown alternate and the OpenAPI service description", () => {
+  it("advertises the Markdown alternate", () => {
     expect(html).toContain('<link rel="alternate" type="text/markdown" href="/index.md" />')
-    expect(html).toContain(
-      '<link rel="service-desc" type="application/vnd.oai.openapi+json" href="/openapi.json" />',
-    )
   })
 })
