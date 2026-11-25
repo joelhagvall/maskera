@@ -5,7 +5,7 @@ import type { View } from "../routing"
 import { navClick, viewPaths } from "../routing"
 import { TopBar } from "./TopBar"
 
-const EXTENSION_DOWNLOAD_URL = `${PORTAL_ORIGIN}/downloads/maskera-extension-0.1.0.zip`
+const EXTENSION_DOWNLOAD_URL = `${PORTAL_ORIGIN}/downloads/maskera-extension-0.1.3.zip`
 
 type Product = {
   name: string

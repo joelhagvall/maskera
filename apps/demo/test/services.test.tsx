@@ -40,7 +40,7 @@ describe("Services", () => {
       "#installera",
     )
     expect(screen.getByRole("link", { name: /Ladda ner ZIP-filen/ }).getAttribute("href")).toBe(
-      "https://app.maskera.dev/downloads/maskera-extension-0.1.0.zip",
+      "https://app.maskera.dev/downloads/maskera-extension-0.1.3.zip",
     )
     expect(screen.getByRole("table", { name: copy.services.compare.title })).toBeTruthy()
     expect(
