@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import { spawnSync } from "node:child_process"
+import { spawn } from "node:child_process"
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join, resolve } from "node:path"
@@ -9,13 +9,47 @@ import { evaluationEnvironmentSha256, firstDifference } from "./benchmark-contra
 
 const root = resolve(import.meta.dirname, "..")
 
-test("the checked-in benchmark contract and carriers are synchronized", () => {
-  const result = spawnSync(process.execPath, ["scripts/check-benchmark-sync.mjs"], {
-    cwd: root,
-    encoding: "utf8",
-    timeout: 60_000,
+function runNode(args, env = process.env) {
+  return new Promise((resolveRun, rejectRun) => {
+    const child = spawn(process.execPath, args, {
+      cwd: root,
+      env,
+      stdio: ["ignore", "pipe", "pipe"],
+    })
+    let stdout = ""
+    let stderr = ""
+    let timedOut = false
+    const timer = setTimeout(() => {
+      timedOut = true
+      child.kill("SIGTERM")
+    }, 60_000)
+    timer.unref()
+    child.stdout.setEncoding("utf8")
+    child.stderr.setEncoding("utf8")
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk
+    })
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk
+    })
+    child.on("error", (error) => {
+      clearTimeout(timer)
+      rejectRun(error)
+    })
+    child.on("close", (status, signal) => {
+      clearTimeout(timer)
+      resolveRun({ status, signal, stdout, stderr, timedOut })
+    })
   })
-  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`)
+}
+
+test("the checked-in benchmark contract and carriers are synchronized", async () => {
+  const result = await runNode(["scripts/check-benchmark-sync.mjs"])
+  assert.equal(
+    result.status,
+    0,
+    `status=${result.status} signal=${result.signal} timedOut=${result.timedOut}\n${result.stdout}\n${result.stderr}`,
+  )
   assert.match(result.stdout, /benchmark sync: v20 contract verified/)
 })
 
@@ -26,13 +60,15 @@ test("a changed canonical metric produces an explicit drift failure", async () =
     source.metrics.syntheticGold.typeF1Pct = "92.89"
     const changedContract = join(directory, "benchmark-release.json")
     await writeFile(changedContract, `${JSON.stringify(source, null, 2)}\n`)
-    const result = spawnSync(process.execPath, ["scripts/check-benchmark-sync.mjs"], {
-      cwd: root,
-      encoding: "utf8",
-      timeout: 60_000,
-      env: { ...process.env, MASKERA_BENCHMARK_CONTRACT: changedContract },
+    const result = await runNode(["scripts/check-benchmark-sync.mjs"], {
+      ...process.env,
+      MASKERA_BENCHMARK_CONTRACT: changedContract,
     })
-    assert.equal(result.status, 1)
+    assert.equal(
+      result.status,
+      1,
+      `status=${result.status} signal=${result.signal} timedOut=${result.timedOut}\n${result.stdout}\n${result.stderr}`,
+    )
     assert.match(result.stderr, /BENCHMARK DRIFT/)
     assert.match(result.stderr, /synthetic-gold type F1/)
     assert.match(result.stderr, /92\.89/)
@@ -48,13 +84,15 @@ test("an invalid metric type fails the published JSON Schema", async () => {
     source.metrics.structuredRegression.misses = "11"
     const changedContract = join(directory, "benchmark-release.json")
     await writeFile(changedContract, `${JSON.stringify(source, null, 2)}\n`)
-    const result = spawnSync(process.execPath, ["scripts/check-benchmark-sync.mjs"], {
-      cwd: root,
-      encoding: "utf8",
-      timeout: 60_000,
-      env: { ...process.env, MASKERA_BENCHMARK_CONTRACT: changedContract },
+    const result = await runNode(["scripts/check-benchmark-sync.mjs"], {
+      ...process.env,
+      MASKERA_BENCHMARK_CONTRACT: changedContract,
     })
-    assert.equal(result.status, 1)
+    assert.equal(
+      result.status,
+      1,
+      `status=${result.status} signal=${result.signal} timedOut=${result.timedOut}\n${result.stdout}\n${result.stderr}`,
+    )
     assert.match(result.stderr, /BENCHMARK DRIFT/)
     assert.match(result.stderr, /contract JSON Schema/)
     assert.match(result.stderr, /structuredRegression\/misses must be integer/)
@@ -70,13 +108,15 @@ test("a changed evaluation input checksum fails before release", async () => {
     source.evaluation.suiteSha256 = "0".repeat(64)
     const changedContract = join(directory, "benchmark-release.json")
     await writeFile(changedContract, `${JSON.stringify(source, null, 2)}\n`)
-    const result = spawnSync(process.execPath, ["scripts/check-benchmark-sync.mjs"], {
-      cwd: root,
-      encoding: "utf8",
-      timeout: 60_000,
-      env: { ...process.env, MASKERA_BENCHMARK_CONTRACT: changedContract },
+    const result = await runNode(["scripts/check-benchmark-sync.mjs"], {
+      ...process.env,
+      MASKERA_BENCHMARK_CONTRACT: changedContract,
     })
-    assert.equal(result.status, 1)
+    assert.equal(
+      result.status,
+      1,
+      `status=${result.status} signal=${result.signal} timedOut=${result.timedOut}\n${result.stdout}\n${result.stderr}`,
+    )
     assert.match(result.stderr, /BENCHMARK DRIFT/)
     assert.match(result.stderr, /evaluation suite checksum/)
   } finally {
@@ -91,13 +131,15 @@ test("a changed evaluation environment checksum fails before release", async () 
     source.evaluation.environment.sha256 = "0".repeat(64)
     const changedContract = join(directory, "benchmark-release.json")
     await writeFile(changedContract, `${JSON.stringify(source, null, 2)}\n`)
-    const result = spawnSync(process.execPath, ["scripts/check-benchmark-sync.mjs"], {
-      cwd: root,
-      encoding: "utf8",
-      timeout: 60_000,
-      env: { ...process.env, MASKERA_BENCHMARK_CONTRACT: changedContract },
+    const result = await runNode(["scripts/check-benchmark-sync.mjs"], {
+      ...process.env,
+      MASKERA_BENCHMARK_CONTRACT: changedContract,
     })
-    assert.equal(result.status, 1)
+    assert.equal(
+      result.status,
+      1,
+      `status=${result.status} signal=${result.signal} timedOut=${result.timedOut}\n${result.stdout}\n${result.stderr}`,
+    )
     assert.match(result.stderr, /BENCHMARK DRIFT/)
     assert.match(result.stderr, /evaluation environment checksum/)
   } finally {
@@ -167,9 +209,8 @@ test("a selected runtime resolution changes the eval environment", async () => {
   }
 })
 
-test("production predeploy checks upstreams without requiring the old deployed sites", () => {
-  const result = spawnSync(
-    process.execPath,
+test("production predeploy checks upstreams without requiring the old deployed sites", async () => {
+  const result = await runNode(
     [
       "scripts/check-benchmark-live.mjs",
       "--predeploy-if-production",
@@ -178,18 +219,17 @@ test("production predeploy checks upstreams without requiring the old deployed s
       "--skip-github",
     ],
     {
-      cwd: root,
-      encoding: "utf8",
-      timeout: 60_000,
-      env: {
-        ...process.env,
-        VERCEL_ENV: "production",
-        MASKERA_SITE_URL: "http://127.0.0.1:1",
-        MASKERA_CLOUD_SITE_URL: "http://127.0.0.1:1",
-      },
+      ...process.env,
+      VERCEL_ENV: "production",
+      MASKERA_SITE_URL: "http://127.0.0.1:1",
+      MASKERA_CLOUD_SITE_URL: "http://127.0.0.1:1",
     },
   )
-  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`)
+  assert.equal(
+    result.status,
+    0,
+    `status=${result.status} signal=${result.signal} timedOut=${result.timedOut}\n${result.stdout}\n${result.stderr}`,
+  )
   assert.match(result.stdout, /verified \(upstreams, contract/)
 })
 
