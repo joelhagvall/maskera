@@ -1,8 +1,12 @@
 import { spawn } from "node:child_process"
 import { existsSync } from "node:fs"
+import { mkdtemp, readFile, rm } from "node:fs/promises"
 import { createServer, type Server } from "node:http"
+import { connect } from "node:net"
+import { tmpdir } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
+import { brotliCompressSync } from "node:zlib"
 import type { NerRecognizer } from "maskera"
 import { afterEach, describe, expect, it } from "vitest"
 import {
@@ -323,6 +327,288 @@ describe("startMaskeraProxy (harness-agnostic LLM proxy)", () => {
     })
     expect(res.status).toBe(502)
     expect(upstream.seen).toHaveLength(0)
+  })
+
+  it("serves local inspector UI, keeps vault reveal opt-in, writes metadata-only audit log, and clears memory", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "maskera-audit-"))
+    cleanups.push(() => rm(dir, { recursive: true, force: true }))
+    const auditFile = join(dir, "audit.jsonl")
+
+    const upstream = await startMockUpstream(() => ({
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        choices: [{ message: { role: "assistant", content: "Klart [TELEFON_1]" } }],
+      }),
+    }))
+
+    const proxy = await startMaskeraProxy({
+      port: 0,
+      openaiUpstream: upstream.url,
+      defaultMode: "rules",
+      auditLogPath: auditFile,
+    })
+    cleanups.push(() => proxy.close())
+
+    // HTML inspector serves cleanly
+    const htmlRes = await fetch(proxy.inspectorUrl)
+    expect(htmlRes.status).toBe(200)
+    const html = await htmlRes.text()
+    expect(html).toContain("Maskera lokal proxy-inspektör")
+    expect(html).toContain("/_maskera/events")
+
+    // Send one proxied request with PII
+    const res = await fetch(`${proxy.url}/v1/chat/completions`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        model: "gpt-4.1",
+        messages: [{ role: "user", content: "Ring 070-174 06 58 angående 19900101-2385" }],
+      }),
+    })
+    expect(res.status).toBe(200)
+
+    // Inspector keeps only redacted preview, never raw PII
+    const recorded = proxy.inspector.list()
+    expect(recorded).toHaveLength(1)
+    expect(recorded[0]?.redactions).toBe(2)
+    expect(recorded[0]?.counts).toEqual({ TELEFON: 1, PERSONNUMMER: 1 })
+    expect(recorded[0]?.redactedPreview[0]).toBe("Ring [TELEFON_1] angående [PERSONNUMMER_1]")
+    expect(JSON.stringify(recorded)).not.toContain("070-174 06 58")
+    expect(JSON.stringify(recorded)).not.toContain("19900101-2385")
+
+    // Vault endpoint refuses without explicit reveal header, returns entries when revealed
+    const deniedVault = await fetch(`${proxy.url}/_maskera/vault`)
+    expect(deniedVault.status).toBe(403)
+    const revealedVault = await fetch(`${proxy.url}/_maskera/vault`, {
+      headers: { "x-maskera-reveal": "1" },
+    })
+    expect(revealedVault.status).toBe(200)
+    const vaultJson = (await revealedVault.json()) as {
+      entries: Array<{ token: string; value: string }>
+    }
+    expect(
+      vaultJson.entries.some((e) => e.token === "[TELEFON_1]" && e.value === "070-174 06 58"),
+    ).toBe(true)
+
+    // Audit JSONL contains counts only, never raw PII or previews
+    await new Promise((r) => setTimeout(r, 30))
+    const auditRaw = await readFile(auditFile, "utf8")
+    expect(auditRaw).not.toContain("070-174 06 58")
+    expect(auditRaw).not.toContain("19900101-2385")
+    expect(auditRaw).not.toContain("Ring ")
+    const auditLine = JSON.parse(auditRaw.trim()) as {
+      redactions: number
+      counts: Record<string, number>
+    }
+    expect(auditLine.redactions).toBe(2)
+    expect(auditLine.counts).toEqual({ TELEFON: 1, PERSONNUMMER: 1 })
+
+    // Clear requires explicit action header (blocks cross-origin simple POST CSRF)
+    const deniedClear = await fetch(`${proxy.url}/_maskera/clear`, { method: "POST" })
+    expect(deniedClear.status).toBe(403)
+    const clearRes = await fetch(`${proxy.url}/_maskera/clear`, {
+      method: "POST",
+      headers: { "x-maskera-action": "clear" },
+    })
+    expect(clearRes.status).toBe(200)
+    expect(proxy.inspector.list()).toHaveLength(0)
+    expect(proxy.vault.size).toBe(0)
+    const sse = createSseRestorer({ "[NAMN_1]": "Anna Lind", "[PERSONNUMMER_1]": "19900101-2385" })
+    const out1 = sse.push(
+      `event: content_block_delta\r\ndata: ${JSON.stringify({ type: "content_block_delta", index: 0, delta: { type: "text_delta", text: "Hej [NAM" } })}\r\n\r`,
+    )
+    const out2 = sse.push(
+      `\nevent: content_block_stop\r\ndata: ${JSON.stringify({ type: "content_block_stop", index: 0 })}\r\n\r\n`,
+    )
+    const out3 = sse.push(
+      `event: response.output_item.done\ndata: ${JSON.stringify({
+        type: "response.output_item.done",
+        item: {
+          type: "function_call",
+          arguments: '{"name":"[NAMN_1]"}',
+          content: [{ type: "output_text", text: "Pnr [PERSONNUMMER_1]" }],
+        },
+      })}\n\n`,
+    )
+    const out4 = sse.push(
+      `event: response.content_part.done\ndata: ${JSON.stringify({
+        type: "response.content_part.done",
+        part: { type: "output_text", text: "Del [NAMN_1]" },
+      })}\n\n`,
+    )
+    const out5 = sse.push(
+      `event: response.incomplete\ndata: ${JSON.stringify({
+        type: "response.incomplete",
+        response: { output_text: "Avbruten [PERSONNUMMER_1]" },
+      })}\n\n`,
+    )
+    const out6 = sse.flush()
+    expect(out1).toBe("")
+    expect(out2.indexOf("Hej ")).toBeLessThan(out2.indexOf("[NAM"))
+    expect(out3).toContain('\\"Anna Lind\\"')
+    expect(out3).toContain("Pnr 19900101-2385")
+    expect(out4).toContain("Del Anna Lind")
+    expect(out5).toContain("Avbruten 19900101-2385")
+    expect(out6).toBe("")
+  })
+
+  it("rejects WebSocket upgrades with 426 so Codex falls back to HTTP SSE immediately", async () => {
+    const upstream = await startMockUpstream(() => ({ body: '{"ok":true}' }))
+    const proxy = await startMaskeraProxy({
+      port: 0,
+      openaiUpstream: upstream.url,
+      defaultMode: "rules",
+    })
+    cleanups.push(() => proxy.close())
+
+    const rawRes = await new Promise<string>((resolveRes, rejectRes) => {
+      const socket = connect(proxy.port, "127.0.0.1")
+      let data = ""
+      socket.on("connect", () => {
+        socket.write(
+          `GET /v1/responses HTTP/1.1\r\nHost: 127.0.0.1:${proxy.port}\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n`,
+        )
+      })
+      socket.on("data", (c) => {
+        data += c.toString("utf8")
+      })
+      socket.on("end", () => resolveRes(data))
+      socket.on("error", rejectRes)
+    })
+
+    expect(rawRes).toMatch(/^HTTP\/1\.1 426 Upgrade Required/)
+    expect(upstream.seen).toHaveLength(0)
+  })
+
+  it("shields Maskera MCP write/restore tool arguments from proxy placeholder overwrite across Claude, Codex, and OpenCode", () => {
+    const map = { "[NAMN_1]": "ProxyName", "[EPOST_1]": "proxy@example.com" }
+
+    // 1. Anthropic SSE: mcp__maskera__maskera_write_file stays untouched, other tools restore
+    const anth = createSseRestorer(map)
+    const anthOut =
+      anth.push(
+        `event: content_block_start\ndata: ${JSON.stringify({ type: "content_block_start", index: 0, content_block: { type: "tool_use", id: "t1", name: "mcp__maskera__maskera_write_file", input: {} } })}\n\n` +
+          `event: content_block_delta\ndata: ${JSON.stringify({ type: "content_block_delta", index: 0, delta: { type: "input_json_delta", partial_json: '{"text":"Hej [NAMN_1] [EPOST_1]"}' } })}\n\n` +
+          `event: content_block_stop\ndata: ${JSON.stringify({ type: "content_block_stop", index: 0 })}\n\n` +
+          `event: content_block_start\ndata: ${JSON.stringify({ type: "content_block_start", index: 1, content_block: { type: "tool_use", id: "t2", name: "write_note", input: {} } })}\n\n` +
+          `event: content_block_delta\ndata: ${JSON.stringify({ type: "content_block_delta", index: 1, delta: { type: "input_json_delta", partial_json: '{"text":"Hej [NAMN_1]"}' } })}\n\n` +
+          `event: content_block_stop\ndata: ${JSON.stringify({ type: "content_block_stop", index: 1 })}\n\n`,
+      ) + anth.flush()
+    expect(anthOut).toContain('{\\"text\\":\\"Hej [NAMN_1] [EPOST_1]\\"}')
+    expect(anthOut).toContain('{\\"text\\":\\"Hej ProxyName\\"}')
+
+    // 2. OpenAI Responses SSE: Codex maskera_write_file stays untouched
+    const codex = createSseRestorer(map)
+    const codexOut =
+      codex.push(
+        `event: response.output_item.added\ndata: ${JSON.stringify({ type: "response.output_item.added", output_index: 0, item: { type: "function_call", name: "maskera_write_file", arguments: "" } })}\n\n` +
+          `event: response.function_call_arguments.delta\ndata: ${JSON.stringify({ type: "response.function_call_arguments.delta", output_index: 0, delta: '{"text":"[NAMN_1]"}' })}\n\n` +
+          `event: response.function_call_arguments.done\ndata: ${JSON.stringify({ type: "response.function_call_arguments.done", output_index: 0, arguments: '{"text":"[NAMN_1]"}' })}\n\n` +
+          `event: response.output_item.done\ndata: ${JSON.stringify({ type: "response.output_item.done", output_index: 0, item: { type: "function_call", name: "maskera_write_file", arguments: '{"text":"[NAMN_1]"}' } })}\n\n`,
+      ) + codex.flush()
+    expect(codexOut).not.toContain("ProxyName")
+    expect(codexOut).toContain("[NAMN_1]")
+
+    // 3. OpenAI Chat SSE: OpenCode Code Mode `execute` calling maskera_write_file stays untouched,
+    //    while non-Maskera `execute` restores proxy placeholders.
+    const oc = createSseRestorer(map)
+    const ocMaskera =
+      oc.push(
+        `data: ${JSON.stringify({ choices: [{ index: 0, delta: { tool_calls: [{ index: 0, function: { name: "execute", arguments: '{"code":"await tools.maskera.maskera_write_file({ text: \\"[EPOST_1]\\" })"}' } }] } }] })}\n\n` +
+          `data: ${JSON.stringify({ choices: [{ index: 0, delta: {}, finish_reason: "tool_calls" }] })}\n\n`,
+      ) + oc.flush()
+    expect(ocMaskera).toContain("[EPOST_1]")
+    expect(ocMaskera).not.toContain("proxy@example.com")
+
+    const ocOther = createSseRestorer(map)
+    const ocRestored =
+      ocOther.push(
+        `data: ${JSON.stringify({ choices: [{ index: 0, delta: { tool_calls: [{ index: 0, function: { name: "execute", arguments: '{"code":"return \\"[EPOST_1]\\""}' } }] } }] })}\n\n` +
+          `data: ${JSON.stringify({ choices: [{ index: 0, delta: {}, finish_reason: "tool_calls" }] })}\n\n`,
+      ) + ocOther.flush()
+    expect(ocRestored).toContain("proxy@example.com")
+
+    // 4. Reasoning deltas (OpenAI Chat reasoning_content + Responses reasoning_summary_text)
+    const reasonSse = createSseRestorer(map)
+    const reasonOut =
+      reasonSse.push(
+        `data: ${JSON.stringify({ choices: [{ index: 0, delta: { reasoning_content: "Tänker [NA" } }] })}\n\n` +
+          `data: ${JSON.stringify({ choices: [{ index: 0, delta: { reasoning_content: "MN_1]" }, finish_reason: "stop" }] })}\n\n` +
+          `event: response.reasoning_summary_text.delta\ndata: ${JSON.stringify({ type: "response.reasoning_summary_text.delta", output_index: 0, summary_index: 0, delta: "Not [EP" })}\n\n` +
+          `event: response.reasoning_summary_text.delta\ndata: ${JSON.stringify({ type: "response.reasoning_summary_text.delta", output_index: 0, summary_index: 0, delta: "OST_1]" })}\n\n` +
+          `event: response.reasoning_summary_text.done\ndata: ${JSON.stringify({ type: "response.reasoning_summary_text.done", output_index: 0, summary_index: 0, text: "Not [EPOST_1]" })}\n\n`,
+      ) + reasonSse.flush()
+    expect(reasonOut).toContain("ProxyName")
+    expect(reasonOut).toContain("proxy@example.com")
+  })
+
+  it("decompresses Brotli request bodies, rejects unsupported encodings with 415, and redacts Codex namespace tools with rules only", async () => {
+    let nerCalls = 0
+    const upstream = await startMockUpstream(() => ({
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ok: true }),
+    }))
+    const proxy = await startMaskeraProxy({
+      port: 0,
+      openaiUpstream: upstream.url,
+      customTerms: ["Projekt Orion"],
+      engine: createMaskeraEngine({
+        defaultMode: "auto",
+        recognizer: {
+          ready: Promise.resolve(),
+          async detect(text) {
+            nerCalls += 1
+            return stubRecognizer([{ value: "Anna Lindqvist", label: "NAMN" }]).detect(text)
+          },
+        },
+      }),
+    })
+    cleanups.push(() => proxy.close())
+
+    const brPayload = brotliCompressSync(
+      Buffer.from(
+        JSON.stringify({
+          model: "gpt-5.4",
+          tools: [
+            {
+              type: "namespace",
+              name: "mcp__custom",
+              description: "Runs a command for Projekt Orion",
+              tools: [
+                {
+                  type: "function",
+                  name: "lookup",
+                  description: "Call 070-174 06 58 for Projekt Orion",
+                },
+              ],
+            },
+          ],
+          input: "Hej Anna Lindqvist",
+        }),
+      ),
+    )
+
+    const okRes = await fetch(`${proxy.url}/v1/responses`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "content-encoding": "br" },
+      body: brPayload,
+    })
+    expect(okRes.status).toBe(200)
+    // Tool descriptions must run rules + customTerms (0 NER calls), user input runs NER (1 call).
+    expect(nerCalls).toBe(1)
+    const sent = upstream.seen[0]?.body ?? ""
+    expect(sent).not.toContain("070-174 06 58")
+    expect(sent).not.toContain("Projekt Orion")
+    expect(sent).not.toContain("Anna Lindqvist")
+    expect(sent).toContain("[NAMN_1]")
+
+    const badEnc = await fetch(`${proxy.url}/v1/responses`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "content-encoding": "lz4" },
+      body: "not-decoded",
+    })
+    expect(badEnc.status).toBe(415)
+    expect(upstream.seen).toHaveLength(1)
   })
 })
 

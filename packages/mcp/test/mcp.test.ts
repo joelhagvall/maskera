@@ -166,6 +166,16 @@ describe("MaskeraMcpServer JSON-RPC protocol and tools", () => {
       serverInfo: { name: "maskera-mcp" },
     })
 
+    const initModern = await server.handleMessage({
+      jsonrpc: "2.0",
+      id: 101,
+      method: "initialize",
+      params: { protocolVersion: "2025-11-25" },
+    })
+    expect(initModern?.result).toMatchObject({
+      protocolVersion: "2025-11-25",
+    })
+
     // Notifications produce no response
     expect(
       await server.handleMessage({
@@ -181,7 +191,19 @@ describe("MaskeraMcpServer JSON-RPC protocol and tools", () => {
     })
 
     const list = await server.handleMessage({ jsonrpc: "2.0", id: 3, method: "tools/list" })
-    const toolNames = (list?.result as { tools: Array<{ name: string }> }).tools.map((t) => t.name)
+    const tools = (
+      list?.result as {
+        tools: Array<{
+          name: string
+          annotations?: {
+            readOnlyHint: boolean
+            destructiveHint: boolean
+            openWorldHint: boolean
+          }
+        }>
+      }
+    ).tools
+    const toolNames = tools.map((t) => t.name)
     expect(toolNames).toEqual([
       "maskera_redact",
       "maskera_restore",
@@ -191,6 +213,16 @@ describe("MaskeraMcpServer JSON-RPC protocol and tools", () => {
       "maskera_clear_session",
       "maskera_status",
     ])
+    for (const tool of tools) {
+      expect(tool.annotations?.openWorldHint).toBe(false)
+    }
+    expect(tools.find((t) => t.name === "maskera_read_file")?.annotations?.readOnlyHint).toBe(true)
+    expect(tools.find((t) => t.name === "maskera_write_file")?.annotations?.readOnlyHint).toBe(
+      false,
+    )
+    expect(
+      tools.find((t) => t.name === "maskera_clear_session")?.annotations?.destructiveHint,
+    ).toBe(true)
 
     const invalidReq = await server.handleMessage("not-an-object")
     expect(invalidReq?.error?.code).toBe(-32600)
@@ -377,6 +409,64 @@ describe("MaskeraMcpServer JSON-RPC protocol and tools", () => {
     expect(
       (restored?.result as { structuredContent: { restored: string } }).structuredContent.restored,
     ).toBe("Org.nr 202100-4748, IBAN SE42 8000 0890 1191 4616 8423")
+  })
+  it("caches detected spans across repeated calls without re-running NER and handles warmup safely", async () => {
+    let detectCalls = 0
+    const countingRecognizer: NerRecognizer = {
+      ready: Promise.resolve(),
+      async detect(text: string) {
+        detectCalls += 1
+        const idx = text.indexOf("Anna Lindqvist")
+        return idx >= 0
+          ? [
+              {
+                start: idx,
+                end: idx + "Anna Lindqvist".length,
+                value: "Anna Lindqvist",
+                label: "NAMN",
+              },
+            ]
+          : []
+      },
+    }
+    const engine = createMaskeraEngine({ defaultMode: "auto", recognizer: countingRecognizer })
+    engine.warmup()
+    await Promise.resolve()
+
+    const first = await engine.redact("Hej Anna Lindqvist (070-174 06 58)")
+    const second = await engine.redact("Hej Anna Lindqvist (070-174 06 58)")
+    expect(detectCalls).toBe(1)
+    expect(second.result.text).toBe(first.result.text)
+    expect(second.result.map).toEqual(first.result.map)
+    expect(engine.status().cacheHits).toBe(1)
+    expect(engine.status().cacheMisses).toBe(1)
+
+    // Different customTerms must miss cache and re-run
+    const third = await engine.redact("Hej Anna Lindqvist (070-174 06 58)", {
+      customTerms: ["Hej"],
+    })
+    expect(detectCalls).toBe(2)
+    expect(third.result.text).toContain("[EGENT_1]")
+
+    engine.clearCache()
+    expect(engine.status().cacheSize).toBe(0)
+    expect(engine.status().cacheHits).toBe(0)
+
+    // Warmup on a failing recognizer must not cause an unhandled rejection
+    const failingEngine = createMaskeraEngine({
+      defaultMode: "auto",
+      recognizer: {
+        get ready() {
+          return Promise.reject(new Error("offline"))
+        },
+        async detect() {
+          throw new Error("offline")
+        },
+      },
+    })
+    failingEngine.warmup()
+    await new Promise((r) => setTimeout(r, 10))
+    expect(failingEngine.status().nerError).toContain("offline")
   })
 })
 

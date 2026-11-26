@@ -1,7 +1,9 @@
-import { mkdir, readFile, realpath, stat, writeFile } from "node:fs/promises"
-import { dirname, isAbsolute, relative, resolve } from "node:path"
+import { lstat, mkdir, readFile, readlink, realpath, stat, writeFile } from "node:fs/promises"
+import { dirname, isAbsolute, relative, resolve, sep } from "node:path"
 
 const MAX_FILE_BYTES = 2 * 1024 * 1024 // 2 MiB text ceiling
+const MAX_SYMLINK_HOPS = 40
+const UTF8_DECODER = new TextDecoder("utf-8", { fatal: true })
 
 export interface FileGuard {
   readonly allowedRoots: readonly string[]
@@ -15,7 +17,7 @@ export interface FileGuard {
 
 function isWithinRoot(root: string, target: string): boolean {
   const rel = relative(root, target)
-  return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel))
+  return rel === "" || (rel !== ".." && !rel.startsWith(`..${sep}`) && !isAbsolute(rel))
 }
 
 async function resolveExistingAncestor(
@@ -26,7 +28,7 @@ async function resolveExistingAncestor(
   for (;;) {
     try {
       const real = await realpath(current)
-      return { ancestor: real, tail: segments.reverse().join("/") }
+      return { ancestor: real, tail: segments.reverse().join(sep) }
     } catch {
       const parent = dirname(current)
       if (parent === current) {
@@ -36,6 +38,33 @@ async function resolveExistingAncestor(
       current = parent
     }
   }
+}
+
+/**
+ * Resolves a destination path while following any dangling or live symlinks
+ * step by step so a dangling symlink inside an allowed root pointing outside
+ * can never bypass the root boundary on write.
+ */
+async function resolveCanonicalTarget(target: string): Promise<string> {
+  let current = resolve(target)
+  for (let hop = 0; hop < MAX_SYMLINK_HOPS; hop++) {
+    const { ancestor, tail } = await resolveExistingAncestor(current)
+    const candidate = tail ? resolve(ancestor, tail) : ancestor
+    try {
+      const info = await lstat(candidate)
+      if (!info.isSymbolicLink()) {
+        return candidate
+      }
+      const linkTarget = await readlink(candidate)
+      current = resolve(dirname(candidate), linkTarget)
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+        return candidate
+      }
+      throw err
+    }
+  }
+  throw new Error(`Too many symlink hops while resolving "${target}".`)
 }
 
 /**
@@ -55,7 +84,15 @@ export function createFileGuard(roots: readonly string[] = [process.cwd()]): Fil
           try {
             return await realpath(abs)
           } catch {
-            return abs
+            // Canonicalize through the nearest existing ancestor so a root
+            // created after startup under a symlinked parent (e.g. /tmp ->
+            // /private/tmp on macOS) matches realpath() once created.
+            try {
+              const { ancestor, tail } = await resolveExistingAncestor(abs)
+              return tail ? resolve(ancestor, tail) : ancestor
+            } catch {
+              return abs
+            }
           }
         }),
       )
@@ -103,9 +140,17 @@ export function createFileGuard(roots: readonly string[] = [process.cwd()]): Fil
       if (buffer.includes(0)) {
         throw new Error(`"${filePath}" appears to be a binary file; only UTF-8 text is supported.`)
       }
+      let content: string
+      try {
+        content = UTF8_DECODER.decode(buffer)
+      } catch {
+        throw new Error(
+          `"${filePath}" is not valid UTF-8 text; convert it to UTF-8 before redacting.`,
+        )
+      }
       return {
         resolvedPath: real,
-        content: buffer.toString("utf8"),
+        content,
         bytes: buffer.byteLength,
       }
     },
@@ -113,8 +158,7 @@ export function createFileGuard(roots: readonly string[] = [process.cwd()]): Fil
     async writeText(filePath: string, content: string, options = {}) {
       const rootsList = await getCanonicalRoots()
       const candidate = resolveAgainstBase(filePath)
-      const { ancestor, tail } = await resolveExistingAncestor(candidate)
-      const targetReal = tail ? resolve(ancestor, tail) : ancestor
+      const targetReal = await resolveCanonicalTarget(candidate)
       if (!rootsList.some((root) => isWithinRoot(root, targetReal))) {
         throw new Error(
           `Access denied: "${filePath}" is outside allowed workspace roots (${rootsList.join(", ")}).`,
@@ -125,6 +169,12 @@ export function createFileGuard(roots: readonly string[] = [process.cwd()]): Fil
         throw new Error(`Output exceeds max allowed size (${MAX_FILE_BYTES} bytes).`)
       }
       await mkdir(dirname(targetReal), { recursive: true })
+      const parentReal = await realpath(dirname(targetReal))
+      if (!rootsList.some((root) => isWithinRoot(root, parentReal))) {
+        throw new Error(
+          `Access denied: "${filePath}" is outside allowed workspace roots (${rootsList.join(", ")}).`,
+        )
+      }
       await writeFile(targetReal, content, {
         encoding: "utf8",
         flag: options.overwrite ? "w" : "wx",

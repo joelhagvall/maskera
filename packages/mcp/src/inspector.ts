@@ -1,0 +1,427 @@
+import type { ServerResponse } from "node:http"
+
+export interface InspectedRequest {
+  id: string
+  timestamp: string
+  method: string
+  path: string
+  upstream: string
+  sessionId: string
+  status: number
+  streamed: boolean
+  durationMs: number
+  redactions: number
+  counts: Record<string, number>
+  /** Redacted snippets sent upstream (never raw PII). */
+  redactedPreview: string[]
+}
+
+const MAX_EVENTS = 100
+
+/**
+ * In-memory ring buffer and SSE fan-out for the local proxy inspector.
+ * Keeps only metadata and already-redacted previews (never raw PII).
+ */
+export class ProxyInspector {
+  private readonly items: InspectedRequest[] = []
+  private readonly subscribers = new Set<ServerResponse>()
+  private seq = 0
+
+  record(entry: Omit<InspectedRequest, "id">): InspectedRequest {
+    this.seq += 1
+    const item: InspectedRequest = { id: `req_${this.seq}`, ...entry }
+    this.items.unshift(item)
+    if (this.items.length > MAX_EVENTS) this.items.length = MAX_EVENTS
+
+    const payload = `event: request\ndata: ${JSON.stringify(item)}\n\n`
+    for (const res of [...this.subscribers]) {
+      if (res.writableEnded || res.destroyed) {
+        this.subscribers.delete(res)
+        continue
+      }
+      res.write(payload)
+    }
+    return item
+  }
+
+  list(): readonly InspectedRequest[] {
+    return this.items
+  }
+
+  clear(): void {
+    this.items.length = 0
+    const payload = `event: cleared\ndata: {}\n\n`
+    for (const res of [...this.subscribers]) {
+      if (res.writableEnded || res.destroyed) {
+        this.subscribers.delete(res)
+        continue
+      }
+      res.write(payload)
+    }
+  }
+
+  subscribe(res: ServerResponse, extraHeaders: Record<string, string> = {}): void {
+    res.writeHead(200, {
+      ...extraHeaders,
+      "content-type": "text/event-stream; charset=utf-8",
+      "cache-control": "no-cache, no-transform",
+      connection: "keep-alive",
+    })
+    res.write(`event: init\ndata: ${JSON.stringify({ items: this.items })}\n\n`)
+    this.subscribers.add(res)
+    res.on("close", () => {
+      this.subscribers.delete(res)
+    })
+  }
+
+  closeAll(): void {
+    for (const res of [...this.subscribers]) {
+      try {
+        res.end()
+      } catch {
+        // ignore already-closed streams
+      }
+    }
+    this.subscribers.clear()
+  }
+}
+
+export function renderInspectorHtml(info: {
+  url: string
+  defaultMode: string
+  restoreResponses: boolean
+}): string {
+  const safeUrl = info.url.replace(/[<>&"']/g, "")
+  return `<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Maskera Proxy Inspector</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-subtle: #f7f7f8;
+    --fg: #111113;
+    --muted: #666670;
+    --border: #e4e4e7;
+    --ok: #15803d;
+    --ok-bg: #f0fdf4;
+    --err: #b91c1c;
+    --err-bg: #fef2f2;
+    --tok-bg: #eff6ff;
+    --tok-fg: #1d4ed8;
+    --tok-border: #bfdbfe;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0c0c0e;
+      --bg-subtle: #16161a;
+      --fg: #f4f4f5;
+      --muted: #a1a1aa;
+      --border: #27272a;
+      --ok: #4ade80;
+      --ok-bg: #052e16;
+      --err: #f87171;
+      --err-bg: #450a0a;
+      --tok-bg: #172554;
+      --tok-fg: #93c5fd;
+      --tok-border: #1e3a8a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.5;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 24px 20px 64px; }
+  header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  h1 { margin: 0; font-size: 18px; font-weight: 650; letter-spacing: -0.02em; }
+  .sub { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+  .dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--ok); margin-right: 6px; vertical-align: middle;
+  }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  button {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 12.5px;
+    padding: 7px 12px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--fg);
+    cursor: pointer;
+  }
+  button:hover { background: var(--bg-subtle); }
+  button.active { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin: 18px 0 22px;
+  }
+  @media (max-width: 640px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    background: var(--bg-subtle);
+  }
+  .stat-k { font-size: 11.5px; color: var(--muted); }
+  .stat-v { font-size: 20px; font-weight: 650; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .empty {
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 28px 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+  .empty code {
+    display: block; margin: 10px auto 0; max-width: 560px; padding: 10px 12px;
+    background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 6px;
+    font: 12px/1.6 var(--mono); color: var(--fg); text-align: left; white-space: pre-wrap;
+  }
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  details.item {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    overflow: hidden;
+  }
+  summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 11px 14px;
+    font-size: 13px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { background: var(--bg-subtle); }
+  .left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .right { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .badge {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 5px;
+  }
+  .badge.ok { background: var(--ok-bg); color: var(--ok); }
+  .badge.err { background: var(--err-bg); color: var(--err); }
+  .path { font-family: var(--mono); font-weight: 500; font-size: 12.5px; }
+  .pill {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 5px;
+    background: var(--tok-bg);
+    color: var(--tok-fg);
+    border: 1px solid var(--tok-border);
+  }
+  .body {
+    border-top: 1px solid var(--border);
+    padding: 12px 14px;
+    background: var(--bg-subtle);
+  }
+  .body-label { font-size: 11.5px; color: var(--muted); margin: 0 0 8px; }
+  .preview {
+    margin: 0 0 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    font: 12.5px/1.6 var(--mono);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .tok {
+    display: inline-block;
+    padding: 0 4px;
+    border-radius: 4px;
+    background: var(--tok-bg);
+    color: var(--tok-fg);
+    border: 1px solid var(--tok-border);
+    font-weight: 600;
+  }
+  .vault-box {
+    margin-top: 24px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    background: var(--bg-subtle);
+  }
+  .vault-box h2 { margin: 0 0 6px; font-size: 14px; }
+  .vault-box p { margin: 0 0 10px; font-size: 12.5px; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); font-family: var(--mono); }
+  th { font-family: var(--sans); font-size: 11.5px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1><span class="dot"></span>Maskera lokal proxy-inspektör</h1>
+      <p class="sub">Körs enbart på ${safeUrl} · läge: ${info.defaultMode} · återställning: ${info.restoreResponses ? "på" : "av"} · allt lagras bara i lokalt RAM</p>
+    </div>
+    <div class="actions">
+      <button id="reveal-btn" type="button">Visa originalvärden lokalt</button>
+      <button id="clear-btn" type="button">Rensa minne</button>
+    </div>
+  </header>
+
+  <section class="stats">
+    <div class="stat"><div class="stat-k">Anrop</div><div class="stat-v" id="st-req">0</div></div>
+    <div class="stat"><div class="stat-k">Maskerade uppgifter</div><div class="stat-v" id="st-red">0</div></div>
+    <div class="stat"><div class="stat-k">Unika i sessionsvalvet</div><div class="stat-v" id="st-uniq">0</div></div>
+    <div class="stat"><div class="stat-k">AI-modell</div><div class="stat-v" id="st-model">Redo</div></div>
+  </section>
+
+  <div id="feed"></div>
+  <div id="vault-root"></div>
+</div>
+<script>
+(() => {
+  const feedEl = document.getElementById("feed");
+  const vaultRoot = document.getElementById("vault-root");
+  const revealBtn = document.getElementById("reveal-btn");
+  const clearBtn = document.getElementById("clear-btn");
+  const stReq = document.getElementById("st-req");
+  const stRed = document.getElementById("st-red");
+  const stUniq = document.getElementById("st-uniq");
+  const stModel = document.getElementById("st-model");
+  let items = [];
+  let reveal = false;
+  let userToggled = false;
+  const openIds = new Set();
+  const seenIds = new Set();
+
+  const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  const highlightTokens = (s) => esc(s).replace(/\\[[A-ZÅÄÖ][A-ZÅÄÖ0-9_]*_\\d+\\]/g, (m) => '<span class="tok">' + m + "</span>");
+
+  async function refreshStatus() {
+    try {
+      const r = await fetch("/_maskera/status");
+      const d = await r.json();
+      stReq.textContent = String(d.requests_proxied ?? 0);
+      stRed.textContent = String(d.total_redactions ?? 0);
+      const uniq = (d.sessions || []).reduce((sum, s) => sum + (s.entityCount || 0), 0);
+      stUniq.textContent = String(uniq);
+      stModel.textContent = d.engine?.defaultMode === "rules"
+        ? "Regler"
+        : (d.engine?.nerError ? "Fel" : (d.engine?.nerLoaded ? "ONNX aktiv" : "Väntar"));
+    } catch {}
+  }
+
+  async function refreshVault() {
+    if (!reveal) { vaultRoot.innerHTML = ""; return; }
+    try {
+      const r = await fetch("/_maskera/vault", { headers: { "x-maskera-reveal": "1" } });
+      const d = await r.json();
+      const rows = (d.entries || []).map((e) => "<tr><td>" + esc(e.sessionId) + "</td><td><span class=\\"tok\\">" + esc(e.token) + "</span></td><td>" + esc(e.value) + "</td></tr>").join("");
+      vaultRoot.innerHTML = '<section class="vault-box"><h2>Lokal återställningsnyckel (stannar i RAM)</h2><p>Dölj den här vyn innan du delar skärm.</p>' +
+        (rows ? "<table><thead><tr><th>Session</th><th>Platshållare</th><th>Originalvärde</th></tr></thead><tbody>" + rows + "</tbody></table>" : "<p>Inga lagrade värden än.</p>") +
+        "</section>";
+    } catch {}
+  }
+
+  function render() {
+    if (!items.length) {
+      feedEl.innerHTML = '<div class="empty">Inga proxade AI-anrop ännu. Peka din agent hit för att se maskeringen i realtid:<code>ANTHROPIC_BASE_URL=${safeUrl} claude\\nOPENAI_BASE_URL=${safeUrl}/v1 codex</code></div>';
+      return;
+    }
+    if (seenIds.size === 0 && items[0]?.id) {
+      openIds.add(items[0].id);
+    }
+    for (const it of items) seenIds.add(it.id);
+    feedEl.innerHTML = '<div class="list">' + items.map((it) => {
+      const time = (it.timestamp || "").slice(11, 19);
+      const pills = Object.entries(it.counts || {}).map(([k, v]) => '<span class="pill">' + esc(k) + " ×" + v + "</span>").join("");
+      const previews = (it.redactedPreview || []).map((p) => '<pre class="preview">' + highlightTokens(p) + "</pre>").join("");
+      const statusCls = it.status >= 200 && it.status < 400 ? "ok" : "err";
+      const isOpen = openIds.has(it.id);
+      return '<details class="item" data-id="' + esc(it.id) + '"' + (isOpen ? " open" : "") + '>' +
+        '<summary><span class="left"><span class="badge ' + statusCls + '">' + it.status + '</span><span class="path">' + esc(it.method + " " + it.path) + '</span>' + pills + (it.redactions === 0 ? '<span style="color:var(--muted);font-size:12px">0 PII</span>' : "") + '</span>' +
+        '<span class="right"><span>' + (it.streamed ? "SSE" : "JSON") + '</span><span>' + it.durationMs + ' ms</span><span>' + esc(time) + '</span></span></summary>' +
+        '<div class="body"><p class="body-label">Vad som skickades vidare till molnet (0 rå PII):</p>' + (previews || '<pre class="preview">(ingen text i anropet)</pre>') + '</div></details>';
+    }).join("") + "</div>";
+    for (const det of feedEl.querySelectorAll("details.item")) {
+      det.addEventListener("toggle", () => {
+        const id = det.getAttribute("data-id");
+        if (!id) return;
+        userToggled = true;
+        if (det.open) openIds.add(id);
+        else openIds.delete(id);
+      });
+    }
+  }
+
+  revealBtn.addEventListener("click", () => {
+    reveal = !reveal;
+    revealBtn.classList.toggle("active", reveal);
+    revealBtn.textContent = reveal ? "Dölj originalvärden" : "Visa originalvärden lokalt";
+    void refreshVault();
+  });
+
+  clearBtn.addEventListener("click", async () => {
+    await fetch("/_maskera/clear", { method: "POST", headers: { "x-maskera-action": "clear" } });
+    items = [];
+    userToggled = false;
+    openIds.clear();
+    seenIds.clear();
+    render();
+    await refreshStatus();
+    await refreshVault();
+  });
+
+  const es = new EventSource("/_maskera/events");
+  es.addEventListener("init", (ev) => {
+    items = JSON.parse(ev.data).items || [];
+    render();
+    void refreshStatus();
+  });
+  es.addEventListener("request", (ev) => {
+    const next = JSON.parse(ev.data);
+    items.unshift(next);
+    if (items.length > 100) items.length = 100;
+    if (!userToggled && openIds.size === 0 && next?.id) openIds.add(next.id);
+    render();
+    void refreshStatus();
+    if (reveal) void refreshVault();
+  });
+  es.addEventListener("cleared", () => {
+    items = [];
+    userToggled = false;
+    openIds.clear();
+    seenIds.clear();
+    render();
+    void refreshStatus();
+    void refreshVault();
+  });
+  void refreshStatus();
+})();
+</script>
+</body>
+</html>`
+}

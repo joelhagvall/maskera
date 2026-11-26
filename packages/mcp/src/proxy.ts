@@ -1,6 +1,10 @@
+import { appendFile, mkdir } from "node:fs/promises"
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http"
+import { dirname } from "node:path"
+import * as zlib from "node:zlib"
 import type { RedactionProfile } from "maskera"
 import { createMaskeraEngine, type MaskeraEngine, type MaskMode } from "./engine"
+import { type InspectedRequest, ProxyInspector, renderInspectorHtml } from "./inspector"
 import { SessionVault } from "./vault"
 
 export interface ProxyOptions {
@@ -26,16 +30,20 @@ export interface ProxyOptions {
   customTerms?: readonly string[]
   /** Restore placeholders in upstream responses. Default `true`. */
   restoreResponses?: boolean
+  /** Optional local JSONL file for metadata-only audit logs (counts only, never raw PII). */
+  auditLogPath?: string
   /** Optional safe metadata logger (never receives raw PII). */
   onLog?: (message: string) => void
 }
 
 export interface RunningMaskeraProxy {
   readonly url: string
+  readonly inspectorUrl: string
   readonly host: string
   readonly port: number
   readonly server: Server
   readonly vault: SessionVault
+  readonly inspector: ProxyInspector
   close(): Promise<void>
 }
 
@@ -108,6 +116,7 @@ export class StreamingRestorer {
 
   push(chunk: string): string {
     if (!chunk || this.tokens.length === 0) return chunk
+    if (!this.buffer && !chunk.includes("[")) return chunk
     this.buffer += chunk
     return this.drain(false)
   }
@@ -185,13 +194,13 @@ function escapeJsonStringValue(value: string): string {
 }
 
 function restorePlainText(text: string, map: Readonly<Record<string, string>>): string {
-  if (!text || Object.keys(map).length === 0) return text
+  if (!text || !text.includes("[") || Object.keys(map).length === 0) return text
   const r = new StreamingRestorer(map)
   return r.push(text) + r.flush()
 }
 
 function restoreJsonEncodedText(text: string, map: Readonly<Record<string, string>>): string {
-  if (!text || Object.keys(map).length === 0) return text
+  if (!text || !text.includes("[") || Object.keys(map).length === 0) return text
   // Try parsing as JSON first to restore string leaves cleanly without
   // breaking JSON syntax even if restored values contain quotes or newlines.
   try {
@@ -217,6 +226,21 @@ function restoreJsonLeaves(value: unknown, map: Readonly<Record<string, string>>
   return value
 }
 
+const MASKERA_VAULT_TOOL_RE = /(?:^|__)maskera_(?:write_file|restore|clear_session)$/
+const MASKERA_VAULT_CODE_RE = /\bmaskera_(?:write_file|restore)\b/
+
+function isMaskeraVaultToolName(name: unknown): boolean {
+  return typeof name === "string" && MASKERA_VAULT_TOOL_RE.test(name)
+}
+
+function shouldSkipToolArgRestore(toolName: unknown, argsText: string): boolean {
+  if (isMaskeraVaultToolName(toolName)) return true
+  if (toolName === "execute" && MASKERA_VAULT_CODE_RE.test(argsText)) return true
+  return false
+}
+
+export type RedactFieldKind = "message" | "system" | "tool_description"
+
 /**
  * Redacts all user/tool/system text fields in an Anthropic Messages, OpenAI
  * Chat Completions, or OpenAI Responses request body before it leaves the
@@ -224,85 +248,141 @@ function restoreJsonLeaves(value: unknown, map: Readonly<Record<string, string>>
  */
 export async function redactLlmRequestBody(
   body: Record<string, unknown>,
-  redactString: (text: string) => Promise<string>,
+  redactString: (text: string, kind: RedactFieldKind) => Promise<string>,
+  options: { mutate?: boolean } = {},
 ): Promise<Record<string, unknown>> {
-  const clone = structuredClone(body)
+  const clone = options.mutate ? body : structuredClone(body)
 
-  async function redactContentBlocks(blocks: unknown[]): Promise<void> {
+  async function redactContentBlocks(blocks: unknown[], kind: RedactFieldKind): Promise<void> {
     for (const block of blocks) {
       if (!isPlainObject(block)) continue
       if (typeof block.text === "string") {
-        block.text = await redactString(block.text)
+        block.text = await redactString(block.text, kind)
+      }
+      if (typeof block.thinking === "string") {
+        const redactedThinking = await redactString(block.thinking, kind)
+        if (redactedThinking !== block.thinking) {
+          block.thinking = redactedThinking
+          // Mutating a signed thinking block invalidates its signature; drop
+          // the stale signature if PII had to be stripped from it.
+          delete block.signature
+        }
+      }
+      if (typeof block.title === "string") {
+        block.title = await redactString(block.title, kind)
+      }
+      if (typeof block.context === "string") {
+        block.context = await redactString(block.context, kind)
       }
       if (typeof block.content === "string") {
-        block.content = await redactString(block.content)
+        block.content = await redactString(block.content, kind)
       } else if (Array.isArray(block.content)) {
-        await redactContentBlocks(block.content)
+        await redactContentBlocks(block.content, kind)
       }
       if (typeof block.output === "string") {
-        block.output = await redactString(block.output)
+        block.output = await redactString(block.output, kind)
+      } else if (Array.isArray(block.output)) {
+        await redactContentBlocks(block.output, kind)
+      }
+      if (isPlainObject(block.source)) {
+        if (block.source.type === "text" && typeof block.source.data === "string") {
+          block.source.data = await redactString(block.source.data, kind)
+        }
+        if (typeof block.source.content === "string") {
+          block.source.content = await redactString(block.source.content, kind)
+        } else if (Array.isArray(block.source.content)) {
+          await redactContentBlocks(block.source.content, kind)
+        }
       }
       if (typeof block.arguments === "string") {
-        block.arguments = await redactJsonStringOrText(block.arguments)
+        block.arguments = await redactJsonStringOrText(block.arguments, kind)
       }
       if (isPlainObject(block.input)) {
-        block.input = await redactObjectStrings(block.input)
+        block.input = await redactObjectStrings(block.input, kind)
       }
     }
   }
 
-  async function redactObjectStrings(value: unknown): Promise<unknown> {
-    if (typeof value === "string") return redactString(value)
+  async function redactObjectStrings(value: unknown, kind: RedactFieldKind): Promise<unknown> {
+    if (typeof value === "string") return redactString(value, kind)
     if (Array.isArray(value)) {
       const out = []
-      for (const item of value) out.push(await redactObjectStrings(item))
+      for (const item of value) out.push(await redactObjectStrings(item, kind))
       return out
     }
     if (isPlainObject(value)) {
       const out: Record<string, unknown> = {}
       for (const [k, v] of Object.entries(value)) {
-        out[k] = await redactObjectStrings(v)
+        out[k] = await redactObjectStrings(v, kind)
       }
       return out
     }
     return value
   }
 
-  async function redactJsonStringOrText(raw: string): Promise<string> {
+  async function redactJsonStringOrText(raw: string, kind: RedactFieldKind): Promise<string> {
     try {
       const parsed = JSON.parse(raw) as unknown
-      const redacted = await redactObjectStrings(parsed)
+      const redacted = await redactObjectStrings(parsed, kind)
       return JSON.stringify(redacted)
     } catch {
-      return redactString(raw)
+      return redactString(raw, kind)
     }
   }
 
   // Anthropic `system` / OpenAI Responses `instructions`
   if (typeof clone.system === "string") {
-    clone.system = await redactString(clone.system)
+    clone.system = await redactString(clone.system, "system")
   } else if (Array.isArray(clone.system)) {
-    await redactContentBlocks(clone.system)
+    await redactContentBlocks(clone.system, "system")
   }
 
   if (typeof clone.instructions === "string") {
-    clone.instructions = await redactString(clone.instructions)
+    clone.instructions = await redactString(clone.instructions, "system")
+  }
+
+  // Tool descriptions (Anthropic, OpenAI, and Codex MCP namespace tools) can
+  // carry project/client names.
+  async function redactToolEntries(entries: unknown[]): Promise<void> {
+    for (const tool of entries) {
+      if (!isPlainObject(tool)) continue
+      if (typeof tool.description === "string") {
+        tool.description = await redactString(tool.description, "tool_description")
+      }
+      if (isPlainObject(tool.function) && typeof tool.function.description === "string") {
+        tool.function.description = await redactString(
+          tool.function.description,
+          "tool_description",
+        )
+      }
+      if (Array.isArray(tool.tools)) {
+        await redactToolEntries(tool.tools)
+      }
+    }
+  }
+  if (Array.isArray(clone.tools)) {
+    await redactToolEntries(clone.tools)
   }
 
   // Anthropic Messages & OpenAI Chat Completions `messages`
   if (Array.isArray(clone.messages)) {
     for (const msg of clone.messages) {
       if (!isPlainObject(msg)) continue
+      const msgKind: RedactFieldKind =
+        msg.role === "system" || msg.role === "developer" ? "system" : "message"
       if (typeof msg.content === "string") {
-        msg.content = await redactString(msg.content)
+        msg.content = await redactString(msg.content, msgKind)
       } else if (Array.isArray(msg.content)) {
-        await redactContentBlocks(msg.content)
+        await redactContentBlocks(msg.content, msgKind)
       }
       if (Array.isArray(msg.tool_calls)) {
         for (const call of msg.tool_calls) {
           if (isPlainObject(call) && isPlainObject(call.function)) {
             if (typeof call.function.arguments === "string") {
-              call.function.arguments = await redactJsonStringOrText(call.function.arguments)
+              call.function.arguments = await redactJsonStringOrText(
+                call.function.arguments,
+                msgKind,
+              )
             }
           }
         }
@@ -312,24 +392,31 @@ export async function redactLlmRequestBody(
 
   // OpenAI Responses API `input`
   if (typeof clone.input === "string") {
-    clone.input = await redactString(clone.input)
+    clone.input = await redactString(clone.input, "message")
   } else if (Array.isArray(clone.input)) {
     for (let i = 0; i < clone.input.length; i++) {
       const item = clone.input[i]
       if (typeof item === "string") {
-        clone.input[i] = await redactString(item)
+        clone.input[i] = await redactString(item, "message")
       } else if (isPlainObject(item)) {
-        if (typeof item.text === "string") item.text = await redactString(item.text)
+        const itemKind: RedactFieldKind =
+          item.role === "system" || item.role === "developer" ? "system" : "message"
+        if (typeof item.text === "string") item.text = await redactString(item.text, itemKind)
         if (typeof item.content === "string") {
-          item.content = await redactString(item.content)
+          item.content = await redactString(item.content, itemKind)
         } else if (Array.isArray(item.content)) {
-          await redactContentBlocks(item.content)
+          await redactContentBlocks(item.content, itemKind)
         }
         if (typeof item.output === "string") {
-          item.output = await redactString(item.output)
+          item.output = await redactString(item.output, itemKind)
+        } else if (Array.isArray(item.output)) {
+          await redactContentBlocks(item.output, itemKind)
+        }
+        if (Array.isArray(item.summary)) {
+          await redactContentBlocks(item.summary, itemKind)
         }
         if (typeof item.arguments === "string") {
-          item.arguments = await redactJsonStringOrText(item.arguments)
+          item.arguments = await redactJsonStringOrText(item.arguments, itemKind)
         }
       }
     }
@@ -345,9 +432,10 @@ export async function redactLlmRequestBody(
 export function restoreLlmResponseBody(
   body: unknown,
   map: Readonly<Record<string, string>>,
+  options: { mutate?: boolean } = {},
 ): unknown {
   if (!isPlainObject(body) || Object.keys(map).length === 0) return body
-  const clone = structuredClone(body)
+  const clone = options.mutate ? body : structuredClone(body)
 
   // Anthropic Messages: `content: [{ type: "text", text }, { type: "tool_use", input }]`
   if (Array.isArray(clone.content)) {
@@ -356,11 +444,18 @@ export function restoreLlmResponseBody(
       if (typeof block.text === "string") {
         block.text = restorePlainText(block.text, map)
       }
-      if (typeof block.thinking === "string") {
+      if (typeof block.thinking === "string" && typeof block.signature !== "string") {
         block.thinking = restorePlainText(block.thinking, map)
       }
       if (isPlainObject(block.input)) {
-        block.input = restoreJsonLeaves(block.input, map)
+        const skipRestore =
+          isMaskeraVaultToolName(block.name) ||
+          (block.name === "execute" &&
+            typeof block.input.code === "string" &&
+            MASKERA_VAULT_CODE_RE.test(block.input.code))
+        if (!skipRestore) {
+          block.input = restoreJsonLeaves(block.input, map)
+        }
       }
     }
   }
@@ -374,10 +469,16 @@ export function restoreLlmResponseBody(
         if (typeof msg.content === "string") {
           msg.content = restorePlainText(msg.content, map)
         }
+        if (typeof msg.reasoning_content === "string") {
+          msg.reasoning_content = restorePlainText(msg.reasoning_content, map)
+        }
         if (Array.isArray(msg.tool_calls)) {
           for (const call of msg.tool_calls) {
             if (isPlainObject(call) && isPlainObject(call.function)) {
-              if (typeof call.function.arguments === "string") {
+              if (
+                typeof call.function.arguments === "string" &&
+                !shouldSkipToolArgRestore(call.function.name, call.function.arguments)
+              ) {
                 call.function.arguments = restoreJsonEncodedText(call.function.arguments, map)
               }
             }
@@ -397,11 +498,21 @@ export function restoreLlmResponseBody(
   if (Array.isArray(clone.output)) {
     for (const item of clone.output) {
       if (!isPlainObject(item)) continue
-      if (typeof item.arguments === "string") {
+      if (
+        typeof item.arguments === "string" &&
+        !shouldSkipToolArgRestore(item.name, item.arguments)
+      ) {
         item.arguments = restoreJsonEncodedText(item.arguments, map)
       }
       if (Array.isArray(item.content)) {
         for (const part of item.content) {
+          if (isPlainObject(part) && typeof part.text === "string") {
+            part.text = restorePlainText(part.text, map)
+          }
+        }
+      }
+      if (Array.isArray(item.summary)) {
+        for (const part of item.summary) {
           if (isPlainObject(part) && typeof part.text === "string") {
             part.text = restorePlainText(part.text, map)
           }
@@ -419,6 +530,12 @@ export function restoreLlmResponseBody(
  */
 export function createSseRestorer(map: Readonly<Record<string, string>>) {
   const streams = new Map<string, StreamingRestorer>()
+  // Track active tool names so proxy placeholders never overwrite MCP vault
+  // placeholders inside `maskera_write_file`, `maskera_restore`, or OpenCode's
+  // Code Mode `execute` calls targeting Maskera MCP tools.
+  const toolNames = new Map<string, string>()
+  const bufferedToolArgs = new Map<string, string>()
+
   const getStream = (key: string, escapeForJsonString = false): StreamingRestorer => {
     let r = streams.get(key)
     if (!r) {
@@ -433,6 +550,142 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
     if (!r) return ""
     streams.delete(key)
     return r.flush()
+  }
+
+  function flushBufferedToolArgs(key: string): string {
+    const raw = bufferedToolArgs.get(key)
+    if (raw === undefined) return ""
+    bufferedToolArgs.delete(key)
+    const name = toolNames.get(key)
+    if (shouldSkipToolArgRestore(name, raw)) return raw
+    return restoreJsonEncodedText(raw, map)
+  }
+
+  function drainRemainingStreams(): string[] {
+    const events: string[] = []
+    for (const key of [...bufferedToolArgs.keys()]) {
+      const full = flushBufferedToolArgs(key)
+      if (!full) continue
+      if (key.startsWith("openai_chat_tool:")) {
+        const [, cIdx, tIdx] = key.split(":")
+        events.push(
+          `data: ${JSON.stringify({
+            choices: [
+              {
+                index: Number(cIdx ?? 0),
+                delta: {
+                  tool_calls: [{ index: Number(tIdx ?? 0), function: { arguments: full } }],
+                },
+              },
+            ],
+          })}`,
+        )
+      } else if (key.startsWith("anth_json:")) {
+        const idx = Number(key.split(":")[1] ?? 0)
+        events.push(
+          `event: content_block_delta\ndata: ${JSON.stringify({
+            type: "content_block_delta",
+            index: idx,
+            delta: { type: "input_json_delta", partial_json: full },
+          })}`,
+        )
+      } else if (key.startsWith("resp_args:")) {
+        const outputIdx = Number(key.split(":")[1] ?? 0)
+        events.push(
+          `event: response.function_call_arguments.delta\ndata: ${JSON.stringify({
+            type: "response.function_call_arguments.delta",
+            output_index: outputIdx,
+            delta: full,
+          })}`,
+        )
+      }
+    }
+    for (const key of [...streams.keys()]) {
+      const tail = flushStream(key)
+      if (!tail) continue
+      if (key.startsWith("openai_chat_text:")) {
+        const idx = Number(key.split(":")[1] ?? 0)
+        events.push(
+          `data: ${JSON.stringify({ choices: [{ index: idx, delta: { content: tail } }] })}`,
+        )
+      } else if (key.startsWith("openai_chat_tool:")) {
+        const [, cIdx, tIdx] = key.split(":")
+        events.push(
+          `data: ${JSON.stringify({
+            choices: [
+              {
+                index: Number(cIdx ?? 0),
+                delta: {
+                  tool_calls: [{ index: Number(tIdx ?? 0), function: { arguments: tail } }],
+                },
+              },
+            ],
+          })}`,
+        )
+      } else if (key.startsWith("anth_text:")) {
+        const idx = Number(key.split(":")[1] ?? 0)
+        events.push(
+          `event: content_block_delta\ndata: ${JSON.stringify({
+            type: "content_block_delta",
+            index: idx,
+            delta: { type: "text_delta", text: tail },
+          })}`,
+        )
+      } else if (key.startsWith("anth_thinking:")) {
+        const idx = Number(key.split(":")[1] ?? 0)
+        events.push(
+          `event: content_block_delta\ndata: ${JSON.stringify({
+            type: "content_block_delta",
+            index: idx,
+            delta: { type: "thinking_delta", thinking: tail },
+          })}`,
+        )
+      } else if (key.startsWith("anth_json:")) {
+        const idx = Number(key.split(":")[1] ?? 0)
+        events.push(
+          `event: content_block_delta\ndata: ${JSON.stringify({
+            type: "content_block_delta",
+            index: idx,
+            delta: { type: "input_json_delta", partial_json: tail },
+          })}`,
+        )
+      } else if (key.startsWith("resp_text:")) {
+        const [, outputIdx, contentIdx] = key.split(":")
+        events.push(
+          `event: response.output_text.delta\ndata: ${JSON.stringify({
+            type: "response.output_text.delta",
+            output_index: Number(outputIdx ?? 0),
+            content_index: Number(contentIdx ?? 0),
+            delta: tail,
+          })}`,
+        )
+      } else if (key.startsWith("openai_chat_reasoning:")) {
+        const idx = Number(key.split(":")[1] ?? 0)
+        events.push(
+          `data: ${JSON.stringify({ choices: [{ index: idx, delta: { reasoning_content: tail } }] })}`,
+        )
+      } else if (key.startsWith("resp_reasoning:")) {
+        const [, outputIdx, summaryIdx] = key.split(":")
+        events.push(
+          `event: response.reasoning_summary_text.delta\ndata: ${JSON.stringify({
+            type: "response.reasoning_summary_text.delta",
+            output_index: Number(outputIdx ?? 0),
+            summary_index: Number(summaryIdx ?? 0),
+            delta: tail,
+          })}`,
+        )
+      } else if (key.startsWith("resp_args:")) {
+        const outputIdx = Number(key.split(":")[1] ?? 0)
+        events.push(
+          `event: response.function_call_arguments.delta\ndata: ${JSON.stringify({
+            type: "response.function_call_arguments.delta",
+            output_index: outputIdx,
+            delta: tail,
+          })}`,
+        )
+      }
+    }
+    return events
   }
 
   let sseBuffer = ""
@@ -450,30 +703,7 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
       const rawData = line.slice("data:".length).trimStart()
       if (!rawData || rawData === "[DONE]") {
         // Flush any remaining buffered text before `[DONE]`.
-        for (const key of [...streams.keys()]) {
-          const tail = flushStream(key)
-          if (!tail) continue
-          if (key.startsWith("openai_chat_text:")) {
-            const idx = Number(key.split(":")[1] ?? 0)
-            extraEvents.push(
-              `data: ${JSON.stringify({ choices: [{ index: idx, delta: { content: tail } }] })}`,
-            )
-          } else if (key.startsWith("openai_chat_tool:")) {
-            const [, cIdx, tIdx] = key.split(":")
-            extraEvents.push(
-              `data: ${JSON.stringify({
-                choices: [
-                  {
-                    index: Number(cIdx ?? 0),
-                    delta: {
-                      tool_calls: [{ index: Number(tIdx ?? 0), function: { arguments: tail } }],
-                    },
-                  },
-                ],
-              })}`,
-            )
-          }
-        }
+        extraEvents.push(...drainRemainingStreams())
         outLines.push(line)
         continue
       }
@@ -492,17 +722,41 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
       }
 
       // 1) Anthropic Messages SSE events
+      if (parsed.type === "content_block_start" && isPlainObject(parsed.content_block)) {
+        const idx = typeof parsed.index === "number" ? parsed.index : 0
+        if (
+          parsed.content_block.type === "tool_use" &&
+          typeof parsed.content_block.name === "string"
+        ) {
+          toolNames.set(`anth_json:${idx}`, parsed.content_block.name)
+        }
+        outLines.push(`data: ${JSON.stringify(parsed)}`)
+        continue
+      }
+
       if (parsed.type === "content_block_delta" && isPlainObject(parsed.delta)) {
         const idx = typeof parsed.index === "number" ? parsed.index : 0
         if (parsed.delta.type === "text_delta" && typeof parsed.delta.text === "string") {
           parsed.delta.text = getStream(`anth_text:${idx}`).push(parsed.delta.text)
         } else if (
+          parsed.delta.type === "thinking_delta" &&
+          typeof parsed.delta.thinking === "string"
+        ) {
+          parsed.delta.thinking = getStream(`anth_thinking:${idx}`).push(parsed.delta.thinking)
+        } else if (
           parsed.delta.type === "input_json_delta" &&
           typeof parsed.delta.partial_json === "string"
         ) {
-          parsed.delta.partial_json = getStream(`anth_json:${idx}`, true).push(
-            parsed.delta.partial_json,
-          )
+          const key = `anth_json:${idx}`
+          const name = toolNames.get(key)
+          if (isMaskeraVaultToolName(name)) {
+            // Preserve MCP vault placeholders untouched for Maskera's own tools.
+          } else if (name === "execute") {
+            bufferedToolArgs.set(key, (bufferedToolArgs.get(key) ?? "") + parsed.delta.partial_json)
+            parsed.delta.partial_json = ""
+          } else {
+            parsed.delta.partial_json = getStream(key, true).push(parsed.delta.partial_json)
+          }
         }
         outLines.push(`data: ${JSON.stringify(parsed)}`)
         continue
@@ -520,7 +774,19 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
             })}`,
           )
         }
-        const jsonTail = flushStream(`anth_json:${idx}`)
+        const thinkingTail = flushStream(`anth_thinking:${idx}`)
+        if (thinkingTail) {
+          extraEvents.push(
+            `event: content_block_delta\ndata: ${JSON.stringify({
+              type: "content_block_delta",
+              index: idx,
+              delta: { type: "thinking_delta", thinking: thinkingTail },
+            })}`,
+          )
+        }
+        const jsonKey = `anth_json:${idx}`
+        const jsonTail = flushBufferedToolArgs(jsonKey) || flushStream(jsonKey)
+        toolNames.delete(jsonKey)
         if (jsonTail) {
           extraEvents.push(
             `event: content_block_delta\ndata: ${JSON.stringify({
@@ -544,15 +810,34 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
             if (typeof delta.content === "string") {
               delta.content = getStream(`openai_chat_text:${cIdx}`).push(delta.content)
             }
+            if (typeof delta.reasoning_content === "string") {
+              delta.reasoning_content = getStream(`openai_chat_reasoning:${cIdx}`).push(
+                delta.reasoning_content,
+              )
+            }
             if (Array.isArray(delta.tool_calls)) {
               for (const call of delta.tool_calls) {
                 if (!isPlainObject(call)) continue
                 const tIdx = typeof call.index === "number" ? call.index : 0
-                if (isPlainObject(call.function) && typeof call.function.arguments === "string") {
-                  call.function.arguments = getStream(
-                    `openai_chat_tool:${cIdx}:${tIdx}`,
-                    true,
-                  ).push(call.function.arguments)
+                const key = `openai_chat_tool:${cIdx}:${tIdx}`
+                if (isPlainObject(call.function)) {
+                  if (typeof call.function.name === "string" && call.function.name) {
+                    toolNames.set(key, call.function.name)
+                  }
+                  if (typeof call.function.arguments === "string") {
+                    const name = toolNames.get(key)
+                    if (isMaskeraVaultToolName(name)) {
+                      // Preserve MCP vault placeholders untouched.
+                    } else if (name === "execute") {
+                      bufferedToolArgs.set(
+                        key,
+                        (bufferedToolArgs.get(key) ?? "") + call.function.arguments,
+                      )
+                      call.function.arguments = ""
+                    } else {
+                      call.function.arguments = getStream(key, true).push(call.function.arguments)
+                    }
+                  }
                 }
               }
             }
@@ -564,6 +849,52 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
               const d = choice.delta as Record<string, unknown>
               d.content = (typeof d.content === "string" ? d.content : "") + textTail
             }
+            const reasoningTail = flushStream(`openai_chat_reasoning:${cIdx}`)
+            if (reasoningTail) {
+              if (!isPlainObject(choice.delta)) choice.delta = {}
+              const d = choice.delta as Record<string, unknown>
+              d.reasoning_content =
+                (typeof d.reasoning_content === "string" ? d.reasoning_content : "") + reasoningTail
+            }
+            const toolPrefix = `openai_chat_tool:${cIdx}:`
+            for (const key of [...bufferedToolArgs.keys()]) {
+              if (!key.startsWith(toolPrefix)) continue
+              const tIdx = Number(key.slice(toolPrefix.length) || 0)
+              const fullArgs = flushBufferedToolArgs(key)
+              toolNames.delete(key)
+              if (!fullArgs) continue
+              extraEvents.push(
+                `data: ${JSON.stringify({
+                  choices: [
+                    {
+                      index: cIdx,
+                      delta: {
+                        tool_calls: [{ index: tIdx, function: { arguments: fullArgs } }],
+                      },
+                    },
+                  ],
+                })}`,
+              )
+            }
+            for (const key of [...streams.keys()]) {
+              if (!key.startsWith(toolPrefix)) continue
+              const tIdx = Number(key.slice(toolPrefix.length) || 0)
+              const toolTail = flushStream(key)
+              toolNames.delete(key)
+              if (!toolTail) continue
+              extraEvents.push(
+                `data: ${JSON.stringify({
+                  choices: [
+                    {
+                      index: cIdx,
+                      delta: {
+                        tool_calls: [{ index: tIdx, function: { arguments: toolTail } }],
+                      },
+                    },
+                  ],
+                })}`,
+              )
+            }
           }
         }
         outLines.push(`data: ${JSON.stringify(parsed)}`)
@@ -571,6 +902,13 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
       }
 
       // 3) OpenAI Responses API SSE events
+      if (parsed.type === "response.output_item.added" && isPlainObject(parsed.item)) {
+        if (parsed.item.type === "function_call" && typeof parsed.item.name === "string") {
+          toolNames.set(`resp_args:${String(parsed.output_index ?? 0)}`, parsed.item.name)
+        }
+        outLines.push(`data: ${JSON.stringify(parsed)}`)
+        continue
+      }
       if (parsed.type === "response.output_text.delta" && typeof parsed.delta === "string") {
         const key = `resp_text:${String(parsed.output_index ?? 0)}:${String(parsed.content_index ?? 0)}`
         parsed.delta = getStream(key).push(parsed.delta)
@@ -597,17 +935,54 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
         continue
       }
       if (
+        parsed.type === "response.reasoning_summary_text.delta" &&
+        typeof parsed.delta === "string"
+      ) {
+        const key = `resp_reasoning:${String(parsed.output_index ?? 0)}:${String(parsed.summary_index ?? 0)}`
+        parsed.delta = getStream(key).push(parsed.delta)
+        outLines.push(`data: ${JSON.stringify(parsed)}`)
+        continue
+      }
+      if (parsed.type === "response.reasoning_summary_text.done") {
+        const key = `resp_reasoning:${String(parsed.output_index ?? 0)}:${String(parsed.summary_index ?? 0)}`
+        const tail = flushStream(key)
+        if (tail) {
+          extraEvents.push(
+            `event: response.reasoning_summary_text.delta\ndata: ${JSON.stringify({
+              type: "response.reasoning_summary_text.delta",
+              output_index: parsed.output_index ?? 0,
+              summary_index: parsed.summary_index ?? 0,
+              delta: tail,
+            })}`,
+          )
+        }
+        if (typeof parsed.text === "string") {
+          parsed.text = restorePlainText(parsed.text, map)
+        }
+        outLines.push(`data: ${JSON.stringify(parsed)}`)
+        continue
+      }
+      if (
         parsed.type === "response.function_call_arguments.delta" &&
         typeof parsed.delta === "string"
       ) {
         const key = `resp_args:${String(parsed.output_index ?? 0)}`
-        parsed.delta = getStream(key, true).push(parsed.delta)
+        const name = toolNames.get(key)
+        if (isMaskeraVaultToolName(name)) {
+          // Preserve MCP vault placeholders untouched for Maskera's own tools.
+        } else if (name === "execute") {
+          bufferedToolArgs.set(key, (bufferedToolArgs.get(key) ?? "") + parsed.delta)
+          parsed.delta = ""
+        } else {
+          parsed.delta = getStream(key, true).push(parsed.delta)
+        }
         outLines.push(`data: ${JSON.stringify(parsed)}`)
         continue
       }
       if (parsed.type === "response.function_call_arguments.done") {
         const key = `resp_args:${String(parsed.output_index ?? 0)}`
-        const tail = flushStream(key)
+        const name = toolNames.get(key)
+        const tail = flushBufferedToolArgs(key) || flushStream(key)
         if (tail) {
           extraEvents.push(
             `event: response.function_call_arguments.delta\ndata: ${JSON.stringify({
@@ -617,13 +992,58 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
             })}`,
           )
         }
-        if (typeof parsed.arguments === "string") {
+        if (
+          typeof parsed.arguments === "string" &&
+          !shouldSkipToolArgRestore(name, parsed.arguments)
+        ) {
           parsed.arguments = restoreJsonEncodedText(parsed.arguments, map)
         }
         outLines.push(`data: ${JSON.stringify(parsed)}`)
         continue
       }
-      if (parsed.type === "response.completed" && isPlainObject(parsed.response)) {
+      if (parsed.type === "error") {
+        // Flush any buffered deltas BEFORE the terminal error event so nothing
+        // is appended after `event: error`.
+        extraEvents.push(...drainRemainingStreams())
+        outLines.push(`data: ${JSON.stringify(parsed)}`)
+        continue
+      }
+      if (parsed.type === "response.content_part.done" && isPlainObject(parsed.part)) {
+        if (typeof parsed.part.text === "string") {
+          parsed.part.text = restorePlainText(parsed.part.text, map)
+        }
+        outLines.push(`data: ${JSON.stringify(parsed)}`)
+        continue
+      }
+      if (parsed.type === "response.output_item.done" && isPlainObject(parsed.item)) {
+        const item = parsed.item
+        const key = `resp_args:${String(parsed.output_index ?? 0)}`
+        const name = typeof item.name === "string" ? item.name : toolNames.get(key)
+        toolNames.delete(key)
+        if (typeof item.arguments === "string" && !shouldSkipToolArgRestore(name, item.arguments)) {
+          item.arguments = restoreJsonEncodedText(item.arguments, map)
+        }
+        if (Array.isArray(item.content)) {
+          for (const part of item.content) {
+            if (isPlainObject(part) && typeof part.text === "string") {
+              part.text = restorePlainText(part.text, map)
+            }
+          }
+        }
+        if (Array.isArray(item.summary)) {
+          for (const part of item.summary) {
+            if (isPlainObject(part) && typeof part.text === "string") {
+              part.text = restorePlainText(part.text, map)
+            }
+          }
+        }
+        outLines.push(`data: ${JSON.stringify(parsed)}`)
+        continue
+      }
+      if (
+        (parsed.type === "response.completed" || parsed.type === "response.incomplete") &&
+        isPlainObject(parsed.response)
+      ) {
         parsed.response = restoreLlmResponseBody(parsed.response, map)
         outLines.push(`data: ${JSON.stringify(parsed)}`)
         continue
@@ -636,9 +1056,14 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
     return extraEvents.length > 0 ? `${extraEvents.join("\n\n")}\n\n${joined}` : joined
   }
 
+  let pendingCr = false
+
   return {
     push(chunk: string): string {
-      sseBuffer += chunk.replace(/\r\n/g, "\n")
+      let text = pendingCr ? `\r${chunk}` : chunk
+      pendingCr = text.endsWith("\r")
+      if (pendingCr) text = text.slice(0, -1)
+      sseBuffer += text.replace(/\r\n/g, "\n").replace(/\r/g, "\n")
       let out = ""
       for (;;) {
         const sep = sseBuffer.indexOf("\n\n")
@@ -650,12 +1075,128 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
       return out
     },
     flush(): string {
-      if (!sseBuffer) return ""
-      const tail = processEventBlock(sseBuffer)
-      sseBuffer = ""
-      return tail
+      if (pendingCr) {
+        sseBuffer += "\n"
+        pendingCr = false
+      }
+      const parts: string[] = []
+      if (sseBuffer) {
+        parts.push(processEventBlock(sseBuffer))
+        sseBuffer = ""
+      }
+      const drained = drainRemainingStreams()
+      if (drained.length > 0) {
+        parts.push(`${drained.join("\n\n")}\n\n`)
+      }
+      return parts.join("")
     },
   }
+}
+
+class PayloadTooLargeError extends Error {
+  readonly statusCode = 413
+}
+
+const INSPECTOR_SECURITY_HEADERS: Record<string, string> = {
+  "x-frame-options": "DENY",
+  "content-security-policy":
+    "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'",
+  "x-content-type-options": "nosniff",
+  "referrer-policy": "no-referrer",
+  "cache-control": "no-store",
+}
+
+const LOOPBACK_HOST_RE = /^(127\.0\.0\.1|localhost|\[::1\])(?::(\d{1,5}))?$/i
+
+function isLoopbackHost(
+  hostHeader: string | undefined,
+  boundHost: string,
+  boundPort: number,
+  requirePresent = false,
+): boolean {
+  if (!hostHeader) return !requirePresent
+  const raw = hostHeader.trim().toLowerCase()
+  const match = LOOPBACK_HOST_RE.exec(raw)
+  if (match) {
+    const portStr = match[2]
+    if (portStr !== undefined) {
+      const p = Number(portStr)
+      if (!Number.isInteger(p) || p < 1 || p > 65535) return false
+      if (boundPort > 0 && p !== boundPort) return false
+    }
+    return true
+  }
+  const boundLower = boundHost.toLowerCase()
+  if (raw === boundLower || (boundPort > 0 && raw === `${boundLower}:${boundPort}`)) {
+    return true
+  }
+  return false
+}
+
+function isSameOriginLoopbackRequest(
+  req: IncomingMessage,
+  boundHost: string,
+  boundPort: number,
+): boolean {
+  if (!isLoopbackHost(req.headers.host, boundHost, boundPort, true)) {
+    return false
+  }
+  const secFetchSite = String(req.headers["sec-fetch-site"] ?? "").toLowerCase()
+  if (secFetchSite && secFetchSite !== "same-origin" && secFetchSite !== "none") {
+    return false
+  }
+  const origin = req.headers.origin
+  if (typeof origin === "string" && origin.trim()) {
+    try {
+      const parsed = new URL(origin)
+      if (!isLoopbackHost(parsed.host, boundHost, boundPort, true)) return false
+      if (boundPort > 0 && parsed.port !== String(boundPort)) return false
+      if (req.headers.host && parsed.host.toLowerCase() !== req.headers.host.trim().toLowerCase()) {
+        return false
+      }
+    } catch {
+      return false
+    }
+  }
+  return true
+}
+
+function normalizeInspectorPath(rawPathname: string): string {
+  let decoded = rawPathname
+  try {
+    decoded = decodeURIComponent(rawPathname)
+  } catch {
+    // Keep raw if malformed percent-encoding.
+  }
+  return decoded.replace(/\/{2,}/g, "/").toLowerCase()
+}
+
+class UnsupportedContentEncodingError extends Error {
+  readonly statusCode = 415
+}
+
+const zstdDecompressSync = (
+  zlib as unknown as {
+    zstdDecompressSync?: (buf: Buffer, opts?: { maxOutputLength?: number }) => Buffer
+  }
+).zstdDecompressSync
+
+function decodeRequestBody(rawBody: Buffer, encodingHeader: string | undefined): Buffer {
+  const enc = (encodingHeader ?? "").trim().toLowerCase()
+  if (!enc || enc === "identity") return rawBody
+  if (enc === "gzip") {
+    return zlib.gunzipSync(rawBody, { maxOutputLength: MAX_BODY_BYTES })
+  }
+  if (enc === "deflate") {
+    return zlib.inflateSync(rawBody, { maxOutputLength: MAX_BODY_BYTES })
+  }
+  if (enc === "br") {
+    return zlib.brotliDecompressSync(rawBody, { maxOutputLength: MAX_BODY_BYTES })
+  }
+  if (enc === "zstd" && typeof zstdDecompressSync === "function") {
+    return zstdDecompressSync(rawBody, { maxOutputLength: MAX_BODY_BYTES })
+  }
+  throw new UnsupportedContentEncodingError(`Unsupported content-encoding: "${enc}".`)
 }
 
 function resolveUpstreamTarget(
@@ -687,7 +1228,9 @@ function resolveUpstreamTarget(
   }
   const isAnthropic =
     urlPath.startsWith("/v1/messages") ||
+    urlPath.startsWith("/api/") ||
     typeof headers["anthropic-version"] === "string" ||
+    typeof headers["anthropic-beta"] === "string" ||
     typeof headers["x-api-key"] === "string"
   return {
     baseUrl: (isAnthropic ? options.anthropicUpstream : options.openaiUpstream).replace(/\/$/, ""),
@@ -702,7 +1245,8 @@ async function readRequestBody(req: IncomingMessage): Promise<Buffer> {
     const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
     total += buf.byteLength
     if (total > MAX_BODY_BYTES) {
-      throw new Error(`Request body exceeds ${MAX_BODY_BYTES} bytes.`)
+      req.resume()
+      throw new PayloadTooLargeError(`Request body exceeds ${MAX_BODY_BYTES} bytes.`)
     }
     chunks.push(buf)
   }
@@ -710,9 +1254,10 @@ async function readRequestBody(req: IncomingMessage): Promise<Buffer> {
 }
 
 function shouldRedactPath(pathname: string): boolean {
-  const clean = pathname.split("?")[0] ?? pathname
+  const clean = (pathname.split("?")[0] ?? pathname).replace(/\/+$/, "").toLowerCase()
   return (
     clean.endsWith("/messages") ||
+    clean.endsWith("/messages/count_tokens") ||
     clean.endsWith("/chat/completions") ||
     clean.endsWith("/responses")
   )
@@ -731,29 +1276,179 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
   const requestedPort = options.port ?? 8787
   const engine = options.engine ?? createMaskeraEngine({ defaultMode: options.defaultMode })
   const vault = options.vault ?? new SessionVault()
+  const inspector = new ProxyInspector()
   const restoreResponses = options.restoreResponses !== false
   const anthropicUpstream = options.anthropicUpstream ?? DEFAULT_ANTHROPIC_UPSTREAM
   const openaiUpstream = options.openaiUpstream ?? DEFAULT_OPENAI_UPSTREAM
+  const auditLogPath = options.auditLogPath
   const log = options.onLog ?? (() => {})
+
+  if (auditLogPath) {
+    await mkdir(dirname(auditLogPath), { recursive: true })
+    await appendFile(auditLogPath, "", "utf8")
+  }
 
   let totalRequests = 0
   let totalRedactions = 0
+  let boundPort = requestedPort
+  let boundUrl = `http://${host}:${requestedPort}`
+  let auditChain = Promise.resolve()
+
+  function recordAuditAndInspector(entry: Omit<InspectedRequest, "id">): void {
+    totalRequests += 1
+    totalRedactions += entry.redactions
+    inspector.record(entry)
+    if (auditLogPath) {
+      // Strictly metadata and entity counts on disk (never raw text or previews).
+      const auditLine = JSON.stringify({
+        timestamp: entry.timestamp,
+        method: entry.method,
+        path: entry.path,
+        upstream: entry.upstream,
+        status: entry.status,
+        streamed: entry.streamed,
+        durationMs: entry.durationMs,
+        redactions: entry.redactions,
+        counts: entry.counts,
+      })
+      auditChain = auditChain.then(() =>
+        appendFile(auditLogPath, `${auditLine}\n`, "utf8").catch((err) => {
+          log(
+            `[maskera-proxy] audit log write error: ${err instanceof Error ? err.message : String(err)}`,
+          )
+        }),
+      )
+    }
+  }
 
   async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const startedAt = Date.now()
     const method = req.method ?? "GET"
     const urlPath = req.url ?? "/"
+    const pathname = urlPath.split("?")[0] ?? urlPath
+    const normalizedPath = normalizeInspectorPath(pathname)
 
-    if (method === "GET" && (urlPath === "/healthz" || urlPath === "/_maskera/status")) {
+    const isInspectorRoute =
+      normalizedPath === "/_maskera" ||
+      normalizedPath.startsWith("/_maskera/") ||
+      normalizedPath.includes("/_maskera/") ||
+      normalizedPath.endsWith("/_maskera")
+    if (isInspectorRoute || pathname === "/healthz") {
+      if (!isLoopbackHost(req.headers.host, host, boundPort)) {
+        res.writeHead(403, {
+          ...INSPECTOR_SECURITY_HEADERS,
+          "content-type": "application/json; charset=utf-8",
+        })
+        res.end(JSON.stringify({ error: "Forbidden host header for local inspector route." }))
+        return
+      }
+    }
+
+    if (method === "GET" && (pathname === "/_maskera" || pathname === "/_maskera/")) {
+      res.writeHead(200, {
+        ...INSPECTOR_SECURITY_HEADERS,
+        "content-type": "text/html; charset=utf-8",
+      })
+      res.end(
+        renderInspectorHtml({
+          url: boundUrl,
+          defaultMode: engine.status().defaultMode,
+          restoreResponses,
+        }),
+      )
+      return
+    }
+
+    if (method === "GET" && pathname === "/_maskera/events") {
+      inspector.subscribe(res, INSPECTOR_SECURITY_HEADERS)
+      return
+    }
+
+    if (method === "GET" && pathname === "/_maskera/vault") {
+      if (
+        req.headers["x-maskera-reveal"] !== "1" ||
+        !isSameOriginLoopbackRequest(req, host, boundPort)
+      ) {
+        res.writeHead(403, {
+          ...INSPECTOR_SECURITY_HEADERS,
+          "content-type": "application/json; charset=utf-8",
+        })
+        res.end(JSON.stringify({ error: "Pass x-maskera-reveal: 1 to read local vault values." }))
+        return
+      }
+      res.writeHead(200, {
+        ...INSPECTOR_SECURITY_HEADERS,
+        "content-type": "application/json; charset=utf-8",
+      })
+      res.end(JSON.stringify({ entries: vault.entries() }))
+      return
+    }
+
+    if (method === "POST" && pathname === "/_maskera/clear") {
+      if (
+        req.headers["x-maskera-action"] !== "clear" ||
+        !isSameOriginLoopbackRequest(req, host, boundPort)
+      ) {
+        res.writeHead(403, {
+          ...INSPECTOR_SECURITY_HEADERS,
+          "content-type": "application/json; charset=utf-8",
+        })
+        res.end(
+          JSON.stringify({ error: "Pass x-maskera-action: clear from same-origin loopback." }),
+        )
+        return
+      }
+      vault.clearAll()
+      engine.clearCache()
+      inspector.clear()
+      totalRequests = 0
+      totalRedactions = 0
+      res.writeHead(200, {
+        ...INSPECTOR_SECURITY_HEADERS,
+        "content-type": "application/json; charset=utf-8",
+      })
+      res.end(JSON.stringify({ cleared: true }))
+      return
+    }
+
+    if (method === "GET" && (pathname === "/healthz" || pathname === "/_maskera/status")) {
       const payload = {
         status: "ok",
+        inspector_url: `${boundUrl}/_maskera`,
         engine: engine.status(),
         requests_proxied: totalRequests,
         total_redactions: totalRedactions,
         sessions: vault.list(),
       }
-      res.writeHead(200, { "content-type": "application/json; charset=utf-8" })
+      res.writeHead(200, {
+        ...INSPECTOR_SECURITY_HEADERS,
+        "content-type": "application/json; charset=utf-8",
+      })
       res.end(JSON.stringify(payload, null, 2))
+      return
+    }
+
+    if (isInspectorRoute) {
+      res.writeHead(404, {
+        ...INSPECTOR_SECURITY_HEADERS,
+        "content-type": "application/json; charset=utf-8",
+      })
+      res.end(JSON.stringify({ error: "Unknown inspector route." }))
+      return
+    }
+
+    if (String(req.headers.upgrade ?? "").toLowerCase() === "websocket") {
+      res.writeHead(426, {
+        "content-type": "application/json; charset=utf-8",
+        connection: "close",
+      })
+      res.end(
+        JSON.stringify({
+          error: {
+            message: "WebSocket transport is not supported by maskera-proxy; retry over HTTP SSE.",
+          },
+        }),
+      )
       return
     }
 
@@ -771,47 +1466,102 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
       typeof sessionHeader === "string" && sessionHeader.trim() ? sessionHeader.trim() : "proxy"
 
     const stats: RedactStats = { redactions: 0, counts: {} }
+    const redactedPreview: string[] = []
     let outgoingBody: Buffer | undefined = rawBody
+    let rewroteRequestBody = false
     const contentType = String(req.headers["content-type"] ?? "")
+      .trim()
+      .toLowerCase()
+    const contentEncoding =
+      typeof req.headers["content-encoding"] === "string"
+        ? req.headers["content-encoding"]
+        : undefined
+    const mayBeJson =
+      contentType === "" || contentType.includes("json") || contentType.startsWith("text/plain")
 
-    if (
-      rawBody &&
-      rawBody.byteLength > 0 &&
-      shouldRedactPath(forwardPath) &&
-      contentType.includes("application/json")
-    ) {
+    if (rawBody && rawBody.byteLength > 0 && shouldRedactPath(forwardPath) && mayBeJson) {
+      let decodedBody: Buffer
+      try {
+        decodedBody = decodeRequestBody(rawBody, contentEncoding)
+      } catch (err) {
+        if (err instanceof UnsupportedContentEncodingError) {
+          res.writeHead(415, { "content-type": "application/json; charset=utf-8" })
+          res.end(JSON.stringify({ error: { message: err.message } }))
+          return
+        }
+        res.writeHead(400, { "content-type": "application/json; charset=utf-8" })
+        res.end(JSON.stringify({ error: { message: "Invalid compressed request body." } }))
+        return
+      }
       let parsed: unknown
       try {
-        parsed = JSON.parse(rawBody.toString("utf8"))
+        parsed = JSON.parse(decodedBody.toString("utf8"))
       } catch {
         res.writeHead(400, { "content-type": "application/json; charset=utf-8" })
         res.end(JSON.stringify({ error: { message: "Invalid JSON request body." } }))
         return
       }
       if (isPlainObject(parsed)) {
-        const redactedObj = await redactLlmRequestBody(parsed, async (text) => {
-          if (!text.trim()) return text
-          const { result } = await engine.redact(text, {
-            profile: options.profile,
-            customTerms: options.customTerms,
+        let redactedObj: Record<string, unknown>
+        try {
+          redactedObj = await redactLlmRequestBody(
+            parsed,
+            async (text, kind) => {
+              if (!text.trim()) return text
+              // Tool descriptions are API schema docs (typically English);
+              // run fast deterministic rules + customTerms so Swedish NER
+              // never hallucinates names inside tool docs or burns Turn-1 CPU.
+              const { result } = await engine.redact(text, {
+                mode: kind === "tool_description" ? "rules" : undefined,
+                profile: options.profile,
+                customTerms: options.customTerms,
+              })
+              const applied = vault.apply(text, result, sessionId)
+              stats.redactions += applied.totalRedactions
+              mergeCounts(stats.counts, applied.counts)
+              if (redactedPreview.length < 6) {
+                const snippet =
+                  applied.redacted.length > 1200
+                    ? `${applied.redacted.slice(0, 1200)}...`
+                    : applied.redacted
+                redactedPreview.push(snippet)
+              }
+              return applied.redacted
+            },
+            { mutate: true },
+          )
+        } catch (err) {
+          recordAuditAndInspector({
+            timestamp: new Date().toISOString(),
+            method,
+            path: forwardPath,
+            upstream: baseUrl,
+            sessionId,
+            status: 502,
+            streamed: false,
+            durationMs: Date.now() - startedAt,
+            redactions: stats.redactions,
+            counts: stats.counts,
+            redactedPreview,
           })
-          const applied = vault.apply(text, result, sessionId)
-          stats.redactions += applied.totalRedactions
-          mergeCounts(stats.counts, applied.counts)
-          return applied.redacted
-        })
+          throw err
+        }
         outgoingBody = Buffer.from(JSON.stringify(redactedObj), "utf8")
+        rewroteRequestBody = true
       }
     }
-
-    totalRequests += 1
-    totalRedactions += stats.redactions
 
     const forwardHeaders = new Headers()
     for (const [k, v] of Object.entries(req.headers)) {
       if (v === undefined) continue
       const lower = k.toLowerCase()
-      if (HOP_BY_HOP_REQUEST_HEADERS.has(lower) || lower === "x-maskera-session") continue
+      if (
+        HOP_BY_HOP_REQUEST_HEADERS.has(lower) ||
+        lower === "x-maskera-session" ||
+        (rewroteRequestBody && lower === "content-encoding")
+      ) {
+        continue
+      }
       if (Array.isArray(v)) {
         for (const item of v) forwardHeaders.append(k, item)
       } else {
@@ -820,11 +1570,40 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
     }
     forwardHeaders.set("accept-encoding", "identity")
 
-    const upstreamRes = await fetch(upstreamUrl, {
-      method,
-      headers: forwardHeaders,
-      body: outgoingBody ? new Uint8Array(outgoingBody) : undefined,
-    })
+    const abortController = new AbortController()
+    const onClientClose = () => {
+      if (!res.writableEnded) abortController.abort()
+    }
+    res.on("close", onClientClose)
+
+    let upstreamRes: Response
+    try {
+      upstreamRes = await fetch(upstreamUrl, {
+        method,
+        headers: forwardHeaders,
+        body: outgoingBody ? new Uint8Array(outgoingBody) : undefined,
+        signal: abortController.signal,
+      })
+    } catch (err) {
+      res.off("close", onClientClose)
+      if (!abortController.signal.aborted) {
+        const durationMs = Date.now() - startedAt
+        recordAuditAndInspector({
+          timestamp: new Date().toISOString(),
+          method,
+          path: forwardPath,
+          upstream: baseUrl,
+          sessionId,
+          status: 502,
+          streamed: false,
+          durationMs,
+          redactions: stats.redactions,
+          counts: stats.counts,
+          redactedPreview,
+        })
+      }
+      throw err
+    }
 
     const outHeaders: Record<string, string> = {}
     upstreamRes.headers.forEach((value, key) => {
@@ -836,44 +1615,92 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
 
     const sessionMap = restoreResponses ? vault.getMap(sessionId) : {}
     const hasMap = Object.keys(sessionMap).length > 0
-    const resContentType = upstreamRes.headers.get("content-type") ?? ""
+    const resContentType = (upstreamRes.headers.get("content-type") ?? "").toLowerCase()
+    const isSse = resContentType.includes("text/event-stream")
 
-    if (hasMap && resContentType.includes("text/event-stream") && upstreamRes.body) {
+    if (isSse && upstreamRes.body) {
       res.writeHead(upstreamRes.status, outHeaders)
-      const sse = createSseRestorer(sessionMap)
-      const decoder = new TextDecoder()
+      const sse = hasMap ? createSseRestorer(sessionMap) : null
+      const decoder = sse ? new TextDecoder() : null
       const reader = upstreamRes.body.getReader()
+      const onStreamAbort = () => {
+        void reader.cancel().catch(() => {})
+      }
+      abortController.signal.addEventListener("abort", onStreamAbort, { once: true })
       try {
         for (;;) {
           const { done, value } = await reader.read()
           if (done) break
-          const chunkText = decoder.decode(value, { stream: true })
-          const transformed = sse.push(chunkText)
-          if (transformed) res.write(transformed)
+          if (sse && decoder) {
+            const chunkText = decoder.decode(value, { stream: true })
+            const transformed = sse.push(chunkText)
+            if (transformed) res.write(transformed)
+          } else if (value) {
+            res.write(value)
+          }
         }
-        const finalText = decoder.decode()
-        const tail = (finalText ? sse.push(finalText) : "") + sse.flush()
-        if (tail) res.write(tail)
+        if (sse && decoder) {
+          const finalText = decoder.decode()
+          const tail = (finalText ? sse.push(finalText) : "") + sse.flush()
+          if (tail) res.write(tail)
+        }
+      } catch (err) {
+        if (!abortController.signal.aborted) throw err
       } finally {
+        abortController.signal.removeEventListener("abort", onStreamAbort)
+        res.off("close", onClientClose)
         reader.releaseLock()
-        res.end()
+        if (!res.writableEnded) res.end()
       }
+      const durationMs = Date.now() - startedAt
+      recordAuditAndInspector({
+        timestamp: new Date().toISOString(),
+        method,
+        path: forwardPath,
+        upstream: baseUrl,
+        sessionId,
+        status: upstreamRes.status,
+        streamed: true,
+        durationMs,
+        redactions: stats.redactions,
+        counts: stats.counts,
+        redactedPreview,
+      })
       log(
-        `[maskera-proxy] ${method} ${forwardPath} ${upstreamRes.status} sse redacted=${stats.redactions} ${Date.now() - startedAt}ms`,
+        `[maskera-proxy] ${method} ${forwardPath} ${upstreamRes.status} sse redacted=${stats.redactions} ${durationMs}ms`,
       )
       return
     }
 
-    const resBuf = Buffer.from(await upstreamRes.arrayBuffer())
+    let resBuf: Buffer
+    try {
+      resBuf = Buffer.from(await upstreamRes.arrayBuffer())
+    } finally {
+      res.off("close", onClientClose)
+    }
     if (hasMap && resContentType.includes("application/json")) {
       try {
         const parsed = JSON.parse(resBuf.toString("utf8")) as unknown
-        const restored = restoreLlmResponseBody(parsed, sessionMap)
+        const restored = restoreLlmResponseBody(parsed, sessionMap, { mutate: true })
         const restoredBuf = Buffer.from(JSON.stringify(restored), "utf8")
         res.writeHead(upstreamRes.status, outHeaders)
         res.end(restoredBuf)
+        const durationMs = Date.now() - startedAt
+        recordAuditAndInspector({
+          timestamp: new Date().toISOString(),
+          method,
+          path: forwardPath,
+          upstream: baseUrl,
+          sessionId,
+          status: upstreamRes.status,
+          streamed: false,
+          durationMs,
+          redactions: stats.redactions,
+          counts: stats.counts,
+          redactedPreview,
+        })
         log(
-          `[maskera-proxy] ${method} ${forwardPath} ${upstreamRes.status} json redacted=${stats.redactions} ${Date.now() - startedAt}ms`,
+          `[maskera-proxy] ${method} ${forwardPath} ${upstreamRes.status} json redacted=${stats.redactions} ${durationMs}ms`,
         )
         return
       } catch {
@@ -883,22 +1710,54 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
 
     res.writeHead(upstreamRes.status, outHeaders)
     res.end(resBuf)
+    const durationMs = Date.now() - startedAt
+    recordAuditAndInspector({
+      timestamp: new Date().toISOString(),
+      method,
+      path: forwardPath,
+      upstream: baseUrl,
+      sessionId,
+      status: upstreamRes.status,
+      streamed: isSse,
+      durationMs,
+      redactions: stats.redactions,
+      counts: stats.counts,
+      redactedPreview,
+    })
     log(
-      `[maskera-proxy] ${method} ${forwardPath} ${upstreamRes.status} redacted=${stats.redactions} ${Date.now() - startedAt}ms`,
+      `[maskera-proxy] ${method} ${forwardPath} ${upstreamRes.status} redacted=${stats.redactions} ${durationMs}ms`,
     )
   }
 
   const server = createServer((req, res) => {
     void handleRequest(req, res).catch((err) => {
+      if (res.destroyed || req.aborted) return
+      const statusCode = err instanceof PayloadTooLargeError ? err.statusCode : 502
       const message = err instanceof Error ? err.message : String(err)
       log(`[maskera-proxy] error: ${message}`)
       if (!res.headersSent) {
-        res.writeHead(502, { "content-type": "application/json; charset=utf-8" })
+        res.writeHead(statusCode, { "content-type": "application/json; charset=utf-8" })
         res.end(JSON.stringify({ error: { message: `maskera-proxy error: ${message}` } }))
-      } else {
+      } else if (!res.writableEnded) {
         res.end()
       }
     })
+  })
+
+  // Reject WebSocket upgrades (e.g. Codex CLI Responses WebSocket probe) with
+  // HTTP 426 Upgrade Required so clients fall back to HTTP SSE on the first
+  // attempt with zero reconnect retries instead of hanging or looping.
+  server.on("upgrade", (req, socket) => {
+    const body = JSON.stringify({
+      error: {
+        message: "WebSocket transport is not supported by maskera-proxy; retry over HTTP SSE.",
+      },
+    })
+    socket.write(
+      `HTTP/1.1 426 Upgrade Required\r\nContent-Type: application/json; charset=utf-8\r\nConnection: close\r\nContent-Length: ${Buffer.byteLength(body)}\r\n\r\n${body}`,
+    )
+    socket.end()
+    log(`[maskera-proxy] UPGRADE ${req.url ?? "/"} 426 (HTTP SSE fallback)`)
   })
 
   await new Promise<void>((resolveListen, rejectListen) => {
@@ -911,17 +1770,24 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
 
   const addr = server.address()
   const actualPort = typeof addr === "object" && addr ? addr.port : requestedPort
+  boundPort = actualPort
+  boundUrl = `http://${host}:${actualPort}`
 
   return {
     host,
     port: actualPort,
-    url: `http://${host}:${actualPort}`,
+    url: boundUrl,
+    inspectorUrl: `${boundUrl}/_maskera`,
     server,
     vault,
-    close: () =>
-      new Promise<void>((resolveClose, rejectClose) => {
+    inspector,
+    close: async () => {
+      inspector.closeAll()
+      await new Promise<void>((resolveClose, rejectClose) => {
         server.close((err) => (err ? rejectClose(err) : resolveClose()))
-      }),
+      })
+      await auditChain
+    },
   }
 }
 

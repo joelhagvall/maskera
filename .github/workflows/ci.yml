@@ -57,6 +57,7 @@ jobs:
       - run: pnpm typecheck
         if: matrix.node == 24
       - run: pnpm test
+      - run: pnpm test:mcp:e2e
       - run: pnpm smoke
 
   # The public packages declare Node >=18. Keep the minimum-version contract

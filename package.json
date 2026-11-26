@@ -8,6 +8,10 @@
   "scripts": {
     "build": "pnpm check:benchmarks && pnpm -r build",
     "test": "pnpm check:benchmarks && pnpm check:fixtures && pnpm check:training-privacy && pnpm check:tooling && pnpm -r test",
+    "test:mcp:e2e": "pnpm --filter @maskera/mcp test:e2e",
+    "test:mcp:harnesses": "pnpm --filter @maskera/mcp test:harnesses",
+    "test:mcp:pack": "pnpm --filter @maskera/mcp test:pack",
+    "bench:mcp": "pnpm --filter @maskera/mcp bench",
     "check:benchmarks": "node scripts/check-benchmark-sync.mjs",
     "check:benchmarks:live": "node scripts/check-benchmark-live.mjs --all",
     "sync:benchmarks": "node scripts/sync-benchmark-contract.mjs",

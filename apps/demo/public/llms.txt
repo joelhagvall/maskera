@@ -51,11 +51,11 @@ Not a fit: non-Swedish text (English names work only incidentally), image/PDF OC
 Pick the right local integration for the user's environment:
 
 1. **Enforced redaction across any agent harness (recommended when the user wants zero-trust redaction of all prompts and tool outputs):**
-   - Start `npx -y @maskera/mcp proxy` (binds `127.0.0.1:8787`, supports `--port`, `--upstream <url>`, `--rules-only`, `--profile clinical`, `--custom-term <word>`, `--no-restore`).
+   - Start `npx -y @maskera/mcp proxy` (binds `127.0.0.1:8787`, supports `--port`, `--upstream <url>`, `--audit-log <file.jsonl>`, `--rules-only`, `--profile clinical`, `--custom-term <word>`, `--no-restore`).
    - Configure the agent/SDK base URL:
      - Claude Code / Anthropic SDK: `ANTHROPIC_BASE_URL=http://127.0.0.1:8787`
      - Codex / Cursor / OpenAI SDK: `OPENAI_BASE_URL=http://127.0.0.1:8787/v1`
-   - Check counts without exposing PII: `GET http://127.0.0.1:8787/_maskera/status`.
+   - Live local inspector UI (shows masked outbound previews & counts in RAM only): `http://127.0.0.1:8787/_maskera` (JSON counts: `/_maskera/status`).
 
 2. **MCP stdio server (Claude Desktop, Cursor, Claude Code, Codex, T3 Code):**
    - Add to the client's `mcpServers` config:

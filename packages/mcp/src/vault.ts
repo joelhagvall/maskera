@@ -24,9 +24,19 @@ interface SessionEntry {
 }
 
 const DEFAULT_MAX_SESSIONS = 100
+const DEFAULT_MAX_ENTITIES_PER_SESSION = 5_000
+const EXISTING_TOKEN_RE = /\[[A-ZÅÄÖ][A-ZÅÄÖ0-9_]*_\d+\]/g
 
 function valueKey(label: PiiLabel, value: string): string {
   return `${label.length}:${label}:${value}`
+}
+
+function labelFromKey(key: string): PiiLabel | null {
+  const firstColon = key.indexOf(":")
+  if (firstColon < 1) return null
+  const len = Number(key.slice(0, firstColon))
+  if (!Number.isInteger(len) || len <= 0) return null
+  return key.slice(firstColon + 1, firstColon + 1 + len) as PiiLabel
 }
 
 /**
@@ -40,9 +50,14 @@ function valueKey(label: PiiLabel, value: string): string {
 export class SessionVault {
   private readonly sessions = new Map<string, SessionEntry>()
   private readonly maxSessions: number
+  private readonly maxEntitiesPerSession: number
 
-  constructor(maxSessions = DEFAULT_MAX_SESSIONS) {
+  constructor(
+    maxSessions = DEFAULT_MAX_SESSIONS,
+    maxEntitiesPerSession = DEFAULT_MAX_ENTITIES_PER_SESSION,
+  ) {
     this.maxSessions = Math.max(1, maxSessions)
+    this.maxEntitiesPerSession = Math.max(1, maxEntitiesPerSession)
   }
 
   private getOrCreate(sessionId?: string): SessionEntry {
@@ -90,22 +105,53 @@ export class SessionVault {
     map: Record<string, string>
   } {
     const session = this.getOrCreate(sessionId)
+    if (result.redactions.length === 0) {
+      return {
+        sessionId: session.id,
+        redacted: originalInput,
+        counts: {},
+        totalRedactions: 0,
+        map: {},
+      }
+    }
     const counts: Record<string, number> = {}
     const localMap: Record<string, string> = {}
+
+    // Pre-index literal `[LABEL_N]` tokens once in O(N) so collision checks stay O(1).
+    const existingTokens = originalInput.includes("[")
+      ? new Set(originalInput.match(EXISTING_TOKEN_RE) ?? [])
+      : null
 
     let redacted = ""
     let cursor = 0
     for (const r of result.redactions) {
       const key = valueKey(r.label, r.value)
       let token = session.tokenByKey.get(key)
-      if (!token) {
+      if (token) {
+        // Refresh per-session entity LRU order.
+        session.tokenByKey.delete(key)
+        session.tokenByKey.set(key, token)
+      } else {
         let next = session.counters.get(r.label) ?? 0
         for (;;) {
           next += 1
           const candidate = `[${r.label}_${next}]`
-          if (!(candidate in session.map) && !originalInput.includes(candidate)) {
+          if (!(candidate in session.map) && !existingTokens?.has(candidate)) {
             token = candidate
             break
+          }
+        }
+        if (session.tokenByKey.size >= this.maxEntitiesPerSession) {
+          const oldestEntry = session.tokenByKey.entries().next().value
+          if (oldestEntry) {
+            const [oldestKey, oldestToken] = oldestEntry
+            session.tokenByKey.delete(oldestKey)
+            delete session.map[oldestToken]
+            const oldLabel = labelFromKey(oldestKey)
+            if (oldLabel && session.countsByLabel[oldLabel]) {
+              session.countsByLabel[oldLabel] -= 1
+              if (session.countsByLabel[oldLabel] <= 0) delete session.countsByLabel[oldLabel]
+            }
           }
         }
         session.counters.set(r.label, next)
@@ -133,19 +179,20 @@ export class SessionVault {
     text: string,
     options: { sessionId?: string; map?: Record<string, string> },
   ): { restored: string; sessionId: string | null; knownPlaceholders: number } {
+    const normalizedId = options.sessionId?.trim() || undefined
     if (options.map && Object.keys(options.map).length > 0) {
       return {
         restored: restore(text, options.map),
-        sessionId: options.sessionId ?? null,
+        sessionId: normalizedId ?? null,
         knownPlaceholders: Object.keys(options.map).length,
       }
     }
-    if (!options.sessionId) {
+    if (!normalizedId) {
       throw new Error("Provide either session_id or map to restore placeholders.")
     }
-    const session = this.sessions.get(options.sessionId)
+    const session = this.sessions.get(normalizedId)
     if (!session) {
-      throw new Error(`Unknown session_id "${options.sessionId}".`)
+      throw new Error(`Unknown session_id "${normalizedId}".`)
     }
     return {
       restored: restore(text, session.map),
@@ -155,8 +202,22 @@ export class SessionVault {
   }
 
   getMap(sessionId: string): Record<string, string> {
-    const session = this.sessions.get(sessionId)
+    const session = this.sessions.get(sessionId.trim())
     return session ? { ...session.map } : {}
+  }
+
+  entries(): Array<{ sessionId: string; token: string; value: string }> {
+    const out: Array<{ sessionId: string; token: string; value: string }> = []
+    for (const s of this.sessions.values()) {
+      for (const [token, value] of Object.entries(s.map)) {
+        out.push({ sessionId: s.id, token, value })
+      }
+    }
+    return out
+  }
+
+  clearAll(): void {
+    this.sessions.clear()
   }
 
   list(): SessionSummary[] {
@@ -170,7 +231,7 @@ export class SessionVault {
   }
 
   clear(sessionId: string): boolean {
-    return this.sessions.delete(sessionId)
+    return this.sessions.delete(sessionId.trim())
   }
 
   get size(): number {

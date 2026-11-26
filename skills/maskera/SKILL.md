@@ -15,24 +15,33 @@ Maskera runs 100% locally on-device using deterministic Swedish rules plus the 4
    npx -y @maskera/mcp proxy
    # Point any harness or SDK at the loopback proxy:
    ANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude
-   OPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex
+   OPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex   # API key mode; ChatGPT-login Codex requires HTTPS so use MCP stdio below
    ```
    - Routes Anthropic (`/v1/messages`) and OpenAI (`/v1/chat/completions`, `/v1/responses`) automatically, or set `--upstream <url>`.
    - Restores placeholders transparently in JSON, tool arguments and chunk-split SSE streams.
    - Fails closed (`502`) if local redaction fails. Inspect counts only at `http://127.0.0.1:8787/_maskera/status`.
 
 2. **Working with sensitive local Swedish files (MCP stdio server):**
-   Configure once in the client's `mcpServers`:
-   ```json
-   {
-     "mcpServers": {
-       "maskera": {
-         "command": "npx",
-         "args": ["-y", "@maskera/mcp", "--root", "/path/to/workspace"]
+   Configure once in the client:
+   - Claude Code / Cursor (`mcpServers`):
+     ```json
+     {
+       "mcpServers": {
+         "maskera": {
+           "command": "npx",
+           "args": ["-y", "@maskera/mcp", "--root", "/path/to/workspace"]
+         }
        }
      }
-   }
-   ```
+     ```
+   - Codex CLI:
+     ```bash
+     codex mcp add maskera -- npx -y @maskera/mcp --root /path/to/workspace
+     ```
+   - OpenCode v2 (`opencode.json` under `mcp.servers`, or via CLI):
+     ```bash
+     opencode mcp add maskera -- npx -y @maskera/mcp --root /path/to/workspace
+     ```
    Workflow rules when the Maskera MCP tools are available:
    - Read sensitive Swedish files with `maskera_read_file` instead of raw file-reading tools. Reuse one `session_id` across related files so `[NAMN_1]` stays consistent.
    - Pass `custom_terms` for client codenames, project names or case references not covered by built-in rules.

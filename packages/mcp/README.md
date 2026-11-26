@@ -22,14 +22,20 @@ Point any harness at it:
 # Claude Code / Anthropic SDK
 ANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude
 
-# Codex / OpenAI SDK / Cursor custom OpenAI base URL
+# Codex (API key) / OpenAI SDK / Cursor custom OpenAI base URL
+# Note: Codex logged in with a ChatGPT subscription requires HTTPS on chatgpt_base_url;
+# use the MCP stdio server below (`codex mcp add maskera -- npx -y @maskera/mcp`) instead.
 OPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex
 
-# Inspect local redaction counts (never raw PII)
-curl http://127.0.0.1:8787/_maskera/status
+# Inspect live redactions in your browser (local RAM only, screen-share safe by default)
+open http://127.0.0.1:8787/_maskera
+
+# Optional: write local metadata-only audit logs (counts only, never raw text)
+npx -y @maskera/mcp proxy --audit-log ./maskera-audit.jsonl
 ```
 
-- Routes Anthropic (`/v1/messages`, `/anthropic/*`) and OpenAI (`/v1/chat/completions`, `/v1/responses`, `/openai/*`) automatically, or use `--upstream <url>` for any OpenAI/Anthropic-compatible gateway (Azure, OpenRouter, LiteLLM).
+- Routes Anthropic (`/v1/messages`, `/anthropic/*`) and OpenAI (`/v1/chat/completions`, `/v1/responses`, `/openai/*`) automatically, or use `--upstream <url>` for any OpenAI/Anthropic-compatible endpoint (Azure, OpenRouter, LiteLLM).
+- Built-in local live inspector at `http://127.0.0.1:8787/_maskera`: see every proxied request, entity counts, and the exact masked text sent upstream in real time (originals hidden by default until you toggle reveal).
 - Restores placeholders even when split across SSE stream chunks, including JSON `tool_use` / `tool_calls` arguments.
 - Fails closed (`502`) if local redaction fails: raw PII is never forwarded upstream.
 
@@ -69,6 +75,26 @@ Install the workflow skill (`skills/maskera/SKILL.md`) in Claude Code, Codex, Cu
 
 ```bash
 npx skills add joelhagvall/maskera
+```
+
+## 5. Verification scripts (Claude Code, Codex, OpenCode)
+
+Run the built-in reusable E2E and benchmark suites locally (zero paid API calls):
+
+```bash
+# Protocol, security, streaming, and local ONNX E2E (also runs in CI)
+pnpm test:mcp:e2e
+
+# Real installed agent harnesses (claude, codex, opencode) with MCP + proxy + hooks
+pnpm test:mcp:harnesses
+pnpm test:mcp:harnesses -- --only claude,codex --mode rules
+pnpm test:mcp:harnesses -- --live   # opt-in live subscription proof
+
+# Clean npm tarball pack + binary smoke (--cold-hf tests a fresh HF model download)
+pnpm test:mcp:pack
+
+# Latency & throughput benchmark (CLI startup, multi-turn ONNX cache, SSE restorer)
+pnpm bench:mcp
 ```
 
 ## Options and environment

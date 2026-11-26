@@ -4,8 +4,8 @@ import { createFileGuard, type FileGuard } from "./files"
 import { SessionVault } from "./vault"
 
 export const SERVER_NAME = "maskera-mcp"
-export const SERVER_VERSION = "0.1.0"
-const SUPPORTED_PROTOCOLS = ["2025-03-26", "2024-11-05"] as const
+export const SERVER_VERSION = "0.2.0"
+const SUPPORTED_PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"] as const
 
 interface JsonRpcRequest {
   jsonrpc?: unknown
@@ -21,9 +21,18 @@ export interface JsonRpcResponse {
   error?: { code: number; message: string; data?: unknown }
 }
 
+interface ToolAnnotations {
+  title: string
+  readOnlyHint: boolean
+  destructiveHint: boolean
+  idempotentHint: boolean
+  openWorldHint: boolean
+}
+
 interface ToolDefinition {
   name: string
   description: string
+  annotations: ToolAnnotations
   inputSchema: Record<string, unknown>
 }
 
@@ -32,6 +41,13 @@ const TOOLS: readonly ToolDefinition[] = [
     name: "maskera_redact",
     description:
       "Redact Swedish PII (names, personnummer, addresses, emails, phones, IBAN, etc.) locally on-device using Maskera's 43 MB Swedish NER model and deterministic rules. Stores the restore map locally under session_id so placeholders stay consistent across calls and can be restored later without exposing raw PII to the LLM.",
+    annotations: {
+      title: "Redact Swedish PII locally",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false,
+    },
     inputSchema: {
       type: "object",
       properties: {
@@ -70,6 +86,13 @@ const TOOLS: readonly ToolDefinition[] = [
     name: "maskera_restore",
     description:
       "Restore Maskera placeholders (e.g. [NAMN_1], [PERSONNUMMER_1]) in text using a locally stored session_id or an explicit map.",
+    annotations: {
+      title: "Restore Maskera placeholders",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     inputSchema: {
       type: "object",
       properties: {
@@ -91,6 +114,13 @@ const TOOLS: readonly ToolDefinition[] = [
     name: "maskera_read_file",
     description:
       "Read a local UTF-8 text file and redact Swedish PII BEFORE returning its contents to the model. Keeps raw PII strictly in local memory under session_id so the cloud LLM never sees real names or personal IDs.",
+    annotations: {
+      title: "Read local file with PII redaction",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false,
+    },
     inputSchema: {
       type: "object",
       properties: {
@@ -125,6 +155,13 @@ const TOOLS: readonly ToolDefinition[] = [
     name: "maskera_write_file",
     description:
       "Restore Maskera placeholders from a local session_id and write the restored text directly to a local file without echoing raw PII back into the LLM context.",
+    annotations: {
+      title: "Restore placeholders and write local file",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false,
+    },
     inputSchema: {
       type: "object",
       properties: {
@@ -152,11 +189,25 @@ const TOOLS: readonly ToolDefinition[] = [
     name: "maskera_list_sessions",
     description:
       "List active local redaction sessions and entity counts (never returns raw PII values).",
+    annotations: {
+      title: "List active Maskera sessions",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     inputSchema: { type: "object", properties: {} },
   },
   {
     name: "maskera_clear_session",
     description: "Erase a session's local in-memory restore map immediately.",
+    annotations: {
+      title: "Clear Maskera session vault",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     inputSchema: {
       type: "object",
       properties: {
@@ -169,6 +220,13 @@ const TOOLS: readonly ToolDefinition[] = [
     name: "maskera_status",
     description:
       "Report local Maskera MCP server status: model pin, readiness, active sessions, and allowed file roots.",
+    annotations: {
+      title: "Maskera MCP server status",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     inputSchema: { type: "object", properties: {} },
   },
 ]
@@ -218,6 +276,8 @@ export interface MaskeraMcpOptions {
   vault?: SessionVault
   files?: FileGuard
   allowedRoots?: readonly string[]
+  defaultProfile?: RedactionProfile
+  defaultCustomTerms?: readonly string[]
 }
 
 export interface MaskeraMcpServer {
@@ -229,6 +289,14 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
   const engine = options.engine ?? createMaskeraEngine()
   const vault = options.vault ?? new SessionVault()
   const files = options.files ?? createFileGuard(options.allowedRoots)
+  const defaultProfile = options.defaultProfile
+  const defaultCustomTerms = options.defaultCustomTerms
+
+  function mergeCustomTerms(callTerms: string[] | undefined): readonly string[] | undefined {
+    if (!defaultCustomTerms?.length) return callTerms
+    if (!callTerms?.length) return defaultCustomTerms
+    return [...defaultCustomTerms, ...callTerms]
+  }
 
   async function callTool(name: string, rawArgs: unknown) {
     const args = asObject(rawArgs)
@@ -237,8 +305,8 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
         if (typeof args.text !== "string") return toolError("Missing required string: text")
         const { result, modeUsed } = await engine.redact(args.text, {
           mode: asMode(args.mode),
-          profile: asProfile(args.profile),
-          customTerms: asStringArray(args.custom_terms),
+          profile: asProfile(args.profile) ?? defaultProfile,
+          customTerms: mergeCustomTerms(asStringArray(args.custom_terms)),
         })
         const applied = vault.apply(
           args.text,
@@ -282,8 +350,8 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
         const file = await files.readText(args.path)
         const { result, modeUsed } = await engine.redact(file.content, {
           mode: asMode(args.mode),
-          profile: asProfile(args.profile),
-          customTerms: asStringArray(args.custom_terms),
+          profile: asProfile(args.profile) ?? defaultProfile,
+          customTerms: mergeCustomTerms(asStringArray(args.custom_terms)),
         })
         const applied = vault.apply(
           file.content,
@@ -304,11 +372,12 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
       if (name === "maskera_write_file") {
         if (typeof args.path !== "string") return toolError("Missing required string: path")
         if (typeof args.text !== "string") return toolError("Missing required string: text")
-        if (typeof args.session_id !== "string") {
-          return toolError("Missing required string: session_id")
+        if (typeof args.session_id !== "string" || !args.session_id.trim()) {
+          return toolError("Missing required non-empty string: session_id")
         }
+        const normalizedSessionId = args.session_id.trim()
         const { restored, knownPlaceholders } = vault.restore(args.text, {
-          sessionId: args.session_id,
+          sessionId: normalizedSessionId,
         })
         const written = await files.writeText(args.path, restored, {
           overwrite: args.overwrite === true,
@@ -316,7 +385,7 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
         return toolOk({
           path: written.resolvedPath,
           bytes: written.bytes,
-          session_id: args.session_id,
+          session_id: normalizedSessionId,
           known_placeholders: knownPlaceholders,
         })
       }
@@ -326,12 +395,13 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
       }
 
       if (name === "maskera_clear_session") {
-        if (typeof args.session_id !== "string") {
-          return toolError("Missing required string: session_id")
+        if (typeof args.session_id !== "string" || !args.session_id.trim()) {
+          return toolError("Missing required non-empty string: session_id")
         }
+        const normalizedSessionId = args.session_id.trim()
         return toolOk({
-          session_id: args.session_id,
-          cleared: vault.clear(args.session_id),
+          session_id: normalizedSessionId,
+          cleared: vault.clear(normalizedSessionId),
         })
       }
 
@@ -362,20 +432,25 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
         }
       }
       const req = raw as JsonRpcRequest
-      const id =
+      const hasIdProp = Object.prototype.hasOwnProperty.call(req, "id")
+      const validId =
         typeof req.id === "string" || typeof req.id === "number" || req.id === null
           ? req.id
           : undefined
 
-      if (req.jsonrpc !== "2.0" || typeof req.method !== "string") {
-        if (id === undefined) return null
+      if (
+        req.jsonrpc !== "2.0" ||
+        typeof req.method !== "string" ||
+        (hasIdProp && validId === undefined)
+      ) {
         return {
           jsonrpc: "2.0",
-          id,
+          id: validId ?? null,
           error: { code: -32600, message: "Invalid Request" },
         }
       }
 
+      const id = validId
       // JSON-RPC notifications (no id) never receive a response.
       if (id === undefined) {
         return null

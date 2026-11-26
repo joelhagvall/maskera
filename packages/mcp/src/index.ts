@@ -8,9 +8,11 @@ export {
 } from "./engine"
 export { createFileGuard, type FileGuard } from "./files"
 export { extractGuardText, type GuardResult, runGuard } from "./guard"
+export { type InspectedRequest, ProxyInspector, renderInspectorHtml } from "./inspector"
 export {
   createSseRestorer,
   type ProxyOptions,
+  type RedactFieldKind,
   type RunningMaskeraProxy,
   redactLlmRequestBody,
   restoreLlmResponseBody,

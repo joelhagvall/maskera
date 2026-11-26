@@ -25,6 +25,7 @@ interface ParsedCli {
   anthropicUpstream?: string
   openaiUpstream?: string
   restoreResponses: boolean
+  auditLogPath?: string
   // guard flags
   redact: boolean
   file?: string
@@ -50,6 +51,7 @@ function parseArgs(argv: readonly string[]): ParsedCli {
   let anthropicUpstream = process.env.MASKERA_ANTHROPIC_UPSTREAM || undefined
   let openaiUpstream = process.env.MASKERA_OPENAI_UPSTREAM || undefined
   let restoreResponses = true
+  let auditLogPath = process.env.MASKERA_AUDIT_LOG || undefined
   let redact = false
   let file: string | undefined
 
@@ -61,51 +63,96 @@ function parseArgs(argv: readonly string[]): ParsedCli {
     }
   }
 
+  const takeValue = (
+    flag: string,
+    arg: string,
+    index: number,
+    allowLeadingDash = false,
+  ): { value: string; nextIndex: number } => {
+    const eq = arg.indexOf("=")
+    if (eq >= 0) {
+      const value = arg.slice(eq + 1)
+      if (!value.trim()) throw new Error(`Flag ${flag} requires a non-empty value.`)
+      return { value, nextIndex: index }
+    }
+    const next = argv[index + 1]
+    if (next === undefined || !next.trim() || (!allowLeadingDash && next.startsWith("-"))) {
+      throw new Error(`Flag ${flag} requires a non-empty value.`)
+    }
+    return { value: next, nextIndex: index + 1 }
+  }
+
   for (let i = startIndex; i < argv.length; i++) {
-    const arg = argv[i]
-    if (arg === "--help" || arg === "-h") {
+    const arg = argv[i] ?? ""
+    const eq = arg.indexOf("=")
+    const flag = eq >= 0 ? arg.slice(0, eq) : arg
+
+    if (flag === "--help" || flag === "-h") {
       help = true
-    } else if (arg === "--version" || arg === "-v") {
+    } else if (flag === "--version" || flag === "-v") {
       version = true
-    } else if (arg === "--rules-only") {
+    } else if (flag === "--rules-only") {
       defaultMode = "rules"
-    } else if (arg === "--no-restore") {
+    } else if (flag === "--no-restore") {
       restoreResponses = false
-    } else if (arg === "--redact") {
+    } else if (flag === "--redact") {
       redact = true
-    } else if (arg === "--root" && argv[i + 1]) {
-      roots.push(argv[++i] as string)
-    } else if (arg?.startsWith("--root=")) {
-      const value = arg.slice("--root=".length).trim()
-      if (value) roots.push(value)
-    } else if (arg === "--host" && argv[i + 1]) {
-      host = argv[++i] as string
-    } else if (arg?.startsWith("--host=")) {
-      host = arg.slice("--host=".length).trim()
-    } else if (arg === "--port" && argv[i + 1]) {
-      port = Number(argv[++i])
-    } else if (arg?.startsWith("--port=")) {
-      port = Number(arg.slice("--port=".length).trim())
-    } else if (arg === "--upstream" && argv[i + 1]) {
-      upstream = argv[++i] as string
-    } else if (arg?.startsWith("--upstream=")) {
-      upstream = arg.slice("--upstream=".length).trim()
-    } else if (arg === "--anthropic-upstream" && argv[i + 1]) {
-      anthropicUpstream = argv[++i] as string
-    } else if (arg === "--openai-upstream" && argv[i + 1]) {
-      openaiUpstream = argv[++i] as string
-    } else if (arg === "--profile" && argv[i + 1]) {
-      const val = argv[++i]
-      if (val === "general" || val === "clinical") profile = val
-    } else if (arg === "--custom-term" && argv[i + 1]) {
-      customTerms.push(argv[++i] as string)
-    } else if (arg === "--file" && argv[i + 1]) {
-      file = argv[++i] as string
+    } else if (flag === "--root") {
+      const { value, nextIndex } = takeValue(flag, arg, i)
+      i = nextIndex
+      if (value.trim()) roots.push(value.trim())
+    } else if (flag === "--host") {
+      const { value, nextIndex } = takeValue(flag, arg, i)
+      i = nextIndex
+      host = value.trim()
+    } else if (flag === "--port") {
+      const { value, nextIndex } = takeValue(flag, arg, i)
+      i = nextIndex
+      const parsedPort = Number(value.trim())
+      if (!Number.isInteger(parsedPort) || parsedPort < 0 || parsedPort > 65535) {
+        throw new Error(`Invalid --port "${value}": expected integer 0..65535.`)
+      }
+      port = parsedPort
+    } else if (flag === "--upstream") {
+      const { value, nextIndex } = takeValue(flag, arg, i)
+      i = nextIndex
+      upstream = value.trim()
+    } else if (flag === "--anthropic-upstream") {
+      const { value, nextIndex } = takeValue(flag, arg, i)
+      i = nextIndex
+      anthropicUpstream = value.trim()
+    } else if (flag === "--openai-upstream") {
+      const { value, nextIndex } = takeValue(flag, arg, i)
+      i = nextIndex
+      openaiUpstream = value.trim()
+    } else if (flag === "--profile") {
+      const { value, nextIndex } = takeValue(flag, arg, i)
+      i = nextIndex
+      if (value !== "general" && value !== "clinical") {
+        throw new Error(`Invalid --profile "${value}": expected "general" or "clinical".`)
+      }
+      profile = value
+    } else if (flag === "--custom-term") {
+      const { value, nextIndex } = takeValue(flag, arg, i, true)
+      i = nextIndex
+      customTerms.push(value)
+    } else if (flag === "--audit-log") {
+      const { value, nextIndex } = takeValue(flag, arg, i)
+      i = nextIndex
+      auditLogPath = value.trim() || undefined
+    } else if (flag === "--file") {
+      const { value, nextIndex } = takeValue(flag, arg, i, true)
+      i = nextIndex
+      file = value
+    } else {
+      throw new Error(`Unknown option "${arg}". Run with --help for usage.`)
     }
   }
 
   if (roots.length === 0) roots.push(process.cwd())
-  if (!Number.isFinite(port) || port < 0 || port > 65535) port = 8787
+  if (!Number.isInteger(port) || port < 0 || port > 65535) {
+    throw new Error(`Invalid port "${String(port)}": expected integer 0..65535.`)
+  }
 
   return {
     command,
@@ -121,6 +168,7 @@ function parseArgs(argv: readonly string[]): ParsedCli {
     anthropicUpstream,
     openaiUpstream,
     restoreResponses,
+    auditLogPath,
     redact,
     file,
   }
@@ -134,7 +182,7 @@ function printHelp(): void {
       "",
       "Usage:",
       "  maskera-mcp [mcp]   [--root <dir>] [--rules-only]",
-      "  maskera-mcp proxy   [--port 8787] [--host 127.0.0.1] [--upstream <url>] [--rules-only] [--no-restore]",
+      "  maskera-mcp proxy   [--port 8787] [--host 127.0.0.1] [--upstream <url>] [--audit-log <file.jsonl>] [--rules-only] [--no-restore]",
       "  maskera-mcp guard   [--redact] [--file <path>] [--rules-only]",
       "",
       "Subcommands:",
@@ -154,6 +202,7 @@ function printHelp(): void {
       "  MASKERA_MCP_MODE            'auto' (default) or 'rules'",
       "  MASKERA_MODEL_PATH          Local ONNX model directory base path",
       "  MASKERA_MODEL_ID            Model id (defaults to joelhagvall/maskera-sv-ner)",
+      "  MASKERA_DTYPE               ONNX dtype: 'q8' (default on Node, ~2.5x faster), 'q4', or 'fp32'",
       "  MASKERA_CACHE_DIR           Transformers.js cache directory",
       "  MASKERA_ALLOW_REMOTE_MODELS '0' to disable Hugging Face Hub downloads",
       "",
@@ -167,6 +216,7 @@ function buildEngine(args: ParsedCli) {
     nerOptions: {
       localModelPath: process.env.MASKERA_MODEL_PATH || undefined,
       model: process.env.MASKERA_MODEL_ID || undefined,
+      dtype: process.env.MASKERA_DTYPE || undefined,
       cacheDir: process.env.MASKERA_CACHE_DIR || undefined,
       allowRemoteModels:
         process.env.MASKERA_ALLOW_REMOTE_MODELS === "0"
@@ -222,14 +272,17 @@ async function main(): Promise<void> {
       profile: args.profile,
       customTerms: args.customTerms.length > 0 ? args.customTerms : undefined,
       restoreResponses: args.restoreResponses,
+      auditLogPath: args.auditLogPath,
       onLog: (line) => process.stderr.write(`${line}\n`),
     })
+    engine.warmup()
     process.stderr.write(
       [
         `[maskera-proxy] listening on ${running.url} (mode=${args.defaultMode}, restore=${args.restoreResponses})`,
+        `  Local live inspector:    ${running.inspectorUrl}`,
         `  Claude Code / Anthropic: ANTHROPIC_BASE_URL=${running.url}`,
         `  Codex / Cursor / OpenAI: OPENAI_BASE_URL=${running.url}/v1`,
-        `  Status (counts only):    ${running.url}/_maskera/status`,
+        ...(args.auditLogPath ? [`  Local audit log (JSONL): ${args.auditLogPath}`] : []),
         "",
       ].join("\n"),
     )
@@ -242,11 +295,25 @@ async function main(): Promise<void> {
   }
 
   if (args.command === "guard") {
-    const raw = args.file ? await readFile(args.file, "utf8") : await readStdinAll()
+    let raw: string
+    if (args.file) {
+      const buf = await readFile(args.file)
+      if (buf.includes(0)) {
+        throw new Error(`"${args.file}" appears to be a binary file; only UTF-8 text is supported.`)
+      }
+      try {
+        raw = new TextDecoder("utf-8", { fatal: true }).decode(buf)
+      } catch {
+        throw new Error(`"${args.file}" is not valid UTF-8 text; convert it to UTF-8 first.`)
+      }
+    } else {
+      raw = await readStdinAll()
+    }
     const result = await runGuard(raw, engine, {
       mode: args.defaultMode,
       profile: args.profile,
       customTerms: args.customTerms.length > 0 ? args.customTerms : undefined,
+      preserveJsonStructure: args.redact,
     })
     if (args.redact) {
       process.stdout.write(result.redacted)
@@ -265,7 +332,14 @@ async function main(): Promise<void> {
   }
 
   // Default: MCP stdio server.
-  const server = createMaskeraMcpServer({ engine, allowedRoots: args.roots })
+  const server = createMaskeraMcpServer({
+    engine,
+    allowedRoots: args.roots,
+    defaultProfile: args.profile,
+    defaultCustomTerms: args.customTerms.length > 0 ? args.customTerms : undefined,
+  })
+  // Warm up ONNX in the background while the MCP client completes initialize/tools/list.
+  engine.warmup()
   let chain = Promise.resolve()
   const rl = createInterface({ input: process.stdin, crlfDelay: Number.POSITIVE_INFINITY })
 
@@ -292,15 +366,31 @@ async function main(): Promise<void> {
           process.stdout.write(`${JSON.stringify(response)}\n`)
         }
       } catch (err) {
-        process.stderr.write(
-          `[maskera-mcp] internal error: ${err instanceof Error ? err.message : String(err)}\n`,
-        )
+        const message = err instanceof Error ? err.message : String(err)
+        process.stderr.write(`[maskera-mcp] internal error: ${message}\n`)
+        const maybeId =
+          parsed && typeof parsed === "object" && !Array.isArray(parsed)
+            ? (parsed as { id?: unknown }).id
+            : undefined
+        if (typeof maybeId === "string" || typeof maybeId === "number" || maybeId === null) {
+          process.stdout.write(
+            `${JSON.stringify({
+              jsonrpc: "2.0",
+              id: maybeId,
+              error: { code: -32603, message: "Internal error" },
+            })}\n`,
+          )
+        }
       }
     })
   })
 }
 
+const isGuardCommand = process.argv[2] === "guard"
+
 void main().catch((err) => {
   process.stderr.write(`[maskera-mcp] fatal: ${err instanceof Error ? err.message : String(err)}\n`)
-  process.exit(1)
+  // Guard fails closed with exit code 2 so agent hooks (e.g. Claude Code)
+  // block rather than silently allowing unredacted prompts when guard errors.
+  process.exit(isGuardCommand ? 2 : 1)
 })
