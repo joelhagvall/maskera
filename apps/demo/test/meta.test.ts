@@ -69,6 +69,22 @@ describe("renderRouteHtml", () => {
     }
   })
 
+  it("exposes structured product offers on the services page in both locales", () => {
+    for (const locale of ["sv", "en"] as const) {
+      const html = renderRouteHtml("services", locale)
+      const match = html.match(/<script type="application\/ld\+json">\s*([\s\S]*?)\s*<\/script>/)
+      const data = JSON.parse(match?.[1] ?? "")
+      expect(data.mainEntity["@type"]).toBe("ItemList")
+      expect(data.mainEntity.itemListElement).toHaveLength(3)
+      const [ext, agents, sdk] = data.mainEntity.itemListElement.map(
+        (entry: { item: Record<string, unknown> }) => entry.item,
+      )
+      expect(ext.offers).toHaveLength(3)
+      expect(agents.sameAs).toBe("https://www.npmjs.com/package/@maskera/mcp")
+      expect(sdk.sameAs).toBe("https://www.npmjs.com/package/maskera")
+    }
+  })
+
   it("advertises the Markdown alternate on every shell", () => {
     for (const view of routeHtmlViews) {
       for (const locale of ["sv", "en"] as const) {

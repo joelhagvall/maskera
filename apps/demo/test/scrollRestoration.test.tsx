@@ -28,6 +28,13 @@ describe("useRoute scroll restoration", () => {
     expect(scrollTo).toHaveBeenLastCalledWith(0, 640)
   })
 
+  it("leaves the page-load position to the browser, so #section links land", () => {
+    window.history.replaceState(null, "", "/tjanster#agenter")
+    renderHook(() => useRoute())
+
+    expect(scrollTo).not.toHaveBeenCalled()
+  })
+
   it("does not override a pending section jump", () => {
     const { result } = renderHook(() => useRoute())
     scrollTo.mockClear()

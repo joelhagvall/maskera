@@ -185,6 +185,12 @@ function jsonLdFor(view: View, locale: Locale): object {
       applicationCategory: "SecurityApplication",
       operatingSystem: "Any",
       browserRequirements: "Requires JavaScript",
+      isPartOf: {
+        "@type": "WebSite",
+        name: strings.meta.siteName,
+        alternateName: "Maskera",
+        url: viewUrl("demo", locale),
+      },
       offers: { "@type": "Offer", price: "0", priceCurrency: "SEK" },
       author: {
         "@type": "Person",
@@ -194,9 +200,106 @@ function jsonLdFor(view: View, locale: Locale): object {
       sameAs: [
         "https://github.com/joelhagvall/maskera",
         "https://www.npmjs.com/package/maskera",
+        "https://www.npmjs.com/package/@maskera/mcp",
+        "https://www.npmjs.com/package/@maskera/core",
         "https://huggingface.co/joelhagvall/maskera-sv-ner",
         "https://hagvall-labs.com",
       ],
+    }
+  }
+
+  if (view === "services") {
+    const [extensionTrack, agentsTrack, sdkTrack] = strings.services.tracks
+    return {
+      ...shared,
+      "@type": "WebPage",
+      publisher: ORGANIZATION_JSON_LD,
+      isPartOf: {
+        "@type": "WebSite",
+        name: strings.meta.siteName,
+        url: viewUrl("demo", locale),
+      },
+      mainEntity: {
+        "@type": "ItemList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            item: {
+              "@type": "SoftwareApplication",
+              name: `Maskera ${extensionTrack.title}`,
+              description: extensionTrack.summary,
+              applicationCategory: "SecurityApplication",
+              operatingSystem: "Chrome, Edge, Firefox",
+              url: `${url}#tillagg`,
+              offers: [
+                {
+                  "@type": "Offer",
+                  name: strings.services.compare.freeTitle,
+                  price: "0",
+                  priceCurrency: "SEK",
+                },
+                {
+                  "@type": "Offer",
+                  name: strings.services.compare.proTitle,
+                  price: "149",
+                  priceCurrency: "SEK",
+                  priceSpecification: {
+                    "@type": "UnitPriceSpecification",
+                    price: "149",
+                    priceCurrency: "SEK",
+                    unitText: "MONTH",
+                    valueAddedTaxIncluded: true,
+                  },
+                },
+                {
+                  "@type": "Offer",
+                  name: strings.services.compare.teamTitle,
+                  price: "249",
+                  priceCurrency: "SEK",
+                  priceSpecification: {
+                    "@type": "UnitPriceSpecification",
+                    price: "249",
+                    priceCurrency: "SEK",
+                    unitText: "MONTH",
+                    valueAddedTaxIncluded: false,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            item: {
+              "@type": "SoftwareApplication",
+              name: `Maskera ${agentsTrack.title}`,
+              description: agentsTrack.summary,
+              applicationCategory: "DeveloperApplication",
+              operatingSystem: "macOS, Linux, Windows",
+              license: "https://opensource.org/license/mit",
+              url: `${url}#agenter`,
+              sameAs: "https://www.npmjs.com/package/@maskera/mcp",
+              offers: { "@type": "Offer", price: "0", priceCurrency: "SEK" },
+            },
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            item: {
+              "@type": "SoftwareApplication",
+              name: `Maskera ${sdkTrack.title}`,
+              description: sdkTrack.summary,
+              applicationCategory: "DeveloperApplication",
+              operatingSystem: "Web browser, Node.js 18+",
+              license: "https://opensource.org/license/mit",
+              url: `${url}#kod`,
+              sameAs: "https://www.npmjs.com/package/maskera",
+              offers: { "@type": "Offer", price: "0", priceCurrency: "SEK" },
+            },
+          },
+        ],
+      },
     }
   }
 
@@ -208,6 +311,12 @@ function jsonLdFor(view: View, locale: Locale): object {
       programmingLanguage: "TypeScript",
       runtimePlatform: ["Web browser", "Node.js"],
       license: "https://opensource.org/license/mit",
+      sameAs: [
+        "https://www.npmjs.com/package/maskera",
+        "https://www.npmjs.com/package/@maskera/mcp",
+        "https://www.npmjs.com/package/@maskera/core",
+        "https://huggingface.co/joelhagvall/maskera-sv-ner",
+      ],
     }
   }
 

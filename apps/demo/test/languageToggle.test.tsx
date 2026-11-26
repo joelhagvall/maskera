@@ -15,7 +15,7 @@ function LocalizedShell() {
   const [draft, setDraft] = useState("bevarad text")
   return (
     <>
-      <Header go={navigate} />
+      <Header go={navigate} goSection={vi.fn()} />
       <input aria-label="draft" value={draft} onChange={(event) => setDraft(event.target.value)} />
     </>
   )

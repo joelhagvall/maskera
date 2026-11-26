@@ -48,7 +48,7 @@ function RestoreMap({ map }: { map: Record<string, string> }) {
         <tbody>
           {Object.entries(map).map(([token, value]) => (
             <tr key={token}>
-              <td className="mono">{token}</td>
+              <td className="map-token">{token}</td>
               <td className="arrow">→</td>
               <td>{value}</td>
             </tr>
@@ -98,7 +98,7 @@ export function OutputCard({
           så demon uppmanar aldrig någon att skriva in ett riktigt nummer. */}
       {invalidPnrs.length > 0 && (
         <p className="checksum-note">
-          <span className="mono">{invalidPnrs.join(", ")}</span>{" "}
+          <span className="checksum-value">{invalidPnrs.join(", ")}</span>{" "}
           {invalidPnrs.length === 1
             ? copy.outputCard.invalidPersonnummerSingular
             : copy.outputCard.invalidPersonnummerPlural}{" "}

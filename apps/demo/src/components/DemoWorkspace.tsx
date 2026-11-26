@@ -5,14 +5,16 @@ import { navClick, type View, viewPaths } from "../routing"
 import { getScenarios, type Scenario } from "../scenarios"
 import { useSwedishNer } from "../useSwedishNer"
 import { Controls } from "./Controls"
-import { ExtensionInstall } from "./ExtensionInstall"
+import { DEMO_ANCHOR } from "./ExtensionInstall"
 import { Header } from "./Header"
+import { HomeProof, HomeTracks } from "./HomeTracks"
 import { InputCard } from "./InputCard"
 import { OutputCard } from "./OutputCard"
 import { RestoreDemo } from "./RestoreDemo"
 
 export interface DemoWorkspaceProps {
   go: (next: View) => void
+  goSection: (next: View, anchor: string) => void
   onCoverage: () => void
   requestedScenarioId: string | null
   onRequestedScenarioConsumed: () => void
@@ -25,6 +27,7 @@ export interface DemoWorkspaceProps {
  */
 export function DemoWorkspace({
   go,
+  goSection,
   onCoverage,
   requestedScenarioId,
   onRequestedScenarioConsumed,
@@ -69,8 +72,14 @@ export function DemoWorkspace({
 
   return (
     <>
-      <Header go={go} />
+      <Header go={go} goSection={goSection} />
       <main id="main-content">
+        <HomeTracks goSection={goSection} />
+        <HomeProof go={go} />
+        <div className="home-try-head">
+          <h2 id={DEMO_ANCHOR}>{copy.demo.tryTitle}</h2>
+          <p>{copy.demo.tryLede}</p>
+        </div>
         <Controls
           activeId={activeId}
           onPick={pick}
@@ -107,7 +116,6 @@ export function DemoWorkspace({
         {Object.keys(ner.result.map).length > 0 && (
           <RestoreDemo key={active.id} result={ner.result} scenarioId={active.id} />
         )}
-        <ExtensionInstall trialContent="demo_extension_trial" />
       </main>
     </>
   )

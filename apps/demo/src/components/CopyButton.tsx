@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { type ReactNode, useEffect, useRef, useState } from "react"
 import strings from "../i18n"
 import { CheckIcon, CopyIcon } from "../icons"
 
@@ -10,6 +10,8 @@ export function CopyButton({
   text,
   className,
   iconSize = 13,
+  iconPosition = "start",
+  leading,
   ariaLabel,
   title,
   label,
@@ -18,6 +20,8 @@ export function CopyButton({
   text: string
   className: string
   iconSize?: number
+  iconPosition?: "start" | "end"
+  leading?: ReactNode
   ariaLabel?: string
   title?: string
   label?: string
@@ -41,6 +45,7 @@ export function CopyButton({
 
   const idleText = label ?? strings.copyButton.copy
   const doneText = copiedLabel ?? strings.copyButton.copied
+  const icon = copied ? <CheckIcon size={iconSize} /> : <CopyIcon size={iconSize} />
 
   return (
     <button
@@ -50,8 +55,10 @@ export function CopyButton({
       aria-label={ariaLabel ? (copied ? doneText : ariaLabel) : undefined}
       title={title}
     >
-      {copied ? <CheckIcon size={iconSize} /> : <CopyIcon size={iconSize} />}
+      {leading}
+      {iconPosition === "start" ? icon : null}
       <span aria-live="polite">{copied ? doneText : idleText}</span>
+      {iconPosition === "end" ? icon : null}
     </button>
   )
 }

@@ -1,17 +1,31 @@
-import { existsSync, readFileSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { resolve } from "node:path"
 import { describe, expect, it } from "vitest"
-import { HERO_SCENE_WIDTH, HERO_SCENES, heroScenePath } from "../src/heroScenes"
-import en from "../src/i18n/en.json"
-import sv from "../src/i18n/sv.json"
+import {
+  HERO_SCENE,
+  HERO_SCENE_WIDTH,
+  heroScenePath,
+  placeholderCount,
+  restoreMap,
+} from "../src/heroScenes"
 
 /**
- * The hero scenes are captured by maskera-extension `bun run capture:hero`.
- * A recapture can change an image's height (a prompt that wraps to another
+ * The browser scene is captured by maskera-extension `bun run capture:hero`.
+ * A recapture can change the image's height (a prompt that wraps to another
  * line); the declared size then reserves the wrong space and the hero shifts
  * as it loads. These checks read the real files.
  */
 const publicDir = resolve(__dirname, "..", "public")
+const extensionScript = resolve(
+  __dirname,
+  "..",
+  "..",
+  "..",
+  "..",
+  "maskera-extension",
+  "scripts",
+  "e2e-browsers.ts",
+)
 
 /** Pixel size of a WebP (lossy VP8, lossless VP8L or extended VP8X). */
 function webpSize(bytes: Buffer): { width: number; height: number } {
@@ -31,19 +45,48 @@ function webpSize(bytes: Buffer): { width: number; height: number } {
   throw new Error(`unknown WebP chunk ${chunk}`)
 }
 
-describe("hero scenes", () => {
-  it.each(HERO_SCENES.map((scene) => [scene.id, scene.height] as const))(
-    "%s has its capture at the declared size",
-    (id, height) => {
-      const file = resolve(publicDir, heroScenePath(id).slice(1))
-      expect(existsSync(file), file).toBe(true)
-      expect(webpSize(readFileSync(file))).toEqual({ width: HERO_SCENE_WIDTH, height })
+describe("hero scene", () => {
+  it("has its capture at the declared size and leaves no unused preview captures behind", () => {
+    const file = resolve(publicDir, heroScenePath(HERO_SCENE.id).slice(1))
+    expect(existsSync(file), file).toBe(true)
+    expect(webpSize(readFileSync(file))).toEqual({
+      width: HERO_SCENE_WIDTH,
+      height: HERO_SCENE.height,
+    })
+    const previews = readdirSync(resolve(publicDir, "hero"))
+      .filter((name) => name.startsWith("extension-preview-"))
+      .sort()
+    expect(previews).toEqual([`extension-preview-${HERO_SCENE.id}.webp`])
+  })
+
+  it.runIf(existsSync(extensionScript))(
+    "shows the same prompt and masked text as the extension capture",
+    () => {
+      const script = readFileSync(extensionScript, "utf8")
+      expect(script).toContain(JSON.stringify(HERO_SCENE.prompt))
+      expect(script).toContain(JSON.stringify(HERO_SCENE.masked))
     },
   )
 
-  it("has copy for every scene, in the same order, in both languages", () => {
-    const ids = HERO_SCENES.map((scene) => scene.id)
-    expect(sv.header.heroScenes.map((scene) => scene.id)).toEqual(ids)
-    expect(en.header.heroScenes.map((scene) => scene.id)).toEqual(ids)
+  it("derives the restore key from the prompt and its masked form", () => {
+    expect(restoreMap(HERO_SCENE.prompt, HERO_SCENE.masked)).toEqual({
+      "[NAMN_1]": "Bo Ek",
+      "[PERSONNUMMER_1]": "781101-2397",
+      "[PLATS_1]": "Boden",
+      "[NAMN_2]": "Liv",
+      "[BANKGIRO_1]": "991-2346",
+    })
+    expect(placeholderCount(HERO_SCENE.masked)).toBe(5)
+  })
+
+  it("replies only with placeholders the model was given", () => {
+    const map = restoreMap(HERO_SCENE.prompt, HERO_SCENE.masked)
+    const used = HERO_SCENE.reply.match(/\[[A-ZÅÄÖ_]+_\d+\]/g) ?? []
+    expect(used.length).toBeGreaterThan(0)
+    for (const token of used) expect(map).toHaveProperty([token])
+  })
+
+  it("refuses a masked text that does not match its prompt", () => {
+    expect(() => restoreMap("Ring Bo.", "Mejla [NAMN_1].")).toThrow()
   })
 })

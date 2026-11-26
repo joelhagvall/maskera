@@ -74,6 +74,35 @@ function service() {
   return turndown
 }
 
+function normalizeForMarkdown(document) {
+  // Code blocks render each line as a block-styled <span class="code-line">
+  // with no literal newline between siblings. Join them explicitly so agents
+  // fetching .md get runnable multi-line commands instead of one smashed line.
+  for (const code of document.querySelectorAll("pre code")) {
+    const lines = code.querySelectorAll(":scope > .code-line")
+    if (lines.length > 0) {
+      code.textContent = [...lines].map((line) => line.textContent ?? "").join("\n")
+    }
+  }
+
+  // Keep visible inline separators (" · ") that are aria-hidden for screen
+  // readers, otherwise adjacent links glue together into "[A](...)[B](...)".
+  for (const sep of document.querySelectorAll('span[aria-hidden="true"]')) {
+    if ((sep.textContent ?? "").includes("·")) {
+      sep.replaceWith(document.createTextNode(" · "))
+    }
+  }
+
+  // Ensure a space between adjacent sibling links or label+code pairs that
+  // rely on flex gap in CSS.
+  for (const pair of document.querySelectorAll(".agent-skill-label + .agent-skill-cmd")) {
+    pair.before(document.createTextNode(" "))
+  }
+  for (const link of document.querySelectorAll("a + a")) {
+    link.before(document.createTextNode(" · "))
+  }
+}
+
 function absolutize(document, origin) {
   for (const a of document.querySelectorAll("a[href]")) {
     const href = a.getAttribute("href") ?? ""
@@ -100,6 +129,7 @@ function absolutize(document, origin) {
 export function htmlToMarkdown(html, info) {
   const dom = new JSDOM(`<!doctype html><html><body>${html}</body></html>`)
   const { document } = dom.window
+  normalizeForMarkdown(document)
   const selectors = [...DROP_EVERYWHERE, ...(DROP_BY_PAGE[info.view] ?? [])]
   for (const node of document.querySelectorAll(selectors.join(","))) node.remove()
   absolutize(document, new URL(info.url).origin)

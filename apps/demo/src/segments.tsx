@@ -30,7 +30,8 @@ function weave(
   return nodes
 }
 
-const TOKEN_RE = /\[([A-ZÅÄÖ_]+)_\d+\]/g
+/** A placeholder token such as [NAMN_1]; group 1 is its label. */
+export const TOKEN_RE = /\[([A-ZÅÄÖ_]+)_\d+\]/g
 
 /** One range per placeholder token in the text, coloured by its category. */
 function tokenRanges(text: string): Range[] {

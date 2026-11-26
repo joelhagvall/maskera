@@ -1,6 +1,6 @@
 import { type KeyboardEvent, useRef, useState } from "react"
 import copy from "../i18n"
-import { ArrowUpRightIcon } from "../icons"
+import { AgentLogoStack, ArrowUpRightIcon } from "../icons"
 import { CopyButton } from "./CopyButton"
 
 export type AgentModeId = "proxy" | "mcp" | "guard"
@@ -46,6 +46,8 @@ export function AgentSetupCard({ idPrefix = "agent" }: { idPrefix?: string }) {
               text={agent.promptText}
               className="agent-prompt-copy"
               iconSize={14}
+              iconPosition="end"
+              leading={<AgentLogoStack />}
               label={agent.copyPromptCta}
               copiedLabel={agent.copiedPromptCta}
               ariaLabel={agent.copyPromptCta}

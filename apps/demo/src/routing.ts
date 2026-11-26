@@ -92,9 +92,13 @@ export function useRoute(initialView?: View) {
   // entry created by the in-app "back to start" link, so route changes own
   // scroll restoration. Capture happens before setView replaces the long home
   // page; otherwise a shorter content page could clamp window.scrollY first.
+  // Only a route change scrolls. The first render is a page load, and the
+  // browser owns that position, including the jump to a #section in the URL
+  // (/tjanster#agenter); StrictMode's repeated effect is not a change either.
   useLayoutEffect(() => {
+    const changed = currentViewRef.current !== view
     currentViewRef.current = view
-    if (!skipScrollRestorationRef.current) {
+    if (changed && !skipScrollRestorationRef.current) {
       window.scrollTo(0, view === "demo" ? homeScrollYRef.current : 0)
     }
     skipScrollRestorationRef.current = false

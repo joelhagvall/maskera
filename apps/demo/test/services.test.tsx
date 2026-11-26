@@ -11,7 +11,7 @@ afterEach(() => {
 })
 
 describe("Services", () => {
-  it("renders three product tracks (extension, AI agents, SDK) cleanly without Gateway references", () => {
+  it("shows every track on one page, without Gateway references", () => {
     const go = vi.fn()
     const { container } = render(<Services go={go} onCoverage={vi.fn()} />)
 
@@ -19,14 +19,34 @@ describe("Services", () => {
     expect(screen.getByText(copy.services.lede)).toBeTruthy()
     expect(screen.getByText(copy.services.sublede)).toBeTruthy()
     expect(container.textContent?.toLowerCase()).not.toContain("gateway")
-
-    const tabs = screen.getAllByRole("tab")
-    expect(tabs.map((tab) => tab.textContent)).toEqual(
-      copy.services.tracks.map((t) => `${t.title}${t.badge}${t.summary}`),
+    expect(screen.queryAllByRole("tab").map((tab) => tab.textContent)).toEqual(
+      copy.agentSetup.modes.map((mode) => mode.label),
     )
 
-    // Default track: Browser extension
-    expect(screen.getByRole("heading", { name: copy.extensionInstall.title })).toBeTruthy()
+    // The table of contents lists every section, and every section exists.
+    const toc = screen.getByRole("navigation", { name: copy.services.tocLabel })
+    const hrefs = within(toc)
+      .getAllByRole("link")
+      .map((link) => link.getAttribute("href"))
+    expect(hrefs).toEqual(copy.services.toc.map((item) => item.href))
+    for (const href of hrefs) expect(container.querySelector(href ?? "")).toBeTruthy()
+
+    // Overview: one column per track, each linking to its section.
+    const overview = screen.getByRole("table", { name: copy.services.overview.title })
+    expect(
+      within(overview)
+        .getAllByRole("columnheader")
+        .map((th) => th.textContent),
+    ).toEqual(copy.services.tracks.map((track) => track.title))
+    expect(
+      within(overview)
+        .getAllByRole("link")
+        .map((link) => link.getAttribute("href")),
+    ).toEqual(["#tillagg", "#agenter", "#kod"])
+
+    // Extension and its Free vs Pro comparison sit together before AI agents and SDK.
+    const sectionIds = [...container.querySelectorAll("section.services-section")].map((s) => s.id)
+    expect(sectionIds).toEqual(["oversikt", "tillagg", "jamfor", "agenter", "kod"])
     expect(screen.getByRole("list", { name: copy.extensionInstall.listLabel })).toBeTruthy()
     expect(screen.getByRole("table", { name: copy.services.compare.title })).toBeTruthy()
     expect(
@@ -34,6 +54,12 @@ describe("Services", () => {
         .getByRole("link", { name: new RegExp(copy.services.compare.startTrialCta) })
         .getAttribute("href"),
     ).toContain("app.maskera.dev/login?buy=extension-pro&signup=true")
+    expect(
+      screen.getByRole("link", { name: copy.services.compare.teamCta }).getAttribute("href"),
+    ).toContain("app.maskera.dev/login?buy=extension-team&signup=true")
+    expect(
+      screen.getByRole("link", { name: copy.services.compare.teamInvoiceCta }).getAttribute("href"),
+    ).toBe("mailto:hej@maskera.dev?subject=Maskera%20Team")
     expect(screen.getByRole("link", { name: /Ladda ner ZIP-filen/ }).getAttribute("href")).toBe(
       "https://app.maskera.dev/downloads/maskera-extension-0.2.0.zip",
     )
@@ -48,27 +74,25 @@ describe("Services", () => {
         .getAttribute("href"),
     ).toContain("app.maskera.dev/extension/privacy")
 
-    // Switch to AI agents track
-    fireEvent.click(screen.getByRole("tab", { name: /AI-agenter/ }))
-    expect(screen.getByRole("heading", { name: copy.services.agents.title })).toBeTruthy()
-    expect(screen.getByRole("button", { name: copy.agentSetup.copyPromptCta })).toBeTruthy()
+    // AI agents
+    const agents = within(container.querySelector("#agenter") as HTMLElement)
+    expect(agents.getByRole("heading", { level: 2 }).textContent).toBe(
+      copy.services.tracks[1].title,
+    )
+    expect(agents.getByRole("button", { name: copy.agentSetup.copyPromptCta })).toBeTruthy()
     expect(
-      screen
+      agents
         .getByRole("link", { name: new RegExp(copy.agentSetup.llmsLinkCta) })
         .getAttribute("href"),
     ).toBe("/llms.txt")
-    expect(screen.getByText(/npx -y @maskera\/mcp proxy/)).toBeTruthy()
+    expect(agents.getByText(/npx -y @maskera\/mcp proxy/)).toBeTruthy()
+    fireEvent.click(agents.getByRole("tab", { name: /MCP-server/ }))
+    expect(agents.getByText(/"mcpServers":/)).toBeTruthy()
 
-    // Switch agent mode tab to MCP server inside the agents panel
-    const agentsPanel = document.getElementById("track-panel-agents")
-    expect(agentsPanel).toBeTruthy()
-    fireEvent.click(within(agentsPanel as HTMLElement).getByRole("tab", { name: /MCP-server/ }))
-    expect(within(agentsPanel as HTMLElement).getByText(/"mcpServers":/)).toBeTruthy()
-
-    // Switch to SDK track and click developer docs link
-    fireEvent.click(screen.getByRole("tab", { name: /Egen kod/ }))
-    expect(screen.getByRole("heading", { name: copy.services.sdk.title })).toBeTruthy()
-    fireEvent.click(screen.getByRole("link", { name: copy.services.sdk.cta }))
+    // Own code
+    const code = within(container.querySelector("#kod") as HTMLElement)
+    expect(code.getByRole("heading", { level: 2 }).textContent).toBe(copy.services.tracks[2].title)
+    fireEvent.click(code.getByRole("link", { name: copy.services.sdk.cta }))
     expect(go).toHaveBeenCalledWith("dev")
   })
 })

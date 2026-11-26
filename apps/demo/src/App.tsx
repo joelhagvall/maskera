@@ -7,7 +7,10 @@ import { getLoadedView, loadView } from "./views"
 // initialView is the build-time prerender's route (entry-server.tsx); the
 // browser leaves it undefined and derives the view from the URL as before.
 export function App({ initialView }: { initialView?: View }) {
-  const [anchor, setAnchor] = useState<string | null>(null)
+  // The section to jump to and the page it is on. Keyed by page, so a jump
+  // waits until that page is shown instead of firing on the page being left
+  // while the next page's chunk still loads.
+  const [anchor, setAnchor] = useState<{ view: View; id: string } | null>(null)
   const [requestedScenarioId, setRequestedScenarioId] = useState<string | null>(null)
   const [, setLoadedTick] = useState(0)
   const { view, navigate } = useRoute(initialView)
@@ -29,8 +32,8 @@ export function App({ initialView }: { initialView?: View }) {
   // link) as soon as it is set, not on view change: navigate() is a no-op
   // when the target view is already active, and the jump must work then too.
   useEffect(() => {
-    if (!anchor || !getLoadedView(view)) return
-    document.getElementById(anchor)?.scrollIntoView()
+    if (!anchor || anchor.view !== view || !getLoadedView(view)) return
+    document.getElementById(anchor.id)?.scrollIntoView()
     setAnchor(null)
   }, [anchor, view])
 
@@ -53,10 +56,17 @@ export function App({ initialView }: { initialView?: View }) {
     [navigate],
   )
 
-  const goCoverage = useCallback(() => {
-    setAnchor("vad-maskeras")
-    go("transparency", { skipScrollRestoration: true })
-  }, [go])
+  // Navigate to a section on another page: the anchor effect above scrolls
+  // to it once the page is rendered.
+  const goSection = useCallback(
+    (next: View, id: string) => {
+      setAnchor({ view: next, id })
+      go(next, { skipScrollRestoration: true })
+    },
+    [go],
+  )
+
+  const goCoverage = useCallback(() => goSection("transparency", "vad-maskeras"), [goSection])
 
   const goContextDemo = useCallback(() => {
     setRequestedScenarioId("kontext")
@@ -81,6 +91,7 @@ export function App({ initialView }: { initialView?: View }) {
       {DemoView && (
         <DemoView
           go={go}
+          goSection={goSection}
           onCoverage={goCoverage}
           requestedScenarioId={requestedScenarioId}
           onRequestedScenarioConsumed={consumeRequestedScenario}

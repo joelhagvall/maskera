@@ -51,106 +51,76 @@ afterEach(() => {
 })
 
 describe("ExtensionHeroActions", () => {
-  it("points to the install section while no store listing is live", () => {
+  it("points to the services install section while no store listing is live", () => {
     allSoon()
     setUserAgent(CHROME_UA)
-    const go = vi.fn()
-    render(<ExtensionHeroActions go={go} />)
+    const goSection = vi.fn()
+    render(<ExtensionHeroActions goSection={goSection} />)
 
     const install = screen.getByRole("link", { name: copy.extensionInstall.heroInstall })
-    expect(install.getAttribute("href")).toBe("#installera")
-    expect(screen.getByText(copy.extensionInstall.builtFor)).toBeTruthy()
-    expect(screen.getAllByRole("img").map((icon) => icon.getAttribute("aria-label"))).toEqual([
-      "Chrome",
-      "Edge",
-      "Firefox",
-      "Safari",
-    ])
+    expect(install.getAttribute("href")).toBe("/tjanster#tillagg")
+    expect(install.querySelector("svg")).toBeTruthy()
+    fireEvent.click(install)
+    expect(goSection).toHaveBeenLastCalledWith("services", "tillagg")
 
-    const learnMore = screen.getByRole("link", { name: copy.extensionInstall.heroLearnMore })
-    expect(learnMore.getAttribute("href")).toBe("/tjanster")
-    fireEvent.click(learnMore)
-    expect(go).toHaveBeenCalledWith("services")
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      configurable: true,
+    })
+    const agents = screen.getByRole("button", { name: copy.extensionInstall.heroAgents })
+    expect(agents.querySelectorAll(".agent-logo-badge")).toHaveLength(4)
+    fireEvent.click(agents)
+    expect(writeText).toHaveBeenCalledWith(copy.agentSetup.promptText)
   })
 
   it("offers the visitor's store once that listing is live", () => {
     chromeLive()
     setUserAgent(CHROME_UA)
-    render(<ExtensionHeroActions go={vi.fn()} />)
+    render(<ExtensionHeroActions goSection={vi.fn()} />)
 
     const add = screen.getByRole("link", { name: "Lägg till i Chrome, gratis" })
     expect(add.getAttribute("href")).toBe("https://chromewebstore.google.com/detail/example")
     expect(add.getAttribute("target")).toBe("_blank")
-    expect(screen.getByText(copy.extensionInstall.alsoFor)).toBeTruthy()
-    expect(screen.getAllByRole("img").map((icon) => icon.getAttribute("aria-label"))).toEqual([
-      "Edge",
-      "Firefox",
-      "Safari",
-    ])
+    expect(add.querySelector("svg")).toBeTruthy()
   })
 
-  it("sends phones to the in-page demo", () => {
+  it("sends phones to the in-page demo without a desktop browser icon", () => {
     chromeLive()
     setUserAgent(IPHONE_UA)
-    render(<ExtensionHeroActions go={vi.fn()} />)
+    render(<ExtensionHeroActions goSection={vi.fn()} />)
 
-    expect(
-      screen.getByRole("link", { name: copy.extensionInstall.heroTryDemo }).getAttribute("href"),
-    ).toBe("#main-content")
+    const demo = screen.getByRole("link", { name: copy.extensionInstall.heroTryDemo })
+    expect(demo.getAttribute("href")).toBe("#testa")
+    expect(demo.querySelector("svg")).toBeNull()
   })
 })
 
 describe("ExtensionInstall", () => {
-  it("lets users step through the sample while autoplay is paused for reduced motion", () => {
-    allSoon()
-    vi.stubGlobal("matchMedia", vi.fn().mockReturnValue({ matches: true }))
-    render(<ExtensionInstall showFlowDemo />)
-
-    const flow = copy.extensionInstall.flowDemo
-    const demo = within(screen.getByRole("region", { name: flow.regionLabel }))
-    expect(demo.getByRole("button", { name: flow.play })).toBeTruthy()
-    expect(demo.getByRole("button", { name: flow.steps[0], pressed: true })).toBeTruthy()
-
-    fireEvent.click(demo.getByRole("button", { name: flow.steps[2] }))
-    expect(demo.getByRole("button", { name: flow.steps[2], pressed: true })).toBeTruthy()
-    expect(demo.getByText("[NAMN_1]")).toBeTruthy()
-  })
-
-  it("omits the flow demo by default so the home page does not repeat the live demo", () => {
+  it("shows Snart rows and promotes the ZIP download to a primary CTA while no store is live", () => {
     allSoon()
     render(<ExtensionInstall />)
 
-    expect(
-      screen.queryByRole("region", { name: copy.extensionInstall.flowDemo.regionLabel }),
-    ).toBeNull()
-  })
-
-  it("shows Snart rows without links and keeps the ZIP fallback", () => {
-    allSoon()
-    render(<ExtensionInstall />)
-
-    expect(screen.getByRole("heading", { name: copy.extensionInstall.title })).toBeTruthy()
     const list = screen.getByRole("list", { name: copy.extensionInstall.listLabel })
     expect(within(list).getAllByText(copy.extensionInstall.soon)).toHaveLength(4)
     expect(within(list).queryAllByRole("link")).toHaveLength(0)
-    expect(
-      screen.getByRole("link", { name: copy.extensionInstall.zipCta }).getAttribute("href"),
-    ).toBe("https://app.maskera.dev/downloads/maskera-extension-0.2.0.zip")
+    const zipLink = screen.getByRole("link", { name: copy.extensionInstall.zipCta })
+    expect(zipLink.getAttribute("href")).toBe(
+      "https://app.maskera.dev/downloads/maskera-extension-0.2.0.zip",
+    )
+    expect(zipLink.className).toContain("ext-zip-cta")
     expect(screen.queryByRole("link", { name: /Testa Pro/ })).toBeNull()
   })
 
-  it("links live stores and adds the trial link when asked", () => {
+  it("links live stores and demotes the ZIP download to an inline fallback", () => {
     chromeLive()
-    render(<ExtensionInstall trialContent="demo_extension_trial" />)
+    render(<ExtensionInstall />)
 
     const list = screen.getByRole("list", { name: copy.extensionInstall.listLabel })
     const [chrome] = within(list).getAllByRole("link")
     expect(chrome.getAttribute("href")).toBe("https://chromewebstore.google.com/detail/example")
     expect(within(list).getAllByText(copy.extensionInstall.soon)).toHaveLength(3)
-    expect(
-      screen
-        .getByRole("link", { name: new RegExp(copy.extensionInstall.trialCta) })
-        .getAttribute("href"),
-    ).toContain("app.maskera.dev/login?buy=extension-pro&signup=true")
+    const zipLink = screen.getByRole("link", { name: copy.extensionInstall.zipCta })
+    expect(zipLink.className).not.toContain("ext-zip-cta")
   })
 })

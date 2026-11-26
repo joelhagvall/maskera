@@ -148,7 +148,8 @@ describe("useRoute: route metadata", () => {
     expect(viewMeta.demo.description).toContain("@maskera/mcp")
     expect(viewMeta.demo.description).toContain("Endast maskerad text")
     expect(indexSource).toContain(viewMeta.demo.description)
-    expect(indexSource).toContain("Skydda personuppgifter när du använder AI")
+    expect(indexSource).toContain('property="og:description"')
+    expect(indexSource).toContain("@maskera/mcp")
   })
 
   it("sets canonical, description and social metadata on a direct sub-page landing", () => {

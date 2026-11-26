@@ -48,11 +48,14 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
           <MaskeraMark size={20} />
           {copy.meta.siteName}
         </a>
-        <nav className="head-links">
-          {/* Display controls come first, matching app.maskera.dev's theme
-              toggle position when a visitor clicks between the two sites. */}
+        {/* Display controls sit beside the wordmark on phones and right before
+            the nav links on desktop, matching app.maskera.dev's theme toggle
+            position when a visitor clicks between the two sites. */}
+        <div className="head-controls">
           <ThemeToggle />
           <LanguageToggle current={current} />
+        </div>
+        <nav className="head-links">
           {nav.map((item) => (
             <a
               key={item.view}

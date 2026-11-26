@@ -3,33 +3,41 @@
     "title": "Använd AI utan att dela personuppgifter.",
     "titleMobile": "Använd AI utan att\ndela personuppgifter.",
     "exampleMarker": "[NAMN_1]",
-    "lede": "maskera är det lokala skyddslagret framför alla AI-modeller: namn, adresser, personnummer och e-post byts mot {marker} innan texten lämnar din enhet, i webbläsaren, i AI-agenter eller i egen kod.",
+    "lede": "Svenska namn, personnummer och adresser byts mot {marker} innan AI:n ser dem: i webbläsaren, i dina AI-agenter och i din egen kod.",
     "browserLead": "Allt körs",
     "browserEmphasis": "lokalt på din enhet",
     "productLabel": "Din AI-chatt",
-    "heroScenesLabel": "Exempel på uppgifter",
-    "heroScenes": [
-      {
-        "id": "myndighet",
-        "label": "Myndighet",
-        "alt": "Maskeras förhandsvisning i en AI-chatt: Bo Ek, personnumret, Boden, Liv och bankgironumret blir platshållare, medan bostadsanpassning, bo kvar och i dag står kvar så att AI:n kan skriva beslutet."
+    "productPopupAlt": "Maskeras popup med reglaget Maskera när jag skickar, den svenska AI-modellen och 20 av 20 AI-maskeringar kvar.",
+    "stage": {
+      "label": "Välj var maskera körs",
+      "tabs": { "browser": "Webbläsare", "agent": "AI-agent", "code": "Din kod" },
+      "note": "Byggt för svensk text. Samma 43 MB-modell i alla tre, ingen text skickas till Maskera.",
+      "browserAlt": "Maskeras förhandsvisning i en AI-chatt: Bo Ek, personnumret, Boden, Liv och bankgironumret blir platshållare, medan bostadsanpassning, bo kvar och i dag står kvar så att AI:n kan skriva beslutet.",
+      "agent": {
+        "windowLabel": "Din AI-agent",
+        "projectsLabel": "Projekt",
+        "projects": ["ärenden", "avtal", "rapporter"],
+        "userMessage": "Läs ärende.txt och skriv beslutet.",
+        "toolRead": "Läste ärende.txt",
+        "maskedCount": "maskera · {count} uppgifter maskerade",
+        "modelSees": "Modellen ser:",
+        "composer": "Fråga agenten",
+        "worksWith": "Via den lokala proxyn i Claude Code, Codex, Cursor och OpenCode",
+        "restoredNote": "Svaret återställs lokalt"
       },
-      {
-        "id": "hr",
-        "label": "HR",
-        "alt": "Maskeras förhandsvisning i en AI-chatt: Dag Parkinson, personnumret och Uppsala blir platshållare, medan i dag, diagnosen Parkinsons sjukdom och 75 % står kvar så att AI:n kan föreslå hur tjänsten anpassas."
-      },
-      {
-        "id": "kundtjanst",
-        "label": "Kundtjänst",
-        "alt": "Maskeras förhandsvisning i en AI-chatt: Liv Lund och e-postadressen blir platshållare, medan hela sitt liv, i dag och beloppet står kvar så att AI:n kan skriva en ursäkt."
+      "code": {
+        "fileLabel": "app.ts",
+        "outputLabel": "Det modellen får",
+        "restoredLabel": "Svaret tillbaka",
+        "note": "npm-paketet maskera, i webbläsaren eller Node 18+"
       }
-    ],
-    "productPopupAlt": "Maskeras popup med reglaget Maskera när jag skickar, den svenska AI-modellen och 20 av 20 AI-maskeringar kvar."
+    }
   },
   "demo": {
     "testDataNote": "Exemplen använder påhittade personer och officiellt reserverade testvärden, aldrig verkliga personers uppgifter.",
     "testDataCta": "Läs mer om testdatan",
+    "tryTitle": "Testa själv",
+    "tryLede": "Påhittade exempel. Allt körs i din webbläsare.",
     "languageNote": "Gränssnittet kan visas på engelska, men exempeltexten och de simulerade AI-svaren förblir på svenska. Maskera stöder för närvarande endast svenskspråkig text; det översätter inte andra språk.",
     "skipLink": "Hoppa till huvudinnehållet"
   },
@@ -414,7 +422,7 @@
     "comparisonSummary": "Maskera hittade alla 211 namn, platser och organisationer i båda testerna trots att modellen är 7 till 11 gånger mindre. På vanlig text satte KBLab något oftare exakt rätt kategori (89,4 % mot 88,2 %); på små bokstäver ledde Maskera tydligt (87,4 % mot 83,2 % och 62,1 %).",
     "toolsComparison": {
       "title": "Jämfört med andra lokala PII-verktyg på svenska",
-      "body": "Samma 258 svenska texter över 19 verksamhetsområden (952 märkta personuppgifter: namn, gatuadresser, personnummer, telefon, e-post, bankgiro och IBAN), mätta på CPU 2026-11-26. Vi har gett Microsoft Presidio svensk spaCy (sv_core_news_lg) plus svenska regler för personnummer och organisationsnummer, och kört OpenAI Privacy Filter (q4 ONNX) med dess officiella Viterbi-avkodning.",
+      "body": "Mätt på CPU 2026-11-26 på både ett helt externt svenskt dataset (Kungliga bibliotekets SUC 3.0: 1 000 publicerade meningar, 627 personnamn + 500 rena meningar utan entiteter, noll rader i Maskeras träning) och vår 258-textsvit (952 svenska personuppgifter: namn, adresser, personnummer, telefon, e-post, bankgiro och IBAN). Microsoft Presidio fick svensk spaCy (sv_core_news_lg) plus svenska ID-regler; OpenAI Privacy Filter (q4 ONNX) kördes med officiell Viterbi-avkodning.",
       "barTitle": "Full träff på 952 svenska personuppgifter (258 texter)",
       "bars": [
         { "label": "Maskera v20 (43 MB)", "valueText": "98,8 %", "pct": 98.8, "ours": true },
@@ -433,20 +441,20 @@
         }
       ],
       "table": {
-        "caption": "Jämförelse av lokala PII-verktyg på 258 svenska texter (952 uppgifter) och 87 svenska personnamn i små bokstäver",
+        "caption": "Jämförelse av lokala PII-verktyg på 258 svenska texter (952 uppgifter) och externt SUC 3.0-test (627 svenska personnamn, vanlig text och gemener)",
         "system": "Verktyg",
         "size": "Storlek",
         "domain": "258 texter (952 PII)",
-        "lowercaseNames": "Namn, små bokstäver",
+        "lowercaseNames": "SUC 3.0 F1 (vanlig / gemener)",
         "speedRam": "CPU / RAM"
       },
       "rows": [
         {
           "system": "Maskera v20",
-          "description": "Svensk q4 ONNX-modell + svenska formatregler",
+          "description": "Svensk q4 ONNX-modell + svenska formatregler (0 rader SUC i träning)",
           "size": "43 MB",
           "domain": "98,8 % (11 läckor)",
-          "lowercaseNames": "100,0 % (87/87)",
+          "lowercaseNames": "88,5 % / 88,2 %",
           "speedRam": "12,7 ms · 334 MB",
           "ours": true
         },
@@ -455,7 +463,7 @@
           "description": "Regex och svenska namnlistor (ingen AI-modell)",
           "size": "5 MB",
           "domain": "88,3 % (111 läckor)",
-          "lowercaseNames": "0,0 % (0/87)",
+          "lowercaseNames": "73,6 % / 0,0 %",
           "speedRam": "2,8 ms · 157 MB",
           "ours": false
         },
@@ -464,21 +472,21 @@
           "description": "1,5B MoE (q4 ONNX, 50M aktiva parametrar, Apache 2.0)",
           "size": "945 MB",
           "domain": "72,2 % (265 läckor)",
-          "lowercaseNames": "10,3 % (9/87)",
+          "lowercaseNames": "51,9 % / 11,3 %",
           "speedRam": "40,3 ms · 1 232 MB",
           "ours": false
         },
         {
           "system": "Microsoft Presidio",
-          "description": "sv_core_news_lg + PRS-mappning + svenska ID-regler",
+          "description": "sv_core_news_lg (tränad på SUC 3.0) + svenska ID-regler",
           "size": "245 MB",
           "domain": "69,0 % (295 läckor)",
-          "lowercaseNames": "66,7 % (58/87)",
+          "lowercaseNames": "96,5 % / 83,6 %",
           "speedRam": "5,9 ms · 456 MB",
           "ours": false
         }
       ],
-      "summary": "Maskera v20 lämnar 11 läckor mot 111 till 295 hos jämförda verktyg, med 22 gånger mindre modell och 3,7 gånger lägre RAM än OpenAI Privacy Filter. Rättvis notering: OpenAI Privacy Filter har en egen kategori för API-nycklar och lösenord samt 128k-kontext (vilket Maskera inte riktar in sig på) och märker inte fristående orter/organisationer, så tabellen jämför därför även rena svenska personnamn separat."
+      "summary": "På externt svenskt testdata (SUC 3.0) slår 43 MB-modellen Maskera v20 både OpenAI Privacy Filter (88,5 % mot 51,9 % F1 på vanlig text; 88,2 % mot 11,3 % på gemener) och swedish-pii (73,6 % / 0,0 %). Presidios spaCy-modell tränades på SUC 3.0 och leder därför på versaliserad SUC-text (96,5 %), men tappar bakom Maskera på gemener (83,6 % mot 88,2 %) och läcker 295 av 952 uppgifter i helhetstestet. Rättvis notering: OpenAI Privacy Filter har en egen kategori för API-nycklar/lösenord samt 128k-kontext som Maskera inte riktar in sig på, och Maskera v20 övermaskerar fortfarande en del versala homografer och organisationsord i helt ren löptext."
     },
     "contextTitle": "Varför svensk kontext spelar roll",
     "contextBody": "Personnummer är lätta att hitta med vanliga regler. Det svåra i svensk text är ord som kan vara både namn och vanliga ord eller diagnoser.",
@@ -499,7 +507,7 @@
     "contextDemoCta": "Testa exemplet själv i demon",
     "limitsTitle": "Viktigt att veta",
     "limits": [
-      "Testtexterna är skrivna av Maskeras utvecklare. De visar att vi inte tappar kvalitet mellan versioner och ger en bra fingervisning, men de är inte ett oberoende facit på all svensk text.",
+      "SUC 3.0-kolumnen kommer från Kungliga bibliotekets externa svenska korpus (1 000 publicerade meningar, noll rader i Maskeras träning). 258-textsviten och modelljämförelsen är skrivna av Maskeras utvecklare för att testa svenska format som saknas i publika dataset (personnummer, bankgiro, adresser).",
       "Verktygsjämförelsen testar hela kedjan (regler + AI) på 258 svenska texter. Modelljämförelsen testar enbart AI-modellen (namn, platser och organisationer).",
       "Ingen automatisk maskering är 100 % felfri. Ovanliga namn eller slarvigt skannad text kan slinka igenom, så granska alltid själv när ett misstag kan få stora konsekvenser."
     ],
@@ -697,8 +705,8 @@
       {
         "id": "proxy",
         "label": "Lokal proxy (alla agenter)",
-        "summary": "Hårdast garanti oavsett harness: proxyn sitter lokalt framför Anthropic och OpenAI, maskerar alla utgående prompts och verktygssvar, och återställer strömmande svar automatiskt.",
-        "code": "# 1. Starta lokal proxy på 127.0.0.1:8787\nnpx -y @maskera/mcp proxy\n\n# 2. Peka valfri agent på proxyn:\nANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude\nOPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex"
+        "summary": "Hårdast garanti oavsett harness: proxyn sitter lokalt framför Anthropic och OpenAI, maskerar alla utgående prompts och verktygssvar, återställer strömmande svar automatiskt och ger dig en lokal live-inspektör på http://127.0.0.1:8787/_maskera.",
+        "code": "# 1. Starta lokal proxy + live-inspektör (http://127.0.0.1:8787/_maskera)\nnpx -y @maskera/mcp proxy\n\n# 2. Peka valfri agent på proxyn:\nANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude\nOPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex"
       },
       {
         "id": "mcp",
@@ -715,33 +723,71 @@
     ]
   },
   "services": {
-    "title": "Ett lokalt skyddslager framför alla AI-modeller",
-    "lede": "Samma 43 MB svenska modell och regelmotor, lokalt på din enhet. Välj hur du och ditt team använder AI nedan.",
+    "title": "Ett skyddslager, tre sätt att använda det",
+    "lede": "Samma svenska modell på 43 MB och samma regler, lokalt på din enhet.",
     "sublede": "Ingen text och ingen återställningsnyckel skickas någonsin till Maskera.",
-    "tracksLabel": "Välj hur du använder Maskera",
+    "tocLabel": "På sidan",
+    "toc": [
+      { "href": "#oversikt", "label": "Översikt" },
+      { "href": "#tillagg", "label": "Webbläsartillägg" },
+      { "href": "#jamfor", "label": "Priser" },
+      { "href": "#agenter", "label": "AI-agenter" },
+      { "href": "#kod", "label": "Egen kod" }
+    ],
+    "overview": {
+      "title": "Översikt",
+      "rows": [
+        {
+          "label": "Passar",
+          "values": [
+            "Alla som chattar med AI",
+            "Utvecklare med AI-agenter",
+            "Team som bygger egna appar"
+          ]
+        },
+        {
+          "label": "Körs i",
+          "values": [
+            "Chrome, Edge och Firefox",
+            "Lokal proxy, MCP-server och hooks",
+            "Webbläsaren eller Node 18+"
+          ]
+        },
+        {
+          "label": "Skydd",
+          "values": ["Maskerar när du skickar", "Proxyn stänger vid fel (502)", "Du styr i koden"]
+        },
+        {
+          "label": "Pris",
+          "values": ["Gratis, Pro 149 kr, Team 249 kr/mån", "0 kr, MIT", "0 kr, MIT"]
+        }
+      ]
+    },
     "accuracyLead": "Automatisk maskering minskar risk, men är inte en garanti.",
     "tracks": [
       {
         "id": "extension",
         "title": "Webbläsartillägg",
-        "badge": "Gratis / Pro",
-        "summary": "Maskera direkt i ChatGPT, Claude, Gemini, Copilot, Perplexity och Mistral."
+        "badge": "Gratis / Pro / Team",
+        "summary": "Maskera direkt i ChatGPT, Claude, Gemini, Copilot, Perplexity och Mistral.",
+        "cta": "Installera"
       },
       {
         "id": "agents",
         "title": "AI-agenter (Proxy & MCP)",
         "badge": "MIT · 0 kr",
-        "summary": "Lokal LLM-proxy, MCP-server och guard för Claude Code, Codex, Cursor m.fl."
+        "summary": "Lokal LLM-proxy, MCP-server och guard för Claude Code, Codex, Cursor m.fl.",
+        "cta": "Sätt upp"
       },
       {
         "id": "sdk",
         "title": "Egen kod (SDK)",
         "badge": "MIT · 0 kr",
-        "summary": "Bygg in svensk PII-maskering direkt i din webbapp eller Node-tjänst."
+        "summary": "Bygg in svensk PII-maskering direkt i din webbapp eller Node-tjänst.",
+        "cta": "Kom igång"
       }
     ],
     "agents": {
-      "title": "Maskera åt alla AI-agenter med @maskera/mcp",
       "body": "Öppen källkod (MIT) som körs helt lokalt. Välj lokal LLM-proxy när du vill tvinga maskering på all trafik oavsett agent-harness, eller MCP-servern för maskerad filhantering.",
       "highlights": [
         {
@@ -761,7 +807,6 @@
       "docsCta": "Full dokumentation på GitHub"
     },
     "sdk": {
-      "title": "Bygg in Maskera i egen kod",
       "body": "Ett npm-paket med både fasta regler och den 43 MB svenska AI-modellen. Körs i webbläsaren (WASM/WebGPU) eller i Node 18+.",
       "packageManagerLabel": "npm",
       "installCommand": "npm install maskera @huggingface/transformers",
@@ -775,49 +820,80 @@
       "githubCta": "Källkod på GitHub"
     },
     "compare": {
-      "title": "Jämför Gratis och Pro",
+      "title": "Priser: Gratis, Pro och Team",
       "featureColumn": "Funktion",
       "freeTitle": "Gratis",
+      "freePrice": "0 kr",
       "proTitle": "Pro",
+      "proPrice": "149 kr/mån",
+      "teamTitle": "Team",
+      "teamPrice": "249 kr/anv./mån",
       "rows": [
         {
-          "feature": "Maskering med regler för t.ex. personnummer och e-post",
+          "feature": "Maskering med regler (personnummer, e-post, telefon, konton)",
           "free": "Ingen gräns",
-          "pro": "Ingen gräns"
+          "pro": "Ingen gräns",
+          "team": "Ingen gräns"
         },
         {
-          "feature": "Lokal AI-maskering av namn och adresser",
+          "feature": "Lokal AI-maskering av svenska namn och adresser",
           "free": "20 per månad",
-          "pro": "Ingen gräns"
+          "pro": "Ingen gräns",
+          "team": "Ingen gräns"
         },
         {
-          "feature": "Delade skyddade ord för team och central utrullning (MDM)",
-          "free": "Endast Pro",
-          "pro": "Ingår"
+          "feature": "Egna skyddade ord och vårdprofil",
+          "free": "Ingår ej",
+          "pro": "Ingår",
+          "team": "Ingår"
+        },
+        {
+          "feature": "Krypterad delad ordlista för teamet (AES-256-GCM)",
+          "free": "Ingår ej",
+          "pro": "Ingår ej",
+          "team": "Ingår"
+        },
+        {
+          "feature": "Central utrullning (MDM) för Chrome och Edge",
+          "free": "Ingår ej",
+          "pro": "Ingår ej",
+          "team": "Ingår"
+        },
+        {
+          "feature": "Stöd vid införande (tillägg och AI-agenter)",
+          "free": "Ingår ej",
+          "pro": "Ingår ej",
+          "team": "Ingår"
+        },
+        {
+          "feature": "Betalning och avtal",
+          "free": "Inget konto krävs",
+          "pro": "Kort (7 dagar gratis)",
+          "team": "Kort eller årsfaktura (min. 5 anv.)"
         }
       ],
-      "trialPrice": "Första provperioden kostar 0 kr i 7 dagar. Därefter 149 kr/användare/mån inkl. moms.",
-      "trialDetails": "Kort krävs. Säg upp i kundportalen före nästa debitering.",
+      "trialPrice": "Pro: 149 kr/användare/mån inkl. moms",
+      "trialDetails": "Första provperioden kostar 0 kr i 7 dagar. Kort krävs. Säg upp i kundportalen före nästa debitering.",
       "termsCta": "Köpvillkor för Maskera Pro",
       "privacyCta": "Integritet för tillägget",
-      "startTrialCta": "Testa Pro gratis i 7 dagar"
+      "startTrialCta": "Testa Pro gratis i 7 dagar",
+      "teamHeading": "Team: 249 kr/användare/mån exkl. moms",
+      "teamDetails": "Minst 5 användare. Central MDM-utrullning, krypterad delad ordlista och hjälp att rulla ut både tillägg och AI-agenter.",
+      "teamCta": "Starta Team (min. 5 platser)",
+      "teamMailSubject": "Maskera Team",
+      "teamInvoiceCta": "Eller be om årsfaktura via hej@maskera.dev"
     }
   },
   "extensionInstall": {
     "heroAddTo": "Lägg till i {browser}, gratis",
-    "heroInstall": "Installera gratis",
+    "heroInstall": "Installera tillägget",
     "heroTryDemo": "Testa i webbläsaren",
-    "heroLearnMore": "Tillägg, AI-agenter & SDK",
-    "alsoFor": "Finns även för",
-    "builtFor": "Byggt för",
-    "freeNote": "Gratis, 20 AI-maskeringar/mån",
-    "title": "Installera Maskera",
-    "body": "Maskera direkt i ChatGPT, Claude, Gemini, Copilot m.fl. Gratis för grundbehov, eller Pro (149 kr/användare/mån inkl. moms) efter 7 dagar gratis.",
-    "compactBody": "Välj din webbläsare nedan för att installera gratisversionen. Ingen inloggning krävs förrän du vill aktivera Pro.",
-    "trialCta": "Testa Pro gratis i 7 dagar",
+    "heroAgents": "Koppla till din agent",
+    "body": "Ingen inloggning krävs förrän du vill aktivera Pro. Butikerna öppnar löpande, och du kan redan nu installera tillägget manuellt i Chrome och Edge.",
     "zipLead": "Väntar du på din webbläsares butik?",
     "zipCta": "Ladda ner ZIP-filen",
     "zipTail": "och läs in den okomprimerad via chrome://extensions eller edge://extensions.",
+    "zipSteps": "Packa upp och läs in okomprimerad via chrome://extensions eller edge://extensions.",
     "listLabel": "Webbläsare och butiker",
     "soon": "Snart",
     "browsers": {
@@ -825,25 +901,16 @@
       "edge": { "name": "Edge", "store": "Microsoft Edge-tillägg" },
       "firefox": { "name": "Firefox", "store": "Firefox Add-ons" },
       "safari": { "name": "Safari", "store": "Mac App Store · kommer senare" }
-    },
-    "flowDemo": {
-      "regionLabel": "Exempel på hur tillägget maskerar före skick",
-      "steps": ["1. Skriv", "2. Förhandskoll", "3. Skicka maskerat"],
-      "pause": "Pausa",
-      "play": "Spela",
-      "previewLabel": "Maskeras vid skick",
-      "sentBadge": "Skickat maskerat · original stannar lokalt",
-      "sendAria": "Skicka meddelande",
-      "prefix": "Sammanfatta ärendet för ",
-      "mid1": " (",
-      "mid2": ") på ",
-      "suffix": ".",
-      "sampleName": "Nora Lind",
-      "samplePnr": "19900101-2385",
-      "sampleAddress": "Provgatan 14",
-      "samplePnrMarker": "[PERSONNUMMER_1]",
-      "sampleAddressMarker": "[ADRESS_1]"
     }
+  },
+  "homeProof": {
+    "label": "Fakta om maskera",
+    "accuracyCta": "Se träffsäkerhet",
+    "localDesc": "Svensk AI-modell, lokalt på din enhet",
+    "securityCta": "Säkerhet",
+    "licenseValue": "MIT",
+    "licenseDesc": "Öppen källkod för proxy, MCP och SDK",
+    "githubCta": "GitHub"
   },
   "theme": {
     "toggle": "Växla mellan ljust och mörkt läge"

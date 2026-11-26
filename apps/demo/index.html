@@ -37,7 +37,7 @@
     <meta property="og:title" content="Använd AI utan att dela personuppgifter · maskera" />
     <meta
       property="og:description"
-      content="Skydda personuppgifter när du använder AI. Kör maskeringen lokalt i webbläsaren, med tillägget för ChatGPT, Claude, Gemini, Copilot m.fl., eller via npm."
+      content="maskera är det lokala skyddslagret framför alla AI-modeller: maskera svenska personuppgifter i webbläsaren, med tillägget, i AI-agenter via lokal proxy och MCP (@maskera/mcp) eller via npm."
     />
     <meta property="og:image" content="https://maskera.dev/og.png" />
     <meta property="og:image:width" content="1200" />
@@ -51,7 +51,7 @@
     <meta name="twitter:title" content="Använd AI utan att dela personuppgifter · maskera" />
     <meta
       name="twitter:description"
-      content="Skydda personuppgifter när du använder AI. Kör maskeringen lokalt i webbläsaren, med tillägget för ChatGPT, Claude, Gemini, Copilot m.fl., eller via npm."
+      content="maskera är det lokala skyddslagret framför alla AI-modeller: maskera svenska personuppgifter i webbläsaren, med tillägget, i AI-agenter via lokal proxy och MCP (@maskera/mcp) eller via npm."
     />
     <meta name="twitter:image" content="https://maskera.dev/og.png" />
     <meta
@@ -64,21 +64,33 @@
         "@context": "https://schema.org",
         "@graph": [
           {
+            "@type": "WebSite",
+            "@id": "https://maskera.dev/#website",
+            "name": "maskera",
+            "alternateName": "Maskera",
+            "url": "https://maskera.dev/",
+            "inLanguage": ["sv", "en"],
+            "publisher": { "@id": "https://maskera.dev/#hagvall-labs" }
+          },
+          {
             "@type": "WebApplication",
             "@id": "https://maskera.dev/#app",
             "name": "maskera",
             "url": "https://maskera.dev/",
-            "description": "Svenskt webbverktyg som maskerar personuppgifter lokalt innan text når AI, med webbläsartillägg för ChatGPT, Claude, Gemini, Copilot, Perplexity, Mistral m.fl. samt npm-paket i öppen källkod.",
+            "description": "Svenskt lokalt skyddslager som maskerar personuppgifter innan text når AI: webbläsartillägg för ChatGPT, Claude, Gemini, Copilot, Perplexity och Mistral, lokal LLM-proxy och MCP-server för AI-agenter (@maskera/mcp) samt npm-paket i öppen källkod.",
             "applicationCategory": "SecurityApplication",
             "operatingSystem": "Any",
             "browserRequirements": "Requires JavaScript",
             "inLanguage": "sv",
+            "isPartOf": { "@id": "https://maskera.dev/#website" },
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "SEK" },
             "author": { "@id": "https://maskera.dev/#joel" },
             "publisher": { "@id": "https://maskera.dev/#hagvall-labs" },
             "sameAs": [
               "https://github.com/joelhagvall/maskera",
               "https://www.npmjs.com/package/maskera",
+              "https://www.npmjs.com/package/@maskera/mcp",
+              "https://www.npmjs.com/package/@maskera/core",
               "https://huggingface.co/joelhagvall/maskera-sv-ner",
               "https://hagvall-labs.com"
             ]

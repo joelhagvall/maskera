@@ -75,6 +75,35 @@ describe("design system guard", () => {
     expect(offenders).toEqual([])
   })
 
+  it("sets labels in sentence case, never uppercase or letter-spaced", () => {
+    // Joel 2026-11-26: "DIN TEXT"-style eyebrows read as noise. Labels,
+    // table heads, the TOC and footer headings are plain sentence case.
+    expect(css, "write the label in sentence case instead").not.toMatch(
+      /text-transform:\s*uppercase/,
+    )
+    const spaced = rules(css)
+      .filter(([, body]) => /letter-spacing:\s*0?\.\d*[1-9]/.test(body))
+      .map(([selector]) => selector)
+    expect(spaced, "only negative tracking (tight headings) is allowed").toEqual([])
+  })
+
+  it("keeps monospace to code the reader copies", () => {
+    // Joel 2026-11-26: no monospace in the UI; terminal and code blocks keep
+    // it. Placeholders, demo text and labels use the sans face.
+    const MONO_SELECTORS = new Set([
+      ".footer code",
+      ".prose code",
+      ".prose pre code",
+      ".agent-skill-cmd",
+      ".hero-code pre",
+    ])
+    const offenders = rules(css)
+      .filter(([, body]) => body.includes("var(--mono)"))
+      .map(([selector]) => selector)
+      .filter((selector) => !MONO_SELECTORS.has(selector))
+    expect(offenders, "use var(--sans); monospace is for code blocks only").toEqual([])
+  })
+
   it("never dims .output.analyzing or mask-token-in opacity below 1 (preserves WCAG AA contrast)", () => {
     const analyzingRule = rules(css).find(([selector]) => selector === ".output.analyzing")
     expect(analyzingRule?.[1] ?? "").not.toMatch(/opacity\s*:/)

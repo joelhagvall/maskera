@@ -144,6 +144,17 @@ describe("index.html", () => {
   ) as { "@graph": Record<string, unknown>[] }
 
   it("gives the Organization a contactPoint and address", () => {
+    const website = jsonLd["@graph"].find((node) => node["@type"] === "WebSite") as {
+      name: string
+      url: string
+    }
+    expect(website).toMatchObject({ name: "maskera", url: "https://maskera.dev/" })
+
+    const app = jsonLd["@graph"].find((node) => node["@type"] === "WebApplication") as {
+      sameAs: string[]
+    }
+    expect(app.sameAs).toContain("https://www.npmjs.com/package/@maskera/mcp")
+
     const org = jsonLd["@graph"].find((node) => node["@type"] === "Organization") as {
       contactPoint: { email: string; contactType: string }[]
       address: { "@type": string; addressCountry: string }

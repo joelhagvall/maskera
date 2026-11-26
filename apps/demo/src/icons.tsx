@@ -1,5 +1,5 @@
 import type { ReactElement, ReactNode, SVGProps } from "react"
-import { BROWSER_LOGO_PATHS } from "./browserLogos"
+import { AGENT_LOGO_PATHS, type AgentLogoId, BROWSER_LOGO_PATHS } from "./browserLogos"
 import type { BrowserId } from "./extensionBrowsers"
 
 type IconProps = SVGProps<SVGSVGElement> & { size?: number }
@@ -213,6 +213,28 @@ export const BROWSER_ICONS: Record<BrowserId, (p: IconProps) => ReactElement> = 
   edge: (p) => <BrowserLogo {...p} browser="edge" />,
   firefox: (p) => <BrowserLogo {...p} browser="firefox" />,
   safari: (p) => <BrowserLogo {...p} browser="safari" />,
+}
+
+const AGENT_STACK_ITEMS: readonly { id: AgentLogoId; fill: string }[] = [
+  { id: "claude", fill: "#D97757" },
+  { id: "openai", fill: "currentColor" },
+  { id: "cursor", fill: "currentColor" },
+  { id: "opencode", fill: "currentColor" },
+]
+
+/** Overlapping circular coding-agent marks used inside agent-prompt CTAs. */
+export function AgentLogoStack() {
+  return (
+    <span className="agent-logo-stack" aria-hidden="true">
+      {AGENT_STACK_ITEMS.map(({ id, fill }) => (
+        <span key={id} className="agent-logo-badge">
+          <svg viewBox="0 0 24 24" fill={fill} aria-hidden="true">
+            <path d={AGENT_LOGO_PATHS[id]} />
+          </svg>
+        </span>
+      ))}
+    </span>
+  )
 }
 
 // --- mapping: scenario id -> icon ---------------------------------------
