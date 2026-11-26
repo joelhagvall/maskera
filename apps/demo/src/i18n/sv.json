@@ -3,9 +3,9 @@
     "title": "Använd AI utan att dela personuppgifter.",
     "titleMobile": "Använd AI utan att\ndela personuppgifter.",
     "exampleMarker": "[NAMN_1]",
-    "lede": "maskera byter namn, adresser, personnummer, e-post och andra personuppgifter mot markörer som {marker} innan du skickar till ChatGPT, Claude, Gemini, Copilot m.fl., och fyller i dem igen i svaret.",
-    "browserLead": "Allt sker",
-    "browserEmphasis": "direkt i din webbläsare",
+    "lede": "maskera är det lokala skyddslagret framför alla AI-modeller: namn, adresser, personnummer och e-post byts mot {marker} innan texten lämnar din enhet, i webbläsaren, i AI-agenter eller i egen kod.",
+    "browserLead": "Allt körs",
+    "browserEmphasis": "lokalt på din enhet",
     "productLabel": "Din AI-chatt",
     "heroScenesLabel": "Exempel på uppgifter",
     "heroScenes": [
@@ -197,10 +197,12 @@
   },
   "developerApi": {
     "title": "För utvecklare",
-    "lede": "Maskera svenska personuppgifter lokalt i webbläsaren eller Node med ett paket.",
-    "modelLink": "Den svenska AI-modellen",
-    "modelSuffix": "körs direkt på enheten via Transformers.js.",
-    "installTitle": "Installera",
+    "lede": "Koppla in lokal svensk PII-maskering framför AI-agenter (proxy och MCP) eller direkt i egen kod med",
+    "modelLink": "den svenska AI-modellen",
+    "modelSuffix": "på enheten via Transformers.js.",
+    "agentsTitle": "AI-agenter: lokal proxy, MCP och guard (@maskera/mcp)",
+    "agentsBody": "Skydda Claude Code, Codex, Cursor, Claude Desktop, OpenCode och egna agenter utan att ändra modell. Kör proxyn för 100 % tvingande maskering oavsett agent, MCP-servern för lokala filer, eller guard i hooks.",
+    "installTitle": "Installera SDK i egen kod",
     "packageManagerLabel": "Pakethanterare",
     "installNote": "Regler och AI-modell ingår; hela API:t importeras från maskera.",
     "maskTitle": "Maskera en text",
@@ -229,6 +231,7 @@
     "practicalDocsCta": "Fullständig användnings- och konfigurationsguide på GitHub",
     "resourcesLabel": "Utvecklarresurser",
     "npmCta": "maskera på npm",
+    "mcpNpmCta": "@maskera/mcp på npm",
     "githubCta": "Dokumentation och källkod på GitHub",
     "modelCta": "Modellen på Hugging Face"
   },
@@ -299,7 +302,7 @@
   },
   "navigation": {
     "developers": "För utvecklare",
-    "services": "Webbläsartillägg",
+    "services": "Produkter",
     "accuracy": "Träffsäkerhet",
     "security": "Säkerhet",
     "transparency": "Integritet & transparens",
@@ -671,44 +674,95 @@
     "contactCta": "Kontaktuppgifter på hagvall-labs.com",
     "updated": "Senast uppdaterad 26 november 2026."
   },
-  "services": {
-    "title": "Webbläsartillägg och öppen källkod",
-    "lede": "Maskera personuppgifter direkt i era AI-verktyg med webbläsartillägget, eller bygg in öppen källkod i egen kod.",
-    "sublede": "All maskering sker lokalt på din enhet. Pro börjar med 7 dagars gratis provperiod via app.maskera.dev.",
-    "extensionPortalNote": "Skapa konto och aktivera på app.maskera.dev",
-    "accuracyLead": "Automatisk maskering minskar risk, men är inte en garanti.",
-    "products": [
+  "agentSetup": {
+    "promptTitle": "Låt din agent koppla in Maskera själv",
+    "promptDescription": "Klistra in prompten i Claude Code, Codex, Cursor, Claude Desktop, OpenCode eller valfri annan agent. Den läser maskera.dev/llms.txt och ställer in rätt läge.",
+    "copyPromptCta": "Kopiera prompt till din agent",
+    "copiedPromptCta": "Prompt kopierad",
+    "llmsLinkCta": "Öppna llms.txt",
+    "promptText": "Läs https://maskera.dev/llms.txt och hjälp mig koppla in Maskera (@maskera/mcp) lokalt i min miljö (lokal LLM-proxy för automatisk maskering oavsett agent, eller MCP-server för lokala filer) så svenska personuppgifter aldrig lämnar min dator.",
+    "modesLabel": "Välj läge för AI-agenter",
+    "modes": [
       {
-        "id": "extension",
-        "name": "Webbläsartillägg",
-        "price": "149 kr/användare/mån",
-        "freeLine": "Gratis: 0 kr/mån (regler + 20 AI/mån)",
-        "trialTerms": "Pro börjar med 7 dagars gratis provperiod, inkl. moms. Ingen bindningstid.",
-        "tagline": "För dig och ditt team som vill maskera text direkt i era AI-verktyg.",
-        "points": [
-          "Fungerar i ChatGPT, Claude, Gemini, Microsoft Copilot, Perplexity, Mistral och valfri egen AI-sida",
-          "Obegränsad lokal svensk AI-maskering i Pro, helt offline efter aktivering",
-          "Delade skyddade ord för hela teamet, krypterade lokalt om ni vill",
-          "Central utrullning till företagets datorer via Intune, Jamf och Google Workspace"
-        ],
-        "cta": "Testa Pro gratis i 7 dagar",
-        "secondaryCta": "Installera gratis",
-        "note": "Signerad offline-licens via app.maskera.dev. Ingen text lämnar din dator."
+        "id": "proxy",
+        "label": "Lokal proxy (alla agenter)",
+        "summary": "Hårdast garanti oavsett harness: proxyn sitter lokalt framför Anthropic och OpenAI, maskerar alla utgående prompts och verktygssvar, och återställer strömmande svar automatiskt.",
+        "code": "# 1. Starta lokal proxy på 127.0.0.1:8787\nnpx -y @maskera/mcp proxy\n\n# 2. Peka valfri agent på proxyn:\nANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude\nOPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex"
       },
       {
-        "id": "open",
-        "name": "Öppen källkod",
-        "price": "0 kr",
-        "tagline": "För utvecklare och team som vill bygga in maskeringen i egen kod.",
-        "points": [
-          "Kör i webbläsaren eller Node",
-          "Texten och nyckeln med originaluppgifterna stannar i din miljö",
-          "MIT-licens, utan användningsavgift eller inlåsning",
-          "Svensk modell och färdiga regler för vanliga personuppgifter"
-        ],
-        "cta": "Installera och kom igång"
+        "id": "mcp",
+        "label": "MCP-server (filer)",
+        "summary": "För Claude Desktop, Cursor, Claude Code, Codex och T3 Code: maskera_read_file maskerar filer lokalt innan modellen ser dem, och maskera_write_file skriver tillbaka återställd text direkt till disk.",
+        "code": "{\n  \"mcpServers\": {\n    \"maskera\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@maskera/mcp\", \"--root\", \"/path/to/workspace\"]\n    }\n  }\n}"
+      },
+      {
+        "id": "guard",
+        "label": "Guard (hooks & pipes)",
+        "summary": "Stoppa promptar och hook-anrop som innehåller personuppgifter (exit-kod 2, loggar bara antal och typ, aldrig rådata) eller maskera text direkt i en terminal-pipe.",
+        "code": "# Stoppa PII i agent-hooks (exit 2 vid träff):\nnpx -y @maskera/mcp guard\n\n# Maskera en fil lokalt via pipe:\ncat underlag.txt | npx -y @maskera/mcp guard --redact"
+      }
+    ]
+  },
+  "services": {
+    "title": "Ett lokalt skyddslager framför alla AI-modeller",
+    "lede": "Samma 43 MB svenska modell och regelmotor, lokalt på din enhet. Välj hur du och ditt team använder AI nedan.",
+    "sublede": "Ingen text och ingen återställningsnyckel skickas någonsin till Maskera.",
+    "tracksLabel": "Välj hur du använder Maskera",
+    "accuracyLead": "Automatisk maskering minskar risk, men är inte en garanti.",
+    "tracks": [
+      {
+        "id": "extension",
+        "title": "Webbläsartillägg",
+        "badge": "Gratis / Pro",
+        "summary": "Maskera direkt i ChatGPT, Claude, Gemini, Copilot, Perplexity och Mistral."
+      },
+      {
+        "id": "agents",
+        "title": "AI-agenter (Proxy & MCP)",
+        "badge": "MIT · 0 kr",
+        "summary": "Lokal LLM-proxy, MCP-server och guard för Claude Code, Codex, Cursor m.fl."
+      },
+      {
+        "id": "sdk",
+        "title": "Egen kod (SDK)",
+        "badge": "MIT · 0 kr",
+        "summary": "Bygg in svensk PII-maskering direkt i din webbapp eller Node-tjänst."
       }
     ],
+    "agents": {
+      "title": "Maskera åt alla AI-agenter med @maskera/mcp",
+      "body": "Öppen källkod (MIT) som körs helt lokalt. Välj lokal LLM-proxy när du vill tvinga maskering på all trafik oavsett agent-harness, eller MCP-servern för maskerad filhantering.",
+      "highlights": [
+        {
+          "title": "100 % tvingande via lokal proxy",
+          "body": "Sätt ANTHROPIC_BASE_URL eller OPENAI_BASE_URL till 127.0.0.1:8787. Agenten kan inte kringgå maskeringen och proxyn fallerar stängt (502) vid fel."
+        },
+        {
+          "title": "Rådata stannar på disken med MCP",
+          "body": "maskera_read_file ger bara platshållare till modellen och maskera_write_file återställer originalen direkt till fil utan att eka PII tillbaka i chatten."
+        },
+        {
+          "title": "Samma modell, noll molnberoende",
+          "body": "Kör den pinnade 43 MB svenska ONNX-modellen med SHA-256-kontroll och konsekvent sessionsnumrering ([NAMN_1]) över flera anrop och filer."
+        }
+      ],
+      "npmCta": "@maskera/mcp på npm",
+      "docsCta": "Full dokumentation på GitHub"
+    },
+    "sdk": {
+      "title": "Bygg in Maskera i egen kod",
+      "body": "Ett npm-paket med både fasta regler och den 43 MB svenska AI-modellen. Körs i webbläsaren (WASM/WebGPU) eller i Node 18+.",
+      "packageManagerLabel": "npm",
+      "installCommand": "npm install maskera @huggingface/transformers",
+      "points": [
+        "Texten och nyckeln med originaluppgifterna stannar i din miljö",
+        "MIT-licens, utan användningsavgift eller inlåsning",
+        "Svensk modell + färdiga regler för personnummer, telefon, IBAN, kort och adresser",
+        "Valfri vårdprofil (profile: \"clinical\") som behåller diagnoser och doser"
+      ],
+      "cta": "Öppna utvecklardokumentationen",
+      "githubCta": "Källkod på GitHub"
+    },
     "compare": {
       "title": "Jämför Gratis och Pro",
       "featureColumn": "Funktion",
@@ -742,7 +796,7 @@
     "heroAddTo": "Lägg till i {browser}, gratis",
     "heroInstall": "Installera gratis",
     "heroTryDemo": "Testa i webbläsaren",
-    "heroLearnMore": "Läs om tillägget",
+    "heroLearnMore": "Tillägg, AI-agenter & SDK",
     "alsoFor": "Finns även för",
     "builtFor": "Byggt för",
     "freeNote": "Gratis, 20 AI-maskeringar/mån",
@@ -790,18 +844,18 @@
   "topBar": {
     "breadcrumbLabel": "Brödsmulor",
     "developers": "Utvecklare",
-    "services": "Tillägg",
+    "services": "Produkter",
     "accuracy": "Träffsäkerhet"
   },
   "meta": {
     "demoTitle": "Använd AI utan att dela personuppgifter · maskera",
-    "demoDescription": "maskera döljer svenska personuppgifter innan text skickas till AI. Kör samma lokala maskering i webbläsaren, med tillägget för ChatGPT, Claude, Gemini, Copilot m.fl., eller via npm. Endast maskerad text går vidare.",
-    "devTitle": "för utvecklare: svensk PII-maskering med npm · maskera",
-    "devDescription": "Installera maskera för svensk PII-maskering lokalt i webbläsaren eller Node. Öppen källkod, TypeScript och en egentränad svensk AI-modell.",
-    "servicesTitle": "webbläsartillägg och öppen källkod: lokal svensk PII-maskering · maskera",
-    "servicesDescription": "Jämför Maskeras webbläsartillägg för ChatGPT, Claude, Gemini, Copilot, Perplexity och Mistral med npm-paketen i öppen källkod. All maskering sker lokalt.",
+    "demoDescription": "maskera är det lokala skyddslagret framför alla AI-modeller: maskera svenska personuppgifter i webbläsaren, med tillägget, i AI-agenter via lokal proxy och MCP (@maskera/mcp) eller via npm. Endast maskerad text går vidare.",
+    "devTitle": "för utvecklare: lokal AI-proxy, MCP och npm-paket · maskera",
+    "devDescription": "Koppla in lokal svensk PII-maskering framför AI-agenter med @maskera/mcp (proxy, MCP, guard) eller direkt i webbläsaren och Node med maskera.",
+    "servicesTitle": "produkter: webbläsartillägg, AI-agenter (proxy & MCP) och SDK · maskera",
+    "servicesDescription": "Välj hur du använder Maskera lokalt: webbläsartillägg för ChatGPT/Claude/Gemini/Copilot, lokal LLM-proxy och MCP för AI-agenter (@maskera/mcp), eller npm-paket i egen kod.",
     "siteName": "maskera",
-    "servicesSchemaName": "Maskera webbläsartillägg och öppen källkod",
+    "servicesSchemaName": "Maskera webbläsartillägg, AI-agent-proxy/MCP och öppen källkod",
     "ogImageAlt": "maskera: Använd AI utan att dela personuppgifter. En exempelmening där namn, personnummer och ort har ersatts med platshållare."
   },
   "about": {
@@ -817,7 +871,7 @@
       },
       {
         "href": "#anvanda",
-        "label": "Två sätt att använda det"
+        "label": "Tre sätt att använda det"
       },
       {
         "href": "#bakom",
@@ -833,10 +887,11 @@
       "Maskera kombinerar fasta regler (för t.ex. personnummer, telefon, e-post och IBAN) med en egentränad svensk AI-modell på 43 MB som hittar namn, platser, organisationer och adresser i fri text.",
       "Allt går att återställa i AI-svaret med en lokal nyckel som aldrig lämnar din enhet."
     ],
-    "useTitle": "Två sätt att använda det",
+    "useTitle": "Tre sätt att använda det",
     "use": [
-      "Öppen källkod: npm-paketen maskera och @maskera/core under MIT-licens samt modellen maskera-sv-ner på Hugging Face.",
-      "Webbläsartillägg för Chrome, Edge och Firefox (Safari kommer senare) i ChatGPT, Claude, Gemini, Copilot m.fl. Gratis för grundbehov (regler + 20 AI/mån); Pro kostar 149 kr/användare/mån inkl. moms efter 7 dagar gratis, med delade skyddade ord och central utrullning via app.maskera.dev."
+      "Webbläsartillägg för Chrome, Edge och Firefox (Safari kommer senare) i ChatGPT, Claude, Gemini, Copilot m.fl. Gratis för grundbehov (regler + 20 AI/mån); Pro kostar 149 kr/användare/mån inkl. moms efter 7 dagar gratis, med delade skyddade ord och central utrullning via app.maskera.dev.",
+      "AI-agenter (@maskera/mcp, öppen källkod under MIT): lokal LLM-proxy för Anthropic/OpenAI som maskerar all utgående trafik och återställer strömmande svar oavsett agent-harness, MCP-server för maskerad filhantering och guard för hooks.",
+      "Egen kod: npm-paketen maskera och @maskera/core under MIT-licens samt modellen maskera-sv-ner på Hugging Face."
     ],
     "whoTitle": "Vem som står bakom",
     "who": "Maskera utvecklas och drivs av Hägvall Labs AB (org.nr 559598-0110), ett svenskt aktiebolag i Stockholm grundat av Joel Hägvall. Bolaget är personuppgiftsansvarigt för maskera.dev; hur webbplatsen själv behandlar uppgifter beskrivs i integritetspolicyn. Källkoden, träningspipelinen och benchmarken ligger öppet på GitHub så att resultaten kan granskas och återskapas.",

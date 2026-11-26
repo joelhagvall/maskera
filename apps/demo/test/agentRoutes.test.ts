@@ -123,10 +123,13 @@ describe("llms.txt", () => {
     expect(llms).toContain("## Machine-readable entry points")
   })
 
-  it("points at the browser extension, the Markdown renderings and the about page", () => {
+  it("points at the browser extension, @maskera/mcp, the Markdown renderings and the about page", () => {
     expect(llms).toContain("https://maskera.dev/tjanster")
     expect(llms).toContain("https://app.maskera.dev")
+    expect(llms).toContain("@maskera/mcp")
+    expect(llms).toContain("npx -y @maskera/mcp proxy")
     expect(llms).not.toContain("Gateway")
+    expect(llms).not.toContain("gateway")
     expect(llms).toContain("Accept: text/markdown")
     expect(llms).toContain("https://maskera.dev/index.md")
     expect(llms).toContain("https://maskera.dev/en/about")

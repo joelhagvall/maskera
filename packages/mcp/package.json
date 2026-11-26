@@ -1,0 +1,63 @@
+{
+  "name": "@maskera/mcp",
+  "version": "0.1.0",
+  "description": "Local Swedish PII redaction MCP server for AI agents (Claude, Cursor, Codex, T3 Code): mask local files and text before an LLM sees them, and restore answers locally on disk.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Joel Hägvall (https://joelhagvall.com)",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "pii",
+    "redaction",
+    "swedish",
+    "privacy",
+    "ai-agents",
+    "maskera"
+  ],
+  "homepage": "https://maskera.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joelhagvall/maskera.git",
+    "directory": "packages/mcp"
+  },
+  "bugs": "https://github.com/joelhagvall/maskera/issues",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "maskera-mcp": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^4.2.0",
+    "maskera": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
+  }
+}

@@ -156,6 +156,28 @@ importers:
         specifier: ^4.1.11
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(jsdom@29.1.1)(vite@8.3.5(@types/node@26.2.0)(esbuild@0.28.1)(yaml@2.9.1))
 
+  packages/mcp:
+    dependencies:
+      '@huggingface/transformers':
+        specifier: ^4.2.0
+        version: 4.2.0(patch_hash=a498006d9cd33d2515cc9e2dcd9bd2eecd621691057092101798c79a624b6e7f)(@types/node@26.2.0)
+      maskera:
+        specifier: workspace:^
+        version: link:../ner
+    devDependencies:
+      '@types/node':
+        specifier: ^26.2.0
+        version: 26.2.0
+      tsup:
+        specifier: ^8.3.5
+        version: 8.5.1(postcss@8.5.25)(typescript@5.9.3)(yaml@2.9.1)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^4.1.11
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(jsdom@29.1.1)(vite@8.3.5(@types/node@26.2.0)(esbuild@0.28.1)(yaml@2.9.1))
+
   packages/ner:
     dependencies:
       '@maskera/core':
@@ -1195,9 +1217,6 @@ packages:
 
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
-
-  '@types/node@26.1.1':
-    resolution: {integrity: sha512-nxAkRSVkN1Y0JC1W8ky/fTfkGsMmcrRsbx+3XoZE+rMOX71kLYTV7fLXpqud1GpbpP5TuffXFqfX7fH2GgZREw==}
 
   '@types/node@26.2.0':
     resolution: {integrity: sha512-5IviulTZeRNp2vAJ514cc/HUlY5nZ9fCbq9DMyC52BrhFZACo3nI0R7qBxhQmo/d27NFe96ur/b7Wwxklda+kg==}
@@ -3849,10 +3868,6 @@ snapshots:
 
   '@types/node@12.20.55': {}
 
-  '@types/node@26.1.1':
-    dependencies:
-      undici-types: 8.3.0
-
   '@types/node@26.2.0':
     dependencies:
       undici-types: 8.3.0
@@ -4968,7 +4983,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.2
-      '@types/node': 26.1.1
+      '@types/node': 26.2.0
       long: 5.3.2
 
   proxy-from-env@2.1.0: {}

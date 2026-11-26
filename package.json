@@ -15,7 +15,7 @@
     "check:training-privacy": "node --test training/privacy_guard.test.mjs training/privacy_attestation.test.mjs",
     "check:tooling": "node --test bench/*.test.mjs training/check_address_eval_leak.test.mjs scripts/*.test.mjs",
     "smoke": "node scripts/pack-smoke.mjs",
-    "typecheck": "for p in packages/core packages/ner apps/demo; do node node_modules/typescript-7/lib/tsc.js -p $p/tsconfig.json --noEmit || exit 1; done && node node_modules/typescript-7/lib/tsc.js -p packages/ner/tsconfig.runtime-test.json --noEmit",
+    "typecheck": "for p in packages/core packages/ner packages/mcp apps/demo; do node node_modules/typescript-7/lib/tsc.js -p $p/tsconfig.json --noEmit || exit 1; done && node node_modules/typescript-7/lib/tsc.js -p packages/ner/tsconfig.runtime-test.json --noEmit",
     "eval": "node scripts/run-published-eval.mjs",
     "eval:release": "node scripts/run-release-benchmarks.mjs",
     "eval:kblab": "cd training && MASKERA_COMPETITOR_ONLY=KBLab/bert-base-swedish-lowermix-reallysimple-ner MASKERA_COMPETITOR_MEASURED_AT=2026-11-25 MASKERA_COMPETITOR_RESULT_FILE=../docs/benchmark-kblab-v20.json uv run --python 3.11.15 --with-requirements benchmark-requirements.txt python benchmark_competitors.py",

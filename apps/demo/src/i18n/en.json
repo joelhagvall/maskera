@@ -3,9 +3,9 @@
     "title": "Use AI without sharing personal data.",
     "titleMobile": "Use AI without\nsharing personal data.",
     "exampleMarker": "[NAMN_1]",
-    "lede": "maskera swaps names, addresses, Swedish personal identity numbers, email addresses and other personal data for placeholders such as {marker} before you send to ChatGPT, Claude, Gemini, Copilot and more, and fills them back into the reply.",
-    "browserLead": "Everything happens",
-    "browserEmphasis": "directly in your browser",
+    "lede": "maskera is the local privacy layer in front of every AI model: names, addresses, Swedish personal identity numbers and emails are swapped for {marker} before text leaves your device, in the browser, in AI agents, or in your own code.",
+    "browserLead": "Everything runs",
+    "browserEmphasis": "locally on your device",
     "productLabel": "Your AI chat",
     "heroScenesLabel": "Example tasks",
     "heroScenes": [
@@ -197,10 +197,12 @@
   },
   "developerApi": {
     "title": "For developers",
-    "lede": "Mask Swedish personal data locally in the browser or Node with one package.",
-    "modelLink": "The Swedish AI model",
-    "modelSuffix": "runs directly on-device via Transformers.js.",
-    "installTitle": "Install",
+    "lede": "Add local Swedish PII masking in front of AI agents (proxy and MCP) or directly inside your own app with",
+    "modelLink": "the Swedish AI model",
+    "modelSuffix": "running on-device via Transformers.js.",
+    "agentsTitle": "AI agents: local proxy, MCP and guard (@maskera/mcp)",
+    "agentsBody": "Protect Claude Code, Codex, Cursor, Claude Desktop, OpenCode and custom agents without switching models. Run the local proxy for enforced masking across any harness, the MCP server for local files, or guard in hooks.",
+    "installTitle": "Install SDK in your own code",
     "packageManagerLabel": "Package manager",
     "installNote": "Rules and AI model are included; import the entire API from maskera.",
     "maskTitle": "Mask text",
@@ -229,6 +231,7 @@
     "practicalDocsCta": "Complete usage and configuration guide on GitHub",
     "resourcesLabel": "Developer resources",
     "npmCta": "maskera on npm",
+    "mcpNpmCta": "@maskera/mcp on npm",
     "githubCta": "Documentation and source code on GitHub",
     "modelCta": "Model on Hugging Face"
   },
@@ -299,7 +302,7 @@
   },
   "navigation": {
     "developers": "For developers",
-    "services": "Browser extension",
+    "services": "Products",
     "accuracy": "Accuracy",
     "security": "Security",
     "transparency": "Privacy & transparency",
@@ -671,44 +674,95 @@
     "contactCta": "Contact details at hagvall-labs.com",
     "updated": "Last updated 26 November 2026."
   },
-  "services": {
-    "title": "Browser extension and open source",
-    "lede": "Mask personal data directly in your AI tools with the browser extension, or embed the open-source packages in your own code.",
-    "sublede": "All masking runs locally on your device. Pro starts with a 7-day free trial through app.maskera.dev.",
-    "extensionPortalNote": "Create an account and activate on app.maskera.dev",
-    "accuracyLead": "Automated masking reduces risk, but is not a guarantee.",
-    "products": [
+  "agentSetup": {
+    "promptTitle": "Let your agent set up Maskera for you",
+    "promptDescription": "Paste this prompt into Claude Code, Codex, Cursor, Claude Desktop, OpenCode or any other agent. It reads maskera.dev/llms.txt and configures the right local mode.",
+    "copyPromptCta": "Copy prompt for your agent",
+    "copiedPromptCta": "Prompt copied",
+    "llmsLinkCta": "Open llms.txt",
+    "promptText": "Read https://maskera.dev/llms.txt and help me connect Maskera (@maskera/mcp) locally in my setup (local LLM proxy for enforced redaction across any agent, or MCP server for local files) so Swedish personal data never leaves my machine.",
+    "modesLabel": "Choose AI agent mode",
+    "modes": [
       {
-        "id": "extension",
-        "name": "Browser extension",
-        "price": "SEK 149/user/month",
-        "freeLine": "Free: SEK 0/month (rules + 20 AI/month)",
-        "trialTerms": "Pro starts with a 7-day free trial, incl. VAT. No lock-in.",
-        "tagline": "For individuals and teams who want to mask text directly in their AI tools.",
-        "points": [
-          "Works in ChatGPT, Claude, Gemini, Microsoft Copilot, Perplexity, Mistral and any opt-in AI site",
-          "Unlimited local Swedish AI masking in Pro, fully offline after activation",
-          "Shared protected words for your whole team, encrypted locally if you choose",
-          "Central deployment to company devices via Intune, Jamf and Google Workspace"
-        ],
-        "cta": "Try Pro free for 7 days",
-        "secondaryCta": "Install for free",
-        "note": "Signed offline licence from app.maskera.dev. No text leaves your device."
+        "id": "proxy",
+        "label": "Local proxy (any agent)",
+        "summary": "Strongest guarantee across any harness: sits locally in front of Anthropic and OpenAI, redacts every outgoing prompt and tool result, and restores streaming responses automatically.",
+        "code": "# 1. Start the local proxy on 127.0.0.1:8787\nnpx -y @maskera/mcp proxy\n\n# 2. Point any agent at the proxy:\nANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude\nOPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex"
       },
       {
-        "id": "open",
-        "name": "Open source",
-        "price": "SEK 0",
-        "tagline": "For developers and teams who want to build masking into their own code.",
-        "points": [
-          "Runs in the browser or Node",
-          "The text and the key containing the original data stay in your environment",
-          "MIT licence, with no usage fee or lock-in",
-          "Swedish model and ready-made rules for common personal data"
-        ],
-        "cta": "Install and get started"
+        "id": "mcp",
+        "label": "MCP server (files)",
+        "summary": "For Claude Desktop, Cursor, Claude Code, Codex and T3 Code: maskera_read_file masks local files before the model sees them, and maskera_write_file restores answers directly to disk.",
+        "code": "{\n  \"mcpServers\": {\n    \"maskera\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@maskera/mcp\", \"--root\", \"/path/to/workspace\"]\n    }\n  }\n}"
+      },
+      {
+        "id": "guard",
+        "label": "Guard (hooks & pipes)",
+        "summary": "Block prompts or hook payloads containing personal data (exit code 2, prints counts and types only, never raw values) or redact text directly in a Unix pipeline.",
+        "code": "# Block PII in agent hooks (exits 2 on match):\nnpx -y @maskera/mcp guard\n\n# Redact a local file through a pipe:\ncat document.txt | npx -y @maskera/mcp guard --redact"
+      }
+    ]
+  },
+  "services": {
+    "title": "One local privacy layer in front of every AI model",
+    "lede": "The same 43 MB Swedish model and rule engine, running locally on your device. Choose how you and your team use AI below.",
+    "sublede": "No text and no restore map are ever sent to Maskera.",
+    "tracksLabel": "Choose how you use Maskera",
+    "accuracyLead": "Automated masking reduces risk, but is not a guarantee.",
+    "tracks": [
+      {
+        "id": "extension",
+        "title": "Browser extension",
+        "badge": "Free / Pro",
+        "summary": "Mask directly in ChatGPT, Claude, Gemini, Copilot, Perplexity and Mistral."
+      },
+      {
+        "id": "agents",
+        "title": "AI agents (Proxy & MCP)",
+        "badge": "MIT · Free",
+        "summary": "Local LLM proxy, MCP server and guard for Claude Code, Codex, Cursor and more."
+      },
+      {
+        "id": "sdk",
+        "title": "Own code (SDK)",
+        "badge": "MIT · Free",
+        "summary": "Embed Swedish PII masking directly in your web app or Node service."
       }
     ],
+    "agents": {
+      "title": "Mask for every AI agent with @maskera/mcp",
+      "body": "Open source (MIT) running 100% locally. Use the local LLM proxy when you want enforced masking on all outgoing traffic regardless of agent harness, or the MCP server for masked local file access.",
+      "highlights": [
+        {
+          "title": "Enforced via local proxy",
+          "body": "Point ANTHROPIC_BASE_URL or OPENAI_BASE_URL at 127.0.0.1:8787. Agents cannot bypass it and the proxy fails closed (502) if local masking errors."
+        },
+        {
+          "title": "Raw files stay on disk with MCP",
+          "body": "maskera_read_file returns placeholders only and maskera_write_file restores originals directly to disk without echoing PII back into the chat."
+        },
+        {
+          "title": "Same model, zero cloud dependency",
+          "body": "Runs the pinned 43 MB Swedish ONNX model with SHA-256 verification and consistent session numbering ([NAMN_1]) across files and turns."
+        }
+      ],
+      "npmCta": "@maskera/mcp on npm",
+      "docsCta": "Full documentation on GitHub"
+    },
+    "sdk": {
+      "title": "Embed Maskera in your own code",
+      "body": "One npm package with both deterministic rules and the 43 MB Swedish AI model. Runs in the browser (WASM/WebGPU) or in Node 18+.",
+      "packageManagerLabel": "npm",
+      "installCommand": "npm install maskera @huggingface/transformers",
+      "points": [
+        "Text and restore maps stay inside your own runtime",
+        "MIT licence, with no usage fee or lock-in",
+        "Swedish model + built-in rules for personal IDs, phones, IBAN, cards and addresses",
+        "Optional clinical profile (profile: \"clinical\") preserving diagnoses and doses"
+      ],
+      "cta": "Open developer documentation",
+      "githubCta": "Source code on GitHub"
+    },
     "compare": {
       "title": "Compare Free and Pro",
       "featureColumn": "Feature",
@@ -742,7 +796,7 @@
     "heroAddTo": "Add to {browser}, it's free",
     "heroInstall": "Install for free",
     "heroTryDemo": "Try it in your browser",
-    "heroLearnMore": "About the extension",
+    "heroLearnMore": "Extension, AI agents & SDK",
     "alsoFor": "Also for",
     "builtFor": "Built for",
     "freeNote": "Free, 20 AI redactions/month",
@@ -790,18 +844,18 @@
   "topBar": {
     "breadcrumbLabel": "Breadcrumb",
     "developers": "Developers",
-    "services": "Extension",
+    "services": "Products",
     "accuracy": "Accuracy"
   },
   "meta": {
     "demoTitle": "Use AI without sharing personal data · maskera",
-    "demoDescription": "maskera hides Swedish personal data before text is sent to AI. Run the same local masking in the browser, with the extension for ChatGPT, Claude, Gemini, Copilot and more, or via npm. Only masked text is forwarded.",
-    "devTitle": "for developers: Swedish PII masking with npm · maskera",
-    "devDescription": "Install maskera for local Swedish PII masking in the browser or Node. Open source, TypeScript and a custom-trained Swedish AI model.",
-    "servicesTitle": "browser extension and open source: local Swedish PII masking · maskera",
-    "servicesDescription": "Compare Maskera's browser extension for ChatGPT, Claude, Gemini, Copilot, Perplexity and Mistral with the open-source npm packages. All masking runs locally.",
+    "demoDescription": "maskera is the local privacy layer in front of every AI model: mask Swedish personal data in the browser extension, in AI agents via local proxy and MCP (@maskera/mcp), or in your own code via npm.",
+    "devTitle": "for developers: local AI proxy, MCP and npm packages · maskera",
+    "devDescription": "Connect local Swedish PII masking in front of AI agents with @maskera/mcp (proxy, MCP, guard) or directly in the browser and Node with maskera.",
+    "servicesTitle": "products: browser extension, AI agents (proxy & MCP) and SDK · maskera",
+    "servicesDescription": "Choose how you use Maskera locally: browser extension for ChatGPT/Claude/Gemini/Copilot, local LLM proxy and MCP for AI agents (@maskera/mcp), or npm packages in your own code.",
     "siteName": "maskera",
-    "servicesSchemaName": "Maskera browser extension and open source",
+    "servicesSchemaName": "Maskera browser extension, AI agent proxy/MCP and open source",
     "ogImageAlt": "maskera: Use AI without sharing personal data. A sample sentence where a name, a personal identity number and a town are replaced with placeholders."
   },
   "about": {
@@ -817,7 +871,7 @@
       },
       {
         "href": "#anvanda",
-        "label": "Two ways to use it"
+        "label": "Three ways to use it"
       },
       {
         "href": "#bakom",
@@ -833,10 +887,11 @@
       "Maskera combines fixed rules (for Swedish personal identity numbers, phone numbers, emails and IBANs) with a custom-trained 43 MB Swedish AI model that finds names, places, organisations and addresses in free text.",
       "Everything can be restored in the AI's reply using a local key that never leaves your device."
     ],
-    "useTitle": "Two ways to use it",
+    "useTitle": "Three ways to use it",
     "use": [
-      "Open source: the maskera and @maskera/core npm packages under the MIT licence, plus the maskera-sv-ner model on Hugging Face.",
-      "Browser extension for Chrome, Edge and Firefox (Safari coming later) in ChatGPT, Claude, Gemini, Copilot and more. Free for everyday needs (rules + 20 AI/month); Pro costs SEK 149/user/month incl. VAT after 7 days free, with shared protected words and central deployment via app.maskera.dev."
+      "Browser extension for Chrome, Edge and Firefox (Safari coming later) in ChatGPT, Claude, Gemini, Copilot and more. Free for everyday needs (rules + 20 AI/month); Pro costs SEK 149/user/month incl. VAT after 7 days free, with shared protected words and central deployment via app.maskera.dev.",
+      "AI agents (@maskera/mcp, MIT open source): local LLM proxy for Anthropic/OpenAI that masks all outgoing traffic and restores streaming replies across any harness, MCP server for masked file access, and guard for hooks.",
+      "Own code: the maskera and @maskera/core npm packages under the MIT licence, plus the maskera-sv-ner model on Hugging Face."
     ],
     "whoTitle": "Who is behind it",
     "who": "Maskera is developed and operated by Hägvall Labs AB (Swedish company reg. no. 559598-0110), a Swedish limited company in Stockholm founded by Joel Hägvall. The company is the data controller for maskera.dev; how the website itself processes data is described in the privacy policy. The source code, training pipeline and benchmarks are public on GitHub so the results can be reviewed and reproduced.",

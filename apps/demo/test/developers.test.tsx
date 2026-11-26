@@ -64,7 +64,8 @@ describe("Developers", () => {
 
     const headings = [...container.querySelectorAll("h2")]
     expect(headings.map((heading) => heading.textContent)).toEqual([
-      "Installera",
+      copy.developerApi.agentsTitle,
+      copy.developerApi.installTitle,
       "Maskera en text",
       "Skicka till AI-tjänsten och återställ svaret",
       "Valfri profil för vårdtext",

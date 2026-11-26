@@ -1,9 +1,10 @@
 import { type KeyboardEvent, type ReactNode, useRef, useState } from "react"
-import { GITHUB, HF_MODEL, NPM_NER } from "../constants"
+import { GITHUB, HF_MODEL, NPM_MCP, NPM_NER } from "../constants"
 import copy, { activeLocale } from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
 import type { View } from "../routing"
 import { navClick, viewPaths } from "../routing"
+import { AgentSetupCard } from "./AgentSetupCard"
 import { CopyButton } from "./CopyButton"
 import { TopBar } from "./TopBar"
 
@@ -252,6 +253,10 @@ export function Developers({
             {copy.developerApi.modelSuffix}
           </p>
 
+          <h2 id="agenter">{copy.developerApi.agentsTitle}</h2>
+          <p className="prose-note">{copy.developerApi.agentsBody}</p>
+          <AgentSetupCard idPrefix="dev-agent" />
+
           <h2>{copy.developerApi.installTitle}</h2>
           <InstallTabs />
           <p className="install-note">{copy.developerApi.installNote}</p>
@@ -308,6 +313,11 @@ export function Developers({
               <li>
                 <a href={NPM_NER} target="_blank" rel="noreferrer">
                   {copy.developerApi.npmCta}
+                </a>
+              </li>
+              <li>
+                <a href={NPM_MCP} target="_blank" rel="noreferrer">
+                  {copy.developerApi.mcpNpmCta}
                 </a>
               </li>
               <li>

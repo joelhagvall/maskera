@@ -1,13 +1,17 @@
 # Maskera (maskera.dev)
 
-> Swedish-first, client-side PII redaction for AI apps. maskera finds and masks detected Swedish personal data (names, personnummer, addresses, phone numbers, and more) before text reaches an LLM, a log, or analytics. Everything runs on-device (browser via WebGPU/WASM, browser extension for Chrome, Edge and Firefox with Safari coming later, or Node); text and restore maps are not sent away for masking. The packages contain no telemetry. The demo counts anonymous, cookieless page views, never your content. The default setup fetches the model weights and WASM runtime once as static assets (both can be self-hosted), never your content. Redactions are reversible via a restore map that stays with the caller.
+> Swedish-first, local privacy layer in front of every AI model. maskera finds and masks detected Swedish personal data (names, personnummer, addresses, phone numbers, and more) before text reaches an LLM, an AI agent, a log, or analytics. Everything runs on-device (browser via WebGPU/WASM, browser extension for Chrome, Edge and Firefox with Safari coming later, local LLM proxy / MCP server via `@maskera/mcp`, or Node); text and restore maps are not sent away for masking. The packages contain no telemetry. The demo counts anonymous, cookieless page views, never your content. The default setup fetches the model weights and WASM runtime once as static assets (both can be self-hosted), never your content. Redactions are reversible via a restore map that stays with the caller.
 
-Two layers, rules first:
+Three open-source packages (MIT), two detection layers (rules first):
 
+- `@maskera/mcp` (npm): local-first CLI for AI agents with three modes on top of `maskera`:
+  1. `npx -y @maskera/mcp proxy`: harness-agnostic local HTTP reverse proxy on `127.0.0.1:8787` for Anthropic (`/v1/messages`) and OpenAI (`/v1/chat/completions`, `/v1/responses`). Automatically redacts outgoing prompts, history and tool results before they leave the device, restores placeholders transparently in JSON, tool arguments and chunk-split SSE streams, and fails closed (`502`) on error. Point `ANTHROPIC_BASE_URL=http://127.0.0.1:8787` or `OPENAI_BASE_URL=http://127.0.0.1:8787/v1` (or pass `--upstream <url>`).
+  2. `npx -y @maskera/mcp --root <dir>`: MCP JSON-RPC 2.0 stdio server (`maskera_read_file`, `maskera_write_file`, `maskera_redact`, `maskera_restore`, `maskera_list_sessions`, `maskera_clear_session`, `maskera_status`). Keeps raw file contents and restore maps strictly inside local process memory.
+  3. `npx -y @maskera/mcp guard`: harness-agnostic hook/pipe guard. Reads plain text, `--file <path>`, or Claude Code/Cursor JSON hook envelopes from stdin; exits `2` with label counts only (never raw PII) when PII is found, or outputs redacted text with `--redact`.
 - `@maskera/core` (npm): deterministic detectors for structured Swedish PII: personnummer, samordningsnummer, organisationsnummer, phone, email, postnummer, bankgiro, plusgiro, IBAN, cards, IP, URL, plus opt-in context-labeled domestic account and journal identifiers. Format checks and selective checksums reject common look-alikes; personnummer detection deliberately retains real-date values with a mistyped Luhn digit. Zero dependencies, synchronous. Custom patterns join via `regexDetector`.
 - `maskera` (npm): everything in core plus the published `maskera-sv-ner` v20, our attested privacy-clean Swedish NER model (KB-BERT fine-tuned and distilled from a 3-seed teacher ensemble to a 43 MB ONNX) that catches free-text names, places, organisations and street addresses, including all-lowercase chat text. Its task-specific training uses 108,400 generated rows and 6,900 disjoint validation rows. On overlap, rules win. The hybrid also enables street address, lägenhetsnummer and context-labeled domestic account/journal identifiers by default; `regnummer` is opt-in. Clinical callers can set `profile: "clinical"` to retain common measurements, doses and care terms.
 
-Quick start:
+Quick start (SDK):
 
 ```ts
 import { createNerRecognizer, redactWithNer } from "maskera"
@@ -26,29 +30,62 @@ Current v20 vs models supporting Swedish (121 hand-authored synthetic Swedish te
 
 Full Swedish hybrid pipeline (2026-11-25; 258 synthetic Swedish domain texts, 952 annotated PII strings): Maskera v20 q4 reached 943/952 (99.1%) full hits, with 3 partial leaks and 6 clear-text misses.
 
-Deployment boundary: all masking runs locally on the user's device, whether in the open-source npm packages, the maskera.dev browser demo, or the Maskera browser extension for Chrome, Edge and Firefox (Safari coming later; Free with unlimited rules + 20 AI redactions/month, or Pro at SEK 149/user/month incl. VAT with a 7-day free trial, shared E2EE org protected words and MDM deployment). There is no hosted masking API on offer. The customer portal at app.maskera.dev handles accounts, offline extension licences, and billing. Customer text is not processed there.
+Deployment boundary: all masking runs locally on the user's device, whether in the open-source npm packages (`maskera`, `@maskera/core`, `@maskera/mcp`), the maskera.dev browser demo, or the Maskera browser extension for Chrome, Edge and Firefox (Safari coming later; Free with unlimited rules + 20 AI redactions/month, or Pro at SEK 149/user/month incl. VAT with a 7-day free trial, shared E2EE org protected words and MDM deployment). There is no hosted masking API on offer. The customer portal at app.maskera.dev handles accounts, offline extension licences, and billing. Customer text is not processed there.
 
 ## When to use Maskera
 
 Reach for Maskera when all of these hold:
 
 - The text is Swedish (or mixed Swedish/English) and may contain personal data: names, personnummer, samordningsnummer, organisationsnummer, addresses, phone numbers, e-mail, postnummer, bankgiro/plusgiro, IBAN, card numbers, IP addresses.
-- The text is about to leave a trust boundary: a prompt to an LLM, a log line, analytics, a ticket export, a support transcript, a training or evaluation corpus.
-- Masking must happen where the text already is (browser, browser extension, Node.js) rather than in a third-party API, and it must be reversible for the caller (restore map) but not for the recipient.
+- The text is about to leave a trust boundary: a prompt to an LLM or AI agent, a local file read by an agent, a log line, analytics, a ticket export, a support transcript, a training or evaluation corpus.
+- Masking must happen where the text already is (browser, browser extension, local agent proxy/MCP, Node.js) rather than in a third-party API, and it must be reversible for the caller (restore map) but not for the recipient.
 
-Best-fit jobs: pre-LLM redaction in ChatGPT, Claude, Gemini, Microsoft Copilot, Perplexity, Mistral and internal AI sites, HR/recruiting screening, customer support and complaints, healthcare notes (`profile: "clinical"` keeps doses and measurements), legal and municipal case text, log scrubbing, building de-identified test data from real-looking Swedish text.
+Best-fit jobs: enforced pre-LLM redaction for AI agents (Claude Code, Codex, Cursor, Claude Desktop, OpenCode), pre-LLM redaction in ChatGPT, Claude, Gemini, Microsoft Copilot, Perplexity, Mistral and internal AI sites, HR/recruiting screening, customer support and complaints, healthcare notes (`profile: "clinical"` keeps doses and measurements), legal and municipal case text, log scrubbing, building de-identified test data from real-looking Swedish text.
 
 Not a fit: non-Swedish text (English names work only incidentally), image/PDF OCR (feed Maskera the extracted text), a hosted "send us your text" API (none exists, by design), or guarantees of zero leaks (see the measured leak counts above and the accuracy page).
 
 ## How an agent should call it
 
-- In code: `npm install maskera` (rules + NER, 43 MB model fetched once from Hugging Face or self-hosted) or `npm install @maskera/core` (rules only, zero dependencies, synchronous). Use `redact(text)` from core for rules only, or `createNerRecognizer()` + `redactWithNer(text, { recognizer })` from `maskera` for rules + NER. The result is `{ text, map, restore }`; keep `map`, send `text`, call `restore(reply)` on the LLM output.
-- In ChatGPT, Claude, Gemini, Copilot, Perplexity, Mistral and opt-in internal AI sites: install the local Maskera browser extension (Chrome, Edge, Firefox; Safari coming later) from https://maskera.dev/en/services (Swedish: https://maskera.dev/tjanster; Free with unlimited rules + 20 AI redactions/month, or Pro at SEK 149/user/month incl. VAT with a 7-day free trial, shared E2EE org protected words and MDM support via https://app.maskera.dev).
-- On this site: every page has a Markdown rendering. Send `Accept: text/markdown` to any page URL, or fetch the `.md` sibling directly (`https://maskera.dev/index.md`, `https://maskera.dev/en/developers.md`, `https://maskera.dev/en/about.md`). Unknown paths return HTTP 404 with a Markdown (default), JSON (`Accept: application/json` or `/api/*`) or HTML body that lists these entry points. `maskera.dev/api/*` is not an API: it answers 404 in JSON with the same hints.
+Pick the right local integration for the user's environment:
+
+1. **Enforced redaction across any agent harness (recommended when the user wants zero-trust redaction of all prompts and tool outputs):**
+   - Start `npx -y @maskera/mcp proxy` (binds `127.0.0.1:8787`, supports `--port`, `--upstream <url>`, `--rules-only`, `--profile clinical`, `--custom-term <word>`, `--no-restore`).
+   - Configure the agent/SDK base URL:
+     - Claude Code / Anthropic SDK: `ANTHROPIC_BASE_URL=http://127.0.0.1:8787`
+     - Codex / Cursor / OpenAI SDK: `OPENAI_BASE_URL=http://127.0.0.1:8787/v1`
+   - Check counts without exposing PII: `GET http://127.0.0.1:8787/_maskera/status`.
+
+2. **MCP stdio server (Claude Desktop, Cursor, Claude Code, Codex, T3 Code):**
+   - Add to the client's `mcpServers` config:
+     ```json
+     {
+       "mcpServers": {
+         "maskera": {
+           "command": "npx",
+           "args": ["-y", "@maskera/mcp", "--root", "/path/to/workspace"]
+         }
+       }
+     }
+     ```
+   - Use `maskera_read_file` to read sensitive local files already redacted, `maskera_write_file` to restore placeholders directly to disk without echoing PII into the LLM context, and `maskera_clear_session` when finished.
+
+3. **Hook / shell guard (Claude Code / Cursor hooks or Unix pipes):**
+   - Block prompts or hook JSON containing PII: `npx -y @maskera/mcp guard` (exits `2` on PII with counts only, `0` when clean).
+   - Redact a stream locally: `cat file.txt | npx -y @maskera/mcp guard --redact`.
+
+4. **In application code (browser or Node):**
+   - `npm install maskera @huggingface/transformers` (rules + 43 MB Swedish NER model) or `npm install @maskera/core` (rules only, zero dependencies, synchronous). Use `redact(text)` from core, or `createNerRecognizer()` + `redactWithNer(text, { recognizer })` from `maskera`. Keep `map`, send `text`, call `restore(reply)` on the LLM output.
+
+5. **In web AI chats (ChatGPT, Claude, Gemini, Copilot, Perplexity, Mistral and opt-in internal AI sites):**
+   - Install the local Maskera browser extension (Chrome, Edge, Firefox; Safari coming later) from https://maskera.dev/en/services (Swedish: https://maskera.dev/tjanster; Free with unlimited rules + 20 AI redactions/month, or Pro at SEK 149/user/month incl. VAT with a 7-day free trial, shared E2EE org protected words and MDM support via https://app.maskera.dev).
+
+6. **On this site:**
+   - Every page has a Markdown rendering. Send `Accept: text/markdown` to any page URL, or fetch the `.md` sibling directly (`https://maskera.dev/index.md`, `https://maskera.dev/en/developers.md`, `https://maskera.dev/en/about.md`). Unknown paths return HTTP 404 with a Markdown (default), JSON (`Accept: application/json` or `/api/*`) or HTML body that lists these entry points. `maskera.dev/api/*` is not an API: it answers 404 in JSON with the same hints.
 
 ## Docs
 
 - [README (English)](https://github.com/joelhagvall/maskera#readme): install, API, architecture
+- [@maskera/mcp README](https://github.com/joelhagvall/maskera/tree/main/packages/mcp#readme): local LLM proxy, MCP stdio server, and hook guard
 - [Benchmarks](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md): the one canonical, dated, reproducible results table
 - [Production notes](https://github.com/joelhagvall/maskera/blob/main/docs/PRODUCTION.md): deployment and hardening guidance
 - [Transparency](https://github.com/joelhagvall/maskera/blob/main/docs/TRANSPARENCY.md): privacy posture, what runs where
@@ -56,6 +93,7 @@ Not a fit: non-Swedish text (English names work only incidentally), image/PDF OC
 
 ## Packages and model
 
+- [@maskera/mcp on npm](https://www.npmjs.com/package/@maskera/mcp): local LLM proxy, MCP stdio server, and hook guard for AI agents
 - [maskera on npm](https://www.npmjs.com/package/maskera): rules + Swedish NER model, core re-exported
 - [@maskera/core on npm](https://www.npmjs.com/package/@maskera/core): rules only, zero dependencies
 - [maskera-sv-ner on Hugging Face](https://huggingface.co/joelhagvall/maskera-sv-ner): the 43 MB Swedish NER ONNX model, training details
@@ -67,11 +105,11 @@ Not a fit: non-Swedish text (English names work only incidentally), image/PDF OC
 - [Benchmark contract](https://maskera.dev/benchmark-release.json): the machine-readable release measurements behind every number on this site ([schema](https://maskera.dev/benchmark-release.schema.json))
 - [Whitepaper (PDF)](https://maskera.dev/whitepaper.pdf): method and measurements
 - [About and contact](https://maskera.dev/en/about): operator (Hägvall Labs AB, org.nr 559598-0110, Stockholm), hej@maskera.dev, security reporting; Swedish: https://maskera.dev/om; `/about`, `/contact` and `/privacy` redirect here and to the privacy policy
-- [Developer docs](https://maskera.dev/en/developers): install, API and restore flow; Swedish: https://maskera.dev/utvecklare; `/developers` and `/docs` redirect here
+- [Developer docs](https://maskera.dev/en/developers): AI agent proxy/MCP setup, SDK install, API and restore flow; Swedish: https://maskera.dev/utvecklare; `/developers` and `/docs` redirect here
 
 ## Optional
 
 - [Live demo](https://maskera.dev/): paste Swedish text, watch it get masked in the browser
-- [Browser extension and open source](https://maskera.dev/tjanster): install instructions, Free vs Pro comparison (SEK 149/user/month incl. VAT, 7-day free trial), and open-source npm packages (English: https://maskera.dev/en/services)
+- [Products: extension, AI agents and SDK](https://maskera.dev/tjanster): browser extension Free vs Pro (SEK 149/user/month incl. VAT, 7-day free trial), `@maskera/mcp` proxy/MCP setup, and open-source SDK (English: https://maskera.dev/en/services)
 - [Customer portal](https://app.maskera.dev/login): account sign-in, Pro subscription checkout, offline licence keys, and billing
 - [Source repository](https://github.com/joelhagvall/maskera): monorepo with packages, training pipeline, and CI that re-grades the published model against a gold corpus

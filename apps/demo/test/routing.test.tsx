@@ -94,7 +94,7 @@ describe("useRoute: document.title", () => {
 
   it("fresh landing on a sub-page sets its title immediately", () => {
     const { unmount } = mountAt("/utvecklare")
-    expect(document.title).toBe("för utvecklare: svensk PII-maskering med npm · maskera")
+    expect(document.title).toBe("för utvecklare: lokal AI-proxy, MCP och npm-paket · maskera")
     unmount()
   })
 
@@ -111,7 +111,7 @@ describe("useRoute: document.title", () => {
   it("navigating away from home sets the sub-page title", () => {
     const { result, unmount } = mountAt("/")
     act(() => result.current.navigate("dev"))
-    expect(document.title).toBe("för utvecklare: svensk PII-maskering med npm · maskera")
+    expect(document.title).toBe("för utvecklare: lokal AI-proxy, MCP och npm-paket · maskera")
     expect(window.location.pathname).toBe("/utvecklare")
     unmount()
   })
@@ -133,7 +133,7 @@ describe("useRoute: document.title", () => {
     })
     expect(result.current.view).toBe("services")
     expect(document.title).toBe(
-      "webbläsartillägg och öppen källkod: lokal svensk PII-maskering · maskera",
+      "produkter: webbläsartillägg, AI-agenter (proxy & MCP) och SDK · maskera",
     )
     unmount()
   })
@@ -145,6 +145,7 @@ describe("useRoute: route metadata", () => {
 
     expect(viewMeta.demo.description).toContain("webbläsaren")
     expect(viewMeta.demo.description).toContain("tillägget")
+    expect(viewMeta.demo.description).toContain("@maskera/mcp")
     expect(viewMeta.demo.description).toContain("Endast maskerad text")
     expect(indexSource).toContain(viewMeta.demo.description)
     expect(indexSource).toContain("Skydda personuppgifter när du använder AI")
@@ -156,13 +157,13 @@ describe("useRoute: route metadata", () => {
       "https://maskera.dev/utvecklare",
     )
     expect(document.querySelector<HTMLMetaElement>('meta[name="description"]')?.content).toContain(
-      "Installera maskera",
+      "@maskera/mcp",
     )
     expect(document.querySelector<HTMLMetaElement>('meta[property="og:url"]')?.content).toBe(
       "https://maskera.dev/utvecklare",
     )
     expect(document.querySelector<HTMLMetaElement>('meta[name="twitter:title"]')?.content).toBe(
-      "för utvecklare: svensk PII-maskering med npm · maskera",
+      "för utvecklare: lokal AI-proxy, MCP och npm-paket · maskera",
     )
     unmount()
   })
@@ -174,7 +175,7 @@ describe("useRoute: route metadata", () => {
       "https://maskera.dev/tjanster",
     )
     expect(document.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.content).toBe(
-      "webbläsartillägg och öppen källkod: lokal svensk PII-maskering · maskera",
+      "produkter: webbläsartillägg, AI-agenter (proxy & MCP) och SDK · maskera",
     )
     expect(
       document.querySelector<HTMLMetaElement>('meta[name="twitter:description"]')?.content,

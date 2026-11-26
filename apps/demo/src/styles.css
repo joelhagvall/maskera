@@ -2585,6 +2585,223 @@ html[data-theme="dark"] .tok-f {
   }
 }
 
+/* Three-track selector on /tjanster (Extension · AI agents · SDK). */
+.track-picker {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 26px 0 0;
+}
+.track-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 15px 16px;
+  text-align: left;
+  font-family: var(--sans);
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition:
+    border-color 0.14s ease,
+    background-color 0.14s ease;
+}
+.track-card:hover {
+  border-color: var(--border-hover);
+  background: var(--gray-100);
+}
+.track-card.is-active {
+  border-color: var(--fg);
+  background: var(--gray-100);
+}
+.track-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+.track-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.track-card-badge {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.track-card.is-active .track-card-badge {
+  color: var(--fg);
+}
+.track-card-desc {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.track-panel {
+  margin-top: 28px;
+}
+.track-panel[hidden] {
+  display: none;
+}
+.track-panel-head h2 {
+  margin-top: 0;
+}
+.track-panel-head p {
+  margin: 6px 0 18px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.track-panel-cta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 20px;
+}
+.track-foot-links {
+  margin: 18px 0 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.track-foot-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Reusable agent prompt + Proxy/MCP/Guard setup block. */
+.agent-setup {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 18px 0 24px;
+}
+.agent-prompt-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  background: var(--bg);
+}
+.agent-prompt-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.prose .agent-prompt-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+.prose .agent-prompt-desc {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.agent-prompt-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.agent-prompt-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 13px;
+  font: 500 13px var(--sans);
+  color: var(--bg);
+  background: var(--fg);
+  border: 1px solid var(--fg);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.agent-prompt-copy:hover {
+  opacity: 0.85;
+}
+.prose .agent-llms-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-2);
+  padding-bottom: 1px;
+}
+.prose .agent-llms-link:hover {
+  color: var(--fg);
+  border-color: var(--fg);
+}
+.prose .agent-prompt-quote {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  font: 400 13px / 1.55 var(--mono);
+  color: var(--ink);
+  background: var(--gray-100);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.agent-modes-block {
+  margin: 0;
+}
+.prose .agent-mode-summary {
+  margin: 0;
+  padding: 11px 14px 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.agent-highlights {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+.agent-highlight {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  background: var(--bg);
+}
+.prose .agent-highlight h3 {
+  margin: 0 0 6px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.prose .agent-highlight p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.prose .sdk-points {
+  margin: 18px 0 0;
+}
+@media (max-width: 720px) {
+  .track-picker,
+  .agent-highlights {
+    grid-template-columns: 1fr;
+  }
+  .agent-prompt-copy {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+}
+
 /* Numbered steps for "Så går det till". */
 .how {
   margin: 0;
