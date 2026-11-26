@@ -155,14 +155,6 @@ function historicalModelMarkdownRow(row) {
   return `| ${row.system} | ${row.size} | ${row.redactionRecall} | ${row.typedPrecision} | ${row.typedRecall} | ${row.typedF1} |`
 }
 
-function historicalScoreForLocale(score, locale) {
-  const percentage = score
-    .split(" / ")
-    .map((value) => Math.round(Number(value) * 100))
-    .join(" / ")
-  return locale === "sv" ? `${percentage} %` : `${percentage}%`
-}
-
 await expectFragments("docs/BENCHMARKS.md", [
   ["published date", `**Published:** ${contract.publishedAt}`],
   ["artifact sha", `sha256 \`${artifact.sha256}\``],
@@ -234,53 +226,6 @@ await expectFragments("docs/BENCHMARKS.md", [
     historicalModelMarkdownRow(row),
   ]),
 ])
-
-// The public accuracy page displays only the 7 Swedish/Scandinavian NER models
-// from the historical v18 run (dropping non-Swedish, rule-only and mismatched-
-// scheme rows that belong only in the full docs/BENCHMARKS.md archive).
-const PUBLIC_HISTORICAL_EXCLUDED_SYSTEMS = new Set([
-  "sbx PII general / detailed",
-  "Rampart (nationaldesignstudio)",
-  "Desert Ant redact (multilingual)",
-  "swedish-pii (regex + name lists)",
-])
-const publicHistoricalModelRows = historicalModelRows.filter(
-  (row) => !PUBLIC_HISTORICAL_EXCLUDED_SYSTEMS.has(row.system),
-)
-
-for (const locale of ["sv", "en"]) {
-  const file = `apps/demo/src/i18n/${locale}.json`
-  const localeCopy = await readJson(resolve(repoRoot, file))
-  const rows = localeCopy.accuracy?.historicalRows
-  if (!Array.isArray(rows) || rows.length !== publicHistoricalModelRows.length) {
-    drift(
-      "historical model table rows",
-      file,
-      `${publicHistoricalModelRows.length} rows`,
-      Array.isArray(rows) ? rows.length : rows,
-    )
-    continue
-  }
-
-  const expectedBySystem = new Map(
-    publicHistoricalModelRows.map((row) => [
-      row.system,
-      {
-        normal: historicalScoreForLocale(row.redactionRecall, locale),
-        lowercase: historicalScoreForLocale(row.lowercaseRedactionRecall, locale),
-      },
-    ]),
-  )
-  for (const row of rows) {
-    const expected = expectedBySystem.get(row.system)
-    if (!expected) {
-      drift(`historical model row: ${row.system}`, file, "a contract row", row)
-      continue
-    }
-    requireValue(`${locale} ${row.system} normal recall`, expected.normal, row.normal)
-    requireValue(`${locale} ${row.system} lowercase recall`, expected.lowercase, row.lowercase)
-  }
-}
 
 const actualSuiteHash = await sha256FileSet(evaluation.files)
 if (actualSuiteHash !== evaluation.suiteSha256) {

@@ -30,6 +30,8 @@ Current v20 vs models supporting Swedish (121 hand-authored synthetic Swedish te
 
 Full Swedish hybrid pipeline (2026-11-25; 258 synthetic Swedish domain texts, 952 annotated PII strings): Maskera v20 q4 reached 943/952 (99.1%) full hits, with 3 partial leaks and 6 clear-text misses.
 
+Local PII tool comparison on the exact same 258-text Swedish domain corpus (2026-11-26, strict material-character scorer, CPU): Maskera v20 q4 (43 MB, 12.7 ms/text, 334 MB RAM) reached 98.8% (941/952, 11 leaks; 87/87 lowercase Swedish person names); swedish-pii 1.2.0 (5 MB, regex + name lists) reached 88.3% (841/952, 111 leaks; 0/87 lowercase person names); OpenAI Privacy Filter q4 ONNX (945 MB, 40.3 ms/text, 1,232 MB RAM) reached 72.2% (687/952, 265 leaks; 9/87 lowercase person names); Microsoft Presidio 2.2.366 with Swedish spaCy sv_core_news_lg (245 MB) + Swedish ID rules reached 69.0% (657/952, 295 leaks; 58/87 lowercase person names); LogosGuard 2.4.4 reached 63.7% (606/952, 346 leaks). Machine results: https://github.com/joelhagvall/maskera/blob/main/docs/benchmark-swedish-products-v20.json
+
 Deployment boundary: all masking runs locally on the user's device, whether in the open-source npm packages (`maskera`, `@maskera/core`, `@maskera/mcp`), the maskera.dev browser demo, or the Maskera browser extension for Chrome, Edge and Firefox (Safari coming later; Free with unlimited rules + 20 AI redactions/month, or Pro at SEK 149/user/month incl. VAT with a 7-day free trial, shared E2EE org protected words and MDM deployment). There is no hosted masking API on offer. The customer portal at app.maskera.dev handles accounts, offline extension licences, and billing. Customer text is not processed there.
 
 ## When to use Maskera

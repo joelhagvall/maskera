@@ -167,6 +167,46 @@ Selected runtime-environment checksum:
 corpus checksum:
 `ab4aa30950bf0731a4b689ddef4f27cfb8873501d004f4347f3bf8dcc4ccf200`.
 
+### Current v20 comparison with OpenAI Privacy Filter, Microsoft Presidio and swedish-pii
+
+Measured 2026-11-26 on CPU (Apple Silicon) against the exact same 258-text
+privacy-safe Swedish domain corpus (952 annotated PII strings across 19
+categories, strict material-character scorer) plus the 87 Swedish `PER` entities
+in `training/eval/gold.txt` (both original casing and all-lowercase).
+
+- **OpenAI Privacy Filter** (`openai/privacy-filter`, revision
+  `7ffa9a043d54d1be65afb281eddf0ffbe629385b`, `onnx/model_q4.onnx` +
+  `onnx/model_q4.onnx_data` + `tokenizer.json` = 945.1 MB): 1.5B MoE (50M active
+  parameters, 128k context) with constrained BIOES Viterbi decoding.
+- **Microsoft Presidio** (`presidio-analyzer==2.2.366` + `sv_core_news_lg==3.8.0`,
+  245 MB on disk): steelmanned Swedish configuration mapping spaCy `PRS->PERSON`,
+  `LOC->LOCATION`, `ORG->ORGANIZATION` and explicitly registering
+  `SePersonnummerRecognizer`, `SeOrganisationsnummerRecognizer`, `Email`, `Phone`,
+  `CreditCard`, `Iban`, `Ip` and `Url` for `language="sv"`.
+- **`swedish-pii` 1.2.0** (`okasi/swedish-pii`, 5.1 MB): regex and Swedish name
+  lists, zero ML model.
+
+| system | size on disk | 258 texts / 952 PII (full hits) | leaks (partial + miss) | Swedish PER (orig) | Swedish PER (lower) | CPU ms/text | peak RSS |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| **Maskera v20 (q4 ONNX + rules)** | **42.7 MB** | **98.8% (941/952)** | **11** (5 + 6) | **98.9% (86/87)** | **100.0% (87/87)** | 12.7 ms | 334 MB |
+| `swedish-pii` 1.2.0 | 5.1 MB | 88.3% (841/952) | 111 (13 + 98) | 98.9% (86/87) | 0.0% (0/87) | 2.8 ms | 157 MB |
+| OpenAI Privacy Filter (q4 ONNX) | 945.1 MB | 72.2% (687/952) | 265 (16 + 249) | 66.7% (58/87) | 10.3% (9/87) | 40.3 ms | 1,232 MB |
+| Microsoft Presidio (`sv_core_news_lg`) | 245.0 MB | 69.0% (657/952) | 295 (138 + 157) | 92.0% (80/87) | 66.7% (58/87) | 5.9 ms | 456 MB |
+| LogosGuard 2.4.4 (Chrome Free) | n/a | 63.7% (606/952) | 346 (49 + 297) | n/a | n/a | n/a | n/a |
+
+Fair scope notes: OpenAI Privacy Filter has an 8-category taxonomy that includes
+`secret` (API keys/passwords) and a 128k context window, which Maskera does not
+target; it does not tag standalone `LOC` or `ORG` entities, which is why the
+separate `Swedish PER` columns compare person names directly. On Swedish
+homographs (*"Bo ska bo i Boden. Liv har bott hela sitt liv i Uppsala. Patienten
+har Parkinsons sjukdom, men Kalle Parkinson ringde."*), Maskera v20 gets all 5
+entities right with 0 false positives, whereas OpenAI Privacy Filter finds only
+*Kalle Parkinson*, Presidio misses *Liv* and mislabels the diagnosis *Parkinsons*
+as `PERSON`, and `swedish-pii` misses *Boden* and drops to 0/87 person names in
+lowercase chat text. Machine results:
+[`benchmark-swedish-products-v20.json`](benchmark-swedish-products-v20.json);
+reproduction script: [`training/benchmark_privacy_filter_v20.py`](../training/benchmark_privacy_filter_v20.py).
+
 Two additional aggregate gates also pass:
 
 | gate | v20 result | release floor |

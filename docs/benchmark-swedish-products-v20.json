@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-26",
+  "hardware": "Apple Silicon macOS (CPU inference)",
+  "corpora": {
+    "domain258": {
+      "name": "Maskera privacy-safe Swedish domain regression corpus",
+      "path": "packages/ner/eval/domain-regression/corpus",
+      "texts": 258,
+      "annotations": 952,
+      "authorCoupled": true,
+      "scoring": "Strict material-character survival: full hit removes every Unicode letter or digit of the annotated value."
+    },
+    "gold121PerOnly": {
+      "name": "Maskera synthetic hand-authored Swedish gold set (PER entities only for cross-taxonomy fairness)",
+      "path": "training/eval/gold.txt",
+      "texts": 121,
+      "perEntities": 87,
+      "authorCoupled": true,
+      "scoring": "Overlap match on the 87 Swedish PER spans (both original casing and all-lowercase). Used alongside the full 258-text domain suite because openai/privacy-filter does not label standalone LOC or ORG entities."
+    }
+  },
+  "systems": [
+    {
+      "id": "maskera-v20",
+      "name": "Maskera v20 (q4 ONNX + rules)",
+      "version": "0.11.1 / maskera-sv-ner@f417d65c08bcf814f639f8bf9221e30a79a53f39",
+      "sizeMb": 42.7,
+      "domain258": {
+        "hits": 941,
+        "partials": 5,
+        "misses": 6,
+        "fullHitRatePct": 98.8,
+        "redactions": 1429,
+        "totalMs": 3269.7,
+        "msPerText": 12.67,
+        "maxRssMb": 334.1
+      },
+      "gold121Per": {
+        "originalHits": 86,
+        "originalRecallPct": 98.9,
+        "lowercaseHits": 87,
+        "lowercaseRecallPct": 100.0
+      }
+    },
+    {
+      "id": "swedish-pii",
+      "name": "swedish-pii",
+      "version": "1.2.0 (okasi/swedish-pii, regex + name lists)",
+      "sizeMb": 5.1,
+      "domain258": {
+        "hits": 841,
+        "partials": 13,
+        "misses": 98,
+        "fullHitRatePct": 88.3,
+        "redactions": 1428,
+        "totalMs": 733.5,
+        "msPerText": 2.84,
+        "maxRssMb": 156.8
+      },
+      "gold121Per": {
+        "originalHits": 86,
+        "originalRecallPct": 98.9,
+        "lowercaseHits": 0,
+        "lowercaseRecallPct": 0.0
+      }
+    },
+    {
+      "id": "openai-privacy-filter",
+      "name": "OpenAI Privacy Filter (q4 ONNX)",
+      "version": "openai/privacy-filter@7ffa9a043d54d1be65afb281eddf0ffbe629385b",
+      "sizeMb": 945.1,
+      "domain258": {
+        "hits": 687,
+        "partials": 16,
+        "misses": 249,
+        "fullHitRatePct": 72.2,
+        "redactions": 782,
+        "totalMs": 10407.0,
+        "msPerText": 40.34,
+        "maxRssMb": 1232.0
+      },
+      "gold121Per": {
+        "originalHits": 58,
+        "originalRecallPct": 66.7,
+        "lowercaseHits": 9,
+        "lowercaseRecallPct": 10.3
+      },
+      "notes": "1.5B MoE (50M active params), 128k context, constrained BIOES Viterbi decoding. Includes a dedicated secret/API-key class that Maskera does not target, but does not label standalone LOC/ORG and struggles with Swedish names (especially lowercase) and Swedish structured formats."
+    },
+    {
+      "id": "microsoft-presidio-sv",
+      "name": "Microsoft Presidio (Swedish spaCy sv_core_news_lg + Swedish rules)",
+      "version": "presidio-analyzer==2.2.366 / sv_core_news_lg==3.8.0",
+      "sizeMb": 245.0,
+      "domain258": {
+        "hits": 657,
+        "partials": 138,
+        "misses": 157,
+        "fullHitRatePct": 69.0,
+        "redactions": 1266,
+        "totalMs": 1525.3,
+        "msPerText": 5.91,
+        "maxRssMb": 456.4
+      },
+      "gold121Per": {
+        "originalHits": 80,
+        "originalRecallPct": 92.0,
+        "lowercaseHits": 58,
+        "lowercaseRecallPct": 66.7
+      },
+      "notes": "Steelmanned Swedish setup: mapped spaCy PRS->PERSON, LOC->LOCATION, ORG->ORGANIZATION and explicitly registered SePersonnummerRecognizer, SeOrganisationsnummerRecognizer, Email, Phone, CreditCard, Iban, Ip and Url for language='sv'."
+    },
+    {
+      "id": "logosguard",
+      "name": "LogosGuard (Chrome Free, Balanced)",
+      "version": "2.4.4",
+      "sizeMb": null,
+      "domain258": {
+        "hits": 606,
+        "partials": 49,
+        "misses": 297,
+        "fullHitRatePct": 63.7,
+        "redactions": 962,
+        "totalMs": null,
+        "msPerText": null,
+        "maxRssMb": null
+      },
+      "gold121Per": null,
+      "notes": "Measured in docs/benchmark-logosguard-2.4.4.json on the exact same 258-text corpus."
+    }
+  ]
+}

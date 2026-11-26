@@ -25,11 +25,16 @@ describe("Accuracy", () => {
     expect(screen.getByRole("banner")).toBeTruthy()
     expect(screen.getByRole("heading", { name: copy.accuracy.currentTitle })).toBeTruthy()
     expect(screen.getByRole("heading", { name: copy.accuracy.comparisonTitle })).toBeTruthy()
+    expect(screen.getByRole("heading", { name: copy.accuracy.toolsComparison.title })).toBeTruthy()
     expect(screen.getByRole("heading", { name: copy.accuracy.contextTitle })).toBeTruthy()
     expect(screen.getByRole("heading", { name: copy.accuracy.limitsTitle })).toBeTruthy()
 
-    // One unified v20 comparison table + one collapsible historical v18 table
+    // One local PII tools table + one Swedish/EU model comparison table (no stale v18 table bloat)
     expect(screen.getAllByRole("table")).toHaveLength(2)
+    for (const row of copy.accuracy.toolsComparison.rows) {
+      expect(screen.getAllByText(row.system).length).toBeGreaterThan(0)
+      expect(screen.getAllByText(row.domain).length).toBeGreaterThan(0)
+    }
 
     for (const stat of copy.accuracy.currentStats) {
       expect(screen.getAllByText(stat.value).length).toBeGreaterThan(0)
@@ -56,7 +61,9 @@ describe("Accuracy", () => {
     ).toBe("https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md")
 
     expect(document.body.textContent).toContain("Bards AI EU PII v3")
-    expect(document.body.textContent).toContain("v18")
+    expect(document.body.textContent).toContain("OpenAI Privacy Filter")
+    expect(document.body.textContent).toContain("Microsoft Presidio")
+    expect(document.body.textContent).not.toContain("v18")
     expect(document.body.textContent).not.toContain("LogosGuard")
     expect(document.body.textContent).not.toContain("Azure")
     expect(document.body.textContent).not.toContain("LinkedIn")
@@ -84,6 +91,6 @@ describe("Accuracy", () => {
     expect(bardsaiSource.runs[0].results[0].redactionHits).toBe(181)
     expect(bardsaiSource.runs[1].results[0].redactionHits).toBe(119)
     expect(releaseContract.schemaVersion).toBe(5)
-    expect(copy.accuracy.historicalRows).toHaveLength(7)
+    expect(copy.accuracy.toolsComparison.rows).toHaveLength(4)
   })
 })

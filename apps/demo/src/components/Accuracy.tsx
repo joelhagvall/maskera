@@ -19,17 +19,19 @@ interface ComparisonRow {
   ours: boolean
 }
 
+interface ToolComparisonRow {
+  system: string
+  description: string
+  size: string
+  domain: string
+  lowercaseNames: string
+  speedRam: string
+  ours: boolean
+}
+
 interface ContextExample {
   input: string
   result: string
-}
-
-interface HistoricalRow {
-  system: string
-  size: string
-  normal: string
-  lowercase: string
-  ours: boolean
 }
 
 function ComparisonBars({
@@ -68,8 +70,9 @@ export function Accuracy({
 }) {
   const barGroups = copy.accuracy.comparisonBarGroups as BarGroup[]
   const rows = copy.accuracy.comparisonRows as ComparisonRow[]
+  const tools = copy.accuracy.toolsComparison
+  const toolRows = tools.rows as ToolComparisonRow[]
   const contextExamples = copy.accuracy.contextExamples as ContextExample[]
-  const historicalRows = copy.accuracy.historicalRows as HistoricalRow[]
 
   return (
     <>
@@ -99,6 +102,53 @@ export function Accuracy({
                 ))}
               </dl>
             </div>
+          </section>
+
+          <section
+            className="benchmark-section comparison-section"
+            id="verktyg"
+            aria-labelledby="verktyg-heading"
+          >
+            <h2 id="verktyg-heading">{tools.title}</h2>
+            <p className="prose-body">{tools.body}</p>
+
+            <div className="comparison-case">
+              <h3>{tools.barTitle}</h3>
+              <div className="comparison-case-bars comparison-case-bars-clean">
+                <ComparisonBars items={tools.bars} />
+              </div>
+            </div>
+
+            <div className="comparison-case comparison-unified model-comparison">
+              <table className="data-table">
+                <caption className="sr-only">{tools.table.caption}</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">{tools.table.system}</th>
+                    <th scope="col">{tools.table.size}</th>
+                    <th scope="col">{tools.table.domain}</th>
+                    <th scope="col">{tools.table.lowercaseNames}</th>
+                    <th scope="col">{tools.table.speedRam}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {toolRows.map((row) => (
+                    <tr className={row.ours ? "comparison-own" : undefined} key={row.system}>
+                      <th scope="row">
+                        <span translate="no">{row.system}</span>
+                        <span className="model-description">{row.description}</span>
+                      </th>
+                      <td data-label={tools.table.size}>{row.size}</td>
+                      <td data-label={tools.table.domain}>{row.domain}</td>
+                      <td data-label={tools.table.lowercaseNames}>{row.lowercaseNames}</td>
+                      <td data-label={tools.table.speedRam}>{row.speedRam}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <p className="comparison-summary">{tools.summary}</p>
           </section>
 
           <section
@@ -184,42 +234,7 @@ export function Accuracy({
                 <li key={item}>{item}</li>
               ))}
             </ul>
-
-            <details className="historical-details">
-              <summary>{copy.accuracy.detailsToggle}</summary>
-              <div className="historical-details-body">
-                <h3>{copy.accuracy.historicalTitle}</h3>
-                <p className="prose-body">{copy.accuracy.historicalBody}</p>
-                <div className="comparison-case model-comparison">
-                  <table className="data-table">
-                    <caption className="sr-only">{copy.accuracy.historicalTitle}</caption>
-                    <thead>
-                      <tr>
-                        <th scope="col">{copy.accuracy.historicalTable.system}</th>
-                        <th scope="col">{copy.accuracy.historicalTable.size}</th>
-                        <th scope="col">{copy.accuracy.historicalTable.normal}</th>
-                        <th scope="col">{copy.accuracy.historicalTable.lowercase}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {historicalRows.map((row) => (
-                        <tr className={row.ours ? "comparison-own" : undefined} key={row.system}>
-                          <th scope="row">
-                            <span translate="no">{row.system}</span>
-                          </th>
-                          <td data-label={copy.accuracy.historicalTable.size}>{row.size}</td>
-                          <td data-label={copy.accuracy.historicalTable.normal}>{row.normal}</td>
-                          <td data-label={copy.accuracy.historicalTable.lowercase}>
-                            {row.lowercase}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <p className="comparison-limit">{copy.accuracy.provenance}</p>
-              </div>
-            </details>
+            <p className="comparison-limit">{copy.accuracy.provenance}</p>
           </section>
 
           <nav className="prose-foot foot-links" aria-label={copy.accuracy.limitsTitle}>

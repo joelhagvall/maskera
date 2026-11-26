@@ -335,6 +335,7 @@
     "tocLabel": "On this page",
     "toc": [
       { "href": "#aktuellt", "label": "Quick summary" },
+      { "href": "#verktyg", "label": "Compared with PII tools" },
       { "href": "#jamforelse", "label": "Compared with other models" },
       { "href": "#kontext", "label": "Swedish context" },
       { "href": "#begransningar", "label": "Good to know" }
@@ -411,6 +412,74 @@
       }
     ],
     "comparisonSummary": "Maskera caught all 211 names, places and organisations in both runs despite being 7 to 11 times smaller. KBLab edged ahead slightly on exact category label in normal text (89.4% vs 88.2%); in lowercase Maskera led clearly (87.4% vs 83.2% and 62.1%).",
+    "toolsComparison": {
+      "title": "Compared with other local PII tools on Swedish",
+      "body": "The same 258 Swedish texts across 19 domains (952 annotated PII items: names, street addresses, personal IDs, phones, emails, bankgiro and IBAN), measured on CPU on 2026-11-26. Microsoft Presidio was given a steelmanned Swedish setup (sv_core_news_lg with PRS->PERSON mapping plus Swedish ID rules) and OpenAI Privacy Filter (q4 ONNX) ran with constrained BIOES Viterbi decoding.",
+      "barTitle": "Full hits on 952 Swedish PII items (258 texts)",
+      "bars": [
+        { "label": "Maskera v20 (43 MB)", "valueText": "98.8%", "pct": 98.8, "ours": true },
+        { "label": "swedish-pii 1.2 (5 MB)", "valueText": "88.3%", "pct": 88.3, "ours": false },
+        {
+          "label": "OpenAI Privacy Filter q4 (945 MB)",
+          "valueText": "72.2%",
+          "pct": 72.2,
+          "ours": false
+        },
+        {
+          "label": "Microsoft Presidio + sv spaCy (245 MB)",
+          "valueText": "69.0%",
+          "pct": 69.0,
+          "ours": false
+        }
+      ],
+      "table": {
+        "caption": "Comparison of local PII tools on 258 Swedish texts (952 items) and 87 lowercase Swedish person names",
+        "system": "Tool",
+        "size": "Size",
+        "domain": "258 texts (952 PII)",
+        "lowercaseNames": "Lowercase names",
+        "speedRam": "CPU / RAM"
+      },
+      "rows": [
+        {
+          "system": "Maskera v20",
+          "description": "Swedish q4 ONNX model + Swedish format rules",
+          "size": "43 MB",
+          "domain": "98.8% (11 leaks)",
+          "lowercaseNames": "100.0% (87/87)",
+          "speedRam": "12.7 ms · 334 MB",
+          "ours": true
+        },
+        {
+          "system": "swedish-pii 1.2",
+          "description": "Regex and Swedish name lists (no ML model)",
+          "size": "5 MB",
+          "domain": "88.3% (111 leaks)",
+          "lowercaseNames": "0.0% (0/87)",
+          "speedRam": "2.8 ms · 157 MB",
+          "ours": false
+        },
+        {
+          "system": "OpenAI Privacy Filter",
+          "description": "1.5B MoE (q4 ONNX, 50M active params, Apache 2.0)",
+          "size": "945 MB",
+          "domain": "72.2% (265 leaks)",
+          "lowercaseNames": "10.3% (9/87)",
+          "speedRam": "40.3 ms · 1,232 MB",
+          "ours": false
+        },
+        {
+          "system": "Microsoft Presidio",
+          "description": "sv_core_news_lg + PRS mapping + Swedish ID rules",
+          "size": "245 MB",
+          "domain": "69.0% (295 leaks)",
+          "lowercaseNames": "66.7% (58/87)",
+          "speedRam": "5.9 ms · 456 MB",
+          "ours": false
+        }
+      ],
+      "summary": "Maskera v20 leaves 11 leaks versus 111 to 295 for the compared tools, with a 22x smaller model and 3.7x less RAM than OpenAI Privacy Filter. Fair note: OpenAI Privacy Filter includes a dedicated secret/API-key class and a 128k context window (which Maskera does not target) and does not tag standalone places/organisations, which is why the table also compares Swedish person names directly."
+    },
     "contextTitle": "Why Swedish context matters",
     "contextBody": "Personal identity numbers are easy to catch with rules. The hard part in Swedish is words that can be either a person's name or an everyday word or diagnosis.",
     "contextExamples": [
@@ -431,70 +500,10 @@
     "limitsTitle": "Good to know",
     "limits": [
       "The test texts were written by Maskera's developer. They show direction and catch regressions between releases, but they are not an independent benchmark across all Swedish text.",
-      "The table above measures the AI model alone (names, places and organisations). Personal identity numbers, phone numbers, IBANs and card numbers are handled by fixed rules alongside the model.",
+      "The tool comparison tests the full pipeline (rules + AI) across 258 Swedish texts. The model comparison tests the AI model alone (names, places and organisations).",
       "No automatic masking is 100% error-free. Unusual names or noisy scans can slip through, so always review the text yourself when a mistake would carry high impact."
     ],
-    "detailsToggle": "Show older tests (v18) and technical details",
-    "historicalTitle": "Earlier comparison on Swedish Wikipedia texts (v18)",
-    "historicalBody": "Run between 2026-07-04 and 2026-07-19 on 22 independent Swedish Wikipedia texts (58 names, places and organisations). These numbers belong to older v18, not current v20. Only the 7 Swedish and Scandinavian models are shown here.",
-    "historicalTable": {
-      "system": "Model",
-      "size": "Size",
-      "normal": "Normal text",
-      "lowercase": "Lowercase"
-    },
-    "historicalRows": [
-      {
-        "system": "Maskera student",
-        "size": "43 MB",
-        "normal": "97%",
-        "lowercase": "95%",
-        "ours": true
-      },
-      {
-        "system": "KBLab lowermix reallysimple-ner",
-        "size": "≈475 MB",
-        "normal": "100%",
-        "lowercase": "97%",
-        "ours": false
-      },
-      {
-        "system": "RecordedFuture Swedish-NER",
-        "size": "≈500 MB",
-        "normal": "100%",
-        "lowercase": "83%",
-        "ours": false
-      },
-      {
-        "system": "nbailab scandi-ner",
-        "size": "≈500 MB",
-        "normal": "100%",
-        "lowercase": "69%",
-        "ours": false
-      },
-      {
-        "system": "KBLab reallysimple-ner",
-        "size": "≈475 MB",
-        "normal": "98%",
-        "lowercase": "29%",
-        "ours": false
-      },
-      {
-        "system": "KB-NER (the SUC classic)",
-        "size": "≈475 MB",
-        "normal": "100%",
-        "lowercase": "28%",
-        "ours": false
-      },
-      {
-        "system": "KBLab neriob (IOB head)",
-        "size": "≈475 MB",
-        "normal": "100%",
-        "lowercase": "24%",
-        "ours": false
-      }
-    ],
-    "provenance": "Maskera v20 (43 MB q4) and KBLab lowermix (496 MB fp32) were measured on 2026-11-25; Bards AI EU PII v3 (309 MB INT8 ONNX) was measured on 2026-11-26 on the same 121 Swedish texts. All test scripts and machine-readable results live openly in our GitHub repo.",
+    "provenance": "Maskera v20 (43 MB q4) and KBLab lowermix (496 MB fp32) were measured on 2026-11-25; OpenAI Privacy Filter (q4 ONNX), Microsoft Presidio (sv_core_news_lg), swedish-pii 1.2 and Bards AI EU PII v3 were measured on 2026-11-26. All test scripts, machine-readable results and historical archives live openly in our GitHub repo.",
     "demoCta": "Try in the browser demo",
     "benchmarksCta": "Full report and scripts on GitHub"
   },
