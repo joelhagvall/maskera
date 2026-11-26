@@ -12,6 +12,10 @@
  *
  * Run against a running dev server or preview (default http://127.0.0.1:5179):
  *   pnpm --filter @maskera/demo capture:pages [--base=URL] [--lang=sv|en|all] [--theme=light|dark]
+ *     [--only=/utvecklare,/en/developers]
+ *
+ * --only keeps just the listed sitemap paths (after --lang), for checking one
+ * page before and after an edit without shooting the whole site.
  *
  * Writes to reports/pages/ (gitignored): <viewport>-<slug>.png,
  * sheet-<viewport>.html (a contact sheet with every page in one row) and
@@ -46,6 +50,18 @@ export function sitemapPaths(xml, lang) {
   return unique.filter((p) => lang === "all" || p.lang === lang).map((p) => p.path)
 }
 
+/** Keep only the comma-separated `only` paths; an empty list keeps them all. */
+export function onlyPaths(paths, only) {
+  const wanted = only
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean)
+  if (wanted.length === 0) return paths
+  const unknown = wanted.filter((p) => !paths.includes(p))
+  if (unknown.length > 0) throw new Error(`--only paths not in the sitemap: ${unknown.join(", ")}`)
+  return paths.filter((p) => wanted.includes(p))
+}
+
 function slug(path) {
   return path === "/" ? "hem" : path.replace(/^\//, "").replaceAll("/", "-")
 }
@@ -54,8 +70,12 @@ async function main() {
   const base = arg("base", "http://127.0.0.1:5179").replace(/\/$/, "")
   const lang = arg("lang", "sv")
   const theme = arg("theme", "light")
-  const paths = sitemapPaths(readFileSync(join(ROOT, "public", "sitemap.xml"), "utf8"), lang)
-  if (paths.length === 0) throw new Error(`no sitemap pages for --lang=${lang}`)
+  const only = arg("only", "")
+  const paths = onlyPaths(
+    sitemapPaths(readFileSync(join(ROOT, "public", "sitemap.xml"), "utf8"), lang),
+    only,
+  )
+  if (paths.length === 0) throw new Error(`no sitemap pages for --lang=${lang} --only=${only}`)
   mkdirSync(OUT, { recursive: true })
 
   const metrics = []

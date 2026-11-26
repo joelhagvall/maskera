@@ -2,7 +2,10 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { Developers } from "../src/components/Developers"
+import en from "../src/i18n/en.json"
 import copy from "../src/i18n/sv.json"
+
+const sv = copy
 
 afterEach(cleanup)
 
@@ -28,27 +31,21 @@ describe("Developers", () => {
     expect(document.activeElement).toBe(npm)
   })
 
-  it("switches the code examples that differ between TypeScript and JavaScript", () => {
+  it("shows mask, send and restore as one shared JS / TS snippet", () => {
     const { container } = render(<Developers go={vi.fn()} onCoverage={vi.fn()} />)
 
-    expect(container.textContent).toContain("const recognizer: NerRecognizer")
-
-    const javascriptButtons = screen.getAllByRole("button", { name: /JavaScript/ })
-    expect(javascriptButtons).toHaveLength(2)
-    fireEvent.click(javascriptButtons[0])
-
-    expect(container.textContent).not.toContain("const recognizer: NerRecognizer")
-    expect(
-      javascriptButtons.every((button) => button.getAttribute("aria-pressed") === "true"),
-    ).toBe(true)
+    const install = container.querySelector("#installera")
+    const snippet = install?.nextElementSibling?.nextElementSibling
+    expect(snippet?.textContent).toContain("redactWithNer(")
+    expect(snippet?.textContent).toContain("restore(svar)")
+    expect(snippet?.textContent).toContain(copy.developerApi.sharedLanguageLabel)
+    expect(container.querySelectorAll("button[aria-pressed]")).toHaveLength(0)
   })
 
   it("marks the identical clinical example as shared instead of offering a false choice", () => {
     const { container } = render(<Developers go={vi.fn()} onCoverage={vi.fn()} />)
 
-    const clinicalHeading = [...container.querySelectorAll("h2")].find(
-      (heading) => heading.textContent === "Valfri profil för vårdtext",
-    )
+    const clinicalHeading = container.querySelector("#vardprofil")
     const clinicalCode = clinicalHeading?.nextElementSibling?.nextElementSibling
     const clinicalDocs = clinicalHeading?.nextElementSibling?.querySelector<HTMLAnchorElement>("a")
 
@@ -59,17 +56,35 @@ describe("Developers", () => {
     )
   })
 
-  it("places the optional clinical profile after the standard restore flow", () => {
+  it("orders the page agents, own code, clinical profile, then how it works", () => {
     const { container } = render(<Developers go={vi.fn()} onCoverage={vi.fn()} />)
 
     const headings = [...container.querySelectorAll("h2")]
     expect(headings.map((heading) => heading.textContent)).toEqual([
       copy.developerApi.agentsTitle,
       copy.developerApi.installTitle,
-      "Maskera en text",
-      "Skicka till AI-tjänsten och återställ svaret",
-      "Valfri profil för vårdtext",
+      copy.developerApi.clinicalTitle,
+      copy.developerApi.diagramTitle,
     ])
+    expect(container.querySelector("#sa-fungerar-det + .layers-fig")).toBeTruthy()
+  })
+
+  // Joel found the page repeating the same client list and model size in
+  // several places. Prose outside code blocks states each fact once.
+  it.each([sv, en])("states each fact once in the prose ($developerApi.title)", (strings) => {
+    const { container } = render(<Developers go={vi.fn()} onCoverage={vi.fn()} />)
+    const prose = container.querySelector("article")?.cloneNode(true) as HTMLElement
+    for (const code of prose.querySelectorAll("pre, code")) code.remove()
+    const text = prose.textContent ?? ""
+    const proseCopy = JSON.stringify([
+      strings.developerApi,
+      strings.agentSetup.modes.map((m) => m.summary),
+    ])
+
+    for (const fact of ["43 MB", "Claude Code", "Cursor", "Claude Desktop", "OpenCode"]) {
+      expect(text.split(fact).length - 1, fact).toBeLessThanOrEqual(1)
+      expect(proseCopy.split(fact).length - 1, fact).toBeLessThanOrEqual(1)
+    }
   })
 
   it("explains the model lifecycle and supported runtimes after installation", () => {

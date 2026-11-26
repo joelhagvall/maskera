@@ -2,20 +2,8 @@ import { highlight } from "../highlight"
 import copy from "../i18n"
 import { CopyButton } from "./CopyButton"
 
-export type CodeLanguage = "ts" | "js"
-
-/** A static, highlighted snippet with a copy button and an optional language switch. */
-export function Code({
-  children,
-  language,
-  onLanguageChange,
-  languageLabel,
-}: {
-  children: string
-  language?: CodeLanguage
-  onLanguageChange?: (language: CodeLanguage) => void
-  languageLabel?: string
-}) {
+/** A static, highlighted snippet with a language label and a copy button. */
+export function Code({ children, languageLabel }: { children: string; languageLabel: string }) {
   const src = children
   // One block element per source line. Long lines scroll sideways inside the
   // block (never wrap), so each source line stays on a single visual line.
@@ -32,31 +20,9 @@ export function Code({
     .replace(/\n{3,}/g, "\n\n")
     .trim()
   return (
-    <div className={`code-block snippet-code${languageLabel ? " shared-language-code" : ""}`}>
+    <div className="code-block snippet-code">
       <div className="code-head">
-        {language && onLanguageChange ? (
-          <div className="code-tabs" role="group" aria-label={copy.developerApi.codeLanguageLabel}>
-            {(["ts", "js"] as const).map((option) => (
-              <button
-                key={option}
-                type="button"
-                aria-pressed={language === option}
-                className={`code-tab${language === option ? " on" : ""}`}
-                onClick={() => onLanguageChange(option)}
-              >
-                {option.toUpperCase()}
-                <span className="sr-only">
-                  {" – "}
-                  {option === "ts"
-                    ? copy.developerApi.typescriptLabel
-                    : copy.developerApi.javascriptLabel}
-                </span>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <span className="shared-language-label">{languageLabel}</span>
-        )}
+        <span className="shared-language-label">{languageLabel}</span>
         <CopyButton
           text={copyText}
           className="code-copy"

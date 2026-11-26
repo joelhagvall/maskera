@@ -94,7 +94,6 @@ describe("design system guard", () => {
       ".footer code",
       ".prose code",
       ".prose pre code",
-      ".agent-skill-cmd",
       ".hero-code pre",
     ])
     const offenders = rules(css)

@@ -1080,7 +1080,6 @@ html[data-theme="dark"] .stage-window .hl {
   .clear,
   .link,
   .install-tabs .code-tab,
-  .snippet-code .code-tab,
   .prose .pkg-cta,
   .model-action,
   .crumbs a {
@@ -2094,8 +2093,7 @@ main:has(.prose-foot) + .footer {
   border-bottom: none;
   border-radius: var(--radius) var(--radius) 0 0;
 }
-.code-block .code-copy,
-.agent-skill-row .code-copy {
+.code-block .code-copy {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -2109,13 +2107,11 @@ main:has(.prose-foot) + .footer {
   border-radius: var(--radius);
   cursor: pointer;
 }
-.code-block .code-copy:hover,
-.agent-skill-row .code-copy:hover {
+.code-block .code-copy:hover {
   color: var(--ink);
   border-color: var(--border-hover);
 }
-.code-block .code-copy.copied,
-.agent-skill-row .code-copy.copied {
+.code-block .code-copy.copied {
   color: var(--fg);
   border-color: var(--fg);
 }
@@ -2152,16 +2148,15 @@ main:has(.prose-foot) + .footer {
   content: "\200B";
 }
 
-/* Package-manager and example-language tabs share the code-block header. */
+/* Package-manager tabs and snippet language labels share the code-block header. */
 .install-tabs {
   margin: 14px 0 10px;
 }
-.install-tabs .code-head,
-.snippet-code .code-head {
+.install-tabs .code-head {
   /* Tabs bring their own vertical padding, so the head hugs them. */
   padding: 0 8px;
 }
-.snippet-code.shared-language-code .code-head {
+.snippet-code .code-head {
   padding: 5px 8px 5px 16px;
 }
 .shared-language-label {
@@ -2169,14 +2164,12 @@ main:has(.prose-foot) + .footer {
   color: var(--muted);
   user-select: none;
 }
-.install-tabs .code-tabs,
-.snippet-code .code-tabs {
+.install-tabs .code-tabs {
   display: flex;
   align-items: center;
   overflow-x: auto;
 }
-.install-tabs .code-tab,
-.snippet-code .code-tab {
+.install-tabs .code-tab {
   padding: 9px 10px 8px;
   font: 500 13px var(--sans);
   color: var(--muted);
@@ -2186,25 +2179,15 @@ main:has(.prose-foot) + .footer {
   cursor: pointer;
   white-space: nowrap;
 }
-.install-tabs .code-tab:hover,
-.snippet-code .code-tab:hover {
+.install-tabs .code-tab:hover {
   color: var(--ink);
 }
-.install-tabs .code-tab.on,
-.snippet-code .code-tab.on {
+.install-tabs .code-tab.on {
   color: var(--fg);
   border-bottom-color: var(--fg);
 }
 .code-block.install-tabs pre {
   padding-top: 12px;
-}
-.install-note {
-  margin: 0 0 12px;
-  font-size: 13px;
-  color: var(--muted);
-}
-.install-note code {
-  font-size: 12px;
 }
 .developer-notes {
   margin: 0 0 32px;
@@ -3039,7 +3022,7 @@ html[data-theme="dark"] .stage-window .tok-c {
 }
 .agent-prompt-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 14px;
   flex-wrap: wrap;
@@ -3050,12 +3033,6 @@ html[data-theme="dark"] .stage-window .tok-c {
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--fg);
-}
-.prose .agent-prompt-desc {
-  margin: 4px 0 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--muted);
 }
 .agent-prompt-actions {
   display: flex;
@@ -3102,34 +3079,13 @@ html[data-theme="dark"] .stage-window .tok-c {
   color: var(--fg);
   border-color: var(--fg);
 }
-.prose .agent-prompt-quote {
-  margin: 12px 0 0;
-  padding: 10px 12px;
-  font: 400 13.5px / 1.55 var(--sans);
-  color: var(--ink);
-  background: var(--gray-100);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-.agent-skill-row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-  font-size: 12.5px;
-  color: var(--muted);
-}
-.agent-skill-cmd {
-  font: 400 12.5px / 1.4 var(--mono);
-  color: var(--fg);
-  background: var(--gray-100);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 3px 7px;
-}
 .agent-modes-block {
   margin: 0;
+}
+.prose .agent-modes-label {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--muted);
 }
 .prose .agent-mode-summary {
   margin: 0;

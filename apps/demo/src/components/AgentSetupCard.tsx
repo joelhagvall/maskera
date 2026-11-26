@@ -38,10 +38,7 @@ export function AgentSetupCard({ idPrefix = "agent" }: { idPrefix?: string }) {
     <div className="agent-setup">
       <div className="agent-prompt-card">
         <div className="agent-prompt-head">
-          <div>
-            <h3 className="agent-prompt-title">{agent.promptTitle}</h3>
-            <p className="agent-prompt-desc">{agent.promptDescription}</p>
-          </div>
+          <h3 className="agent-prompt-title">{agent.promptTitle}</h3>
           <div className="agent-prompt-actions">
             <CopyButton
               text={agent.promptText}
@@ -59,80 +56,71 @@ export function AgentSetupCard({ idPrefix = "agent" }: { idPrefix?: string }) {
             </a>
           </div>
         </div>
-        <blockquote className="agent-prompt-quote">{agent.promptText}</blockquote>
-        <div className="agent-skill-row">
-          <span className="agent-skill-label">{agent.skillLabel}</span>
-          <code className="agent-skill-cmd">{agent.skillCommand}</code>
-          <CopyButton
-            text={agent.skillCommand}
-            className="code-copy"
-            iconSize={13}
-            ariaLabel={copy.copyButton.copyCode}
-            title={copy.copyButton.copy}
-          />
-        </div>
       </div>
 
-      <div className="code-block install-tabs agent-modes-block">
-        <div className="code-head">
-          <div className="code-tabs" role="tablist" aria-label={agent.modesLabel}>
-            {modes.map((mode, index) => {
-              const selected = mode.id === active.id
-              return (
-                <button
-                  key={mode.id}
-                  ref={(el) => {
-                    tabRefs.current[index] = el
-                  }}
-                  type="button"
-                  role="tab"
-                  id={`${idPrefix}-tab-${mode.id}`}
-                  aria-selected={selected}
-                  aria-controls={`${idPrefix}-panel-${mode.id}`}
-                  tabIndex={selected ? 0 : -1}
-                  className={`code-tab${selected ? " on" : ""}`}
-                  onClick={() => setActiveId(mode.id as AgentModeId)}
-                  onKeyDown={(e) => onTabKeyDown(e, index)}
-                >
-                  {mode.label}
-                </button>
-              )
-            })}
+      <div className="agent-modes">
+        <p className="agent-modes-label">{agent.manualLabel}</p>
+        <div className="code-block install-tabs agent-modes-block">
+          <div className="code-head">
+            <div className="code-tabs" role="tablist" aria-label={agent.modesLabel}>
+              {modes.map((mode, index) => {
+                const selected = mode.id === active.id
+                return (
+                  <button
+                    key={mode.id}
+                    ref={(el) => {
+                      tabRefs.current[index] = el
+                    }}
+                    type="button"
+                    role="tab"
+                    id={`${idPrefix}-tab-${mode.id}`}
+                    aria-selected={selected}
+                    aria-controls={`${idPrefix}-panel-${mode.id}`}
+                    tabIndex={selected ? 0 : -1}
+                    className={`code-tab${selected ? " on" : ""}`}
+                    onClick={() => setActiveId(mode.id as AgentModeId)}
+                    onKeyDown={(e) => onTabKeyDown(e, index)}
+                  >
+                    {mode.label}
+                  </button>
+                )
+              })}
+            </div>
+            <CopyButton
+              text={copyCommand || active.code}
+              className="code-copy"
+              iconSize={14}
+              ariaLabel={copy.copyButton.copyCode}
+              title={copy.copyButton.copy}
+            />
           </div>
-          <CopyButton
-            text={copyCommand || active.code}
-            className="code-copy"
-            iconSize={14}
-            ariaLabel={copy.copyButton.copyCode}
-            title={copy.copyButton.copy}
-          />
-        </div>
-        <div
-          role="tabpanel"
-          id={`${idPrefix}-panel-${active.id}`}
-          aria-labelledby={`${idPrefix}-tab-${active.id}`}
-        >
-          <p className="agent-mode-summary">
-            {active.summary}
-            {active.id === "proxy" ? (
-              <>
-                {" "}
-                <a href={MCP_DESKTOP_GUIDE} target="_blank" rel="noreferrer">
-                  {agent.desktopGuideCta}
-                  <ArrowUpRightIcon size={12} />
-                </a>
-              </>
-            ) : null}
-          </p>
-          <pre>
-            <code>
-              {active.code.split("\n").map((line, i) => (
-                <span key={i} className="code-line">
-                  {line}
-                </span>
-              ))}
-            </code>
-          </pre>
+          <div
+            role="tabpanel"
+            id={`${idPrefix}-panel-${active.id}`}
+            aria-labelledby={`${idPrefix}-tab-${active.id}`}
+          >
+            <p className="agent-mode-summary">
+              {active.summary}
+              {active.id === "proxy" ? (
+                <>
+                  {" "}
+                  <a href={MCP_DESKTOP_GUIDE} target="_blank" rel="noreferrer">
+                    {agent.desktopGuideCta}
+                    <ArrowUpRightIcon size={12} />
+                  </a>
+                </>
+              ) : null}
+            </p>
+            <pre>
+              <code>
+                {active.code.split("\n").map((line, i) => (
+                  <span key={i} className="code-line">
+                    {line}
+                  </span>
+                ))}
+              </code>
+            </pre>
+          </div>
         </div>
       </div>
     </div>

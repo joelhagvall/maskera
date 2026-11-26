@@ -6,7 +6,7 @@ import { ArrowUpRightIcon } from "../icons"
 import type { View } from "../routing"
 import { navClick, viewPaths } from "../routing"
 import { AgentSetupCard } from "./AgentSetupCard"
-import { Code, type CodeLanguage } from "./CodeSnippet"
+import { Code } from "./CodeSnippet"
 import { CopyButton } from "./CopyButton"
 import { PageToc } from "./PageToc"
 import { TopBar } from "./TopBar"
@@ -113,7 +113,7 @@ function ArchitectureFigure({ onCoverage }: { onCoverage: () => void }) {
         aria-hidden="true"
       />
       <figcaption>
-        {copy.developerApi.diagramCaption} {copy.coverage.developersLink}{" "}
+        {copy.developerApi.diagramCaption}{" "}
         <a href={`${viewPaths.transparency}#vad-maskeras`} onClick={navClick(onCoverage)}>
           {copy.coverage.linkCta}
         </a>
@@ -133,11 +133,7 @@ export function Developers({
   go: (view: View) => void
   onCoverage: () => void
 }) {
-  const [language, setLanguage] = useState<CodeLanguage>("ts")
-  const maskExample =
-    language === "ts" ? copy.developerApi.maskExampleTs : copy.developerApi.maskExampleJs
-  const restoreExample =
-    language === "ts" ? copy.developerApi.restoreExampleTs : copy.developerApi.restoreExampleJs
+  const dev = copy.developerApi
 
   return (
     <>
@@ -147,30 +143,24 @@ export function Developers({
 
       <main id="main-content">
         <article className="prose prose-with-toc">
-          <h1>{copy.developerApi.title}</h1>
-          <p className="prose-lede">
-            {copy.developerApi.lede}{" "}
-            <a href={HF_MODEL} target="_blank" rel="noreferrer">
-              {copy.developerApi.modelLink}
-            </a>{" "}
-            {copy.developerApi.modelSuffix}
-          </p>
+          <h1>{dev.title}</h1>
+          <p className="prose-lede">{dev.lede}</p>
 
-          <PageToc items={copy.developerApi.toc} />
+          <PageToc items={dev.toc} />
 
-          <h2 id="agenter">{copy.developerApi.agentsTitle}</h2>
-          <p className="prose-note">{copy.developerApi.agentsBody}</p>
+          <h2 id="agenter">{dev.agentsTitle}</h2>
+          <p className="prose-note">{dev.agentsBody}</p>
           <AgentSetupCard idPrefix="dev-agent" />
 
-          <h2 id="installera">{copy.developerApi.installTitle}</h2>
+          <h2 id="installera">{dev.installTitle}</h2>
           <InstallTabs />
-          <p className="install-note">{copy.developerApi.installNote}</p>
+          <Code languageLabel={dev.sharedLanguageLabel}>{dev.codeExample}</Code>
           <aside className="developer-notes" aria-labelledby="developer-notes-title">
             <p id="developer-notes-title" className="developer-notes-title">
-              {copy.developerApi.practicalTitle}
+              {dev.practicalTitle}
             </p>
             <ul>
-              {copy.developerApi.practicalItems.map((item) => (
+              {dev.practicalItems.map((item) => (
                 <li key={item}>{item}</li>
               ))}
             </ul>
@@ -180,60 +170,49 @@ export function Developers({
               target="_blank"
               rel="noreferrer"
             >
-              {copy.developerApi.practicalDocsCta}
+              {dev.practicalDocsCta}
               <ArrowUpRightIcon size={13} />
             </a>
           </aside>
 
-          <h2 id="maskera">{copy.developerApi.maskTitle}</h2>
-          <Code language={language} onLanguageChange={setLanguage}>
-            {maskExample}
-          </Code>
-
-          <ArchitectureFigure onCoverage={onCoverage} />
-
-          <h2 id="aterstall">{copy.developerApi.restoreTitle}</h2>
-          <Code language={language} onLanguageChange={setLanguage}>
-            {restoreExample}
-          </Code>
-
-          <h2 id="vardprofil">{copy.developerApi.clinicalTitle}</h2>
+          <h2 id="vardprofil">{dev.clinicalTitle}</h2>
           <p className="prose-note">
-            {copy.developerApi.clinicalBody}{" "}
+            {dev.clinicalBody}{" "}
             <a
               href={`${GITHUB}/blob/main/packages/ner/README.md#clinical-profile`}
               target="_blank"
               rel="noreferrer"
             >
-              {copy.developerApi.clinicalDocsCta}
+              {dev.clinicalDocsCta}
               <ArrowUpRightIcon size={13} />
             </a>
           </p>
-          <Code languageLabel={copy.developerApi.sharedLanguageLabel}>
-            {copy.developerApi.clinicalCode}
-          </Code>
+          <Code languageLabel={dev.sharedLanguageLabel}>{dev.clinicalCode}</Code>
 
-          <nav className="prose-foot foot-links" aria-label={copy.developerApi.resourcesLabel}>
+          <h2 id="sa-fungerar-det">{dev.diagramTitle}</h2>
+          <ArchitectureFigure onCoverage={onCoverage} />
+
+          <nav className="prose-foot foot-links" aria-label={dev.resourcesLabel}>
             <ul>
               <li>
                 <a href={NPM_NER} target="_blank" rel="noreferrer">
-                  {copy.developerApi.npmCta}
+                  {dev.npmCta}
                 </a>
               </li>
               <li>
                 <a href={NPM_MCP} target="_blank" rel="noreferrer">
-                  {copy.developerApi.mcpNpmCta}
+                  {dev.mcpNpmCta}
                 </a>
               </li>
               <li>
                 <a href={GITHUB} target="_blank" rel="noreferrer">
-                  {copy.developerApi.githubCta}
+                  {dev.githubCta}
                   <ArrowUpRightIcon size={13} />
                 </a>
               </li>
               <li>
                 <a href={HF_MODEL} target="_blank" rel="noreferrer">
-                  {copy.developerApi.modelCta}
+                  {dev.modelCta}
                   <ArrowUpRightIcon size={13} />
                 </a>
               </li>

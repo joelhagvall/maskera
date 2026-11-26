@@ -39,7 +39,7 @@ describe("htmlToMarkdown", () => {
     expect(dev).toContain("](https://maskera.dev/")
     // Multi-line code blocks keep line breaks instead of smashing .code-line spans together.
     expect(dev).toContain("\nnpx -y @maskera/mcp proxy\n")
-    expect(dev).toContain("\nconst recognizer: NerRecognizer = createNerRecognizer()\n")
+    expect(dev).toContain("\nconst recognizer = createNerRecognizer()\n")
 
     const services = markdownFor("/tjanster")
     expect(services).toContain("\nnpm install maskera @huggingface/transformers\n")

@@ -30,6 +30,15 @@ describe("AgentSetupCard", () => {
     ).toBeNull()
   })
 
+  it("labels the mode tabs as the manual alternative to the agent prompt", () => {
+    const { container } = render(<AgentSetupCard />)
+
+    const label = container.querySelector(".agent-modes-label")
+    expect(label?.textContent).toBe(copy.agentSetup.manualLabel)
+    expect(label?.nextElementSibling?.querySelector('[role="tablist"]')).toBeTruthy()
+    expect(container.querySelector(".agent-prompt-card + .agent-modes")).toBeTruthy()
+  })
+
   it("points at a heading that exists in the @maskera/mcp README", () => {
     const readme = readFileSync(resolve(__dirname, "../../../packages/mcp/README.md"), "utf8")
     const anchors = [...readme.matchAll(/^#{1,6} (.+)$/gm)].map((m) => githubSlug(m[1]))
