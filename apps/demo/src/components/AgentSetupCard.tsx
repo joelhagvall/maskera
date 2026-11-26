@@ -57,6 +57,17 @@ export function AgentSetupCard({ idPrefix = "agent" }: { idPrefix?: string }) {
           </div>
         </div>
         <blockquote className="agent-prompt-quote">{agent.promptText}</blockquote>
+        <div className="agent-skill-row">
+          <span className="agent-skill-label">{agent.skillLabel}</span>
+          <code className="agent-skill-cmd">{agent.skillCommand}</code>
+          <CopyButton
+            text={agent.skillCommand}
+            className="code-copy"
+            iconSize={13}
+            ariaLabel={copy.copyButton.copyCode}
+            title={copy.copyButton.copy}
+          />
+        </div>
       </div>
 
       <div className="code-block install-tabs agent-modes-block">

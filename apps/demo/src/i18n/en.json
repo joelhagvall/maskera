@@ -680,6 +680,8 @@
     "copyPromptCta": "Copy prompt for your agent",
     "copiedPromptCta": "Prompt copied",
     "llmsLinkCta": "Open llms.txt",
+    "skillLabel": "Or install as an agent skill:",
+    "skillCommand": "npx skills add joelhagvall/maskera",
     "promptText": "Read https://maskera.dev/llms.txt and help me connect Maskera (@maskera/mcp) locally in my setup (local LLM proxy for enforced redaction across any agent, or MCP server for local files) so Swedish personal data never leaves my machine.",
     "modesLabel": "Choose AI agent mode",
     "modes": [

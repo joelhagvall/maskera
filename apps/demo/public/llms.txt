@@ -73,13 +73,16 @@ Pick the right local integration for the user's environment:
    - Block prompts or hook JSON containing PII: `npx -y @maskera/mcp guard` (exits `2` on PII with counts only, `0` when clean).
    - Redact a stream locally: `cat file.txt | npx -y @maskera/mcp guard --redact`.
 
-4. **In application code (browser or Node):**
+4. **Agent skill (workflow rules for any harness):**
+   - Install the skill directly from GitHub (`skills/maskera/SKILL.md`): `npx skills add joelhagvall/maskera`.
+
+5. **In application code (browser or Node):**
    - `npm install maskera @huggingface/transformers` (rules + 43 MB Swedish NER model) or `npm install @maskera/core` (rules only, zero dependencies, synchronous). Use `redact(text)` from core, or `createNerRecognizer()` + `redactWithNer(text, { recognizer })` from `maskera`. Keep `map`, send `text`, call `restore(reply)` on the LLM output.
 
-5. **In web AI chats (ChatGPT, Claude, Gemini, Copilot, Perplexity, Mistral and opt-in internal AI sites):**
+6. **In web AI chats (ChatGPT, Claude, Gemini, Copilot, Perplexity, Mistral and opt-in internal AI sites):**
    - Install the local Maskera browser extension (Chrome, Edge, Firefox; Safari coming later) from https://maskera.dev/en/services (Swedish: https://maskera.dev/tjanster; Free with unlimited rules + 20 AI redactions/month, or Pro at SEK 149/user/month incl. VAT with a 7-day free trial, shared E2EE org protected words and MDM support via https://app.maskera.dev).
 
-6. **On this site:**
+7. **On this site:**
    - Every page has a Markdown rendering. Send `Accept: text/markdown` to any page URL, or fetch the `.md` sibling directly (`https://maskera.dev/index.md`, `https://maskera.dev/en/developers.md`, `https://maskera.dev/en/about.md`). Unknown paths return HTTP 404 with a Markdown (default), JSON (`Accept: application/json` or `/api/*`) or HTML body that lists these entry points. `maskera.dev/api/*` is not an API: it answers 404 in JSON with the same hints.
 
 ## Docs

@@ -63,6 +63,14 @@ echo '{"prompt":"Ring 070-174 06 58"}' | npx -y @maskera/mcp guard
 cat klient.txt | npx -y @maskera/mcp guard --redact
 ```
 
+## 4. Agent skill (`SKILL.md`)
+
+Install the workflow skill (`skills/maskera/SKILL.md`) in Claude Code, Codex, Cursor, or OpenCode:
+
+```bash
+npx skills add joelhagvall/maskera
+```
+
 ## Options and environment
 
 - `--rules-only` or `MASKERA_MCP_MODE=rules`: Deterministic rules only without loading the ONNX model.
