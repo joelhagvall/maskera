@@ -109,7 +109,7 @@ const OPERATIONAL_EMAILS = new Set(["hej@maskera.dev", "149051320@bcc.eu1.hubspo
 // conspicuously synthetic street markers. Public place names can still be LOC
 // vocabulary, but no ordinary street/number pair is accepted.
 const SYNTHETIC_ADDRESS_MARKER =
-  /(?:masker|påhitt|provdata|provper|provbyn|provstrand|provtext|fiktiv|exempeldata|syntet|test|dataskyddstest|nollpost)/iu
+  /(?:masker|påhitt|provdata|provper|provbyn|provgata|provstrand|provtext|fiktiv|exempeldata|syntet|test|dataskyddstest|nollpost)/iu
 
 function approvedSyntheticAddress(value) {
   return SYNTHETIC_ADDRESS_MARKER.test(value)

@@ -893,6 +893,22 @@
       "edge": { "name": "Edge", "store": "Microsoft Edge Add-ons" },
       "firefox": { "name": "Firefox", "store": "Firefox Add-ons" },
       "safari": { "name": "Safari", "store": "Mac App Store" }
+    },
+    "flowDemo": {
+      "regionLabel": "Example of how the extension masks before send",
+      "steps": ["1. Write", "2. Live check", "3. Sent masked"],
+      "pause": "Pause",
+      "play": "Play",
+      "previewLabel": "Masked on send",
+      "sentBadge": "Sent masked · originals stay local",
+      "sendAria": "Send message",
+      "prefix": "Summarise the case for ",
+      "mid1": " (",
+      "mid2": ") at ",
+      "suffix": ".",
+      "sampleName": "Nora Lind",
+      "samplePnr": "19900101-2385",
+      "sampleAddress": "Provgatan 14"
     }
   },
   "theme": {

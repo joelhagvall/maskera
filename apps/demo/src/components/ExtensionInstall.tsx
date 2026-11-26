@@ -1,4 +1,4 @@
-import type { ReactElement } from "react"
+import { type ReactElement, useEffect, useState } from "react"
 import {
   EXTENSION_BROWSERS,
   EXTENSION_DOWNLOAD_URL,
@@ -7,10 +7,132 @@ import {
 } from "../extensionBrowsers"
 import copy from "../i18n"
 import { ArrowUpRightIcon, BROWSER_ICONS } from "../icons"
+import { hlStyle, labelMeta, pillStyle } from "../labels"
 import { portalUrl } from "../portal"
 import { navClick, type View, viewPaths } from "../routing"
 
 export const INSTALL_ANCHOR = "installera"
+
+const FLOW_STEP_MS = 2_800
+
+function ExtensionFlowDemo() {
+  const demo = copy.extensionInstall.flowDemo
+  const [step, setStep] = useState(0)
+  const [paused, setPaused] = useState(false)
+
+  useEffect(() => {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      setPaused(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (paused) return
+    const timer = window.setInterval(() => {
+      setStep((current) => (current + 1) % demo.steps.length)
+    }, FLOW_STEP_MS)
+    return () => window.clearInterval(timer)
+  }, [paused, demo.steps.length])
+
+  const nameMeta = labelMeta("NAMN")
+  const pnrMeta = labelMeta("PERSONNUMMER")
+  const addrMeta = labelMeta("ADRESS")
+
+  const renderEntity = (original: string, token: string, meta: ReturnType<typeof labelMeta>) =>
+    step === 0 ? (
+      original
+    ) : step === 1 ? (
+      <mark className="hl" style={hlStyle(meta)}>
+        {original}
+      </mark>
+    ) : (
+      <span className="token" style={pillStyle(meta)}>
+        {token}
+      </span>
+    )
+
+  return (
+    <div className="ext-flow-demo" role="region" aria-label={demo.regionLabel} data-step={step}>
+      <div className="ext-flow-head">
+        <div className="ext-flow-steps" role="group" aria-label={demo.regionLabel}>
+          {demo.steps.map((label, idx) => {
+            const active = step === idx
+            return (
+              <button
+                key={label}
+                type="button"
+                aria-pressed={active}
+                className={`ext-flow-step${active ? " is-active" : ""}`}
+                onClick={() => {
+                  setStep(idx)
+                  setPaused(true)
+                }}
+              >
+                {label}
+              </button>
+            )
+          })}
+        </div>
+        <button
+          type="button"
+          className="ext-flow-toggle"
+          onClick={() => setPaused((current) => !current)}
+        >
+          {paused ? demo.play : demo.pause}
+        </button>
+      </div>
+
+      <div className={`ext-flow-composer${step === 2 ? " is-sent" : ""}`}>
+        <p className="ext-flow-prompt">
+          {demo.prefix}
+          {renderEntity(demo.sampleName, "[NAMN_1]", nameMeta)}
+          {demo.mid1}
+          {renderEntity(demo.samplePnr, "[PERSONNUMMER_1]", pnrMeta)}
+          {demo.mid2}
+          {renderEntity(demo.sampleAddress, "[ADRESS_1]", addrMeta)}
+          {demo.suffix}
+        </p>
+        <span
+          className={`ext-flow-send${step === 2 ? " is-pulse" : ""}`}
+          aria-hidden="true"
+          title={demo.sendAria}
+        >
+          ↑
+        </span>
+      </div>
+
+      <div className={`ext-flow-bar${step >= 1 ? " is-visible" : ""}`} aria-hidden={step === 0}>
+        {step === 2 ? (
+          <span className="ext-flow-sent">{demo.sentBadge}</span>
+        ) : (
+          <>
+            <span className="ext-flow-bar-label">{demo.previewLabel}</span>
+            <span className="ext-flow-chips">
+              <span className="ext-flow-chip">
+                <span className="token" style={pillStyle(nameMeta)}>
+                  [NAMN_1]
+                </span>
+                <span className="ext-flow-orig">{demo.sampleName}</span>
+              </span>
+              <span className="ext-flow-chip">
+                <span className="token" style={pillStyle(pnrMeta)}>
+                  [PERSONNUMMER_1]
+                </span>
+                <span className="ext-flow-orig">{demo.samplePnr}</span>
+              </span>
+              <span className="ext-flow-chip">
+                <span className="token" style={pillStyle(addrMeta)}>
+                  [ADRESS_1]
+                </span>
+                <span className="ext-flow-orig">{demo.sampleAddress}</span>
+              </span>
+            </span>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
 
 /**
  * Hero call to action. One primary button that fits the visitor: the store
@@ -149,6 +271,7 @@ export function ExtensionInstall({ trialContent }: { trialContent?: string }) {
           )
         })}
       </ul>
+      <ExtensionFlowDemo />
     </section>
   )
 }

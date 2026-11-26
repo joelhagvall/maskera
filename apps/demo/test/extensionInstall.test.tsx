@@ -46,6 +46,7 @@ function chromeLive() {
 
 afterEach(() => {
   cleanup()
+  vi.unstubAllGlobals()
   setUserAgent(CHROME_UA)
 })
 
@@ -100,6 +101,21 @@ describe("ExtensionHeroActions", () => {
 })
 
 describe("ExtensionInstall", () => {
+  it("lets users step through the sample while autoplay is paused for reduced motion", () => {
+    allSoon()
+    vi.stubGlobal("matchMedia", vi.fn().mockReturnValue({ matches: true }))
+    render(<ExtensionInstall />)
+
+    const flow = copy.extensionInstall.flowDemo
+    const demo = within(screen.getByRole("region", { name: flow.regionLabel }))
+    expect(demo.getByRole("button", { name: flow.play })).toBeTruthy()
+    expect(demo.getByRole("button", { name: flow.steps[0], pressed: true })).toBeTruthy()
+
+    fireEvent.click(demo.getByRole("button", { name: flow.steps[2] }))
+    expect(demo.getByRole("button", { name: flow.steps[2], pressed: true })).toBeTruthy()
+    expect(demo.getByText("[NAMN_1]")).toBeTruthy()
+  })
+
   it("shows Snart rows without links and keeps the ZIP fallback", () => {
     allSoon()
     render(<ExtensionInstall />)

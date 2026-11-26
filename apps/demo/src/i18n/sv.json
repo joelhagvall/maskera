@@ -893,6 +893,22 @@
       "edge": { "name": "Edge", "store": "Microsoft Edge-tillägg" },
       "firefox": { "name": "Firefox", "store": "Firefox Add-ons" },
       "safari": { "name": "Safari", "store": "Mac App Store" }
+    },
+    "flowDemo": {
+      "regionLabel": "Exempel på hur tillägget maskerar före skick",
+      "steps": ["1. Skriv", "2. Förhandskoll", "3. Skicka maskerat"],
+      "pause": "Pausa",
+      "play": "Spela",
+      "previewLabel": "Maskeras vid skick",
+      "sentBadge": "Skickat maskerat · original stannar lokalt",
+      "sendAria": "Skicka meddelande",
+      "prefix": "Sammanfatta ärendet för ",
+      "mid1": " (",
+      "mid2": ") på ",
+      "suffix": ".",
+      "sampleName": "Nora Lind",
+      "samplePnr": "19900101-2385",
+      "sampleAddress": "Provgatan 14"
     }
   },
   "theme": {

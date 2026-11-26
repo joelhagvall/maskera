@@ -770,6 +770,21 @@ html[data-theme="dark"] .hl {
   padding: 0 5px;
   white-space: nowrap;
 }
+@media (prefers-reduced-motion: no-preference) {
+  .token {
+    animation: mask-token-in 180ms ease-out both;
+  }
+}
+@keyframes mask-token-in {
+  from {
+    opacity: 0.25;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 html[data-theme="dark"] .token {
   background: var(--pii-dark-bg);
   border-color: var(--pii-dark-border);
@@ -1165,6 +1180,151 @@ html[data-theme="dark"] .tag {
   font-size: 11.5px;
   border: 1px solid var(--border-2);
   border-radius: 999px;
+}
+.ext-flow-demo {
+  grid-column: 1 / -1;
+  padding: 16px 18px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ext-flow-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+.ext-flow-steps {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.ext-flow-step {
+  border: 0;
+  border-bottom: 1.5px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font: 500 12.5px var(--sans);
+  padding: 2px 0 4px;
+  cursor: pointer;
+  transition:
+    color 150ms ease,
+    border-color 150ms ease;
+}
+.ext-flow-step:hover {
+  color: var(--fg);
+}
+.ext-flow-step.is-active {
+  color: var(--fg);
+  border-bottom-color: var(--fg);
+}
+.ext-flow-toggle {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--muted);
+  font: 500 11.5px var(--sans);
+  padding: 3px 9px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.ext-flow-toggle:hover {
+  color: var(--fg);
+  background: var(--gray-100);
+}
+.ext-flow-composer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 13px;
+  background: var(--gray-100);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 180ms ease;
+}
+.ext-flow-composer.is-sent {
+  border-color: var(--fg);
+}
+.ext-flow-prompt {
+  margin: 0;
+  font: 13.5px / 1.65 var(--sans);
+  color: var(--fg);
+  min-width: 0;
+}
+.ext-flow-send {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--fg);
+  color: var(--bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  flex: none;
+  transition:
+    transform 180ms ease,
+    opacity 180ms ease;
+}
+.ext-flow-send.is-pulse {
+  transform: scale(0.94);
+  opacity: 0.8;
+}
+.ext-flow-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  min-height: 26px;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.ext-flow-bar.is-visible {
+  opacity: 1;
+}
+.ext-flow-bar-label,
+.ext-flow-sent {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 600;
+  color: var(--muted);
+}
+.ext-flow-sent {
+  color: var(--fg);
+}
+.ext-flow-chips {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+.ext-flow-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.ext-flow-orig {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ext-flow-step,
+  .ext-flow-composer,
+  .ext-flow-send,
+  .ext-flow-bar {
+    transition: none;
+  }
+  .ext-flow-send.is-pulse {
+    transform: none;
+  }
 }
 @media (max-width: 720px) {
   .hero .title {
