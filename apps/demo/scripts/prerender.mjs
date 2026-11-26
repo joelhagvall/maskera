@@ -39,6 +39,9 @@ const themeInit = readFileSync(join(root, "public", "theme-init.js"), "utf8")
 // Replaces Vite's <script type="module"> so the bundle starts after the first
 // painted frame; same static-content/static-hash arrangement as theme-init.
 const mainLoader = readFileSync(join(root, "public", "main-loader.js"), "utf8")
+// Prerenders internal links on hover in Chromium browsers for instant cold
+// navigations; hash-verified in vercel.json by scripts/check-theme-hash.mjs.
+const speculationRules = readFileSync(join(root, "public", "speculation-rules.json"), "utf8")
 
 let count = 0
 for (const file of htmlFiles(dist)) {
@@ -59,7 +62,15 @@ for (const file of htmlFiles(dist)) {
     return ""
   })
   if (styles.length === 0) throw new Error(`no stylesheet link found in ${file}`)
-  html = html.replace("</head>", () => `<style>${styles.join("\n")}</style>\n  </head>`)
+  const heroPreload =
+    pathname === "/" || pathname === "/en"
+      ? '\n    <link rel="preload" as="image" href="/hero/extension-preview-myndighet.webp" fetchpriority="high" />'
+      : ""
+  html = html.replace(
+    "</head>",
+    () =>
+      `${heroPreload}\n    <script type="speculationrules">${speculationRules}</script>\n    <style>${styles.join("\n")}</style>\n  </head>`,
+  )
 
   const moduleTag = html.match(MODULE_SCRIPT)
   if (!moduleTag) throw new Error(`no module script in ${file}`)

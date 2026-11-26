@@ -10,7 +10,7 @@ import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 
 const root = fileURLToPath(new URL("..", import.meta.url))
-const INLINE_SCRIPTS = ["theme-init.js", "main-loader.js"]
+const INLINE_SCRIPTS = ["theme-init.js", "main-loader.js", "speculation-rules.json"]
 
 const vercel = JSON.parse(readFileSync(`${root}/vercel.json`, "utf8"))
 const csp = vercel.headers

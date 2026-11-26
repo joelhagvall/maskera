@@ -1,0 +1,15 @@
+{
+  "prerender": [
+    {
+      "where": {
+        "and": [
+          { "href_matches": "/*" },
+          { "not": { "href_matches": "/whitepaper.pdf" } },
+          { "not": { "href_matches": "/*.md" } },
+          { "not": { "href_matches": "/*.json" } }
+        ]
+      },
+      "eagerness": "moderate"
+    }
+  ]
+}

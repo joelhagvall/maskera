@@ -1,0 +1,52 @@
+import type { ComponentType } from "react"
+import type { DemoWorkspaceProps } from "./components/DemoWorkspace"
+import type { View } from "./routing"
+
+export interface ViewComponents {
+  demo: ComponentType<DemoWorkspaceProps>
+  dev: ComponentType<{ go: (next: View) => void; onCoverage: () => void }>
+  transparency: ComponentType<{ go: (next: View) => void }>
+  testdata: ComponentType<{ go: (next: View) => void }>
+  privacy: ComponentType<{ go: (next: View) => void }>
+  services: ComponentType<{ go: (next: View) => void; onCoverage: () => void }>
+  accuracy: ComponentType<{ go: (next: View) => void; onTryContext?: () => void }>
+  security: ComponentType<{ go: (next: View) => void }>
+  about: ComponentType<{ go: (next: View) => void }>
+}
+
+const loaded: Partial<ViewComponents> = {}
+const inflight: Partial<Record<View, Promise<unknown>>> = {}
+
+const importers: { [K in View]: () => Promise<ViewComponents[K]> } = {
+  demo: () => import("./components/DemoWorkspace").then((m) => m.DemoWorkspace),
+  dev: () => import("./components/Developers").then((m) => m.Developers),
+  transparency: () => import("./components/Transparency").then((m) => m.Transparency),
+  testdata: () => import("./components/TestData").then((m) => m.TestData),
+  privacy: () => import("./components/PrivacyPolicy").then((m) => m.PrivacyPolicy),
+  services: () => import("./components/Services").then((m) => m.Services),
+  accuracy: () => import("./components/Accuracy").then((m) => m.Accuracy),
+  security: () => import("./components/Security").then((m) => m.Security),
+  about: () => import("./components/About").then((m) => m.About),
+}
+
+export function loadView<K extends View>(view: K): Promise<ViewComponents[K]> {
+  const existing = loaded[view]
+  if (existing) return Promise.resolve(existing)
+  const pending = inflight[view] as Promise<ViewComponents[K]> | undefined
+  if (pending) return pending
+  const request = importers[view]().then((component) => {
+    loaded[view] = component
+    delete inflight[view]
+    return component
+  })
+  inflight[view] = request
+  return request
+}
+
+export function registerViews(components: Partial<ViewComponents>) {
+  Object.assign(loaded, components)
+}
+
+export function getLoadedView<K extends View>(view: K): ViewComponents[K] | undefined {
+  return loaded[view]
+}

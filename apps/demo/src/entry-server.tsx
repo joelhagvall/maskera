@@ -1,9 +1,34 @@
 import { renderToString } from "react-dom/server"
 import { App } from "./App"
+import { About } from "./components/About"
+import { Accuracy } from "./components/Accuracy"
+import { DemoWorkspace } from "./components/DemoWorkspace"
+import { Developers } from "./components/Developers"
+import { PrivacyPolicy } from "./components/PrivacyPolicy"
+import { Security } from "./components/Security"
+import { Services } from "./components/Services"
+import { TestData } from "./components/TestData"
+import { Transparency } from "./components/Transparency"
 import { localeFromPath, setActiveLocale } from "./i18n"
 import { getViewMeta, viewUrl } from "./meta"
 import { markdownPathFor } from "./paths"
 import { viewFromPath } from "./routing"
+import { registerViews } from "./views"
+
+// The SSR bundle runs only at build time (prerender.mjs) and in tests, never
+// in the browser, so registering all views up front keeps renderRoute()
+// synchronous while the browser bundle stays code-split per view.
+registerViews({
+  demo: DemoWorkspace,
+  dev: Developers,
+  transparency: Transparency,
+  testdata: TestData,
+  privacy: PrivacyPolicy,
+  services: Services,
+  accuracy: Accuracy,
+  security: Security,
+  about: About,
+})
 
 // Build-time prerender entry, driven by scripts/prerender.mjs after
 // `vite build --ssr`. Renders one route's App tree to an HTML string that is
