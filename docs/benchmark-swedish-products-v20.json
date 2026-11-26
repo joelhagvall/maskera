@@ -1,8 +1,22 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "measuredAt": "2026-11-26",
   "hardware": "Apple Silicon macOS (CPU inference)",
   "corpora": {
+    "suc3External1000": {
+      "name": "KBLab SUC 3.0 NER external Swedish test split (seed 42 stratified sample)",
+      "dataset": "KBLab/sucx3_ner",
+      "revision": "96acc4fd6dad",
+      "file": "data/simple_tags/cased.tar.gz :: cased/test.jsonl",
+      "prsSentences": 500,
+      "prsEntities": 627,
+      "cleanZeroEntitySentences": 500,
+      "totalSentences": 1000,
+      "authorCoupled": false,
+      "maskeraTrainingOverlap": "none (v20 trained exclusively on synthetic generator data on top of KB-BERT)",
+      "spacyOverlapNote": "sv_core_news_lg was trained on SUC 3.0, giving Presidio an in-domain advantage on cased SUC 3.0 prose.",
+      "scoring": "Overlap match on Person-typed predictions (Maskera NAMN, Presidio PERSON, OpenAI private_person, swedish-pii PER_*); any-label recall also recorded."
+    },
     "domain258": {
       "name": "Maskera privacy-safe Swedish domain regression corpus",
       "path": "packages/ner/eval/domain-regression/corpus",
@@ -11,13 +25,14 @@
       "authorCoupled": true,
       "scoring": "Strict material-character survival: full hit removes every Unicode letter or digit of the annotated value."
     },
-    "gold121PerOnly": {
-      "name": "Maskera synthetic hand-authored Swedish gold set (PER entities only for cross-taxonomy fairness)",
-      "path": "training/eval/gold.txt",
-      "texts": 121,
-      "perEntities": 87,
-      "authorCoupled": true,
-      "scoring": "Overlap match on the 87 Swedish PER spans (both original casing and all-lowercase). Used alongside the full 258-text domain suite because openai/privacy-filter does not label standalone LOC or ORG entities."
+    "homographAndFp": {
+      "name": "Lowercase homograph names + word-use traps + sentence-initial cased homographs + 0-PII business prose",
+      "lowerHomographNames": 180,
+      "lowerPlainNames": 72,
+      "lowerWordTraps": 31,
+      "casedInitialHomographTraps": 30,
+      "businessCleanSentences": 20,
+      "authorCoupled": true
     }
   },
   "systems": [
@@ -26,6 +41,34 @@
       "name": "Maskera v20 (q4 ONNX + rules)",
       "version": "0.11.1 / maskera-sv-ner@f417d65c08bcf814f639f8bf9221e30a79a53f39",
       "sizeMb": 42.7,
+      "suc3External1000": {
+        "casedPerson": {
+          "tp": 552,
+          "fp": 69,
+          "fn": 75,
+          "precisionPct": 88.9,
+          "recallPct": 88.0,
+          "f1Pct": 88.5,
+          "anyLabelRecallPct": 93.6
+        },
+        "lowerPerson": {
+          "tp": 525,
+          "fp": 38,
+          "fn": 102,
+          "precisionPct": 93.3,
+          "recallPct": 83.7,
+          "f1Pct": 88.2,
+          "anyLabelRecallPct": 90.7
+        },
+        "clean500": {
+          "personFpSents": 33,
+          "personFpPct": 6.6,
+          "personFpSpans": 37,
+          "anyFpSents": 104,
+          "anyFpPct": 20.8,
+          "totalFpSpans": 135
+        }
+      },
       "domain258": {
         "hits": 941,
         "partials": 5,
@@ -36,63 +79,47 @@
         "msPerText": 12.67,
         "maxRssMb": 334.1
       },
-      "gold121Per": {
-        "originalHits": 86,
-        "originalRecallPct": 98.9,
-        "lowercaseHits": 87,
-        "lowercaseRecallPct": 100.0
+      "homographAndFp": {
+        "lowerHomographNameRecallPct": 88.3,
+        "lowerPlainNameRecallPct": 91.7,
+        "lowerWordFpPct": 6.5,
+        "casedInitialHomographFpPct": 73.3,
+        "businessClean20FpPct": 15.0
       }
-    },
-    {
-      "id": "swedish-pii",
-      "name": "swedish-pii",
-      "version": "1.2.0 (okasi/swedish-pii, regex + name lists)",
-      "sizeMb": 5.1,
-      "domain258": {
-        "hits": 841,
-        "partials": 13,
-        "misses": 98,
-        "fullHitRatePct": 88.3,
-        "redactions": 1428,
-        "totalMs": 733.5,
-        "msPerText": 2.84,
-        "maxRssMb": 156.8
-      },
-      "gold121Per": {
-        "originalHits": 86,
-        "originalRecallPct": 98.9,
-        "lowercaseHits": 0,
-        "lowercaseRecallPct": 0.0
-      }
-    },
-    {
-      "id": "openai-privacy-filter",
-      "name": "OpenAI Privacy Filter (q4 ONNX)",
-      "version": "openai/privacy-filter@7ffa9a043d54d1be65afb281eddf0ffbe629385b",
-      "sizeMb": 945.1,
-      "domain258": {
-        "hits": 687,
-        "partials": 16,
-        "misses": 249,
-        "fullHitRatePct": 72.2,
-        "redactions": 782,
-        "totalMs": 10407.0,
-        "msPerText": 40.34,
-        "maxRssMb": 1232.0
-      },
-      "gold121Per": {
-        "originalHits": 58,
-        "originalRecallPct": 66.7,
-        "lowercaseHits": 9,
-        "lowercaseRecallPct": 10.3
-      },
-      "notes": "1.5B MoE (50M active params), 128k context, constrained BIOES Viterbi decoding. Includes a dedicated secret/API-key class that Maskera does not target, but does not label standalone LOC/ORG and struggles with Swedish names (especially lowercase) and Swedish structured formats."
     },
     {
       "id": "microsoft-presidio-sv",
       "name": "Microsoft Presidio (Swedish spaCy sv_core_news_lg + Swedish rules)",
       "version": "presidio-analyzer==2.2.366 / sv_core_news_lg==3.8.0",
       "sizeMb": 245.0,
+      "suc3External1000": {
+        "casedPerson": {
+          "tp": 598,
+          "fp": 14,
+          "fn": 29,
+          "precisionPct": 97.7,
+          "recallPct": 95.4,
+          "f1Pct": 96.5,
+          "anyLabelRecallPct": 95.4
+        },
+        "lowerPerson": {
+          "tp": 454,
+          "fp": 5,
+          "fn": 173,
+          "precisionPct": 98.9,
+          "recallPct": 72.4,
+          "f1Pct": 83.6,
+          "anyLabelRecallPct": 72.9
+        },
+        "clean500": {
+          "personFpSents": 7,
+          "personFpPct": 1.4,
+          "personFpSpans": 7,
+          "anyFpSents": 11,
+          "anyFpPct": 2.2,
+          "totalFpSpans": 12
+        }
+      },
       "domain258": {
         "hits": 657,
         "partials": 138,
@@ -103,19 +130,124 @@
         "msPerText": 5.91,
         "maxRssMb": 456.4
       },
-      "gold121Per": {
-        "originalHits": 80,
-        "originalRecallPct": 92.0,
-        "lowercaseHits": 58,
-        "lowercaseRecallPct": 66.7
+      "homographAndFp": {
+        "lowerHomographNameRecallPct": 28.3,
+        "lowerPlainNameRecallPct": 62.5,
+        "lowerWordFpPct": 3.2,
+        "casedInitialHomographFpPct": 63.3,
+        "businessClean20FpPct": 5.0
       },
-      "notes": "Steelmanned Swedish setup: mapped spaCy PRS->PERSON, LOC->LOCATION, ORG->ORGANIZATION and explicitly registered SePersonnummerRecognizer, SeOrganisationsnummerRecognizer, Email, Phone, CreditCard, Iban, Ip and Url for language='sv'."
+      "notes": "Steelmanned Swedish setup: mapped spaCy PRS->PERSON, LOC->LOCATION, ORG->ORGANIZATION and registered SePersonnummerRecognizer, SeOrganisationsnummerRecognizer, Email, Phone, CreditCard, Iban, Ip and Url for language='sv'. sv_core_news_lg was trained on SUC 3.0."
+    },
+    {
+      "id": "swedish-pii",
+      "name": "swedish-pii",
+      "version": "1.2.0 (okasi/swedish-pii, regex + name lists)",
+      "sizeMb": 5.1,
+      "suc3External1000": {
+        "casedPerson": {
+          "tp": 513,
+          "fp": 254,
+          "fn": 114,
+          "precisionPct": 66.9,
+          "recallPct": 81.8,
+          "f1Pct": 73.6,
+          "anyLabelRecallPct": 81.8
+        },
+        "lowerPerson": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 627,
+          "precisionPct": 0.0,
+          "recallPct": 0.0,
+          "f1Pct": 0.0,
+          "anyLabelRecallPct": 0.2
+        },
+        "clean500": {
+          "personFpSents": 23,
+          "personFpPct": 4.6,
+          "personFpSpans": 24,
+          "anyFpSents": 35,
+          "anyFpPct": 7.0,
+          "totalFpSpans": 36
+        }
+      },
+      "domain258": {
+        "hits": 841,
+        "partials": 13,
+        "misses": 98,
+        "fullHitRatePct": 88.3,
+        "redactions": 1428,
+        "totalMs": 733.5,
+        "msPerText": 2.84,
+        "maxRssMb": 156.8
+      },
+      "homographAndFp": {
+        "lowerHomographNameRecallPct": 0.0,
+        "lowerPlainNameRecallPct": 0.0,
+        "lowerWordFpPct": 0.0,
+        "casedInitialHomographFpPct": 100.0,
+        "businessClean20FpPct": 25.0
+      }
+    },
+    {
+      "id": "openai-privacy-filter",
+      "name": "OpenAI Privacy Filter (q4 ONNX)",
+      "version": "openai/privacy-filter@7ffa9a043d54d1be65afb281eddf0ffbe629385b",
+      "sizeMb": 945.1,
+      "suc3External1000": {
+        "casedPerson": {
+          "tp": 234,
+          "fp": 40,
+          "fn": 393,
+          "precisionPct": 85.4,
+          "recallPct": 37.3,
+          "f1Pct": 51.9,
+          "anyLabelRecallPct": 38.3
+        },
+        "lowerPerson": {
+          "tp": 38,
+          "fp": 6,
+          "fn": 589,
+          "precisionPct": 86.4,
+          "recallPct": 6.1,
+          "f1Pct": 11.3,
+          "anyLabelRecallPct": 6.2
+        },
+        "clean500": {
+          "personFpSents": 17,
+          "personFpPct": 3.4,
+          "personFpSpans": 17,
+          "anyFpSents": 22,
+          "anyFpPct": 4.4,
+          "totalFpSpans": 22
+        }
+      },
+      "domain258": {
+        "hits": 687,
+        "partials": 16,
+        "misses": 249,
+        "fullHitRatePct": 72.2,
+        "redactions": 782,
+        "totalMs": 10407.0,
+        "msPerText": 40.34,
+        "maxRssMb": 1232.0
+      },
+      "homographAndFp": {
+        "lowerHomographNameRecallPct": 5.0,
+        "lowerPlainNameRecallPct": 2.8,
+        "lowerWordFpPct": 6.5,
+        "casedInitialHomographFpPct": 6.7,
+        "businessClean20FpPct": 25.0
+      },
+      "notes": "1.5B MoE (50M active params), 128k context, constrained BIOES Viterbi decoding. Includes a dedicated secret/API-key class that Maskera does not target, but misses 393/627 cased and 589/627 lowercase Swedish person names on external SUC 3.0 prose."
     },
     {
       "id": "logosguard",
       "name": "LogosGuard (Chrome Free, Balanced)",
       "version": "2.4.4",
       "sizeMb": null,
+      "suc3External1000": null,
       "domain258": {
         "hits": 606,
         "partials": 49,
@@ -126,7 +258,7 @@
         "msPerText": null,
         "maxRssMb": null
       },
-      "gold121Per": null,
+      "homographAndFp": null,
       "notes": "Measured in docs/benchmark-logosguard-2.4.4.json on the exact same 258-text corpus."
     }
   ]

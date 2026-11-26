@@ -169,10 +169,19 @@ corpus checksum:
 
 ### Current v20 comparison with OpenAI Privacy Filter, Microsoft Presidio and swedish-pii
 
-Measured 2026-11-26 on CPU (Apple Silicon) against the exact same 258-text
-privacy-safe Swedish domain corpus (952 annotated PII strings across 19
-categories, strict material-character scorer) plus the 87 Swedish `PER` entities
-in `training/eval/gold.txt` (both original casing and all-lowercase).
+Measured 2026-11-26 on CPU (Apple Silicon) across two complementary Swedish
+evaluations:
+
+1. **External benchmark (zero training overlap for Maskera v20):** 1,000 real
+   published Swedish sentences from Kungliga biblioteket's **SUC 3.0** test split
+   (`KBLab/sucx3_ner`, revision `96acc4fd6dad`, `cased/test.jsonl`, deterministic
+   `seed=42` stratified sample: 500 sentences containing 627 `PRS` person names
+   plus 500 clean zero-entity sentences), evaluated both with original casing
+   and forced all-lowercase.
+2. **Complete Swedish PII suite (author-coupled, 258 texts / 952 PII):** names,
+   street addresses, personnummer, samordningsnummer, phone numbers, email,
+   bankgiro, plusgiro and IBAN across 19 Swedish domains (strict
+   material-character scorer).
 
 - **OpenAI Privacy Filter** (`openai/privacy-filter`, revision
   `7ffa9a043d54d1be65afb281eddf0ffbe629385b`, `onnx/model_q4.onnx` +
@@ -182,30 +191,54 @@ in `training/eval/gold.txt` (both original casing and all-lowercase).
   245 MB on disk): steelmanned Swedish configuration mapping spaCy `PRS->PERSON`,
   `LOC->LOCATION`, `ORG->ORGANIZATION` and explicitly registering
   `SePersonnummerRecognizer`, `SeOrganisationsnummerRecognizer`, `Email`, `Phone`,
-  `CreditCard`, `Iban`, `Ip` and `Url` for `language="sv"`.
+  `CreditCard`, `Iban`, `Ip` and `Url` for `language="sv"`. Note that
+  `sv_core_news_lg` was trained on SUC 3.0, giving Presidio an in-domain
+  advantage on cased SUC 3.0 prose.
 - **`swedish-pii` 1.2.0** (`okasi/swedish-pii`, 5.1 MB): regex and Swedish name
   lists, zero ML model.
 
-| system | size on disk | 258 texts / 952 PII (full hits) | leaks (partial + miss) | Swedish PER (orig) | Swedish PER (lower) | CPU ms/text | peak RSS |
+#### External SUC 3.0 benchmark (1,000 published Swedish sentences, 627 person names + 500 clean)
+
+| system | size | Person F1 (cased) | masked at all (cased) | Person F1 (lowercase) | masked at all (lower) | Person FP on 500 clean |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| **Maskera v20 (q4 ONNX + rules)** | **42.7 MB** | **88.5%** (P 88.9 / R 88.0) | **93.6%** | **88.2%** (P 93.3 / R 83.7) | **90.7%** | 6.6% (33/500) |
+| Microsoft Presidio (`sv_core_news_lg`, *trained on SUC 3.0*) | 245.0 MB | **96.5%** (P 97.7 / R 95.4) | 95.4% | 83.6% (P 98.9 / R 72.4) | 72.9% | 1.4% (7/500) |
+| `swedish-pii` 1.2.0 | 5.1 MB | 73.6% (P 66.9 / R 81.8) | 81.8% | 0.0% (0/627) | 0.2% | 4.6% (23/500) |
+| OpenAI Privacy Filter (q4 ONNX) | 945.1 MB | 51.9% (P 85.4 / R 37.3) | 38.3% | 11.3% (P 86.4 / R 6.1) | 6.2% | 3.4% (17/500) |
+
+#### Complete Swedish PII suite (258 texts / 952 PII) & lowercase homographs
+
+| system | size on disk | 258 texts / 952 PII (full hits) | leaks (partial + miss) | lower homograph names (180) | lower word traps FP (31) | CPU ms/text | peak RSS |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| **Maskera v20 (q4 ONNX + rules)** | **42.7 MB** | **98.8% (941/952)** | **11** (5 + 6) | **98.9% (86/87)** | **100.0% (87/87)** | 12.7 ms | 334 MB |
-| `swedish-pii` 1.2.0 | 5.1 MB | 88.3% (841/952) | 111 (13 + 98) | 98.9% (86/87) | 0.0% (0/87) | 2.8 ms | 157 MB |
-| OpenAI Privacy Filter (q4 ONNX) | 945.1 MB | 72.2% (687/952) | 265 (16 + 249) | 66.7% (58/87) | 10.3% (9/87) | 40.3 ms | 1,232 MB |
-| Microsoft Presidio (`sv_core_news_lg`) | 245.0 MB | 69.0% (657/952) | 295 (138 + 157) | 92.0% (80/87) | 66.7% (58/87) | 5.9 ms | 456 MB |
+| **Maskera v20 (q4 ONNX + rules)** | **42.7 MB** | **98.8% (941/952)** | **11** (5 + 6) | **88.3%** | 6.5% (2/31) | 12.7 ms | 334 MB |
+| `swedish-pii` 1.2.0 | 5.1 MB | 88.3% (841/952) | 111 (13 + 98) | 0.0% | 0.0% (0/31)* | 2.8 ms | 157 MB |
+| OpenAI Privacy Filter (q4 ONNX) | 945.1 MB | 72.2% (687/952) | 265 (16 + 249) | 5.0% | 6.5% (2/31) | 40.3 ms | 1,232 MB |
+| Microsoft Presidio (`sv_core_news_lg`) | 245.0 MB | 69.0% (657/952) | 295 (138 + 157) | 28.3% | 3.2% (1/31) | 5.9 ms | 456 MB |
 | LogosGuard 2.4.4 (Chrome Free) | n/a | 63.7% (606/952) | 346 (49 + 297) | n/a | n/a | n/a | n/a |
 
-Fair scope notes: OpenAI Privacy Filter has an 8-category taxonomy that includes
-`secret` (API keys/passwords) and a 128k context window, which Maskera does not
-target; it does not tag standalone `LOC` or `ORG` entities, which is why the
-separate `Swedish PER` columns compare person names directly. On Swedish
-homographs (*"Bo ska bo i Boden. Liv har bott hela sitt liv i Uppsala. Patienten
-har Parkinsons sjukdom, men Kalle Parkinson ringde."*), Maskera v20 gets all 5
-entities right with 0 false positives, whereas OpenAI Privacy Filter finds only
-*Kalle Parkinson*, Presidio misses *Liv* and mislabels the diagnosis *Parkinsons*
-as `PERSON`, and `swedish-pii` misses *Boden* and drops to 0/87 person names in
-lowercase chat text. Machine results:
+*\* `swedish-pii` scores 0% FP on lowercase word traps only because it matches 0% of lowercase names.*
+
+Fair scope notes and known v20 limitations:
+- **OpenAI Privacy Filter** includes a `secret` (API keys/passwords) class and
+  128k context that Maskera does not target, and does not label standalone `LOC`
+  or `ORG`. On external SUC 3.0 person names alone, it still misses 393/627
+  cased names (51.9% F1) and 589/627 lowercase names (11.3% F1).
+- **Microsoft Presidio** (`sv_core_news_lg`) leads on cased SUC 3.0 person F1
+  (96.5% vs 88.5%) because spaCy trained on SUC 3.0, but drops behind Maskera on
+  lowercase SUC 3.0 (83.6% vs 88.2% F1; 72.9% vs 90.7% recall) and leaks 295/952
+  structured and free-text Swedish PII values on the 258-text suite.
+- **Maskera v20 false positives to fix in v21:** on 500 clean zero-entity SUC
+  3.0 sentences, Maskera triggers at least one redaction (mostly `ORGANISATION`
+  or `PLATS`) on 20.8% of sentences (6.6% for `NAMN`), and on 30 sentence-initial
+  capitalized homograph words (*"Bo kvar..."*, *"Maj var varm..."*), v20 still
+  over-masks 22/30 (73.3%, vs 63.3% Presidio and 100% `swedish-pii`). Lowercase
+  homographs work strongly (88.3% name recall, 6.5% word-trap FP).
+
+Machine results:
 [`benchmark-swedish-products-v20.json`](benchmark-swedish-products-v20.json);
-reproduction script: [`training/benchmark_privacy_filter_v20.py`](../training/benchmark_privacy_filter_v20.py).
+reproduction scripts:
+[`training/benchmark_suc3_external_v20.py`](../training/benchmark_suc3_external_v20.py)
+and [`training/benchmark_privacy_filter_v20.py`](../training/benchmark_privacy_filter_v20.py).
 
 Two additional aggregate gates also pass:
 
