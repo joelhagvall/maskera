@@ -49,3 +49,5 @@ docs/GAMEPLAN.md
 AGENTS.md
 CLAUDE.md
 docs/LINKEDIN_POST*.md
+__pycache__/
+*.pyc
