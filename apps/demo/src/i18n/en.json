@@ -2,6 +2,7 @@
   "header": {
     "title": "Use AI without sharing personal data.",
     "titleMobile": "Use AI without\nsharing personal data.",
+    "exampleMarker": "[NAMN_1]",
     "lede": "maskera swaps names, Swedish personal identity numbers and email addresses for placeholders such as {marker} before you send to ChatGPT, Claude, Gemini, Copilot and more, and fills them back into the reply.",
     "browserLead": "Everything happens",
     "browserEmphasis": "directly in your browser",
@@ -908,7 +909,9 @@
       "suffix": ".",
       "sampleName": "Nora Lind",
       "samplePnr": "19900101-2385",
-      "sampleAddress": "Provgatan 14"
+      "sampleAddress": "Provgatan 14",
+      "samplePnrMarker": "[PERSONNUMMER_1]",
+      "sampleAddressMarker": "[ADRESS_1]"
     }
   },
   "theme": {

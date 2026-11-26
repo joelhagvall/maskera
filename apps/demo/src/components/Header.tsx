@@ -23,7 +23,7 @@ export function Header({ go }: { go: (view: View) => void }) {
         <p className="lede">
           {copy.header.lede.split("{marker}").map((part, index) => (
             <Fragment key={`${index}-${part}`}>
-              {index > 0 ? <code className="lede-marker">[NAMN_1]</code> : null}
+              {index > 0 ? <code className="lede-marker">{copy.header.exampleMarker}</code> : null}
               {part}
             </Fragment>
           ))}{" "}

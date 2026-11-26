@@ -85,11 +85,11 @@ function ExtensionFlowDemo() {
       <div className={`ext-flow-composer${step === 2 ? " is-sent" : ""}`}>
         <p className="ext-flow-prompt">
           {demo.prefix}
-          {renderEntity(demo.sampleName, "[NAMN_1]", nameMeta)}
+          {renderEntity(demo.sampleName, copy.header.exampleMarker, nameMeta)}
           {demo.mid1}
-          {renderEntity(demo.samplePnr, "[PERSONNUMMER_1]", pnrMeta)}
+          {renderEntity(demo.samplePnr, demo.samplePnrMarker, pnrMeta)}
           {demo.mid2}
-          {renderEntity(demo.sampleAddress, "[ADRESS_1]", addrMeta)}
+          {renderEntity(demo.sampleAddress, demo.sampleAddressMarker, addrMeta)}
           {demo.suffix}
         </p>
         <span
@@ -110,19 +110,19 @@ function ExtensionFlowDemo() {
             <span className="ext-flow-chips">
               <span className="ext-flow-chip">
                 <span className="token" style={pillStyle(nameMeta)}>
-                  [NAMN_1]
+                  {copy.header.exampleMarker}
                 </span>
                 <span className="ext-flow-orig">{demo.sampleName}</span>
               </span>
               <span className="ext-flow-chip">
                 <span className="token" style={pillStyle(pnrMeta)}>
-                  [PERSONNUMMER_1]
+                  {demo.samplePnrMarker}
                 </span>
                 <span className="ext-flow-orig">{demo.samplePnr}</span>
               </span>
               <span className="ext-flow-chip">
                 <span className="token" style={pillStyle(addrMeta)}>
-                  [ADRESS_1]
+                  {demo.sampleAddressMarker}
                 </span>
                 <span className="ext-flow-orig">{demo.sampleAddress}</span>
               </span>

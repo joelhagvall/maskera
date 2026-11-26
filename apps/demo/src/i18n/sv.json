@@ -2,6 +2,7 @@
   "header": {
     "title": "Använd AI utan att dela personuppgifter.",
     "titleMobile": "Använd AI utan att\ndela personuppgifter.",
+    "exampleMarker": "[NAMN_1]",
     "lede": "maskera byter namn, personnummer och e-post mot markörer som {marker} innan du skickar till ChatGPT, Claude, Gemini, Copilot m.fl., och fyller i dem igen i svaret.",
     "browserLead": "Allt sker",
     "browserEmphasis": "direkt i din webbläsare",
@@ -908,7 +909,9 @@
       "suffix": ".",
       "sampleName": "Nora Lind",
       "samplePnr": "19900101-2385",
-      "sampleAddress": "Provgatan 14"
+      "sampleAddress": "Provgatan 14",
+      "samplePnrMarker": "[PERSONNUMMER_1]",
+      "sampleAddressMarker": "[ADRESS_1]"
     }
   },
   "theme": {
