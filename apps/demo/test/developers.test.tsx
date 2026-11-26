@@ -42,28 +42,13 @@ describe("Developers", () => {
     expect(container.querySelectorAll("button[aria-pressed]")).toHaveLength(0)
   })
 
-  it("marks the identical clinical example as shared instead of offering a false choice", () => {
-    const { container } = render(<Developers go={vi.fn()} onCoverage={vi.fn()} />)
-
-    const clinicalHeading = container.querySelector("#vardprofil")
-    const clinicalCode = clinicalHeading?.nextElementSibling?.nextElementSibling
-    const clinicalDocs = clinicalHeading?.nextElementSibling?.querySelector<HTMLAnchorElement>("a")
-
-    expect(clinicalCode?.textContent).toContain("JS / TS")
-    expect(clinicalCode?.querySelectorAll(".code-tab")).toHaveLength(0)
-    expect(clinicalDocs?.href).toBe(
-      "https://github.com/joelhagvall/maskera/blob/main/packages/ner/README.md#clinical-profile",
-    )
-  })
-
-  it("orders the page agents, own code, clinical profile, then how it works", () => {
+  it("orders the page agents, own code, then how it works", () => {
     const { container } = render(<Developers go={vi.fn()} onCoverage={vi.fn()} />)
 
     const headings = [...container.querySelectorAll("h2")]
     expect(headings.map((heading) => heading.textContent)).toEqual([
       copy.developerApi.agentsTitle,
       copy.developerApi.installTitle,
-      copy.developerApi.clinicalTitle,
       copy.developerApi.diagramTitle,
     ])
     expect(container.querySelector("#sa-fungerar-det + .layers-fig")).toBeTruthy()

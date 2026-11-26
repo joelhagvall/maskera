@@ -461,7 +461,6 @@
     "toc": [
       { "href": "#agenter", "label": "AI-agenter" },
       { "href": "#installera", "label": "Egen kod" },
-      { "href": "#vardprofil", "label": "Vårdtext" },
       { "href": "#sa-fungerar-det", "label": "Så fungerar det" }
     ],
     "lede": "Använd Maskera framför din AI-agent eller i din egen kod. Allt körs lokalt.",
@@ -477,10 +476,6 @@
       "Fungerar i webbläsare (WASM eller WebGPU) och i Node 18+."
     ],
     "practicalDocsCta": "Hela guiden på GitHub",
-    "clinicalTitle": "Profil för vårdtext",
-    "clinicalBody": "För journaltext låter profilen clinical mätvärden, doser och vårdtermer stå kvar. Personnummer och andra regelträffar maskeras ändå.",
-    "clinicalCode": "const { text, restore } = await redactWithNer(journalText, {\n  recognizer,\n  profile: \"clinical\",\n})",
-    "clinicalDocsCta": "Mer om vårdprofilen",
     "sharedLanguageLabel": "JS / TS",
     "diagramTitle": "Så fungerar det",
     "diagramAlt": "Diagram över maskeras två lager: din text delas upp mellan regler för uppgifter med bestämt format och en svensk AI-modell för fri text, och slås samman till maskerad text.",

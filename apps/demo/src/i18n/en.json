@@ -461,7 +461,6 @@
     "toc": [
       { "href": "#agenter", "label": "AI agents" },
       { "href": "#installera", "label": "Your own code" },
-      { "href": "#vardprofil", "label": "Clinical text" },
       { "href": "#sa-fungerar-det", "label": "How it works" }
     ],
     "lede": "Use Maskera in front of your AI agent or in your own code. Everything runs locally.",
@@ -477,10 +476,6 @@
       "Works in browsers (WASM or WebGPU) and in Node 18+."
     ],
     "practicalDocsCta": "Full guide on GitHub",
-    "clinicalTitle": "Clinical text profile",
-    "clinicalBody": "For medical records, the clinical profile keeps measurements, doses and care terms. Personal identity numbers and other rule matches are still masked.",
-    "clinicalCode": "const { text, restore } = await redactWithNer(journalText, {\n  recognizer,\n  profile: \"clinical\",\n})",
-    "clinicalDocsCta": "More about the clinical profile",
     "sharedLanguageLabel": "JS / TS",
     "diagramTitle": "How it works",
     "diagramAlt": "Diagram of maskera's two layers: your text is split between rules for fixed-format data and a Swedish AI model for free text, then merged into masked text.",

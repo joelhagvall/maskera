@@ -175,20 +175,6 @@ export function Developers({
             </a>
           </aside>
 
-          <h2 id="vardprofil">{dev.clinicalTitle}</h2>
-          <p className="prose-note">
-            {dev.clinicalBody}{" "}
-            <a
-              href={`${GITHUB}/blob/main/packages/ner/README.md#clinical-profile`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {dev.clinicalDocsCta}
-              <ArrowUpRightIcon size={13} />
-            </a>
-          </p>
-          <Code languageLabel={dev.sharedLanguageLabel}>{dev.clinicalCode}</Code>
-
           <h2 id="sa-fungerar-det">{dev.diagramTitle}</h2>
           <ArchitectureFigure onCoverage={onCoverage} />
 
