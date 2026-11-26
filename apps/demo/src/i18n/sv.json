@@ -27,7 +27,7 @@
         "done": "Klart. Beslutet ligger i beslut.md.",
         "composer": "Fråga agenten",
         "composerMeta": "Lokal proxy · maskera",
-        "worksWith": "Via den lokala proxyn i Claude Code, Codex, Cursor och OpenCode",
+        "worksWith": "Via den lokala proxyn i Claude Code, Codex och andra agenter",
         "restoredNote": "Svaret återställs lokalt"
       },
       "code": {
@@ -951,14 +951,14 @@
         "id": "extension",
         "title": "Webbläsartillägg",
         "badge": "Gratis / Pro / Team",
-        "summary": "Maskera direkt i ChatGPT, Claude, Gemini, Copilot, Perplexity och Mistral.",
+        "summary": "Maskera direkt i AI-chattar som ChatGPT och Claude.",
         "cta": "Installera"
       },
       {
         "id": "agents",
         "title": "AI-agenter (Proxy & MCP)",
         "badge": "MIT · 0 kr",
-        "summary": "Lokal LLM-proxy, MCP-server och guard för Claude Code, Codex, Cursor m.fl.",
+        "summary": "Lokal proxy, MCP-server och guard för AI-agenter som Claude Code och Codex.",
         "cta": "Sätt upp"
       },
       {
@@ -970,7 +970,7 @@
       }
     ],
     "agents": {
-      "body": "Maskera kopplas in framför Claude Code, Codex, Cursor, Claude Desktop och andra agenter. Öppen källkod (MIT) som körs på din dator.",
+      "body": "Maskera kopplas in framför AI-agenter som Claude Code och Codex. Öppen källkod (MIT) som körs på din dator.",
       "points": [
         "Proxy: maskerar allt du skriver i chatten, i klienter där du kan ange egen API-adress.",
         "MCP-server: agenten läser filer med personuppgifterna redan utbytta.",
@@ -1100,7 +1100,7 @@
     "devTitle": "för utvecklare: lokal AI-proxy, MCP och npm-paket · maskera",
     "devDescription": "Koppla in lokal svensk PII-maskering framför AI-agenter med @maskera/mcp (proxy, MCP, guard) eller direkt i webbläsaren och Node med maskera.",
     "servicesTitle": "produkter: webbläsartillägg, AI-agenter (proxy & MCP) och SDK · maskera",
-    "servicesDescription": "Välj hur du använder Maskera lokalt: webbläsartillägg för ChatGPT/Claude/Gemini/Copilot, lokal LLM-proxy och MCP för AI-agenter (@maskera/mcp), eller npm-paket i egen kod.",
+    "servicesDescription": "Välj hur du använder Maskera lokalt: webbläsartillägg för AI-chattar som ChatGPT och Claude, lokal proxy och MCP för AI-agenter, eller npm-paket i egen kod.",
     "siteName": "maskera",
     "servicesSchemaName": "Maskera webbläsartillägg, AI-agent-proxy/MCP och öppen källkod",
     "ogImageAlt": "maskera: Använd AI utan att dela personuppgifter. En exempelmening där namn, personnummer och ort har ersatts med platshållare."

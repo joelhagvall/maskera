@@ -27,7 +27,7 @@
         "done": "Done. The decision is in beslut.md.",
         "composer": "Ask the agent",
         "composerMeta": "Local proxy · maskera",
-        "worksWith": "Through the local proxy in Claude Code, Codex, Cursor and OpenCode",
+        "worksWith": "Through the local proxy in Claude Code, Codex and other agents",
         "restoredNote": "The reply is restored locally"
       },
       "code": {
@@ -951,14 +951,14 @@
         "id": "extension",
         "title": "Browser extension",
         "badge": "Free / Pro / Team",
-        "summary": "Mask directly in ChatGPT, Claude, Gemini, Copilot, Perplexity and Mistral.",
+        "summary": "Mask directly in AI chats such as ChatGPT and Claude.",
         "cta": "Install"
       },
       {
         "id": "agents",
         "title": "AI agents (Proxy & MCP)",
         "badge": "MIT · Free",
-        "summary": "Local LLM proxy, MCP server and guard for Claude Code, Codex, Cursor and more.",
+        "summary": "Local proxy, MCP server and guard for AI agents such as Claude Code and Codex.",
         "cta": "Set up"
       },
       {
@@ -970,7 +970,7 @@
       }
     ],
     "agents": {
-      "body": "Maskera sits in front of Claude Code, Codex, Cursor, Claude Desktop and other agents. Open source (MIT) that runs on your computer.",
+      "body": "Maskera sits in front of AI agents such as Claude Code and Codex. Open source (MIT) that runs on your computer.",
       "points": [
         "Proxy: masks everything you type in the chat, in clients that accept a custom API URL.",
         "MCP server: the agent reads files with the personal data already swapped out.",
@@ -1100,7 +1100,7 @@
     "devTitle": "for developers: local AI proxy, MCP and npm packages · maskera",
     "devDescription": "Connect local Swedish PII masking in front of AI agents with @maskera/mcp (proxy, MCP, guard) or directly in the browser and Node with maskera.",
     "servicesTitle": "products: browser extension, AI agents (proxy & MCP) and SDK · maskera",
-    "servicesDescription": "Choose how you use Maskera locally: browser extension for ChatGPT/Claude/Gemini/Copilot, local LLM proxy and MCP for AI agents (@maskera/mcp), or npm packages in your own code.",
+    "servicesDescription": "Choose how you use Maskera locally: browser extension for AI chats such as ChatGPT and Claude, local proxy and MCP for AI agents, or npm packages in your own code.",
     "siteName": "maskera",
     "servicesSchemaName": "Maskera browser extension, AI agent proxy/MCP and open source",
     "ogImageAlt": "maskera: Use AI without sharing personal data. A sample sentence where a name, a personal identity number and a town are replaced with placeholders."
