@@ -6,6 +6,19 @@ Swedish gold sets, with the same scorer the maskera CI gates run
 **leaks** = gold entities with zero overlapping prediction, the
 safety-critical number for redaction.
 
+> **Independent Swedish benchmark (2026-11-26, what maskera.dev shows):**
+> four local tools scored with one rule set (`bench/independent/score.mjs`) across
+> SUC 3.0 test (cased + lowercased), SIC2 Swedish blogs (Språkbanken Text),
+> MultiCoNER v2 Swedish (persons) and ai4privacy openpii Swedish validation rows
+> (23,980 texts, none in Maskera v20's training). Maskera v20 q4 hid 92.4% of
+> names (11,613/12,570), 92.8% of lowercase names, 93.6% of places and 95.2% of
+> street addresses and postcodes, with a hit in 21.4% of entity-free SUC + SIC2
+> sentences (vs. Presidio 72.3% / 71.4% / 97.1% / 47.0% and 2.5% over-masking;
+> swedish-pii 55.3% / 0.3% / 82.7% / 77.3% and 7.0%; OpenAI Privacy Filter
+> 52.2% / 10.3% / 33.5% / 63.3% and 3.5%). Machine results live in
+> [`docs/benchmark-independent-v20.json`](../docs/benchmark-independent-v20.json);
+> per-corpus tables live in [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
+
 > **Historical snapshot:** the tables below describe published v18. On
 > 2026-08-06 the local raw external gold copy, OSM address snapshots, exported
 > corpora and output files were removed. The ADR corpus was rewritten with

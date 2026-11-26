@@ -138,4 +138,110 @@ describe("useSwedishNer model activation", () => {
     expect(result.current.analyzing).toBe(true)
     unmount()
   })
+
+  it("is pending from the first render of a new text until the model answers for it", () => {
+    vi.useFakeTimers()
+    const { result, rerender, unmount } = renderHook(({ text }) => useSwedishNer(text, 1), {
+      initialProps: { text: "Bo ska bo i Boden." },
+    })
+
+    act(() => vi.advanceTimersByTime(40))
+    const worker = FakeWorker.instances[0]
+    expect(result.current.pending).toBe(false)
+    act(() => worker.emit({ type: "ready" }))
+    expect(result.current.pending).toBe(true)
+
+    act(() => vi.advanceTimersByTime(250))
+    const firstId = (worker.postMessage.mock.calls[0][0] as { id: number }).id
+    act(() =>
+      worker.emit({
+        type: "result",
+        id: firstId,
+        text: "[NAMN_1] ska bo i Boden.",
+        map: { "[NAMN_1]": "Bo" },
+        redactions: [],
+      }),
+    )
+    expect(result.current.pending).toBe(false)
+    expect(result.current.result.map).toEqual({ "[NAMN_1]": "Bo" })
+
+    rerender({ text: "Liv jobbar på Karolinska." })
+    expect(result.current.pending).toBe(true)
+
+    // A failed inference settles too: the rules stand and nothing stays pending.
+    act(() => vi.advanceTimersByTime(250))
+    const lastId = (worker.postMessage.mock.calls.at(-1)?.[0] as { id: number }).id
+    act(() => worker.emit({ type: "result", id: lastId, failed: true }))
+    expect(result.current.pending).toBe(false)
+    unmount()
+  })
+
+  function answer(worker: FakeWorker, call: number, map: Record<string, string>) {
+    const { id, text } = worker.postMessage.mock.calls[call][0] as { id: number; text: string }
+    act(() => worker.emit({ type: "result", id, text: `masked ${text}`, map, redactions: [] }))
+  }
+
+  it("shows a text the model has answered for at once, without another request", () => {
+    vi.useFakeTimers()
+    const { result, rerender, unmount } = renderHook(({ text }) => useSwedishNer(text, 1), {
+      initialProps: { text: "Bo ska bo i Boden." },
+    })
+    act(() => vi.advanceTimersByTime(40))
+    const worker = FakeWorker.instances[0]
+    act(() => worker.emit({ type: "ready" }))
+    act(() => vi.advanceTimersByTime(250))
+    answer(worker, 0, { "[NAMN_1]": "Bo" })
+
+    rerender({ text: "Liv jobbar på Karolinska." })
+    act(() => vi.advanceTimersByTime(250))
+    answer(worker, 1, { "[NAMN_1]": "Liv" })
+    expect(worker.postMessage).toHaveBeenCalledTimes(2)
+
+    // Back to the first text: answered from memory, no wait and no request.
+    rerender({ text: "Bo ska bo i Boden." })
+    expect(result.current.pending).toBe(false)
+    expect(result.current.result.map).toEqual({ "[NAMN_1]": "Bo" })
+    act(() => vi.advanceTimersByTime(1000))
+    expect(worker.postMessage).toHaveBeenCalledTimes(2)
+    unmount()
+  })
+
+  it("prewarms example texts after the visitor's own text, so a first pick needs no wait", () => {
+    vi.useFakeTimers()
+    const examples = ["Bo ska bo i Boden.", "Liv jobbar på Karolinska."]
+    const { result, rerender, unmount } = renderHook(
+      ({ text }) => useSwedishNer(text, 1, examples),
+      { initialProps: { text: "Egen text om Dag." } },
+    )
+    act(() => vi.advanceTimersByTime(40))
+    const worker = FakeWorker.instances[0]
+    act(() => worker.emit({ type: "ready" }))
+
+    // The visitor's text goes first, after the debounce.
+    act(() => vi.advanceTimersByTime(250))
+    expect(worker.postMessage).toHaveBeenNthCalledWith(1, {
+      id: expect.any(Number),
+      text: "Egen text om Dag.",
+    })
+    answer(worker, 0, { "[NAMN_1]": "Dag" })
+
+    // Then the examples, one at a time.
+    expect(worker.postMessage).toHaveBeenNthCalledWith(2, {
+      id: expect.any(Number),
+      text: examples[0],
+    })
+    answer(worker, 1, { "[NAMN_1]": "Bo" })
+    expect(worker.postMessage).toHaveBeenNthCalledWith(3, {
+      id: expect.any(Number),
+      text: examples[1],
+    })
+    answer(worker, 2, { "[NAMN_1]": "Liv" })
+
+    rerender({ text: examples[1] })
+    expect(result.current.pending).toBe(false)
+    expect(result.current.result.map).toEqual({ "[NAMN_1]": "Liv" })
+    act(() => vi.advanceTimersByTime(1000))
+    expect(worker.postMessage).toHaveBeenCalledTimes(3)
+    unmount()
+  })
 })

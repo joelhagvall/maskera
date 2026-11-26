@@ -9,7 +9,9 @@ Maskera runs 100% locally on-device using deterministic Swedish rules plus the 4
 
 ## Choose the right mode
 
-1. **Enforced redaction across any agent harness (local LLM proxy):**
+Pick by where the text comes from: **proxy for text typed straight into the chat**, **MCP for files the agent reads with the Maskera tools**. Before the user sends real personal data, verify the setup with made-up data (a fictional address) and confirm a placeholder in the local inspector at `http://127.0.0.1:8787/_maskera`.
+
+1. **Local LLM proxy (clients that accept a custom API URL):**
    Use when no prompt, history or tool output may leave the machine unredacted.
    ```bash
    npx -y @maskera/mcp proxy
@@ -17,6 +19,7 @@ Maskera runs 100% locally on-device using deterministic Swedish rules plus the 4
    ANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude
    OPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex   # API key mode; ChatGPT-login Codex requires HTTPS so use MCP stdio below
    ```
+   - Claude Desktop: Help → Troubleshooting → Enable Developer Mode, then Developer → Configure Third-Party Inference…. Set Inference provider to **Gateway**, Credential kind **Static API key**, Gateway base URL `http://127.0.0.1:8787` (no `/v1`), Gateway API key = the user's Anthropic API key, Gateway auth scheme **x-api-key**. Apply Changes, then Save & Restart. Full guide: `https://github.com/joelhagvall/maskera/tree/main/packages/mcp#claude-desktop-through-the-proxy`.
    - Routes Anthropic (`/v1/messages`) and OpenAI (`/v1/chat/completions`, `/v1/responses`) automatically, or set `--upstream <url>`.
    - Restores placeholders transparently in JSON, tool arguments and chunk-split SSE streams.
    - Fails closed (`502`) if local redaction fails. Inspect counts only at `http://127.0.0.1:8787/_maskera/status`.

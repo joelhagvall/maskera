@@ -1,4 +1,5 @@
 import { type KeyboardEvent, useRef, useState } from "react"
+import { MCP_DESKTOP_GUIDE } from "../constants"
 import copy from "../i18n"
 import { AgentLogoStack, ArrowUpRightIcon } from "../icons"
 import { CopyButton } from "./CopyButton"
@@ -111,7 +112,18 @@ export function AgentSetupCard({ idPrefix = "agent" }: { idPrefix?: string }) {
           id={`${idPrefix}-panel-${active.id}`}
           aria-labelledby={`${idPrefix}-tab-${active.id}`}
         >
-          <p className="agent-mode-summary">{active.summary}</p>
+          <p className="agent-mode-summary">
+            {active.summary}
+            {active.id === "proxy" ? (
+              <>
+                {" "}
+                <a href={MCP_DESKTOP_GUIDE} target="_blank" rel="noreferrer">
+                  {agent.desktopGuideCta}
+                  <ArrowUpRightIcon size={12} />
+                </a>
+              </>
+            ) : null}
+          </p>
           <pre>
             <code>
               {active.code.split("\n").map((line, i) => (

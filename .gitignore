@@ -31,6 +31,9 @@ apps/demo/tjanster/
 apps/demo/traffsakerhet/
 apps/demo/sakerhet/
 apps/demo/om/
+apps/demo/fragor/
+apps/demo/guider/
+apps/demo/branscher/
 apps/demo/en/
 # recorded demo clips (scripts/record-demo.mjs output)
 apps/demo/*.mp4

@@ -1,22 +1,16 @@
 // @vitest-environment jsdom
-import { render, screen, within } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { Footer } from "../src/components/Footer"
 import { GITHUB } from "../src/constants"
 import copy from "../src/i18n/sv.json"
 
+afterEach(cleanup)
+
 describe("Footer", () => {
   it("links the open-source label to the repository", () => {
-    render(
-      <Footer
-        onTransparency={vi.fn()}
-        onTestData={vi.fn()}
-        onPolicy={vi.fn()}
-        onAccuracy={vi.fn()}
-        onSecurity={vi.fn()}
-        onAbout={vi.fn()}
-      />,
-    )
+    const go = vi.fn()
+    render(<Footer go={go} />)
 
     const link = screen.getByRole("link", { name: copy.footer.openSource })
     expect(link.getAttribute("href")).toBe(GITHUB)
@@ -33,19 +27,25 @@ describe("Footer", () => {
   })
 
   it("links the about and contact page", () => {
-    const onAbout = vi.fn()
-    const { container } = render(
-      <Footer
-        onTransparency={vi.fn()}
-        onTestData={vi.fn()}
-        onPolicy={vi.fn()}
-        onAccuracy={vi.fn()}
-        onSecurity={vi.fn()}
-        onAbout={onAbout}
-      />,
-    )
+    const go = vi.fn()
+    const { container } = render(<Footer go={go} />)
 
     const link = within(container).getByRole("link", { name: copy.navigation.about })
     expect(link.getAttribute("href")).toBe("/om")
+    fireEvent.click(link)
+    expect(go).toHaveBeenCalledWith("about")
+  })
+
+  it("links the FAQ, guides and industries pages", () => {
+    render(<Footer go={vi.fn()} />)
+    expect(screen.getByRole("link", { name: copy.navigation.faq }).getAttribute("href")).toBe(
+      "/fragor",
+    )
+    expect(screen.getByRole("link", { name: copy.navigation.guides }).getAttribute("href")).toBe(
+      "/guider",
+    )
+    expect(
+      screen.getByRole("link", { name: copy.navigation.industries }).getAttribute("href"),
+    ).toBe("/branscher")
   })
 })

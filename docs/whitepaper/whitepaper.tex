@@ -26,7 +26,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{November 25, 2026 \quad\textperiodcentered\quad Whitepaper v1.23}
+\date{November 26, 2026 \quad\textperiodcentered\quad Whitepaper v1.24}
 
 \begin{document}
 \maketitle
@@ -43,11 +43,16 @@ including inside a browser tab. The input text never leaves the caller's
 environment, the packages collect no telemetry, and the mapping that restores
 masked values is held locally by the caller. In the default setup the browser
 downloads the static assets once from a public host; self-hosting those
-assets makes zero external requests. In a current, author-coupled comparison
-on 211 synthetic Swedish names, places, and organisations, the published q4
-artifact masked all 211 both with original casing and lowercased; KBLab
-lowermix fp32 masked 205 and 187. The corpus was written by Maskera's
-developer, so the result is directional rather than an independent ranking.
+assets makes zero external requests. On independent Swedish text written by
+others and absent from Maskera's task training (SUC~3.0, SIC2 Swedish blogs,
+MultiCoNER~v2, and ai4privacy; 23,980 texts), the published v20 q4 pipeline
+hid 92.4\% of names (11,613/12,570), 92.8\% of lowercase names, 93.6\% of
+places, and 95.2\% of street addresses and postcodes, while triggering a
+detection in 21.4\% of entity-free sentences (vs.\ 2.5\% for Microsoft Presidio
+with Swedish spaCy, which is trained on SUC~3.0). In a separate, author-coupled
+comparison on 211 synthetic Swedish names, places, and organisations, the same
+q4 artifact masked all 211 both with original casing and lowercased; KBLab
+lowermix fp32 masked 205 and 187.
 maskera is a data-minimisation and data-protection-by-design tool, not a
 compliance guarantee; this document reports method and limitations with the
 same candour as the results. Intended readers: data protection officers,
@@ -288,6 +293,45 @@ the repository; this section is a dated snapshot, and where the two disagree,
 heavily is \textbf{leakage}: the share of entities missed entirely and thus
 left unmasked. The appendix retains category-level failure modes only; raw
 external sentences were removed from the checkout.
+
+\subsection{Independent Swedish benchmark (v20, measured 2026-11-26)}
+
+On \textbf{2026-11-26}, four local systems were evaluated on CPU with one shared
+scorer (\pkg{bench/}\allowbreak\pkg{independent/}\allowbreak\pkg{score.mjs}) across four independent Swedish
+corpora absent from Maskera v20's task training: the SUC~3.0 test split from the
+National Library of Sweden (12,923 sentences, normal casing and lowercased),
+SIC2 Swedish blogs from Spr\aa{}kbanken Text (809 sentences), MultiCoNER~v2
+Swedish test split (2,000 lowercase sentences, persons only), and the Swedish
+validation rows of ai4privacy openpii (8,248 texts). ``Hidden'' means the value
+is overlapped by any detection regardless of label. Over-masking is measured on
+the 10,800 entity-free sentences of SUC~3.0 (10,161) and SIC2 (639).
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{lrrrrr}
+\toprule
+System & Names & Lowercase & Places & Addresses & Clean hit \\
+\midrule
+\textbf{Maskera v20 q4 (43\,MB)} & \textbf{92.4\%} & \textbf{92.8\%} & 93.6\% & \textbf{95.2\%} & 21.4\% \\
+Presidio + sv spaCy & 72.3\% & 71.4\% & \textbf{97.1\%} & 47.0\% & \textbf{2.5\%} \\
+swedish-pii 1.2.0 & 55.3\% & 0.3\% & 82.7\% & 77.3\% & 7.0\% \\
+OpenAI Privacy Filter q4 & 52.2\% & 10.3\% & 33.5\% & 63.3\% & 3.5\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two trade-offs are reported openly: Presidio hides more places overall (its
+\pkg{sv\_core\_news\_lg} model is trained on SUC~3.0, one of the corpora) and
+over-masks far less often (2.5\% vs.\ 21.4\% of entity-free sentences). On the
+informal SIC2 blog corpus, Maskera leads across all three entity types
+(74.7\% of names, 78.7\% of places, 61.9\% of organisations) while keeping a
+similar over-masking rate (20.7\%). Structured Swedish identifiers
+(personnummer, organisationsnummer, bankgiro, IBAN) have no independent Swedish
+corpus and are excluded from this table. Full per-corpus scores, checksums, and
+reproduction commands live in \pkg{docs/}\allowbreak\pkg{BENCHMARKS.md} and
+\pkg{docs/}\allowbreak\pkg{benchmark-independent-v20.json}.
 
 \subsection{Published v20 release snapshot}
 
@@ -582,15 +626,16 @@ all, so the limitations are reported as plainly as the results.
         text. Data outside those types, and PII in other languages, is not
         caught by the model (structured identifiers are caught by the rules
         regardless).
-  \item \textbf{The external test set is small.} 22 sentences give a
-        direction, not a final grade. A larger task-training-independent gold set is the
-        project's top measurement priority, and no annotated test set yet
-        exists for the target domains of support, healthcare, and legal
-        text. The staged plan for closing this gap is public
-        (\pkg{docs/GOLD\_SET\_PLAN.md}): 200+ sentences, on the order of
-        500 entities, across the authority/legal and support/chat
-        registers, annotated before any model output is seen, with a
-        blind second-pass agreement check and per-register reporting.
+  \item \textbf{Over-masking on clean text.} On the 10,800 entity-free Swedish
+        sentences of SUC~3.0 and SIC2, Maskera v20 triggers a detection in
+        21.4\% of sentences (vs.\ 2.5\% for Presidio). High recall on lowercase
+        and unusual names currently trades off against unnecessary redactions of
+        ordinary words, especially under the \pkg{ORG} label.
+  \item \textbf{Domain coverage.} While the independent benchmark covers
+        23,980 Swedish texts across news, fiction, government, blogs, Wikipedia,
+        and synthetic PII, no public Swedish benchmark covers healthcare notes,
+        legal case text, or structured identifiers such as personnummer,
+        bankgiro, and IBAN. Evaluate on your own domain inside your environment.
   \item \textbf{Defence in depth.} maskera is a strong first layer, not the
         only one. Keep access controls, processing agreements, logging
         policies, and human review in high-stakes flows.
@@ -724,8 +769,8 @@ visible failure modes.
 
 \vfill
 \noindent\rule{\textwidth}{0.4pt}\par\smallskip
-{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.20
-\textperiodcentered{} August 12, 2026 \textperiodcentered{} Joel H\"agvall
+{\footnotesize\raggedright maskera \textperiodcentered{} whitepaper v1.24
+\textperiodcentered{} November 26, 2026 \textperiodcentered{} Joel H\"agvall
 \textperiodcentered{} maskera.dev. Current numbers live in
 \pkg{docs/BENCHMARKS.md}; where this document disagrees, that file wins.
 Not legal advice.\par}

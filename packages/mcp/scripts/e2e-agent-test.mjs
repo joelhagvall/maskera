@@ -27,13 +27,18 @@ import { gzipSync } from "node:zlib"
 
 const here = dirname(fileURLToPath(import.meta.url))
 const pkgRoot = resolve(here, "..")
-const cliPath = resolve(pkgRoot, "dist/cli.js")
+// MASKERA_MCP_CLI points the suite at another build of the CLI, for example
+// the published package installed into a temp dir, so the same checks verify
+// what readers actually install.
+const cliPath = process.env.MASKERA_MCP_CLI
+  ? resolve(process.env.MASKERA_MCP_CLI)
+  : resolve(pkgRoot, "dist/cli.js")
 const localModelsDir = resolve(pkgRoot, "../../apps/demo/public/models")
 const hasLocalNerModel = existsSync(join(localModelsDir, "maskera-sv-ner-v20"))
 
 if (!existsSync(cliPath)) {
   throw new Error(
-    `Built CLI not found at ${cliPath}. Run "pnpm --filter @maskera/mcp build" first.`,
+    `CLI not found at ${cliPath}. Run "pnpm --filter @maskera/mcp build" first, or fix MASKERA_MCP_CLI.`,
   )
 }
 
@@ -731,6 +736,95 @@ try {
   })
 
   // ---------------------------------------------------------------------------
+  // 3b. Claude Desktop third-party inference, as the Desktop guide in the
+  // README sets it up: base URL without /v1, the API key in x-api-key.
+  await test("Claude Desktop third-party inference: x-api-key routes to Anthropic, chat text masked, SSE restored", async () => {
+    const seen = []
+    const anthropic = await startHttpServer(async (req, res) => {
+      const chunks = []
+      for await (const chunk of req) chunks.push(chunk)
+      const raw = Buffer.concat(chunks).toString("utf8")
+      seen.push({
+        upstream: "anthropic",
+        method: req.method,
+        url: req.url,
+        apiKey: req.headers["x-api-key"],
+        raw,
+      })
+      if (req.method === "GET" && req.url === "/v1/models") {
+        res.writeHead(200, { "content-type": "application/json" })
+        res.end(JSON.stringify({ data: [{ id: "claude-test-model", type: "model" }] }))
+        return
+      }
+      const placeholder = raw.match(/\[EPOST_1\]/)?.[0] ?? "MISSING"
+      res.writeHead(200, { "content-type": "text/event-stream" })
+      const text = `Mejlet till ${placeholder} är klart.`
+      // Split the placeholder across two SSE events, as a real stream may.
+      for (const part of [text.slice(0, 18), text.slice(18)]) {
+        res.write(
+          `event: content_block_delta\ndata: ${JSON.stringify({ type: "content_block_delta", index: 0, delta: { type: "text_delta", text: part } })}\n\n`,
+        )
+      }
+      res.end()
+    })
+    const openai = await startHttpServer((req, res) => {
+      seen.push({ upstream: "openai", method: req.method, url: req.url })
+      res.writeHead(500)
+      res.end()
+    })
+    const proxy = await startProxyCli([
+      "--rules-only",
+      "--anthropic-upstream",
+      anthropic.url,
+      "--openai-upstream",
+      openai.url,
+    ])
+    try {
+      const headers = { "x-api-key": "sk-ant-test", "anthropic-version": "2023-06-01" }
+      const models = await fetch(`${proxy.url}/v1/models`, { headers })
+      assert.equal(models.status, 200)
+      assert.equal((await models.json()).data[0].id, "claude-test-model")
+
+      const email = "provnamn.maskera@example.com"
+      const reply = await fetch(`${proxy.url}/v1/messages`, {
+        method: "POST",
+        headers: { ...headers, "content-type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-test-model",
+          stream: true,
+          max_tokens: 64,
+          messages: [
+            { role: "user", content: `Skriv ett kort mejl till ${email} och bekräfta mötet.` },
+          ],
+        }),
+      })
+      const streamed = await reply.text()
+      assert.equal(reply.status, 200)
+      assert.ok(streamed.includes(email), `reply not restored: ${streamed}`)
+      assert.equal(
+        streamed.includes("[EPOST_1]"),
+        false,
+        `placeholder reached the client: ${streamed}`,
+      )
+
+      assert.equal(
+        seen.filter((s) => s.upstream === "openai").length,
+        0,
+        "Desktop traffic routed to OpenAI",
+      )
+      const sent = seen.find((s) => s.method === "POST")
+      assert.ok(sent, "no chat request reached the Anthropic upstream")
+      assert.equal(sent.url, "/v1/messages")
+      assert.equal(sent.apiKey, "sk-ant-test", "x-api-key was not forwarded")
+      assert.equal(sent.raw.includes(email), false, "raw e-mail reached the upstream")
+      assert.ok(sent.raw.includes("[EPOST_1]"), "placeholder missing upstream")
+    } finally {
+      await proxy.stop()
+      await anthropic.close()
+      await openai.close()
+    }
+  })
+
   // 4. Optional local ONNX Swedish NER E2E lane (zero network, offline model)
   // ---------------------------------------------------------------------------
   if (hasLocalNerModel) {

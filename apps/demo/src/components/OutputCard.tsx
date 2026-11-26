@@ -1,44 +1,9 @@
 import type { RedactResult } from "@maskera/core"
-import { useMemo } from "react"
 import copy from "../i18n"
-import { EyeIcon } from "../icons"
-import { labelMeta, pillStyle } from "../labels"
 import { navClick, viewPaths } from "../routing"
 import { RedactedText } from "../segments"
 import { CopyButton } from "./CopyButton"
-
-function Stats({ result }: { result: RedactResult }) {
-  const counts = useMemo(() => {
-    // Redactions arrive position-sorted, so Map insertion order = text order.
-    const c = new Map<string, number>()
-    for (const r of result.redactions) c.set(r.label, (c.get(r.label) ?? 0) + 1)
-    return [...c.entries()]
-  }, [result.redactions])
-
-  return (
-    <div className="stats">
-      <div className="count">
-        <span className="num">{result.redactions.length}</span>
-        <span className="num-l">
-          {result.redactions.length === 1
-            ? copy.outputCard.singularCount
-            : copy.outputCard.pluralCount}
-        </span>
-      </div>
-      <div className="tags">
-        {counts.map(([label, n]) => {
-          const m = labelMeta(label)
-          return (
-            <span key={label} className="tag" style={pillStyle(m)}>
-              {m.sv}
-              <span className="tag-n">{n}</span>
-            </span>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
+import { TryStep } from "./TryStep"
 
 function RestoreMap({ map }: { map: Record<string, string> }) {
   return (
@@ -77,18 +42,20 @@ export function OutputCard({
   onCoverage: () => void
 }) {
   const unique = Object.keys(result.map).length
+  const count = result.redactions.length
 
   return (
-    <section className="card">
-      <div className="card-head">
-        <span className="card-title">
-          <EyeIcon size={14} />
-          {copy.outputCard.title}
-          {analyzing && <span className="card-sub">{copy.outputCard.analyzing}</span>}
-        </span>
-        {result.text ? <CopyButton text={result.text} className="clear copy" /> : null}
-      </div>
-
+    <TryStep
+      n={2}
+      label={
+        <>
+          {copy.outputCard.title} · {count}{" "}
+          {count === 1 ? copy.outputCard.singularCount : copy.outputCard.pluralCount}
+          {analyzing ? <span className="try-busy"> · {copy.outputCard.analyzing}</span> : null}
+        </>
+      }
+      action={result.text ? <CopyButton text={result.text} className="clear copy" /> : null}
+    >
       <div className={`output ${analyzing ? "analyzing" : ""}`} lang="sv" translate="no">
         <RedactedText text={result.text} />
       </div>
@@ -105,8 +72,6 @@ export function OutputCard({
           {copy.outputCard.testPersonnummerCta}
         </p>
       )}
-
-      <Stats result={result} />
 
       {/* The moment someone wonders why a value was (or was not) masked is
           right here, so the coverage page is one click away from the result. */}
@@ -131,6 +96,6 @@ export function OutputCard({
         </a>
       </div>
       {unique > 0 && (showMap ? <RestoreMap map={result.map} /> : <div id="restore-map" hidden />)}
-    </section>
+    </TryStep>
   )
 }

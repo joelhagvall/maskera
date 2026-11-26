@@ -3,6 +3,7 @@ import { existsSync } from "node:fs"
 import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import Ajv2020 from "ajv/dist/2020.js"
+import { renderSection, replaceSection } from "../bench/independent/render-markdown.mjs"
 import {
   contractPath as defaultContractPath,
   evaluationEnvironmentSha256,
@@ -620,33 +621,6 @@ await expectFragments("training/maskera-sv-ner-card/README.md", [
     `| lowercase | KBLab lowermix fp32 | ${comparison.lowercase.kblab.maskedRecallPct}% (${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}) | ${comparison.lowercase.kblab.typedF1Pct}% |`,
   ],
 ])
-await expectFragments("apps/demo/public/llms.txt", [
-  [
-    "llms curated claim",
-    `curated span F1 ${curated.spanF1Pct}% with ${curated.leaks}/${curated.entities} leaks`,
-  ],
-  [
-    "llms ADR claim",
-    `span F1 ${syntheticAdr.spanF1Pct}% with ${syntheticAdr.leaks}/${syntheticAdr.entities} leaks`,
-  ],
-  [
-    "llms LinkedIn claim",
-    `LinkedIn-style span F1 ${linkedinStyle.spanF1Pct}% with ${linkedinStyle.leaks}/${linkedinStyle.entities} leaks`,
-  ],
-  ["llms historical boundary", `Historical ${historical.release} public-model comparisons`],
-  [
-    "llms current KBLab comparison",
-    `Maskera q4 (43 MB) masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities} with original casing and ${comparison.lowercase.maskera.masked}/${comparison.corpus.entities} lowercased; KBLab fp32 (496 MB, measured 2026-11-25) masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities};`,
-  ],
-  [
-    "llms Bards AI v3 comparison",
-    "Bards AI EU PII v3 int8 ONNX (309 MB, 24 EU languages incl. Swedish, measured 2026-11-26) masked 181/211 (85.8%) and 119/211 (56.4%).",
-  ],
-  [
-    "llms hybrid pipeline",
-    `Maskera ${contract.release} q4 reached ${structuredRegression.fullHits}/${structuredRegression.entities} (${structuredRegression.hitRatePct}%) full hits, with ${structuredRegression.partialLeaks} partial leaks and ${structuredRegression.misses} clear-text misses.`,
-  ],
-])
 await expectFragments("bench/README.md", [
   ["bench current boundary", `Published ${contract.release} snapshot`],
   [
@@ -731,34 +705,91 @@ await expectFragments(whitepaper.source, [
   ],
 ])
 
-await expectFragments("apps/demo/src/i18n/sv.json", [
-  [
-    "Swedish current KBLab Maskera result",
-    `"normal": "${comparison.normal.maskera.masked} av ${comparison.corpus.entities} (${comparison.normal.maskera.maskedRecallPct.replace(".", ",")} %)"`,
-  ],
-  [
-    "Swedish current KBLab lowercase result",
-    `"lowercase": "${comparison.lowercase.kblab.masked} av ${comparison.corpus.entities} (${comparison.lowercase.kblab.maskedRecallPct.replace(".", ",")} %)"`,
-  ],
-  [
-    "Swedish hybrid pipeline stat",
-    `"value": "${structuredRegression.hitRatePct.replace(".", ",")} % (${structuredRegression.fullHits} av ${structuredRegression.entities})"`,
-  ],
-])
-await expectFragments("apps/demo/src/i18n/en.json", [
-  [
-    "English current KBLab Maskera result",
-    `"normal": "${comparison.normal.maskera.masked} of ${comparison.corpus.entities} (${comparison.normal.maskera.maskedRecallPct}%)"`,
-  ],
-  [
-    "English current KBLab lowercase result",
-    `"lowercase": "${comparison.lowercase.kblab.masked} of ${comparison.corpus.entities} (${comparison.lowercase.kblab.maskedRecallPct}%)"`,
-  ],
-  [
-    "English hybrid pipeline stat",
-    `"value": "${structuredRegression.hitRatePct}% (${structuredRegression.fullHits} of ${structuredRegression.entities})"`,
-  ],
-])
+// The site shows only the independent benchmark, and reads it straight from
+// its result file (apps/demo/src/independentBench.ts), so the copy carries no
+// number to drift. Verify that result against the contract.
+const { independentComparison } = contract
+const actualIndependentSuiteHash = await sha256FileSet(independentComparison.files)
+if (actualIndependentSuiteHash !== independentComparison.suiteSha256) {
+  drift(
+    "independent comparison suite checksum",
+    "docs/benchmark-release.json",
+    independentComparison.suiteSha256,
+    actualIndependentSuiteHash,
+  )
+}
+await expectHash(
+  "independent comparison result checksum",
+  independentComparison.resultFile,
+  independentComparison.resultSha256,
+)
+const independentResult = await readJson(resolve(repoRoot, independentComparison.resultFile))
+for (const [name, corpus] of Object.entries(independentComparison.corpora)) {
+  const measured = independentResult.corpora?.[name]
+  if (!measured) {
+    drift(`independent corpus ${name}`, independentComparison.resultFile, "measured", "missing")
+    continue
+  }
+  if (measured.sha256 !== corpus.sha256) {
+    drift(
+      `independent corpus ${name} checksum`,
+      independentComparison.resultFile,
+      corpus.sha256,
+      measured.sha256,
+    )
+  }
+  if (measured.texts !== corpus.texts) {
+    drift(
+      `independent corpus ${name} texts`,
+      independentComparison.resultFile,
+      corpus.texts,
+      measured.texts,
+    )
+  }
+}
+{
+  const report = await readFile(resolve(repoRoot, "docs/BENCHMARKS.md"), "utf8")
+  const expected = replaceSection(report, renderSection(independentResult))
+  if (expected !== report) {
+    drift(
+      "BENCHMARKS.md independent section",
+      "docs/BENCHMARKS.md",
+      "rendered from docs/benchmark-independent-v20.json",
+      "stale: run node bench/independent/render-markdown.mjs",
+    )
+  }
+}
+const independentNames = independentResult.summary?.maskera?.names
+if (independentNames) {
+  const formattedCount = `${independentNames.masked.toLocaleString("en-US")}/${independentNames.total.toLocaleString("en-US")}`
+  await expectFragments("apps/demo/public/llms.txt", [
+    ["llms independent names", `hid ${independentNames.maskedPct}% of names (${formattedCount})`],
+  ])
+  await expectFragments("README.md", [
+    [
+      "README independent names",
+      `Maskera v20 hid ${independentNames.maskedPct}% of names (${formattedCount})`,
+    ],
+  ])
+  await expectFragments(whitepaper.source, [
+    [
+      "whitepaper independent names",
+      `hid ${independentNames.maskedPct}\\% of names (${formattedCount})`,
+    ],
+  ])
+  await expectFragments("bench/README.md", [
+    [
+      "bench independent names",
+      `Maskera v20 q4 hid ${independentNames.maskedPct}% of\n> names (${formattedCount})`,
+    ],
+  ])
+  await expectFragments("docs/TRANSPARENCY.md", [
+    [
+      "transparency independent names",
+      `hid ${independentNames.maskedPct}%\n  of names (${formattedCount})`,
+    ],
+  ])
+}
 
 const optionalExplainer = "docs/FORSTA_MODELLEN.md"
 if (existsSync(resolve(repoRoot, optionalExplainer))) {

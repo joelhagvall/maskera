@@ -5,6 +5,7 @@
   "description": "Maskera Bench SV: grade maskera and competitors on the same Swedish gold sets with the same exact-span scorer. Not part of the pnpm workspace on purpose; install with npm here.",
   "dependencies": {
     "@blindfold/sdk": "latest",
-    "@huggingface/transformers": "^3.8.1"
+    "@huggingface/transformers": "^3.8.1",
+    "swedish-pii": "1.2.0"
   }
 }

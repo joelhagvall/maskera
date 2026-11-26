@@ -4,6 +4,9 @@ import { About } from "./components/About"
 import { Accuracy } from "./components/Accuracy"
 import { DemoWorkspace } from "./components/DemoWorkspace"
 import { Developers } from "./components/Developers"
+import { Faq } from "./components/Faq"
+import { Guides } from "./components/Guides"
+import { Industries } from "./components/Industries"
 import { PrivacyPolicy } from "./components/PrivacyPolicy"
 import { Security } from "./components/Security"
 import { Services } from "./components/Services"
@@ -28,6 +31,9 @@ registerViews({
   accuracy: Accuracy,
   security: Security,
   about: About,
+  faq: Faq,
+  guides: Guides,
+  industries: Industries,
 })
 
 // Build-time prerender entry, driven by scripts/prerender.mjs after

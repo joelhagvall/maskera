@@ -2525,43 +2525,33 @@ const CLEAN_GENERIC_INSTITUTIONS = [
   "ekonomiavdelningen",
   "personalavdelningen",
 ]
-const CLEAN_TECH_TERMS = [
-  "TypeScript",
-  "JavaScript",
-  "Python",
-  "Rust",
-  "Java",
-  "Node",
-  "React",
-  "Vue",
-  "Angular",
-  "Vite",
-  "Docker",
-  "Kubernetes",
-  "Linux",
-  "macOS",
-  "Windows",
-  "PostgreSQL",
-  "SQLite",
-  "Redis",
-  "GraphQL",
-  "REST",
-  "JSON",
-  "YAML",
-  "HTML",
-  "CSS",
-  "SQL",
-  "Git",
-  "HTTP",
-  "TLS",
-  "ONNX",
-  "WebAssembly",
-  "WebGPU",
-  "API",
-  "SDK",
-  "CLI",
-  "Biome",
-  "Vitest",
+// Pure in-vocab Swedish workplace/administrative nouns (never OOV foreign/tech names
+// whose multi-wordpiece capitalisation resembles decomposing rare Swedish surnames).
+const CLEAN_WORKPLACE_NOUNS = [
+  "systemet",
+  "databasen",
+  "tjänsten",
+  "plattformen",
+  "verktyget",
+  "gränssnittet",
+  "dokumentationen",
+  "konfigurationen",
+  "testsviten",
+  "uppdateringen",
+  "versionen",
+  "lösningen",
+  "rutinen",
+  "processen",
+  "modulen",
+  "funktionen",
+  "rapporten",
+  "tabellen",
+  "bilagan",
+  "kontrollen",
+  "granskningen",
+  "säkerhetskopian",
+  "inloggningen",
+  "behörigheten",
 ]
 const CLEAN_BUSINESS_TERMS = [
   "kvartal",
@@ -2696,19 +2686,19 @@ function buildCleanInstitutionExample() {
   return { tokens, tags: tokens.map(() => "O") }
 }
 function buildCleanTechExample() {
-  const t1 = pick(CLEAN_TECH_TERMS)
-  const t2 = pick(CLEAN_TECH_TERMS)
+  const t1 = pick(CLEAN_WORKPLACE_NOUNS)
+  const t2 = pick(CLEAN_WORKPLACE_NOUNS)
   const n1 = pick(CLEAN_SAFE_NUMS)
   const n2 = pick(CLEAN_SAFE_NUMS)
   const templates = [
     `Koden kompilerar rent utan varningar i ${t1} och ${t2} efter uppdateringen.`,
-    `Vi migrerade hela tjänsten från ${t1} till ${t2} under helgen utan driftstopp.`,
-    `Databasen i ${t1} svarar under ${n1} ms vid ${n2} samtidiga anrop via ${t2}.`,
-    `Paketet bygger automatiskt för ${t1}, ${t2} och moderna webbläsare.`,
-    `Konfigurationen lagras i ${t1} och valideras av ${t2} i varje körning.`,
-    `Projektet kräver minst ${n1} GB utrymme för lokal körning med ${t1} och ${t2}.`,
-    `Dokumentationen för ${t1} beskriver hur man felsöker ${t2} lokalt.`,
-    `Testsviten i ${t1} passerade alla ${n2} kontroller mot ${t2}.`,
+    `Vi flyttade hela arbetet från ${t1} till ${t2} under helgen utan driftstopp.`,
+    `Svarstiden i ${t1} låg under ${n1} ms vid ${n2} samtidiga anrop mot ${t2}.`,
+    `Paketet bygger automatiskt för både ${t1} och ${t2} utan manuella steg.`,
+    `Inställningarna lagras i ${t1} och kontrolleras av ${t2} vid varje körning.`,
+    `Projektet kräver minst ${n1} enheter för lokal körning med ${t1} och ${t2}.`,
+    `Handboken för ${t1} beskriver hur man felsöker ${t2} på egen hand.`,
+    `Granskningen av ${t1} passerade alla ${n2} kontroller mot ${t2}.`,
   ]
   const tokens = tokenizeFiller(pick(templates))
   return { tokens, tags: tokens.map(() => "O") }

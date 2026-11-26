@@ -13,18 +13,17 @@ afterEach(() => {
 describe("Services", () => {
   it("shows every track on one page, without Gateway references", () => {
     const go = vi.fn()
-    const { container } = render(<Services go={go} onCoverage={vi.fn()} />)
+    const goSection = vi.fn()
+    const { container } = render(<Services go={go} goSection={goSection} onCoverage={vi.fn()} />)
 
     expect(screen.getByRole("banner")).toBeTruthy()
     expect(screen.getByText(copy.services.lede)).toBeTruthy()
-    expect(screen.getByText(copy.services.sublede)).toBeTruthy()
     expect(container.textContent?.toLowerCase()).not.toContain("gateway")
-    expect(screen.queryAllByRole("tab").map((tab) => tab.textContent)).toEqual(
-      copy.agentSetup.modes.map((mode) => mode.label),
-    )
+    // The agent setup tabs live on the developer page, not here.
+    expect(screen.queryAllByRole("tab")).toEqual([])
 
     // The table of contents lists every section, and every section exists.
-    const toc = screen.getByRole("navigation", { name: copy.services.tocLabel })
+    const toc = screen.getByRole("navigation", { name: copy.pageToc.label })
     const hrefs = within(toc)
       .getAllByRole("link")
       .map((link) => link.getAttribute("href"))
@@ -79,15 +78,13 @@ describe("Services", () => {
     expect(agents.getByRole("heading", { level: 2 }).textContent).toBe(
       copy.services.tracks[1].title,
     )
-    expect(agents.getByRole("button", { name: copy.agentSetup.copyPromptCta })).toBeTruthy()
-    expect(
-      agents
-        .getByRole("link", { name: new RegExp(copy.agentSetup.llmsLinkCta) })
-        .getAttribute("href"),
-    ).toBe("/llms.txt")
-    expect(agents.getByText(/npx -y @maskera\/mcp proxy/)).toBeTruthy()
-    fireEvent.click(agents.getByRole("tab", { name: /MCP-server/ }))
-    expect(agents.getByText(/"mcpServers":/)).toBeTruthy()
+    for (const point of copy.services.agents.points) {
+      expect(agents.getByText(point)).toBeTruthy()
+    }
+    // Setup lives on the developer page only: no second copy of the agent card here.
+    expect(agents.queryByRole("button", { name: copy.agentSetup.copyPromptCta })).toBeNull()
+    fireEvent.click(agents.getByRole("link", { name: copy.services.agents.setupCta }))
+    expect(goSection).toHaveBeenCalledWith("dev", "agenter")
 
     // Own code
     const code = within(container.querySelector("#kod") as HTMLElement)

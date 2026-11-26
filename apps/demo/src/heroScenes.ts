@@ -14,7 +14,7 @@ import { TOKEN_RE } from "./segments"
  */
 export const HERO_SCENE = {
   id: "myndighet",
-  height: 516,
+  height: 794,
   prompt:
     "Bo Ek (781101-2397) i Boden har sökt bostadsanpassning för att kunna bo kvar. Dottern Liv ringde i dag. Ersättningen betalas till bankgiro 991-2346. Skriv beslutet.",
   masked:

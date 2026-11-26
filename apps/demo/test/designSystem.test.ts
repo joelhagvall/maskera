@@ -110,4 +110,29 @@ describe("design system guard", () => {
     const tokenAnim = css.match(/@keyframes\s+mask-token-in\s*\{[\s\S]*?\n\}/)?.[0] ?? ""
     expect(tokenAnim).not.toMatch(/opacity\s*:/)
   })
+
+  it("puts the page navigation in one rail, right of the content, on every page", () => {
+    const body = (selector: string) =>
+      rules(css)
+        .filter(([sel]) => sel === selector)
+        .map(([, b]) => b)
+        .join("")
+    // 720px article + 48px gap + 224px rail = the 992px container: the rail
+    // ends where the header and footer end.
+    expect(body(".prose-with-toc > .toc-rail")).toMatch(/left:\s*calc\(100% \+ 48px\)/)
+    expect(body(".prose-with-toc > .toc-rail")).toMatch(/width:\s*224px/)
+    // Every page with a TOC uses that one rail, never its own column layout.
+    const components = resolve(root, "components")
+    const offenders = readdirSync(components)
+      .filter((file) => file.endsWith(".tsx") && file !== "PageToc.tsx")
+      .filter((file) => {
+        const source = readFileSync(resolve(components, file), "utf8")
+        return (
+          source.includes("<PageToc") && !/<article className="[^"]*prose-with-toc/.test(source)
+        )
+      })
+    expect(offenders, 'render <PageToc> inside <article className="prose prose-with-toc">').toEqual(
+      [],
+    )
+  })
 })

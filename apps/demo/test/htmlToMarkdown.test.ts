@@ -17,6 +17,7 @@ describe("htmlToMarkdown", () => {
     expect(md).toContain("https://maskera.dev/llms.txt")
     expect(md).toContain("maskera är det lokala skyddslagret framför alla AI-modeller")
     // Interactive regions and chrome are gone
+    expect(md).not.toContain("Bo ska bo i Boden")
     expect(md).not.toContain("Kandidat: Sara Lindgren")
     expect(md).not.toContain("Hoppa till huvudinnehållet")
     expect(md).not.toContain("Testa ett exempel")
@@ -41,7 +42,7 @@ describe("htmlToMarkdown", () => {
     expect(dev).toContain("\nconst recognizer: NerRecognizer = createNerRecognizer()\n")
 
     const services = markdownFor("/tjanster")
-    expect(services).toContain("\nnpx -y @maskera/mcp proxy\n")
+    expect(services).toContain("\nnpm install maskera @huggingface/transformers\n")
     expect(services).not.toMatch(/\]\([^)]+\)\[/)
 
     const about = markdownFor("/en/about")

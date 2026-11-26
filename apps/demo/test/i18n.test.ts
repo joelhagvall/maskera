@@ -47,7 +47,7 @@ describe("localized copy", () => {
   })
 
   it("translates the interface without translating the simulated Swedish AI response", () => {
-    expect(en.restoreDemo.title).not.toBe(sv.restoreDemo.title)
+    expect(en.restoreDemo.stepTitle).not.toBe(sv.restoreDemo.stepTitle)
     expect(en.restoreDemo.joinWord).toBe(sv.restoreDemo.joinWord)
     expect(en.restoreDemo.generic).toEqual(sv.restoreDemo.generic)
     expect(en.restoreDemo.replies).toEqual(sv.restoreDemo.replies)

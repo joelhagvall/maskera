@@ -8,10 +8,17 @@ export interface ViewComponents {
   transparency: ComponentType<{ go: (next: View) => void }>
   testdata: ComponentType<{ go: (next: View) => void }>
   privacy: ComponentType<{ go: (next: View) => void }>
-  services: ComponentType<{ go: (next: View) => void; onCoverage: () => void }>
+  services: ComponentType<{
+    go: (next: View) => void
+    goSection: (next: View, id: string) => void
+    onCoverage: () => void
+  }>
   accuracy: ComponentType<{ go: (next: View) => void; onTryContext?: () => void }>
   security: ComponentType<{ go: (next: View) => void }>
   about: ComponentType<{ go: (next: View) => void }>
+  faq: ComponentType<{ go: (next: View) => void }>
+  guides: ComponentType<{ go: (next: View) => void }>
+  industries: ComponentType<{ go: (next: View) => void; onTryScenario: (id: string) => void }>
 }
 
 const loaded: Partial<ViewComponents> = {}
@@ -27,6 +34,9 @@ const importers: { [K in View]: () => Promise<ViewComponents[K]> } = {
   accuracy: () => import("./components/Accuracy").then((m) => m.Accuracy),
   security: () => import("./components/Security").then((m) => m.Security),
   about: () => import("./components/About").then((m) => m.About),
+  faq: () => import("./components/Faq").then((m) => m.Faq),
+  guides: () => import("./components/Guides").then((m) => m.Guides),
+  industries: () => import("./components/Industries").then((m) => m.Industries),
 }
 
 export function loadView<K extends View>(view: K): Promise<ViewComponents[K]> {

@@ -1,0 +1,1128 @@
+{
+  "corpora": {
+    "ai4privacy-sv": {
+      "texts": 8248,
+      "goldSpans": 28736,
+      "cleanSentences": 0,
+      "sha256": "1924d3fc2b8d6e00405ea659d8cb63587fcd0d0cf85da9ebaed222bf789cbf7e"
+    },
+    "multiconer-sv": {
+      "texts": 2000,
+      "goldSpans": 2522,
+      "cleanSentences": 0,
+      "sha256": "d3368438baa90b815a5288b364fe37c919860fe51996f1739172f0f5229ec415"
+    },
+    "sic2-sv": {
+      "texts": 809,
+      "goldSpans": 238,
+      "cleanSentences": 639,
+      "sha256": "f05d40bc58be64ac7e912994ba8b4308477d7d22439d8a9fc97122a5c4fa9656"
+    },
+    "suc3-test-cased": {
+      "texts": 12923,
+      "goldSpans": 4095,
+      "cleanSentences": 10161,
+      "sha256": "264dc1f701fa444d8f2b6b88fba3648d1cec4a8a142410827532d1cddaa3862b"
+    },
+    "suc3-test-lower": {
+      "texts": 12923,
+      "goldSpans": 4095,
+      "cleanSentences": 10161,
+      "sha256": "ef07bc9c50d7718606cc1b528da1cc04a033e7f57e162c3b8c222da31ac9e458"
+    }
+  },
+  "summary": {
+    "maskera": {
+      "names": {
+        "masked": 11613,
+        "total": 12570,
+        "maskedPct": 92.4
+      },
+      "namesLowercase": {
+        "masked": 4483,
+        "total": 4829,
+        "maskedPct": 92.8
+      },
+      "places": {
+        "masked": 5379,
+        "total": 5749,
+        "maskedPct": 93.6
+      },
+      "addresses": {
+        "masked": 5218,
+        "total": 5482,
+        "maskedPct": 95.2
+      },
+      "overMasking": {
+        "sentences": 10800,
+        "withDetection": 2311,
+        "pct": 21.4
+      }
+    },
+    "openai-privacy-filter": {
+      "names": {
+        "masked": 6567,
+        "total": 12570,
+        "maskedPct": 52.2
+      },
+      "namesLowercase": {
+        "masked": 498,
+        "total": 4829,
+        "maskedPct": 10.3
+      },
+      "places": {
+        "masked": 1924,
+        "total": 5749,
+        "maskedPct": 33.5
+      },
+      "addresses": {
+        "masked": 3469,
+        "total": 5482,
+        "maskedPct": 63.3
+      },
+      "overMasking": {
+        "sentences": 10800,
+        "withDetection": 373,
+        "pct": 3.5
+      }
+    },
+    "presidio": {
+      "names": {
+        "masked": 9087,
+        "total": 12570,
+        "maskedPct": 72.3
+      },
+      "namesLowercase": {
+        "masked": 3450,
+        "total": 4829,
+        "maskedPct": 71.4
+      },
+      "places": {
+        "masked": 5581,
+        "total": 5749,
+        "maskedPct": 97.1
+      },
+      "addresses": {
+        "masked": 2579,
+        "total": 5482,
+        "maskedPct": 47
+      },
+      "overMasking": {
+        "sentences": 10800,
+        "withDetection": 269,
+        "pct": 2.5
+      }
+    },
+    "swedish-pii": {
+      "names": {
+        "masked": 6955,
+        "total": 12570,
+        "maskedPct": 55.3
+      },
+      "namesLowercase": {
+        "masked": 16,
+        "total": 4829,
+        "maskedPct": 0.3
+      },
+      "places": {
+        "masked": 4756,
+        "total": 5749,
+        "maskedPct": 82.7
+      },
+      "addresses": {
+        "masked": 4239,
+        "total": 5482,
+        "maskedPct": 77.3
+      },
+      "overMasking": {
+        "sentences": 10800,
+        "withDetection": 757,
+        "pct": 7
+      }
+    }
+  },
+  "results": {
+    "ai4privacy-sv": {
+      "maskera": {
+        "texts": 8248,
+        "byType": {
+          "ADDRESS": {
+            "entities": 3057,
+            "masked": 2801,
+            "tp": 2732,
+            "fp": 2335,
+            "fn": 325,
+            "precisionPct": 53.9,
+            "recallPct": 89.4,
+            "f1Pct": 67.3,
+            "maskedRecallPct": 91.6
+          },
+          "CARD*": {
+            "entities": 1873,
+            "masked": 905,
+            "tp": 191,
+            "fp": 26,
+            "fn": 1682,
+            "precisionPct": 88,
+            "recallPct": 10.2,
+            "f1Pct": 18.3,
+            "maskedRecallPct": 48.3
+          },
+          "EMAIL": {
+            "entities": 4603,
+            "masked": 4602,
+            "tp": 4601,
+            "fp": 7,
+            "fn": 2,
+            "precisionPct": 99.8,
+            "recallPct": 100,
+            "f1Pct": 99.9,
+            "maskedRecallPct": 100
+          },
+          "LOC": {
+            "entities": 4375,
+            "masked": 4149,
+            "tp": 3670,
+            "fp": 216,
+            "fn": 705,
+            "precisionPct": 94.4,
+            "recallPct": 83.9,
+            "f1Pct": 88.9,
+            "maskedRecallPct": 94.8
+          },
+          "PER": {
+            "entities": 7571,
+            "masked": 6937,
+            "tp": 6555,
+            "fp": 1922,
+            "fn": 1016,
+            "precisionPct": 77.3,
+            "recallPct": 86.6,
+            "f1Pct": 81.7,
+            "maskedRecallPct": 91.6
+          },
+          "PERSONNUMMER*": {
+            "entities": 1442,
+            "masked": 1092,
+            "tp": 658,
+            "fp": 2112,
+            "fn": 784,
+            "precisionPct": 23.8,
+            "recallPct": 45.6,
+            "f1Pct": 31.2,
+            "maskedRecallPct": 75.7
+          },
+          "PHONE*": {
+            "entities": 3390,
+            "masked": 1569,
+            "tp": 1451,
+            "fp": 664,
+            "fn": 1939,
+            "precisionPct": 68.6,
+            "recallPct": 42.8,
+            "f1Pct": 52.7,
+            "maskedRecallPct": 46.3
+          },
+          "ZIPCODE": {
+            "entities": 2425,
+            "masked": 2417,
+            "tp": 2417,
+            "fp": 18,
+            "fn": 8,
+            "precisionPct": 99.3,
+            "recallPct": 99.7,
+            "f1Pct": 99.5,
+            "maskedRecallPct": 99.7
+          }
+        },
+        "clean": null
+      },
+      "openai-privacy-filter": {
+        "texts": 8248,
+        "byType": {
+          "ADDRESS": {
+            "entities": 3057,
+            "masked": 1680,
+            "tp": 1574,
+            "fp": 1292,
+            "fn": 1483,
+            "precisionPct": 54.9,
+            "recallPct": 51.5,
+            "f1Pct": 53.1,
+            "maskedRecallPct": 55
+          },
+          "CARD*": {
+            "entities": 1873,
+            "masked": 1803,
+            "tp": 1329,
+            "fp": 4943,
+            "fn": 544,
+            "precisionPct": 21.2,
+            "recallPct": 71,
+            "f1Pct": 32.6,
+            "maskedRecallPct": 96.3
+          },
+          "EMAIL": {
+            "entities": 4603,
+            "masked": 4580,
+            "tp": 4578,
+            "fp": 2,
+            "fn": 25,
+            "precisionPct": 100,
+            "recallPct": 99.5,
+            "f1Pct": 99.7,
+            "maskedRecallPct": 99.5
+          },
+          "LOC": {
+            "entities": 4375,
+            "masked": 1787,
+            "tp": 1494,
+            "fp": 0,
+            "fn": 2881,
+            "precisionPct": 100,
+            "recallPct": 34.1,
+            "f1Pct": 50.9,
+            "maskedRecallPct": 40.8
+          },
+          "PER": {
+            "entities": 7571,
+            "masked": 5279,
+            "tp": 5153,
+            "fp": 999,
+            "fn": 2418,
+            "precisionPct": 83.8,
+            "recallPct": 68.1,
+            "f1Pct": 75.1,
+            "maskedRecallPct": 69.7
+          },
+          "PERSONNUMMER*": {
+            "entities": 1442,
+            "masked": 1378,
+            "tp": 0,
+            "fp": 0,
+            "fn": 1442,
+            "precisionPct": 0,
+            "recallPct": 0,
+            "f1Pct": 0,
+            "maskedRecallPct": 95.6
+          },
+          "PHONE*": {
+            "entities": 3390,
+            "masked": 3370,
+            "tp": 3349,
+            "fp": 2375,
+            "fn": 41,
+            "precisionPct": 58.5,
+            "recallPct": 98.8,
+            "f1Pct": 73.5,
+            "maskedRecallPct": 99.4
+          },
+          "ZIPCODE": {
+            "entities": 2425,
+            "masked": 1789,
+            "tp": 1219,
+            "fp": 0,
+            "fn": 1206,
+            "precisionPct": 100,
+            "recallPct": 50.3,
+            "f1Pct": 66.9,
+            "maskedRecallPct": 73.8
+          }
+        },
+        "clean": null
+      },
+      "presidio": {
+        "texts": 8248,
+        "byType": {
+          "ADDRESS": {
+            "entities": 3057,
+            "masked": 2475,
+            "tp": 2294,
+            "fp": 0,
+            "fn": 763,
+            "precisionPct": 100,
+            "recallPct": 75,
+            "f1Pct": 85.7,
+            "maskedRecallPct": 81
+          },
+          "CARD*": {
+            "entities": 1873,
+            "masked": 283,
+            "tp": 129,
+            "fp": 0,
+            "fn": 1744,
+            "precisionPct": 100,
+            "recallPct": 6.9,
+            "f1Pct": 12.9,
+            "maskedRecallPct": 15.1
+          },
+          "EMAIL": {
+            "entities": 4603,
+            "masked": 4603,
+            "tp": 4602,
+            "fp": 7,
+            "fn": 1,
+            "precisionPct": 99.8,
+            "recallPct": 100,
+            "f1Pct": 99.9,
+            "maskedRecallPct": 100
+          },
+          "LOC": {
+            "entities": 4375,
+            "masked": 4289,
+            "tp": 4221,
+            "fp": 3027,
+            "fn": 154,
+            "precisionPct": 58.2,
+            "recallPct": 96.5,
+            "f1Pct": 72.6,
+            "maskedRecallPct": 98
+          },
+          "PER": {
+            "entities": 7571,
+            "masked": 5041,
+            "tp": 4794,
+            "fp": 1202,
+            "fn": 2777,
+            "precisionPct": 80,
+            "recallPct": 63.3,
+            "f1Pct": 70.7,
+            "maskedRecallPct": 66.6
+          },
+          "PERSONNUMMER*": {
+            "entities": 1442,
+            "masked": 993,
+            "tp": 99,
+            "fp": 143,
+            "fn": 1343,
+            "precisionPct": 40.9,
+            "recallPct": 6.9,
+            "f1Pct": 11.8,
+            "maskedRecallPct": 68.9
+          },
+          "PHONE*": {
+            "entities": 3390,
+            "masked": 1862,
+            "tp": 1757,
+            "fp": 2267,
+            "fn": 1633,
+            "precisionPct": 43.7,
+            "recallPct": 51.8,
+            "f1Pct": 47.4,
+            "maskedRecallPct": 54.9
+          },
+          "ZIPCODE": {
+            "entities": 2425,
+            "masked": 104,
+            "tp": 0,
+            "fp": 0,
+            "fn": 2425,
+            "precisionPct": 0,
+            "recallPct": 0,
+            "f1Pct": 0,
+            "maskedRecallPct": 4.3
+          }
+        },
+        "clean": null
+      },
+      "swedish-pii": {
+        "texts": 8248,
+        "byType": {
+          "ADDRESS": {
+            "entities": 3057,
+            "masked": 2604,
+            "tp": 2570,
+            "fp": 939,
+            "fn": 487,
+            "precisionPct": 73.2,
+            "recallPct": 84.1,
+            "f1Pct": 78.3,
+            "maskedRecallPct": 85.2
+          },
+          "CARD*": {
+            "entities": 1873,
+            "masked": 503,
+            "tp": 503,
+            "fp": 0,
+            "fn": 1370,
+            "precisionPct": 100,
+            "recallPct": 26.9,
+            "f1Pct": 42.3,
+            "maskedRecallPct": 26.9
+          },
+          "EMAIL": {
+            "entities": 4603,
+            "masked": 4603,
+            "tp": 4580,
+            "fp": 7,
+            "fn": 23,
+            "precisionPct": 99.8,
+            "recallPct": 99.5,
+            "f1Pct": 99.7,
+            "maskedRecallPct": 100
+          },
+          "LOC": {
+            "entities": 4375,
+            "masked": 4340,
+            "tp": 3878,
+            "fp": 29,
+            "fn": 497,
+            "precisionPct": 99.3,
+            "recallPct": 88.6,
+            "f1Pct": 93.6,
+            "maskedRecallPct": 99.2
+          },
+          "PER": {
+            "entities": 7571,
+            "masked": 4945,
+            "tp": 4934,
+            "fp": 5064,
+            "fn": 2637,
+            "precisionPct": 49.3,
+            "recallPct": 65.2,
+            "f1Pct": 56.2,
+            "maskedRecallPct": 65.3
+          },
+          "PERSONNUMMER*": {
+            "entities": 1442,
+            "masked": 1082,
+            "tp": 929,
+            "fp": 1380,
+            "fn": 513,
+            "precisionPct": 40.2,
+            "recallPct": 64.4,
+            "f1Pct": 49.5,
+            "maskedRecallPct": 75
+          },
+          "PHONE*": {
+            "entities": 3390,
+            "masked": 889,
+            "tp": 887,
+            "fp": 353,
+            "fn": 2503,
+            "precisionPct": 71.5,
+            "recallPct": 26.2,
+            "f1Pct": 38.3,
+            "maskedRecallPct": 26.2
+          },
+          "ZIPCODE": {
+            "entities": 2425,
+            "masked": 1635,
+            "tp": 1635,
+            "fp": 0,
+            "fn": 790,
+            "precisionPct": 100,
+            "recallPct": 67.4,
+            "f1Pct": 80.5,
+            "maskedRecallPct": 67.4
+          }
+        },
+        "clean": null
+      }
+    },
+    "multiconer-sv": {
+      "maskera": {
+        "texts": 2000,
+        "byType": {
+          "PER": {
+            "entities": 2522,
+            "masked": 2402,
+            "tp": 2078,
+            "fp": 426,
+            "fn": 444,
+            "precisionPct": 83,
+            "recallPct": 82.4,
+            "f1Pct": 82.7,
+            "maskedRecallPct": 95.2
+          }
+        },
+        "clean": null
+      },
+      "openai-privacy-filter": {
+        "texts": 2000,
+        "byType": {
+          "PER": {
+            "entities": 2522,
+            "masked": 333,
+            "tp": 307,
+            "fp": 50,
+            "fn": 2215,
+            "precisionPct": 86,
+            "recallPct": 12.2,
+            "f1Pct": 21.3,
+            "maskedRecallPct": 13.2
+          }
+        },
+        "clean": null
+      },
+      "presidio": {
+        "texts": 2000,
+        "byType": {
+          "PER": {
+            "entities": 2522,
+            "masked": 1734,
+            "tp": 1639,
+            "fp": 140,
+            "fn": 883,
+            "precisionPct": 92.1,
+            "recallPct": 65,
+            "f1Pct": 76.2,
+            "maskedRecallPct": 68.8
+          }
+        },
+        "clean": null
+      },
+      "swedish-pii": {
+        "texts": 2000,
+        "byType": {
+          "PER": {
+            "entities": 2522,
+            "masked": 11,
+            "tp": 0,
+            "fp": 0,
+            "fn": 2522,
+            "precisionPct": 0,
+            "recallPct": 0,
+            "f1Pct": 0,
+            "maskedRecallPct": 0.4
+          }
+        },
+        "clean": null
+      }
+    },
+    "sic2-sv": {
+      "maskera": {
+        "texts": 809,
+        "byType": {
+          "LOC": {
+            "entities": 47,
+            "masked": 37,
+            "tp": 12,
+            "fp": 28,
+            "fn": 35,
+            "precisionPct": 30,
+            "recallPct": 25.5,
+            "f1Pct": 27.6,
+            "maskedRecallPct": 78.7
+          },
+          "ORG": {
+            "entities": 21,
+            "masked": 13,
+            "tp": 11,
+            "fp": 90,
+            "fn": 10,
+            "precisionPct": 10.9,
+            "recallPct": 52.4,
+            "f1Pct": 18,
+            "maskedRecallPct": 61.9
+          },
+          "PER": {
+            "entities": 170,
+            "masked": 127,
+            "tp": 113,
+            "fp": 148,
+            "fn": 57,
+            "precisionPct": 43.3,
+            "recallPct": 66.5,
+            "f1Pct": 52.4,
+            "maskedRecallPct": 74.7
+          }
+        },
+        "clean": {
+          "sentences": 639,
+          "withDetection": 132,
+          "withDetectionPct": 20.7,
+          "spans": 176
+        }
+      },
+      "openai-privacy-filter": {
+        "texts": 809,
+        "byType": {
+          "LOC": {
+            "entities": 47,
+            "masked": 8,
+            "tp": 3,
+            "fp": 0,
+            "fn": 44,
+            "precisionPct": 100,
+            "recallPct": 6.4,
+            "f1Pct": 12,
+            "maskedRecallPct": 17
+          },
+          "ORG": {
+            "entities": 21,
+            "masked": 0,
+            "tp": 0,
+            "fp": 0,
+            "fn": 21,
+            "precisionPct": 0,
+            "recallPct": 0,
+            "f1Pct": 0,
+            "maskedRecallPct": 0
+          },
+          "PER": {
+            "entities": 170,
+            "masked": 43,
+            "tp": 41,
+            "fp": 36,
+            "fn": 129,
+            "precisionPct": 53.2,
+            "recallPct": 24.1,
+            "f1Pct": 33.2,
+            "maskedRecallPct": 25.3
+          }
+        },
+        "clean": {
+          "sentences": 639,
+          "withDetection": 23,
+          "withDetectionPct": 3.6,
+          "spans": 29
+        }
+      },
+      "presidio": {
+        "texts": 809,
+        "byType": {
+          "LOC": {
+            "entities": 47,
+            "masked": 28,
+            "tp": 15,
+            "fp": 9,
+            "fn": 32,
+            "precisionPct": 62.5,
+            "recallPct": 31.9,
+            "f1Pct": 42.3,
+            "maskedRecallPct": 59.6
+          },
+          "ORG": {
+            "entities": 21,
+            "masked": 7,
+            "tp": 3,
+            "fp": 8,
+            "fn": 18,
+            "precisionPct": 27.3,
+            "recallPct": 14.3,
+            "f1Pct": 18.7,
+            "maskedRecallPct": 33.3
+          },
+          "PER": {
+            "entities": 170,
+            "masked": 112,
+            "tp": 111,
+            "fp": 27,
+            "fn": 59,
+            "precisionPct": 80.4,
+            "recallPct": 65.3,
+            "f1Pct": 72.1,
+            "maskedRecallPct": 65.9
+          }
+        },
+        "clean": {
+          "sentences": 639,
+          "withDetection": 20,
+          "withDetectionPct": 3.1,
+          "spans": 21
+        }
+      },
+      "swedish-pii": {
+        "texts": 809,
+        "byType": {
+          "LOC": {
+            "entities": 47,
+            "masked": 16,
+            "tp": 6,
+            "fp": 0,
+            "fn": 41,
+            "precisionPct": 100,
+            "recallPct": 12.8,
+            "f1Pct": 22.6,
+            "maskedRecallPct": 34
+          },
+          "ORG": {
+            "entities": 21,
+            "masked": 4,
+            "tp": 0,
+            "fp": 0,
+            "fn": 21,
+            "precisionPct": 0,
+            "recallPct": 0,
+            "f1Pct": 0,
+            "maskedRecallPct": 19
+          },
+          "PER": {
+            "entities": 170,
+            "masked": 113,
+            "tp": 113,
+            "fp": 96,
+            "fn": 57,
+            "precisionPct": 54.1,
+            "recallPct": 66.5,
+            "f1Pct": 59.6,
+            "maskedRecallPct": 66.5
+          }
+        },
+        "clean": {
+          "sentences": 639,
+          "withDetection": 77,
+          "withDetectionPct": 12.1,
+          "spans": 83
+        }
+      }
+    },
+    "suc3-test-cased": {
+      "maskera": {
+        "texts": 12923,
+        "byType": {
+          "LOC": {
+            "entities": 1327,
+            "masked": 1193,
+            "tp": 850,
+            "fp": 357,
+            "fn": 477,
+            "precisionPct": 70.4,
+            "recallPct": 64.1,
+            "f1Pct": 67.1,
+            "maskedRecallPct": 89.9
+          },
+          "ORG": {
+            "entities": 461,
+            "masked": 411,
+            "tp": 377,
+            "fp": 2541,
+            "fn": 84,
+            "precisionPct": 12.9,
+            "recallPct": 81.8,
+            "f1Pct": 22.3,
+            "maskedRecallPct": 89.2
+          },
+          "PER": {
+            "entities": 2307,
+            "masked": 2147,
+            "tp": 1987,
+            "fp": 1122,
+            "fn": 320,
+            "precisionPct": 63.9,
+            "recallPct": 86.1,
+            "f1Pct": 73.4,
+            "maskedRecallPct": 93.1
+          }
+        },
+        "clean": {
+          "sentences": 10161,
+          "withDetection": 2179,
+          "withDetectionPct": 21.4,
+          "spans": 2880
+        }
+      },
+      "openai-privacy-filter": {
+        "texts": 12923,
+        "byType": {
+          "LOC": {
+            "entities": 1327,
+            "masked": 129,
+            "tp": 24,
+            "fp": 0,
+            "fn": 1303,
+            "precisionPct": 100,
+            "recallPct": 1.8,
+            "f1Pct": 3.6,
+            "maskedRecallPct": 9.7
+          },
+          "ORG": {
+            "entities": 461,
+            "masked": 16,
+            "tp": 0,
+            "fp": 0,
+            "fn": 461,
+            "precisionPct": 0,
+            "recallPct": 0,
+            "f1Pct": 0,
+            "maskedRecallPct": 3.5
+          },
+          "PER": {
+            "entities": 2307,
+            "masked": 912,
+            "tp": 869,
+            "fp": 474,
+            "fn": 1438,
+            "precisionPct": 64.7,
+            "recallPct": 37.7,
+            "f1Pct": 47.6,
+            "maskedRecallPct": 39.5
+          }
+        },
+        "clean": {
+          "sentences": 10161,
+          "withDetection": 350,
+          "withDetectionPct": 3.4,
+          "spans": 382
+        }
+      },
+      "presidio": {
+        "texts": 12923,
+        "byType": {
+          "LOC": {
+            "entities": 1327,
+            "masked": 1264,
+            "tp": 1233,
+            "fp": 102,
+            "fn": 94,
+            "precisionPct": 92.4,
+            "recallPct": 92.9,
+            "f1Pct": 92.6,
+            "maskedRecallPct": 95.3
+          },
+          "ORG": {
+            "entities": 461,
+            "masked": 348,
+            "tp": 310,
+            "fp": 117,
+            "fn": 151,
+            "precisionPct": 72.6,
+            "recallPct": 67.2,
+            "f1Pct": 69.8,
+            "maskedRecallPct": 75.5
+          },
+          "PER": {
+            "entities": 2307,
+            "masked": 2200,
+            "tp": 2193,
+            "fp": 178,
+            "fn": 114,
+            "precisionPct": 92.5,
+            "recallPct": 95.1,
+            "f1Pct": 93.8,
+            "maskedRecallPct": 95.4
+          }
+        },
+        "clean": {
+          "sentences": 10161,
+          "withDetection": 249,
+          "withDetectionPct": 2.5,
+          "spans": 274
+        }
+      },
+      "swedish-pii": {
+        "texts": 12923,
+        "byType": {
+          "LOC": {
+            "entities": 1327,
+            "masked": 400,
+            "tp": 197,
+            "fp": 10,
+            "fn": 1130,
+            "precisionPct": 95.2,
+            "recallPct": 14.8,
+            "f1Pct": 25.7,
+            "maskedRecallPct": 30.1
+          },
+          "ORG": {
+            "entities": 461,
+            "masked": 102,
+            "tp": 0,
+            "fp": 0,
+            "fn": 461,
+            "precisionPct": 0,
+            "recallPct": 0,
+            "f1Pct": 0,
+            "maskedRecallPct": 22.1
+          },
+          "PER": {
+            "entities": 2307,
+            "masked": 1886,
+            "tp": 1880,
+            "fp": 754,
+            "fn": 427,
+            "precisionPct": 71.4,
+            "recallPct": 81.5,
+            "f1Pct": 76.1,
+            "maskedRecallPct": 81.8
+          }
+        },
+        "clean": {
+          "sentences": 10161,
+          "withDetection": 680,
+          "withDetectionPct": 6.7,
+          "spans": 723
+        }
+      }
+    },
+    "suc3-test-lower": {
+      "maskera": {
+        "texts": 12923,
+        "byType": {
+          "LOC": {
+            "entities": 1327,
+            "masked": 1191,
+            "tp": 828,
+            "fp": 384,
+            "fn": 499,
+            "precisionPct": 68.3,
+            "recallPct": 62.4,
+            "f1Pct": 65.2,
+            "maskedRecallPct": 89.8
+          },
+          "ORG": {
+            "entities": 461,
+            "masked": 380,
+            "tp": 337,
+            "fp": 2507,
+            "fn": 124,
+            "precisionPct": 11.8,
+            "recallPct": 73.1,
+            "f1Pct": 20.4,
+            "maskedRecallPct": 82.4
+          },
+          "PER": {
+            "entities": 2307,
+            "masked": 2081,
+            "tp": 1891,
+            "fp": 1139,
+            "fn": 416,
+            "precisionPct": 62.4,
+            "recallPct": 82,
+            "f1Pct": 70.9,
+            "maskedRecallPct": 90.2
+          }
+        },
+        "clean": {
+          "sentences": 10161,
+          "withDetection": 2088,
+          "withDetectionPct": 20.5,
+          "spans": 2761
+        }
+      },
+      "openai-privacy-filter": {
+        "texts": 12923,
+        "byType": {
+          "LOC": {
+            "entities": 1327,
+            "masked": 30,
+            "tp": 3,
+            "fp": 0,
+            "fn": 1324,
+            "precisionPct": 100,
+            "recallPct": 0.2,
+            "f1Pct": 0.5,
+            "maskedRecallPct": 2.3
+          },
+          "ORG": {
+            "entities": 461,
+            "masked": 2,
+            "tp": 0,
+            "fp": 0,
+            "fn": 461,
+            "precisionPct": 0,
+            "recallPct": 0,
+            "f1Pct": 0,
+            "maskedRecallPct": 0.4
+          },
+          "PER": {
+            "entities": 2307,
+            "masked": 165,
+            "tp": 162,
+            "fp": 164,
+            "fn": 2145,
+            "precisionPct": 49.7,
+            "recallPct": 7,
+            "f1Pct": 12.3,
+            "maskedRecallPct": 7.2
+          }
+        },
+        "clean": {
+          "sentences": 10161,
+          "withDetection": 153,
+          "withDetectionPct": 1.5,
+          "spans": 168
+        }
+      },
+      "presidio": {
+        "texts": 12923,
+        "byType": {
+          "LOC": {
+            "entities": 1327,
+            "masked": 961,
+            "tp": 935,
+            "fp": 52,
+            "fn": 392,
+            "precisionPct": 94.7,
+            "recallPct": 70.5,
+            "f1Pct": 80.8,
+            "maskedRecallPct": 72.4
+          },
+          "ORG": {
+            "entities": 461,
+            "masked": 142,
+            "tp": 110,
+            "fp": 49,
+            "fn": 351,
+            "precisionPct": 69.2,
+            "recallPct": 23.9,
+            "f1Pct": 35.5,
+            "maskedRecallPct": 30.8
+          },
+          "PER": {
+            "entities": 2307,
+            "masked": 1716,
+            "tp": 1701,
+            "fp": 91,
+            "fn": 606,
+            "precisionPct": 94.9,
+            "recallPct": 73.7,
+            "f1Pct": 83,
+            "maskedRecallPct": 74.4
+          }
+        },
+        "clean": {
+          "sentences": 10161,
+          "withDetection": 90,
+          "withDetectionPct": 0.9,
+          "spans": 97
+        }
+      },
+      "swedish-pii": {
+        "texts": 12923,
+        "byType": {
+          "LOC": {
+            "entities": 1327,
+            "masked": 11,
+            "tp": 0,
+            "fp": 0,
+            "fn": 1327,
+            "precisionPct": 0,
+            "recallPct": 0,
+            "f1Pct": 0,
+            "maskedRecallPct": 0.8
+          },
+          "ORG": {
+            "entities": 461,
+            "masked": 11,
+            "tp": 0,
+            "fp": 0,
+            "fn": 461,
+            "precisionPct": 0,
+            "recallPct": 0,
+            "f1Pct": 0,
+            "maskedRecallPct": 2.4
+          },
+          "PER": {
+            "entities": 2307,
+            "masked": 5,
+            "tp": 0,
+            "fp": 0,
+            "fn": 2307,
+            "precisionPct": 0,
+            "recallPct": 0,
+            "f1Pct": 0,
+            "maskedRecallPct": 0.2
+          }
+        },
+        "clean": {
+          "sentences": 10161,
+          "withDetection": 259,
+          "withDetectionPct": 2.5,
+          "spans": 278
+        }
+      }
+    }
+  }
+}

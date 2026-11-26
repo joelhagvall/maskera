@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { HomeProof, HomeTracks } from "../src/components/HomeTracks"
 import copy from "../src/i18n/sv.json"
+import { formatPct, summary } from "../src/independentBench"
 
 afterEach(cleanup)
 
@@ -15,17 +16,20 @@ describe("HomeTracks and HomeProof", () => {
     expect(goSection).toHaveBeenCalledWith("services", "agenter")
   })
 
-  it("reuses the synced benchmark stats in the proof strip and links to accuracy and security", () => {
+  it("shows the independent names result and model size, linking to accuracy and security", () => {
     const go = vi.fn()
     render(<HomeProof go={go} />)
 
-    expect(screen.getByText(copy.accuracy.currentStats[2].value)).toBeTruthy()
-    expect(screen.getByText(copy.accuracy.currentStats[3].value)).toBeTruthy()
-
-    fireEvent.click(screen.getByRole("link", { name: `${copy.homeProof.accuracyCta} →` }))
+    const names = summary.maskera.names
+    if (!names) throw new Error("no independent names result")
+    const accuracy = screen.getByRole("link", { name: new RegExp(copy.homeProof.accuracyDesc) })
+    expect(accuracy.textContent).toContain(formatPct(names.maskedPct))
+    fireEvent.click(accuracy)
     expect(go).toHaveBeenCalledWith("accuracy")
 
-    fireEvent.click(screen.getByRole("link", { name: `${copy.homeProof.securityCta} →` }))
+    const local = screen.getByRole("link", { name: new RegExp(copy.homeProof.localDesc) })
+    expect(local.textContent).toContain("43 MB")
+    fireEvent.click(local)
     expect(go).toHaveBeenCalledWith("security")
   })
 })

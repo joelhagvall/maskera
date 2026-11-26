@@ -103,7 +103,7 @@ export function Controls({
   return (
     <div className="controls">
       <div className="tabs" role="group" aria-labelledby="scenario-label">
-        <span className="tabs-label" id="scenario-label">
+        <span className="tabs-label sr-only" id="scenario-label">
           {copy.controls.examplesLabel}
         </span>
         {scenarios.map((s) => {

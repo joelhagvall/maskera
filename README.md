@@ -28,7 +28,7 @@ Masking runs locally on your device. Text and restore maps are never sent away f
 ## Two ways to use it
 
 - **Open-source npm packages (MIT):** `@maskera/core` (zero-dep deterministic rules) and `maskera` (rules + 43 MB Swedish NER model) for browser and Node.js apps.
-- **Browser extension ([maskera.dev/tjanster](https://maskera.dev/tjanster) / [English](https://maskera.dev/en/services)):** masks locally inside ChatGPT, Claude, Gemini, Microsoft Copilot, Perplexity, Mistral and opt-in internal AI sites on Chrome, Edge and Firefox (Safari coming later). Free with unlimited rules + 20 AI redactions/month; Pro is SEK 149/user/month incl. VAT (7-day free trial) with unlimited AI redactions, shared E2EE org protected words, MDM deployment and signed offline licences via [app.maskera.dev](https://app.maskera.dev).
+- **Browser extension ([maskera.dev/tjanster](https://maskera.dev/tjanster) / [English](https://maskera.dev/en/services)):** masks locally inside ChatGPT, Claude, Gemini, Microsoft Copilot, Perplexity, Mistral and opt-in internal AI sites on Chrome, Edge and Firefox (Safari coming later). Free with unlimited rules + 20 AI redactions/month; Pro is SEK 149/user/month incl. VAT (7-day free trial) with unlimited AI redactions, own protected words and signed offline licences; Team is SEK 249/user/month excl. VAT (min. 5 users) and adds a shared E2EE protected-word list, MDM deployment and annual invoicing, both via [app.maskera.dev](https://app.maskera.dev).
 
 ## Two layers, rules first
 
@@ -47,9 +47,24 @@ const result = restore(answer)       // placeholders back to real values, locall
 
 Placeholders are stable within a call so the model reasons consistently about `[NAMN_1]`. For clinical text, pass `profile: "clinical"` to retain common measurements, doses and care terms while keeping deterministic PII rules active. Runnable example: [`examples/llm-roundtrip.ts`](examples/llm-roundtrip.ts).
 
-## Benchmarks (v20, measured 2026-11-25)
+## Benchmarks
 
 One canonical, dated, reproducible report: **[docs/BENCHMARKS.md](docs/BENCHMARKS.md)** (machine contract: [`docs/benchmark-release.json`](docs/benchmark-release.json)).
+
+### Independent Swedish text (measured 2026-11-26)
+
+Share of values hidden in Swedish text that neither Maskera nor its developer wrote: the SUC 3.0 test split (National Library of Sweden), SIC2 Swedish blogs (Språkbanken Text), the MultiCoNER v2 Swedish test split (persons) and the Swedish rows of ai4privacy openpii. Maskera v20 hid 92.4% of names (11,613/12,570). Result: [`docs/benchmark-independent-v20.json`](docs/benchmark-independent-v20.json).
+
+| System | Names | Lowercase names | Places | Addresses + postcodes | Entity-free sentences with a hit (lower is better) |
+| --- | --- | --- | --- | --- | --- |
+| **Maskera v20 q4 (43 MB)** | 92.4% | 92.8% | 93.6% | 95.2% | 21.4% |
+| Microsoft Presidio + sv spaCy | 72.3% | 71.4% | 97.1% | 47.0% | 2.5% |
+| swedish-pii 1.2.0 | 55.3% | 0.3% | 82.7% | 77.3% | 7.0% |
+| OpenAI Privacy Filter q4 | 52.2% | 10.3% | 33.5% | 63.3% | 3.5% |
+
+Presidio's spaCy model is trained on SUC 3.0, one of the tests. Personnummer, bankgiro and IBAN have no independent Swedish corpus and are not in this table.
+
+### Internal release gates (v20, measured 2026-11-25, author-written)
 
 | Benchmark (v20 q4, 43 MB) | Result | Notes |
 | --- | --- | --- |

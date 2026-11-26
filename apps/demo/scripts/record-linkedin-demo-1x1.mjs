@@ -220,13 +220,12 @@ try {
       html, body { overflow: hidden !important; }
       .app { max-width: none !important; padding: 18px 24px !important; }
       .head-row, .title, .lede, .controls, .footer { display: none !important; }
-      main > .grid {
+      main > .try-steps {
         margin: 0 !important;
         grid-template-columns: 1fr !important;
         gap: 14px !important;
       }
-      .restore { display: none !important; }
-      .card { padding: 14px 16px !important; }
+      .try-step:nth-child(3) { display: none !important; }
       .editor { height: 290px !important; }
       textarea[name="source-text"] { font-size: 17px !important; }
       .output { min-height: 290px !important; font-size: 17px !important; }
@@ -247,19 +246,8 @@ try {
 
   await demo.addStyleTag({
     content: `
-      main > .grid { display: none !important; }
-      .restore {
-        display: block !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: 0 !important;
-      }
-      .restore-grid {
-        display: grid !important;
-        grid-template-columns: 1fr !important;
-        gap: 14px !important;
-        margin-top: 16px !important;
-      }
+      .try-step:nth-child(-n + 2) { display: none !important; }
+      .try-step:nth-child(3) { display: block !important; border: 0 !important; }
       .reply-editor, .output.restored { height: 265px !important; font-size: 17px !important; }
     `,
   })

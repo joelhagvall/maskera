@@ -22,7 +22,7 @@ export function Security({ go }: { go: (view: View) => void }) {
           <h1>{copy.security.title}</h1>
           <p className="prose-lede">{copy.security.lede}</p>
 
-          <PageToc label={copy.security.tocLabel} items={copy.security.toc} />
+          <PageToc items={copy.security.toc} />
 
           <TextSection id="dataflode" title={copy.security.dataFlowTitle}>
             {copy.security.dataFlow}

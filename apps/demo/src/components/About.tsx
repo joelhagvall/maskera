@@ -21,7 +21,7 @@ export function About({ go }: { go: (view: View) => void }) {
           <h1>{copy.about.title}</h1>
           <p className="prose-lede">{copy.about.lede}</p>
 
-          <PageToc label={copy.about.tocLabel} items={copy.about.toc} />
+          <PageToc items={copy.about.toc} />
 
           <h2 id="vad">{copy.about.whatTitle}</h2>
           {copy.about.what.map((paragraph) => (
@@ -29,16 +29,13 @@ export function About({ go }: { go: (view: View) => void }) {
               {paragraph}
             </p>
           ))}
-
-          <h2 id="anvanda">{copy.about.useTitle}</h2>
-          {copy.about.use.map((paragraph) => (
-            <p className="prose-body" key={paragraph}>
-              {linkify(paragraph)}
-            </p>
-          ))}
           <p className="prose-body">
-            <a href={viewPaths.dev} onClick={navClick(() => go("dev"))}>
-              {copy.about.developersCta}
+            <a href={viewPaths.transparency} onClick={navClick(() => go("transparency"))}>
+              {copy.about.howCta}
+            </a>
+            <span aria-hidden="true"> · </span>
+            <a href={viewPaths.services} onClick={navClick(() => go("services"))}>
+              {copy.about.productsCta}
             </a>
           </p>
 

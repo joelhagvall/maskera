@@ -51,6 +51,18 @@ are.
 
 ## How good is it, really
 
+- **Independent Swedish text (measured 2026-11-26, what maskera.dev shows):**
+  across four corpora neither Maskera nor its developer wrote and absent from
+  v20 training (SUC 3.0 test, SIC2 Swedish blogs, MultiCoNER v2 Swedish persons,
+  and ai4privacy openpii Swedish rows; 23,980 texts), Maskera v20 q4 hid 92.4%
+  of names (11,613/12,570), 92.8% of lowercase names, 93.6% of places, and 95.2%
+  of street addresses and postcodes. Presidio with Swedish spaCy
+  (`sv_core_news_lg`, trained on SUC 3.0) hid 72.3% / 71.4% / 97.1% / 47.0%,
+  `swedish-pii` 1.2.0 hid 55.3% / 0.3% / 82.7% / 77.3%, and OpenAI Privacy
+  Filter q4 ONNX hid 52.2% / 10.3% / 33.5% / 63.3%. Maskera triggered a
+  detection in 21.4% of entity-free SUC + SIC2 sentences versus Presidio's 2.5%.
+  Machine results live in
+  [`docs/benchmark-independent-v20.json`](benchmark-independent-v20.json).
 - The public-comparison tables describe historical v18, while the current v20
   release snapshot records 100.0%
   label-agnostic span F1 and 0/57 leaks on the revised synthetic ADR set,

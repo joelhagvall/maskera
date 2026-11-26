@@ -17,7 +17,7 @@ export function Transparency({ go }: { go: (view: View) => void }) {
           <h1>{copy.transparency.title}</h1>
           <p className="prose-lede">{copy.transparency.lede}</p>
 
-          <PageToc label={copy.transparency.tocLabel} items={copy.transparency.toc} />
+          <PageToc items={copy.transparency.toc} />
 
           <TextList
             id="hur-fungerar"

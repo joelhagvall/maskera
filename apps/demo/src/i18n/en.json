@@ -3,7 +3,7 @@
     "title": "Use AI without sharing personal data.",
     "titleMobile": "Use AI without\nsharing personal data.",
     "exampleMarker": "[NAMN_1]",
-    "lede": "Swedish names, personal identity numbers and addresses are swapped for {marker} before the AI sees them: in the browser, in your AI agents and in your own code.",
+    "lede": "Maskera is a privacy layer in front of AI: Swedish names, personal identity numbers, addresses and other personal data are swapped for placeholders like {marker} before the AI sees them, in the browser, in your AI agents and in your own code.",
     "browserLead": "Everything runs",
     "browserEmphasis": "locally on your device",
     "productLabel": "Your AI chat",
@@ -11,17 +11,22 @@
     "stage": {
       "label": "Choose where maskera runs",
       "tabs": { "browser": "Browser", "agent": "AI agent", "code": "Your code" },
-      "note": "Built for Swedish text. The same 43 MB model in all three, no text is sent to Maskera.",
       "browserAlt": "Maskera's preview in an AI chat: Bo Ek, the personal identity number, Boden, Liv and the bankgiro number become placeholders, while the housing adaptation and the Swedish words bo kvar and i dag stay, so the AI can write the decision.",
       "agent": {
         "windowLabel": "Your AI agent",
-        "projectsLabel": "Projects",
-        "projects": ["cases", "contracts", "reports"],
+        "threadsLabel": "Threads",
+        "newThread": "New thread",
+        "threads": ["Housing adaptation decision", "Summarise the contract", "Weekly report"],
         "userMessage": "Read ärende.txt and write the decision.",
         "toolRead": "Read ärende.txt",
         "maskedCount": "maskera · {count} details masked",
         "modelSees": "The model sees:",
+        "plan": "I will write the decision in beslut.md.",
+        "edited": "Edited beslut.md",
+        "writeRestored": "maskera · restored locally",
+        "done": "Done. The decision is in beslut.md.",
         "composer": "Ask the agent",
+        "composerMeta": "Local proxy · maskera",
         "worksWith": "Through the local proxy in Claude Code, Codex, Cursor and OpenCode",
         "restoredNote": "The reply is restored locally"
       },
@@ -34,10 +39,9 @@
     }
   },
   "demo": {
-    "testDataNote": "The examples use fictional people and officially reserved test values, never real people's data.",
-    "testDataCta": "Learn more about the test data",
+    "testDataNote": "Fictional people and official test values. Everything runs in your browser.",
+    "testDataCta": "About the test data",
     "tryTitle": "Try it yourself",
-    "tryLede": "Fictional examples. Everything runs in your browser.",
     "languageNote": "The interface is translated, but the example text and simulated AI responses stay in Swedish. Maskera currently only supports Swedish-language text; it does not translate other languages.",
     "skipLink": "Skip to main content"
   },
@@ -52,7 +56,7 @@
     "modelReady": "maskera's AI model is active"
   },
   "inputCard": {
-    "title": "Your text",
+    "title": "You write",
     "clear": "Clear",
     "placeholder": "Type or paste your own Swedish text here… Everything runs locally.",
     "examplePrefix": "Example:",
@@ -64,7 +68,7 @@
     "testPersonnummerCta": "Try the Swedish Tax Agency's reserved test number 19900101-2385.",
     "singularCount": "item masked",
     "pluralCount": "items masked",
-    "title": "What the AI sees",
+    "title": "The AI sees",
     "analyzing": "analysing…",
     "restoreMapNote": "The key stays on your device. The AI only sees placeholders, and you swap the originals back into the reply afterwards.",
     "showKey": "Show restoration key",
@@ -76,14 +80,246 @@
     "copied": "Copied",
     "copyCode": "Copy code"
   },
+  "pageToc": {
+    "label": "On this page"
+  },
+  "homeTrust": {
+    "title": "For IT and data protection",
+    "lede": "What IT, security and data protection officers usually ask first.",
+    "items": [
+      {
+        "title": "Text never leaves the device",
+        "body": "Masking runs in the browser or on the computer. Maskera never receives the text or the key that restores it."
+      },
+      {
+        "title": "Open and auditable",
+        "body": "The engine and the model are open source (MIT). Every model file is checked with SHA-256 before it is used."
+      },
+      {
+        "title": "Central deployment",
+        "body": "With Team you deploy the extension and a shared word list through Intune, Jamf or Google Workspace."
+      },
+      {
+        "title": "Openly tested",
+        "body": "Accuracy is measured and published, with known weak spots. The test scripts are open on GitHub."
+      }
+    ],
+    "securityCta": "Security and data flow",
+    "faqCta": "FAQ"
+  },
+  "homeClosing": {
+    "title": "Start with what you already use",
+    "body": "Install the extension for AI chats or put Maskera in front of your agent. It is free to start."
+  },
+  "faq": {
+    "metaTitle": "faq: pricing, data protection and setup · maskera",
+    "metaDescription": "Answers to common questions about Maskera: is text sent anywhere, is an agreement needed, what it costs, which AI services and browsers work and how to roll it out.",
+    "title": "FAQ",
+    "lede": "Short answers to what we are asked most. If your answer is missing, email hej@maskera.dev.",
+    "groups": [
+      {
+        "id": "data",
+        "title": "Data and data protection",
+        "items": [
+          {
+            "id": "skickas-texten",
+            "q": "Is my text sent to Maskera?",
+            "a": "No. Masking runs locally in the browser, in the extension or in your own Node process. Maskera never receives the text or the key that restores it."
+          },
+          {
+            "id": "avtal",
+            "q": "Do we need a data processing agreement?",
+            "a": "Not for the text, because Maskera never receives it. Account and payment details in the customer portal are handled by Hägvall Labs AB under the extension privacy policy."
+          },
+          {
+            "id": "nyckeln",
+            "q": "Where is the key that restores the text?",
+            "a": "Only on your device. In the extension it lives in the browser's session storage and is cleared when the tab or the browser closes."
+          },
+          {
+            "id": "lagras",
+            "q": "Does Maskera store anything about me?",
+            "a": "maskera.dev counts page views anonymously without cookies. The customer portal stores account and payment details for people who buy Pro or Team. The text you mask is never stored by us."
+          }
+        ]
+      },
+      {
+        "id": "funktion",
+        "title": "How it works",
+        "items": [
+          {
+            "id": "missar",
+            "q": "What if Maskera misses something?",
+            "a": "It can happen, especially with unusual names or noisy scanned text. Review it yourself when a mistake would matter, and report misses so they become test cases. The numbers are on the accuracy page."
+          },
+          {
+            "id": "ai-tjanster",
+            "q": "Which AI services does the extension work with?",
+            "a": "ChatGPT, Claude, Gemini, Copilot, Perplexity and Mistral, plus internal AI sites you turn on yourself."
+          },
+          {
+            "id": "webblasare",
+            "q": "Which browsers are supported?",
+            "a": "Chrome, Edge and Firefox on desktop. Safari is coming later. Until the stores open, you can install the extension manually in Chrome and Edge."
+          },
+          {
+            "id": "offline",
+            "q": "Does it work without internet?",
+            "a": "Masking itself needs no network. The AI model is downloaded once when you start and is then kept on the device."
+          },
+          {
+            "id": "sprak",
+            "q": "Does it work in languages other than Swedish?",
+            "a": "Maskera is built for Swedish text. Rules such as email and card numbers work in any language, but the model is trained for Swedish names and places."
+          },
+          {
+            "id": "agenter",
+            "q": "Can AI agents use Maskera?",
+            "a": "Yes. The local proxy masks what you type in the chat, the MCP server masks files the agent reads, and guard stops prompts with personal data. See the guides for Claude, Codex and Cursor."
+          }
+        ]
+      },
+      {
+        "id": "pris",
+        "title": "Pricing and buying",
+        "items": [
+          {
+            "id": "kostar",
+            "q": "What does it cost?",
+            "a": "Free gives unlimited rules and 20 AI redactions a month. Pro costs SEK 149 per user and month including VAT, with 7 days free. Team costs SEK 249 per user and month excluding VAT, from 5 users. The agent tools and npm packages are free and open source."
+          },
+          {
+            "id": "pro-team",
+            "q": "What is the difference between Pro and Team?",
+            "a": "Pro is for one person: unlimited AI redaction and your own protected words. Team adds a shared word list for the whole organisation, central deployment and rollout support."
+          },
+          {
+            "id": "avsluta",
+            "q": "How do I cancel Pro?",
+            "a": "Cancel in the customer portal before the next charge. There is no lock-in."
+          },
+          {
+            "id": "faktura",
+            "q": "Can we pay by invoice?",
+            "a": "Yes, Team can be paid by annual invoice. Email hej@maskera.dev and we will send one."
+          },
+          {
+            "id": "utrullning",
+            "q": "How do we roll the extension out to the whole organisation?",
+            "a": "With Team you deploy the extension in Chrome and Edge through Intune, Jamf or Google Workspace, together with the licence and the shared word list. We send a ready-made template."
+          }
+        ]
+      }
+    ],
+    "contactLead": "More questions?",
+    "contactCta": "Email hej@maskera.dev"
+  },
+  "guides": {
+    "metaTitle": "guides: connect maskera to claude, codex and cursor · maskera",
+    "metaDescription": "Step by step: connect Maskera's local proxy or MCP server in Claude Desktop, Claude Code, Codex and Cursor, and test with made-up data.",
+    "title": "Guides",
+    "lede": "Step by step for the most common AI tools. The proxy masks what you type in the chat. The MCP server masks files the agent reads.",
+    "sections": [
+      {
+        "id": "claude-desktop",
+        "codeLabel": "Terminal",
+        "title": "Claude Desktop",
+        "body": "Start the proxy and keep it running. Then choose Help → Troubleshooting → Enable Developer Mode, followed by Developer → Configure Third-Party Inference…. Enter the base URL http://127.0.0.1:8787 without /v1, your Anthropic API key and the x-api-key auth scheme. Click Apply Changes and then Save & Restart.",
+        "code": "npx -y @maskera/mcp proxy",
+        "note": "The exact field names, and how to switch back to your Claude account, are in the guide on GitHub.",
+        "noteLink": "desktop"
+      },
+      {
+        "id": "claude-code",
+        "codeLabel": "Terminal",
+        "title": "Claude Code",
+        "body": "With the proxy, everything Claude Code sends is masked, tool results included. With MCP, Claude reads your files through Maskera instead.",
+        "code": "# Proxy\nnpx -y @maskera/mcp proxy\nANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude\n\n# Or the MCP server for files\nclaude mcp add maskera -- npx -y @maskera/mcp --root .",
+        "note": "",
+        "noteLink": ""
+      },
+      {
+        "id": "codex",
+        "codeLabel": "Terminal",
+        "title": "Codex",
+        "body": "With an API key, Codex goes through the proxy. Signed in with ChatGPT, Codex requires HTTPS, so the local proxy does not work. Use the MCP server instead.",
+        "code": "# With an API key\nnpx -y @maskera/mcp proxy\nOPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex\n\n# Signed in with ChatGPT: MCP server\ncodex mcp add maskera -- npx -y @maskera/mcp --root .",
+        "note": "",
+        "noteLink": ""
+      },
+      {
+        "id": "cursor",
+        "codeLabel": ".cursor/mcp.json",
+        "title": "Cursor",
+        "body": "Add the MCP server to the project's .cursor/mcp.json. The agent then reads sensitive files with maskera_read_file and writes back with maskera_write_file.",
+        "code": "{\n  \"mcpServers\": {\n    \"maskera\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@maskera/mcp\", \"--root\", \".\"]\n    }\n  }\n}",
+        "note": "",
+        "noteLink": ""
+      },
+      {
+        "id": "testa",
+        "codeLabel": "Test",
+        "title": "Test before you use real data",
+        "body": "Open the local inspector and send a made-up address. The inspector should show [EPOST_1] going out, and the reply should show the address again.",
+        "code": "# The inspector\nopen http://127.0.0.1:8787/_maskera\n\n# Type in the chat\nSkriv ett kort mejl till provnamn.maskera@example.com och bekräfta mötet.",
+        "note": "",
+        "noteLink": ""
+      }
+    ],
+    "moreLead": "Every mode and flag:",
+    "moreCta": "The @maskera/mcp documentation"
+  },
+  "industries": {
+    "metaTitle": "industries: hr, healthcare, legal and public sector · maskera",
+    "metaDescription": "How Maskera is used in HR, healthcare, legal, the public sector and customer support: which personal data is swapped out and what stays for the AI.",
+    "title": "Industries",
+    "lede": "One engine, different texts. How Maskera is used where personal data is everywhere.",
+    "sections": [
+      {
+        "id": "hr",
+        "scenario": "hr",
+        "title": "HR and recruiting",
+        "body": "CVs, salary data and references contain names, personal identity numbers and contact details. Maskera swaps them out, so the AI can assess the candidate without seeing who it is.",
+        "masked": "Names, personal identity numbers, email and phone"
+      },
+      {
+        "id": "vard",
+        "scenario": "vard",
+        "title": "Healthcare",
+        "body": "Journal notes and referrals. With the clinical profile in the npm package and the MCP server, diagnoses, doses and measurements stay while the patient is masked.",
+        "masked": "Names, personal identity numbers, addresses and relatives"
+      },
+      {
+        "id": "juridik",
+        "scenario": "juridik",
+        "title": "Legal",
+        "body": "Client matters, counterparties and payment details. Names, organisation numbers and bankgiro are swapped out before the AI summarises the case.",
+        "masked": "Names, organisation numbers and bankgiro"
+      },
+      {
+        "id": "kommun",
+        "scenario": "kommun",
+        "title": "Public sector",
+        "body": "Applications and case handling with personal identity numbers, addresses and relatives. Your own formats, such as case numbers, can be added as custom rules.",
+        "masked": "Names, personal identity numbers, addresses and email"
+      },
+      {
+        "id": "kundsupport",
+        "scenario": "support",
+        "title": "Customer support",
+        "body": "Tickets and complaints with card numbers, IBANs and phone numbers, even when the customer writes in capitals.",
+        "masked": "Names, card numbers, IBAN and phone"
+      }
+    ],
+    "maskedLabel": "Masked:",
+    "tryCta": "Try the example"
+  },
   "restoreDemo": {
-    "title": "How restoration works",
-    "body": "When the reply comes back with placeholders, maskera swaps the originals back in locally. The key never leaves your device.",
-    "replyTitle": "AI response",
+    "stepTitle": "The reply, back with you",
+    "showRestored": "With your details",
+    "showReply": "The AI's reply",
     "resetExample": "Reset example",
-    "editableExample": "Simulated response, freely editable",
     "replyAria": "AI response containing placeholders",
-    "restoredTitle": "With your data restored",
     "joinWord": "och",
     "generic": {
       "case": "sammanställt ärendet",
@@ -108,6 +344,15 @@
         "email": " på {email}",
         "fallback": "Boka en första intervju och dokumentera bedömningen."
       },
+      "kontext": {
+        "lead": "Sammanfattat:",
+        "home": "{name} ska bo i {place}.",
+        "work": "{name} jobbar på {org}.",
+        "callback": "Patienten med Parkinsons sjukdom behöver en ny tid, ring tillbaka till {name}{pnr}.",
+        "pnr": " ({pnr})",
+        "fallbackPnr": "Patienten med Parkinsons sjukdom behöver en ny tid ({pnr}).",
+        "fallback": "Patienten med Parkinsons sjukdom behöver en ny tid."
+      },
       "support": {
         "lead": "Tack för underlaget! Jag har skapat ärendet{person}{card}.",
         "person": " för {name}",
@@ -115,6 +360,14 @@
         "contact": "Nästa steg: beställ nytt kort och återkoppla{person} på {contact}.",
         "contactPerson": " till {name}",
         "fallback": "Nästa steg: beställ nytt kort och dokumentera ärendet."
+      },
+      "klagomal": {
+        "lead": "Hej{person}! Förlåt att du har fått ringa flera gånger.",
+        "person": " {name}",
+        "refund": "Vi har hittat dubbeldragningen på 449 kr och återbetalar beloppet till kortet {card} inom tre bankdagar.",
+        "refundFallback": "Vi har hittat dubbeldragningen på 449 kr och återbetalar beloppet inom tre bankdagar.",
+        "compensation": "Som kompensation bjuder vi på nästa månad.",
+        "call": "Vi ringer dig på {phone} i dag."
       },
       "vard": {
         "lead": "Journalanteckningen{person} är uppdaterad med EKG-svaret.",
@@ -137,16 +390,16 @@
   },
   "scenarios": [
     {
+      "id": "kontext",
+      "name": "Swedish context",
+      "tagline": "Tells names apart from ordinary words and diagnoses",
+      "text": "Bo ska bo i Boden. Liv jobbar på Karolinska och har bott hela sitt liv i Uppsala. Dag åker till Medelpad en vanlig dag i maj. Patienten har Parkinsons sjukdom, men Kalle Parkinson (19900101-2385) ringde nyss om sin tid."
+    },
+    {
       "id": "hr",
       "name": "HR",
       "tagline": "AI-assisted candidate screening",
       "text": "Kandidat: Sara Lindgren, 991201-2391. Mail: sara.lindgren@example.com, tel 0701740605. Nuvarande lön 48 000 kr/mån. Referens: Per Holmberg, 08-465 004 12. Bedöm CV mot rollbeskrivningen och föreslå intervjufrågor."
-    },
-    {
-      "id": "kontext",
-      "name": "Swedish context",
-      "tagline": "Tells names apart from ordinary words and diagnoses",
-      "text": "Bo ska bo i Boden. Liv jobbar på Karolinska och har bott hela sitt liv i Uppsala. Dag åker till Medelpad en vanlig dag i maj. Patienten har Parkinsons sjukdom, men Kalle Parkinson ringde nyss om sin tid."
     },
     {
       "id": "support",
@@ -205,11 +458,18 @@
   },
   "developerApi": {
     "title": "For developers",
-    "lede": "Add local Swedish PII masking in front of AI agents (proxy and MCP) or directly inside your own app with",
+    "toc": [
+      { "href": "#agenter", "label": "AI agents" },
+      { "href": "#installera", "label": "Install the SDK" },
+      { "href": "#maskera", "label": "Mask a text" },
+      { "href": "#aterstall", "label": "Restore the reply" },
+      { "href": "#vardprofil", "label": "Clinical profile" }
+    ],
+    "lede": "Mask Swedish personal data locally in front of your AI agents (proxy and MCP) or directly in your own code with",
     "modelLink": "the Swedish AI model",
     "modelSuffix": "running on-device via Transformers.js.",
     "agentsTitle": "AI agents: local proxy, MCP and guard (@maskera/mcp)",
-    "agentsBody": "Protect Claude Code, Codex, Cursor, Claude Desktop, OpenCode and custom agents without switching models. Run the local proxy for enforced masking across any harness, the MCP server for local files, or guard in hooks.",
+    "agentsBody": "Protect Claude Code, Codex, Cursor, Claude Desktop, OpenCode and custom agents without switching models. Run the local proxy in clients that accept a custom API URL, the MCP server for local files, or guard in hooks.",
     "installTitle": "Install SDK in your own code",
     "packageManagerLabel": "Package manager",
     "installNote": "Rules and AI model are included; import the entire API from maskera.",
@@ -247,7 +507,7 @@
     "heading": "What is masked?",
     "linkCta": "See exactly what is masked.",
     "developersLink": "The model categories and default rule-engine detectors are listed category by category.",
-    "servicesLink": "The browser extension uses the same Swedish model and base rules, with custom protected words in Pro.",
+    "servicesLink": "All three use the same Swedish model and rules.",
     "lede": "The complete maskera npm package and the browser extension combine fixed rules with the Swedish AI model. Their default choices differ as shown below.",
     "groups": [
       {
@@ -317,7 +577,10 @@
     "testData": "Test data",
     "privacyPolicy": "Privacy policy",
     "about": "About & contact",
-    "github": "GitHub"
+    "github": "GitHub",
+    "faq": "FAQ",
+    "guides": "Guides",
+    "industries": "Industries"
   },
   "footer": {
     "openSource": "Open source",
@@ -334,162 +597,98 @@
     }
   },
   "accuracy": {
-    "metaTitle": "accuracy & test results for Swedish PII · maskera",
-    "metaDescription": "How well Maskera finds Swedish personal data compared with other models that support Swedish, and what the tests do not cover.",
+    "metaTitle": "accuracy on independent Swedish text · maskera",
+    "metaDescription": "How much of the names, places and addresses Maskera hides in Swedish text that neither Maskera nor we wrote, compared with Presidio, swedish-pii and OpenAI Privacy Filter.",
     "title": "How well does Maskera find personal data?",
-    "lede": "What matters most is how little personal data stays in plain text. Here are our current numbers, a plain comparison with other models that support Swedish, and what to keep in mind.",
-    "inlineCta": "accuracy page",
+    "lede": "Measured on Swedish text that neither Maskera nor we wrote: SUC 3.0 from the National Library of Sweden, SIC2 from Språkbanken Text, MultiCoNER v2 and ai4privacy. Every tool ran on the same texts with the same rules, and the numbers also show where Maskera does worse.",
+    "inlineCta": "the accuracy page",
     "servicesCta": "See test results and limitations",
-    "tocLabel": "On this page",
     "toc": [
-      { "href": "#aktuellt", "label": "Quick summary" },
-      { "href": "#verktyg", "label": "Compared with PII tools" },
-      { "href": "#jamforelse", "label": "Compared with other models" },
-      { "href": "#kontext", "label": "Swedish context" },
-      { "href": "#begransningar", "label": "Good to know" }
-    ],
-    "currentTitle": "Quick summary",
-    "currentBody": "Published Maskera v20 (43 MB), measured on Swedish test sets on 2026-11-25.",
-    "currentStats": [
-      { "value": "99.5% · 0 misses", "label": "Mixed Swedish text (205 items)" },
-      { "value": "100% · 0 misses", "label": "Swedish street addresses (57 items)" },
-      { "value": "99.1% (943 of 952)", "label": "Full pipeline: rules + AI (258 texts)" },
-      { "value": "43 MB", "label": "7-11x smaller than compared models" }
-    ],
-    "comparisonTitle": "Compared with other models that support Swedish",
-    "comparisonBody": "We only compare models that actively support Swedish. All three ran on the same 121 Swedish texts with 211 names, places and organisations, both with normal casing and all lowercase (like a quick chat message).",
-    "comparisonBarGroups": [
       {
-        "title": "Normal text",
-        "items": [
-          { "label": "Maskera v20 (43 MB)", "valueText": "100.0%", "pct": 100, "ours": true },
-          { "label": "KBLab lowermix (496 MB)", "valueText": "97.2%", "pct": 97.2, "ours": false },
-          {
-            "label": "Bards AI EU PII v3 (309 MB)",
-            "valueText": "85.8%",
-            "pct": 85.8,
-            "ours": false
-          }
-        ]
+        "href": "#aktuellt",
+        "label": "Short summary"
       },
       {
-        "title": "All lowercase",
-        "items": [
-          { "label": "Maskera v20 (43 MB)", "valueText": "100.0%", "pct": 100, "ours": true },
-          { "label": "KBLab lowermix (496 MB)", "valueText": "88.6%", "pct": 88.6, "ours": false },
-          {
-            "label": "Bards AI EU PII v3 (309 MB)",
-            "valueText": "56.4%",
-            "pct": 56.4,
-            "ours": false
-          }
-        ]
+        "href": "#jamforelse",
+        "label": "Compared with other tools"
+      },
+      {
+        "href": "#testerna",
+        "label": "The tests"
+      },
+      {
+        "href": "#kontext",
+        "label": "Swedish context"
+      },
+      {
+        "href": "#begransningar",
+        "label": "Worth knowing"
       }
     ],
-    "comparisonTable": {
-      "caption": "Comparison of models that support Swedish across 121 Swedish texts",
-      "system": "Model",
+    "currentTitle": "Short summary",
+    "currentBody": "Share of values Maskera v20 hid in independent Swedish text, measured on 2026-11-26. Hidden means the value does not appear in the text that is sent, whatever label it got.",
+    "cells": {
+      "names": "Names",
+      "namesLowercase": "Names in lowercase, as in chat",
+      "places": "Places",
+      "addresses": "Street addresses and postcodes",
+      "overMasking": "Sentences without personal data that still got a hit"
+    },
+    "ofTotal": "{masked} of {total}",
+    "comparisonTitle": "Compared with other local tools",
+    "comparisonBody": "The same texts and the same counting for all four. Higher is better in every column except the last, where lower is better.",
+    "barTitle": "Names hidden in independent Swedish text",
+    "table": {
+      "caption": "Share of values hidden per tool in independent Swedish text",
+      "system": "Tool",
       "size": "Size",
-      "normal": "Normal text",
-      "lowercase": "Lowercase"
+      "notMeasured": "Not measured",
+      "names": "Names",
+      "namesLowercase": "Lowercase names",
+      "places": "Places",
+      "addresses": "Addresses",
+      "overMasking": "Hit in a sentence without personal data"
     },
-    "comparisonRows": [
+    "systems": {
+      "maskera": {
+        "name": "Maskera v20",
+        "description": "Swedish model and format rules, local"
+      },
+      "presidio": {
+        "name": "Microsoft Presidio",
+        "description": "Swedish spaCy (sv_core_news_lg) and Swedish ID rules"
+      },
+      "swedish-pii": {
+        "name": "swedish-pii 1.2",
+        "description": "Regular expressions and Swedish name lists"
+      },
+      "openai-privacy-filter": {
+        "name": "OpenAI Privacy Filter",
+        "description": "Multilingual model, q4 ONNX"
+      }
+    },
+    "comparisonSummary": "Maskera hides the most names, lowercase ones included, and the most addresses. Presidio hides more places and hits far fewer sentences without personal data. Its spaCy model is trained on SUC 3.0, one of the tests, which gives it an advantage there.",
+    "testsTitle": "The tests",
+    "tests": [
       {
-        "system": "Maskera v20",
-        "description": "Swedish model built for local in-browser use",
-        "size": "43 MB",
-        "normal": "211 of 211 (100.0%)",
-        "lowercase": "211 of 211 (100.0%)",
-        "ours": true
+        "name": "SUC 3.0, National Library of Sweden",
+        "body": "The test part of a manually annotated Swedish corpus: newspaper text, fiction and government text. People, places and organisations, in normal text and in lowercase."
       },
       {
-        "system": "KBLab lowermix",
-        "description": "Full-size Swedish BERT from the National Library of Sweden",
-        "size": "496 MB",
-        "normal": "205 of 211 (97.2%)",
-        "lowercase": "187 of 211 (88.6%)",
-        "ours": false
+        "name": "SIC2, Språkbanken Text",
+        "body": "809 manually annotated sentences from Swedish blogs. Informal everyday Swedish with people, places and organisations, plus sentences without personal data."
       },
       {
-        "system": "Bards AI EU PII v3",
-        "description": "Multilingual EU model (24 languages incl. Swedish, INT8 ONNX)",
-        "size": "309 MB",
-        "normal": "181 of 211 (85.8%)",
-        "lowercase": "119 of 211 (56.4%)",
-        "ours": false
+        "name": "MultiCoNER v2, Swedish",
+        "body": "Short sentences from Swedish Wikipedia, all lowercase. Only person names count: places and organisations are labelled too loosely, with common words such as \"ort\" and \"flygplats\"."
+      },
+      {
+        "name": "ai4privacy openpii, Swedish",
+        "body": "Synthetic Swedish text from another company. Names, street addresses, postcodes, towns and email count. Phone, card and personal identity numbers do not count here, because many of the values are not valid Swedish formats."
       }
     ],
-    "comparisonSummary": "Maskera caught all 211 names, places and organisations in both runs despite being 7 to 11 times smaller. KBLab edged ahead slightly on exact category label in normal text (89.4% vs 88.2%); in lowercase Maskera led clearly (87.4% vs 83.2% and 62.1%).",
-    "toolsComparison": {
-      "title": "Compared with other local PII tools on Swedish",
-      "body": "Measured on CPU on 2026-11-26 across both an external Swedish benchmark (National Library of Sweden SUC 3.0: 1,000 published sentences, 627 person names + 500 clean zero-entity sentences, zero rows in Maskera training) and our 258-text Swedish domain suite (952 annotated PII items: names, street addresses, personal IDs, phones, emails, bankgiro and IBAN). Microsoft Presidio ran a steelmanned Swedish setup (sv_core_news_lg + Swedish ID rules) and OpenAI Privacy Filter (q4 ONNX) used constrained BIOES Viterbi decoding.",
-      "barTitle": "Full hits on 952 Swedish PII items (258 texts)",
-      "bars": [
-        { "label": "Maskera v20 (43 MB)", "valueText": "98.8%", "pct": 98.8, "ours": true },
-        { "label": "swedish-pii 1.2 (5 MB)", "valueText": "88.3%", "pct": 88.3, "ours": false },
-        {
-          "label": "OpenAI Privacy Filter q4 (945 MB)",
-          "valueText": "72.2%",
-          "pct": 72.2,
-          "ours": false
-        },
-        {
-          "label": "Microsoft Presidio + sv spaCy (245 MB)",
-          "valueText": "69.0%",
-          "pct": 69.0,
-          "ours": false
-        }
-      ],
-      "table": {
-        "caption": "Comparison of local PII tools on 258 Swedish texts (952 items) and external SUC 3.0 test prose (627 Swedish person names, cased and lowercase)",
-        "system": "Tool",
-        "size": "Size",
-        "domain": "258 texts (952 PII)",
-        "lowercaseNames": "SUC 3.0 F1 (cased / lower)",
-        "speedRam": "CPU / RAM"
-      },
-      "rows": [
-        {
-          "system": "Maskera v20",
-          "description": "Swedish q4 ONNX model + Swedish format rules (zero SUC training rows)",
-          "size": "43 MB",
-          "domain": "98.8% (11 leaks)",
-          "lowercaseNames": "88.5% / 88.2%",
-          "speedRam": "12.7 ms · 334 MB",
-          "ours": true
-        },
-        {
-          "system": "swedish-pii 1.2",
-          "description": "Regex and Swedish name lists (no ML model)",
-          "size": "5 MB",
-          "domain": "88.3% (111 leaks)",
-          "lowercaseNames": "73.6% / 0.0%",
-          "speedRam": "2.8 ms · 157 MB",
-          "ours": false
-        },
-        {
-          "system": "OpenAI Privacy Filter",
-          "description": "1.5B MoE (q4 ONNX, 50M active params, Apache 2.0)",
-          "size": "945 MB",
-          "domain": "72.2% (265 leaks)",
-          "lowercaseNames": "51.9% / 11.3%",
-          "speedRam": "40.3 ms · 1,232 MB",
-          "ours": false
-        },
-        {
-          "system": "Microsoft Presidio",
-          "description": "sv_core_news_lg (trained on SUC 3.0) + Swedish ID rules",
-          "size": "245 MB",
-          "domain": "69.0% (295 leaks)",
-          "lowercaseNames": "96.5% / 83.6%",
-          "speedRam": "5.9 ms · 456 MB",
-          "ours": false
-        }
-      ],
-      "summary": "On external Swedish prose (SUC 3.0), the 43 MB Maskera v20 model beats both OpenAI Privacy Filter (88.5% vs 51.9% cased F1; 88.2% vs 11.3% lowercase) and swedish-pii (73.6% / 0.0%). Presidio's spaCy model was trained on SUC 3.0 and leads on cased SUC prose (96.5%), but drops behind Maskera on lowercase (83.6% vs 88.2%) and leaks 295/952 items on the full Swedish PII suite. Fair note: OpenAI Privacy Filter includes a secret/API-key class and 128k context that Maskera does not target, and Maskera v20 still over-masks some sentence-initial capitalized homographs and organisation nouns in clean prose."
-    },
     "contextTitle": "Why Swedish context matters",
-    "contextBody": "Personal identity numbers are easy to catch with rules. The hard part in Swedish is words that can be either a person's name or an everyday word or diagnosis.",
+    "contextBody": "Personal identity numbers are easy to find with ordinary rules. The hard part of Swedish text is words that can be both names and ordinary words or diagnoses.",
     "contextExamples": [
       {
         "input": "Bo ska bo i Boden.",
@@ -505,14 +704,15 @@
       }
     ],
     "contextDemoCta": "Try the example in the demo",
-    "limitsTitle": "Good to know",
+    "limitsTitle": "Worth knowing",
     "limits": [
-      "The SUC 3.0 column uses the National Library of Sweden's external corpus (1,000 published sentences, zero rows in Maskera's training). The 258-text suite and model comparison were written by Maskera's developer to cover Swedish formats absent from public corpora (personnummer, bankgiro, street addresses).",
-      "The tool comparison tests the full pipeline (rules + AI) across 258 Swedish texts. The model comparison tests the AI model alone (names, places and organisations).",
-      "No automatic masking is 100% error-free. Unusual names or noisy scans can slip through, so always review the text yourself when a mistake would carry high impact."
+      "None of the test texts are in Maskera's training, which uses only generated text. The base model KB-BERT was pretrained by the National Library of Sweden on broad Swedish text and may have seen the same source texts, but never the labels.",
+      "Maskera hits words in about one in five sentences without personal data. That is the price of finding lowercase and unusual names, and it means some ordinary words are swapped out needlessly.",
+      "Personal identity numbers, organisation numbers, bankgiro and IBAN have no independent Swedish test text. They are found with format rules and check digits and are covered by the project's own tests on GitHub, but are not reported here.",
+      "No automatic masking is error-free. Review the text yourself when a mistake could have serious consequences."
     ],
-    "provenance": "Maskera v20 (43 MB q4) and KBLab lowermix (496 MB fp32) were measured on 2026-11-25; OpenAI Privacy Filter (q4 ONNX), Microsoft Presidio (sv_core_news_lg), swedish-pii 1.2 and Bards AI EU PII v3 were measured on 2026-11-26. All test scripts, machine-readable results and historical archives live openly in our GitHub repo.",
-    "demoCta": "Try in the browser demo",
+    "provenance": "Measured on CPU on 2026-11-26: Maskera v20 (q4), Presidio 2.2.366 with sv_core_news_lg 3.8.0, swedish-pii 1.2.0 and OpenAI Privacy Filter (q4 ONNX). The test texts are fetched from Hugging Face and Språkbanken Text when the test runs. Scripts and checksums are on GitHub.",
+    "demoCta": "Try the browser demo",
     "benchmarksCta": "Full report and scripts on GitHub"
   },
   "security": {
@@ -520,7 +720,6 @@
     "metaDescription": "Maskera's security boundaries, network requests, pinned model artefacts, safe restoration and private vulnerability reporting.",
     "title": "Security in maskera",
     "lede": "All masking runs locally on your device. Here is how data moves, how model files are verified and how to report a vulnerability.",
-    "tocLabel": "On this page",
     "toc": [
       { "href": "#dataflode", "label": "Data flow and network" },
       { "href": "#artefakter", "label": "Verified model files" },
@@ -560,7 +759,7 @@
     "advisoryCta": "Submit a private security report",
     "issuesCta": "Report a quality issue",
     "productionTitle": "Production operation",
-    "productionBody": "The production guide covers secure integration, fallback to rules, logging, self-hosting, domain-specific test corpora and the production checklist. Maskera is a data-minimisation layer, not a guarantee of compliance or complete detection.",
+    "productionBody": "The production guide covers secure integration, fallback to rules, logging, self-hosting, domain-specific test corpora and the production checklist.",
     "productionCta": "Read the production guide",
     "extensionBody": "This page covers the npm packages and open demo. The browser extension's local data handling and licence model are documented in the customer portal.",
     "extensionCta": "Read the extension privacy policy"
@@ -570,7 +769,6 @@
     "metaDescription": "See what Maskera does, what leaves the device, how the Swedish AI model was trained and which personal data it can miss.",
     "title": "Privacy & transparency",
     "lede": "See what Maskera does, what leaves the device, how the model was trained and what it can miss.",
-    "tocLabel": "On this page",
     "toc": [
       { "href": "#hur-fungerar", "label": "How does it work?" },
       { "href": "#vad-maskeras", "label": "What is masked?" },
@@ -580,14 +778,15 @@
     ],
     "howTitle": "How does it work?",
     "how": [
-      "Maskera reads the text and replaces detected personal data with placeholders such as [NAMN_1] or [PERSONNUMMER_1]. The AI service sees the placeholders. Afterwards, you can restore the originals locally.",
-      "Two layers work together. Rules find fixed-format data such as Swedish personal identity numbers, phone numbers and email addresses. A small Swedish AI model finds names, places, organisations and addresses in running text.",
-      "The model runs directly in the browser or in your own Node process. The text therefore does not need to be sent to an external service for analysis."
+      "You write: “Bo Ek bor i Boden.” Maskera finds the name and the place.",
+      "Before the text is sent, they are swapped for placeholders: “[NAMN_1] bor i [PLATS_1].” That is all the AI service sees.",
+      "The AI service replies with the same placeholders. Maskera swaps them back on your device, using a key that never leaves it.",
+      "Two things find the data. Rules catch fixed formats such as personal identity numbers, phone numbers and email. A small Swedish AI model catches names, places, organisations and addresses in ordinary text. Both run in the browser or in your own Node process."
     ],
     "dataTitle": "How your text is processed",
     "data": [
       "All masking runs locally on your device (browser, extension or your own Node process). Text and restoration keys are never sent to Maskera.",
-      "Vercel Analytics counts page views anonymously without cookies, and Vercel handles technical request data for hosting. Text entered in the tool is never included.",
+      "The site's own analytics and hosting are described in the privacy policy. Text entered in the tool is never included.",
       "The rule layer has no network dependencies. The npm package downloads the model and runtime once as static files and can be self-hosted (details on the security page)."
     ],
     "trainingTitle": "How the model was trained",
@@ -624,7 +823,7 @@
     "items": [
       {
         "title": "Swedish personal identity numbers",
-        "body": "991201-2391, 850601-2387, 781101-2397, 020301-2398 and 640823-3234 come from the Swedish Tax Agency's open test identity numbers.",
+        "body": "19900101-2385, 991201-2391, 850601-2387, 781101-2397, 020301-2398 and 640823-3234 come from the Swedish Tax Agency's open test identity numbers.",
         "cta": "Verify with the Swedish Tax Agency",
         "href": "https://www.skatteverket.se/omoss/digitalasamarbeten/omvaraoppnadata/testpersonnummersomoppendata.4.5b35a6251761e6914202df9.html"
       },
@@ -699,14 +898,15 @@
     "llmsLinkCta": "Open llms.txt",
     "skillLabel": "Or install as an agent skill:",
     "skillCommand": "npx skills add joelhagvall/maskera",
-    "promptText": "Read https://maskera.dev/llms.txt and help me connect Maskera (@maskera/mcp) locally in my setup (local LLM proxy for enforced redaction across any agent, or MCP server for local files) so Swedish personal data never leaves my machine.",
+    "promptText": "Read https://maskera.dev/llms.txt and help me connect Maskera (@maskera/mcp) locally in my setup (local LLM proxy for text I type in the chat, or MCP server for files the agent reads) and test with made-up data first so Swedish personal data never leaves my machine.",
+    "desktopGuideCta": "Guide: Claude Desktop through the proxy",
     "modesLabel": "Choose AI agent mode",
     "modes": [
       {
         "id": "proxy",
-        "label": "Local proxy (any agent)",
-        "summary": "Strongest guarantee across any harness: sits locally in front of Anthropic and OpenAI, redacts every outgoing prompt and tool result, restores streaming responses automatically, and includes a local live inspector at http://127.0.0.1:8787/_maskera.",
-        "code": "# 1. Start local proxy + live inspector (http://127.0.0.1:8787/_maskera)\nnpx -y @maskera/mcp proxy\n\n# 2. Point any agent at the proxy:\nANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude\nOPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex"
+        "label": "Local proxy (custom API URL)",
+        "summary": "For clients that accept a custom API URL: Claude Code, Codex with an API key, Cursor, SDKs and Claude Desktop via third-party inference. Sits locally in front of Anthropic and OpenAI, redacts everything typed in the chat and every tool result, restores streaming responses automatically, and includes a local live inspector at http://127.0.0.1:8787/_maskera.",
+        "code": "# 1. Start local proxy + live inspector (http://127.0.0.1:8787/_maskera)\nnpx -y @maskera/mcp proxy\n\n# 2. Point your client at the proxy:\nANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude\nOPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex"
       },
       {
         "id": "mcp",
@@ -724,9 +924,7 @@
   },
   "services": {
     "title": "One privacy layer, three ways to use it",
-    "lede": "The same 43 MB Swedish model and the same rules, locally on your device.",
-    "sublede": "No text and no restore map are ever sent to Maskera.",
-    "tocLabel": "On this page",
+    "lede": "The same Swedish model and rules in all three. Everything runs on your device, and no text is sent to Maskera.",
     "toc": [
       { "href": "#oversikt", "label": "Overview" },
       { "href": "#tillagg", "label": "Browser extension" },
@@ -755,7 +953,11 @@
         },
         {
           "label": "Protection",
-          "values": ["Masks when you send", "The proxy fails closed (502)", "You decide in code"]
+          "values": [
+            "Masks when you send",
+            "Blocks rather than sends unmasked",
+            "You decide in code"
+          ]
         },
         {
           "label": "Price",
@@ -763,7 +965,6 @@
         }
       ]
     },
-    "accuracyLead": "Automated masking reduces risk, but is not a guarantee.",
     "tracks": [
       {
         "id": "extension",
@@ -788,33 +989,22 @@
       }
     ],
     "agents": {
-      "body": "Open source (MIT) running 100% locally. Use the local LLM proxy when you want enforced masking on all outgoing traffic regardless of agent harness, or the MCP server for masked local file access.",
-      "highlights": [
-        {
-          "title": "Enforced via local proxy",
-          "body": "Point ANTHROPIC_BASE_URL or OPENAI_BASE_URL at 127.0.0.1:8787. Agents cannot bypass it and the proxy fails closed (502) if local masking errors."
-        },
-        {
-          "title": "Raw files stay on disk with MCP",
-          "body": "maskera_read_file returns placeholders only and maskera_write_file restores originals directly to disk without echoing PII back into the chat."
-        },
-        {
-          "title": "Same model, zero cloud dependency",
-          "body": "Runs the pinned 43 MB Swedish ONNX model with SHA-256 verification and consistent session numbering ([NAMN_1]) across files and turns."
-        }
+      "body": "Maskera sits in front of Claude Code, Codex, Cursor, Claude Desktop and other agents. Open source (MIT) that runs on your computer.",
+      "points": [
+        "Proxy: masks everything you type in the chat, in clients that accept a custom API URL.",
+        "MCP server: the agent reads files with the personal data already swapped out.",
+        "Guard: stops a prompt that contains personal data before it is sent."
       ],
-      "npmCta": "@maskera/mcp on npm",
-      "docsCta": "Full documentation on GitHub"
+      "setupCta": "Set up on the developer page",
+      "npmCta": "@maskera/mcp on npm"
     },
     "sdk": {
-      "body": "One npm package with both deterministic rules and the 43 MB Swedish AI model. Runs in the browser (WASM/WebGPU) or in Node 18+.",
+      "body": "One npm package with the rules and the Swedish AI model. Runs in the browser or in Node 18+.",
       "packageManagerLabel": "npm",
       "installCommand": "npm install maskera @huggingface/transformers",
       "points": [
-        "Text and restore maps stay inside your own runtime",
-        "MIT licence, with no usage fee or lock-in",
-        "Swedish model + built-in rules for personal IDs, phones, IBAN, cards and addresses",
-        "Optional clinical profile (profile: \"clinical\") preserving diagnoses and doses"
+        "MIT licence, with no fee or lock-in",
+        "Optional clinical profile that keeps diagnoses and doses"
       ],
       "cta": "Open developer documentation",
       "githubCta": "Source code on GitHub"
@@ -825,9 +1015,9 @@
       "freeTitle": "Free",
       "freePrice": "SEK 0",
       "proTitle": "Pro",
-      "proPrice": "SEK 149/mo",
+      "proPrice": "SEK 149/mo incl. VAT",
       "teamTitle": "Team",
-      "teamPrice": "SEK 249/user/mo",
+      "teamPrice": "SEK 249/user/mo excl. VAT",
       "rows": [
         {
           "feature": "Rule-based masking (personal IDs, email, phone, accounts)",
@@ -842,7 +1032,7 @@
           "team": "Unlimited"
         },
         {
-          "feature": "Custom protected words and clinical profile",
+          "feature": "Custom protected words",
           "free": "Not included",
           "pro": "Included",
           "team": "Included"
@@ -881,7 +1071,7 @@
       "teamDetails": "Minimum 5 users. Central MDM deployment, encrypted shared word list and rollout support for both the extension and AI agents.",
       "teamCta": "Start Team (min. 5 seats)",
       "teamMailSubject": "Maskera Team",
-      "teamInvoiceCta": "Or request an annual invoice via hej@maskera.dev"
+      "teamInvoiceCta": "Request an annual invoice"
     }
   },
   "extensionInstall": {
@@ -905,12 +1095,10 @@
   },
   "homeProof": {
     "label": "Maskera facts",
-    "accuracyCta": "See accuracy",
-    "localDesc": "Swedish AI model, locally on your device",
-    "securityCta": "Security",
+    "accuracyDesc": "of names in independent Swedish text",
+    "localDesc": "runs locally on your device",
     "licenseValue": "MIT",
-    "licenseDesc": "Open source for proxy, MCP and SDK",
-    "githubCta": "GitHub"
+    "licenseDesc": "open source"
   },
   "theme": {
     "toggle": "Switch between light and dark mode"
@@ -941,15 +1129,10 @@
     "metaDescription": "About Maskera: what the tool does, who is behind it (Hägvall Labs AB in Stockholm) and how to reach us at hej@maskera.dev.",
     "title": "About Maskera",
     "lede": "Maskera hides Swedish personal data locally before text reaches an AI service, log or analytics.",
-    "tocLabel": "On this page",
     "toc": [
       {
         "href": "#vad",
         "label": "What Maskera is"
-      },
-      {
-        "href": "#anvanda",
-        "label": "Three ways to use it"
       },
       {
         "href": "#bakom",
@@ -962,15 +1145,10 @@
     ],
     "whatTitle": "What Maskera is",
     "what": [
-      "Maskera combines fixed rules (for Swedish personal identity numbers, phone numbers, emails and IBANs) with a custom-trained 43 MB Swedish AI model that finds names, places, organisations and addresses in free text.",
-      "Everything can be restored in the AI's reply using a local key that never leaves your device."
+      "It comes as a browser extension, for AI agents and as an npm package. Everything runs on your device."
     ],
-    "useTitle": "Three ways to use it",
-    "use": [
-      "Browser extension for Chrome, Edge and Firefox (Safari coming later) in ChatGPT, Claude, Gemini, Copilot and more. Free for everyday needs (rules + 20 AI/month); Pro costs SEK 149/user/month incl. VAT after 7 days free, with shared protected words and central deployment via app.maskera.dev.",
-      "AI agents (@maskera/mcp, MIT open source): local LLM proxy for Anthropic/OpenAI that masks all outgoing traffic and restores streaming replies across any harness, MCP server for masked file access, and guard for hooks.",
-      "Own code: the maskera and @maskera/core npm packages under the MIT licence, plus the maskera-sv-ner model on Hugging Face."
-    ],
+    "howCta": "How it works",
+    "productsCta": "Products and pricing",
     "whoTitle": "Who is behind it",
     "who": "Maskera is developed and operated by Hägvall Labs AB (Swedish company reg. no. 559598-0110), a Swedish limited company in Stockholm founded by Joel Hägvall. The company is the data controller for maskera.dev; how the website itself processes data is described in the privacy policy. The source code, training pipeline and benchmarks are public on GitHub so the results can be reviewed and reproduced.",
     "contactTitle": "Contact",
@@ -993,7 +1171,6 @@
       }
     ],
     "securityCta": "Security page",
-    "privacyCta": "Privacy policy",
-    "developersCta": "For developers"
+    "privacyCta": "Privacy policy"
   }
 }

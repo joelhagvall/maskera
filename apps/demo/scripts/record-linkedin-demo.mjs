@@ -289,9 +289,8 @@ try {
       html, body { overflow: hidden !important; }
       .app { max-width: none !important; padding: 20px 22px !important; }
       .head-row, .title, .lede, .controls, .footer { display: none !important; }
-      main > .grid { margin: 0 !important; }
-      .restore { display: none !important; }
-      .card { padding: 15px !important; }
+      main > .try-steps { margin: 0 !important; }
+      .try-step:nth-child(3) { display: none !important; }
       .editor { height: 300px !important; }
       .output { min-height: 174px !important; }
     `,
@@ -328,14 +327,8 @@ try {
 
   await demo.addStyleTag({
     content: `
-      main > .grid { display: none !important; }
-      .restore {
-        display: block !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: 0 !important;
-      }
-      .restore-grid { display: grid !important; margin-top: 14px !important; }
+      .try-step:nth-child(-n + 2) { display: none !important; }
+      .try-step:nth-child(3) { display: block !important; border: 0 !important; }
       .reply-editor, .output.restored { height: 218px !important; }
     `,
   })

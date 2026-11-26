@@ -15,6 +15,9 @@ export type View =
   | "accuracy"
   | "security"
   | "about"
+  | "faq"
+  | "guides"
+  | "industries"
 
 export const SITE_ORIGIN = "https://maskera.dev"
 
@@ -29,6 +32,9 @@ export const pathsByLocale: Record<Locale, Record<View, string>> = {
     accuracy: "/traffsakerhet",
     security: "/sakerhet",
     about: "/om",
+    faq: "/fragor",
+    guides: "/guider",
+    industries: "/branscher",
   },
   en: {
     demo: "/en",
@@ -40,6 +46,9 @@ export const pathsByLocale: Record<Locale, Record<View, string>> = {
     accuracy: "/en/accuracy",
     security: "/en/security",
     about: "/en/about",
+    faq: "/en/faq",
+    guides: "/en/guides",
+    industries: "/en/industries",
   },
 }
 

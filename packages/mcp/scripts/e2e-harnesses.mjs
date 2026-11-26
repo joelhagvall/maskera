@@ -823,6 +823,8 @@ async function testCodex(workRoot, lane) {
       "--ephemeral",
       "--ignore-user-config",
       "--ignore-rules",
+      "--disable",
+      "plugins",
       "--skip-git-repo-check",
       "--dangerously-bypass-approvals-and-sandbox",
       "--json",

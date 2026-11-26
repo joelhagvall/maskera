@@ -90,13 +90,12 @@ try {
       html, body { overflow: hidden !important; background: #fff !important; }
       .app { max-width: none !important; padding: 26px 30px !important; }
       .head-row, .title, .lede, .controls, .footer { display: none !important; }
-      main > .grid {
+      main > .try-steps {
         margin: 0 !important;
         grid-template-columns: 1fr !important;
         gap: 18px !important;
       }
-      .restore { display: none !important; }
-      .card { padding: 16px 18px !important; }
+      .try-step:nth-child(3) { display: none !important; }
       .editor { height: 385px !important; }
       textarea[name="source-text"] { font-size: 17px !important; }
       .output { min-height: 385px !important; font-size: 17px !important; }

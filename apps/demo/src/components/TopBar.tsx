@@ -25,6 +25,9 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
     testdata: copy.navigation.testData,
     privacy: copy.navigation.privacyPolicy,
     about: copy.navigation.about,
+    faq: copy.navigation.faq,
+    guides: copy.navigation.guides,
+    industries: copy.navigation.industries,
   }
   const nav: readonly { view: View; label: string }[] = [
     { view: "services", label: copy.topBar.services },

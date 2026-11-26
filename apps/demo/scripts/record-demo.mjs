@@ -81,12 +81,12 @@ try {
   const page = await context.newPage()
   const recStart = Date.now() // video t0 ~ here; used to trim the intro below
 
-  // Scroll so the two cards (.grid) sit near the top of the viewport. The video
+  // Scroll so the two cards (.try-steps) sit near the top of the viewport. The video
   // is later cropped to exactly this region, so we only ever show the input and
   // output boxes — never the header, tabs or the restore section.
   const frameGrid = () =>
     page
-      .locator(".grid")
+      .locator(".try-steps")
       .first()
       .evaluate((el) => {
         window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 24)
@@ -97,7 +97,7 @@ try {
   // Hide the restore section for the whole recording so its top edge can never
   // bleed into the bottom of the crop while the grid is shorter than its final
   // height. (The clip is only the input/output cards.)
-  await page.addStyleTag({ content: ".restore{display:none!important}" })
+  await page.addStyleTag({ content: ".try-step:nth-child(3){display:none!important}" })
 
   // Select the free-text example up front, before framing, so no tab
   // interaction is ever in shot — the clip is only the cards and typing.
@@ -129,7 +129,7 @@ try {
 
   // Measure the cards region now (its tallest, once the output has filled in),
   // padded a touch, clamped to the frame, and rounded to even pixels for h264.
-  const box = await page.locator(".grid").first().boundingBox()
+  const box = await page.locator(".try-steps").first().boundingBox()
   // Roomy on the sides, tight top/bottom so neither the tab row above nor the
   // restore section below bleeds into frame.
   const padX = 24

@@ -1,112 +1,15 @@
-import { type KeyboardEvent, type ReactNode, useRef, useState } from "react"
+import { type KeyboardEvent, useRef, useState } from "react"
 import { GITHUB, HF_MODEL, NPM_MCP, NPM_NER } from "../constants"
+import { highlight } from "../highlight"
 import copy, { activeLocale } from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
 import type { View } from "../routing"
 import { navClick, viewPaths } from "../routing"
 import { AgentSetupCard } from "./AgentSetupCard"
+import { Code, type CodeLanguage } from "./CodeSnippet"
 import { CopyButton } from "./CopyButton"
+import { PageToc } from "./PageToc"
 import { TopBar } from "./TopBar"
-
-// Order matters: comments win over strings win over keywords/function names.
-const TOKEN =
-  /(\/\/[^\n]*|#[^\n]*)|("(?:[^"\\]|\\.)*")|\b(import|from|type|const|await)\b|([A-Za-z_$][\w$]*)(?=\()/g
-
-type CodeLanguage = "ts" | "js"
-
-function highlight(line: string): ReactNode[] {
-  const nodes: ReactNode[] = []
-  let last = 0
-  TOKEN.lastIndex = 0
-  let m = TOKEN.exec(line)
-  while (m) {
-    if (m.index > last) nodes.push(line.slice(last, m.index))
-    const cls = m[1] ? "tok-c" : m[2] ? "tok-s" : m[3] ? "tok-k" : "tok-f"
-    nodes.push(
-      <span key={m.index} className={cls}>
-        {m[0]}
-      </span>,
-    )
-    last = m.index + m[0].length
-    m = TOKEN.exec(line)
-  }
-  if (last < line.length) nodes.push(line.slice(last))
-  return nodes
-}
-
-/** Tiny syntax highlighter for the static snippets below. */
-function Code({
-  children,
-  language,
-  onLanguageChange,
-  languageLabel,
-}: {
-  children: string
-  language?: CodeLanguage
-  onLanguageChange?: (language: CodeLanguage) => void
-  languageLabel?: string
-}) {
-  const src = children
-  // One block element per source line. Long lines scroll sideways inside the
-  // block (never wrap), so each source line stays on a single visual line.
-  const lines = src.split("\n")
-  // Copy the runnable part only: comment-only lines are display guidance
-  // ("# allt i ett: ..."), not something to paste into a terminal.
-  const copyText = src
-    .split("\n")
-    .filter((line) => {
-      const t = line.trim()
-      return !t.startsWith("#") && !t.startsWith("//")
-    })
-    .join("\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim()
-  return (
-    <div className={`code-block snippet-code${languageLabel ? " shared-language-code" : ""}`}>
-      <div className="code-head">
-        {language && onLanguageChange ? (
-          <div className="code-tabs" role="group" aria-label={copy.developerApi.codeLanguageLabel}>
-            {(["ts", "js"] as const).map((option) => (
-              <button
-                key={option}
-                type="button"
-                aria-pressed={language === option}
-                className={`code-tab${language === option ? " on" : ""}`}
-                onClick={() => onLanguageChange(option)}
-              >
-                {option.toUpperCase()}
-                <span className="sr-only">
-                  {" – "}
-                  {option === "ts"
-                    ? copy.developerApi.typescriptLabel
-                    : copy.developerApi.javascriptLabel}
-                </span>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <span className="shared-language-label">{languageLabel}</span>
-        )}
-        <CopyButton
-          text={copyText}
-          className="code-copy"
-          iconSize={14}
-          ariaLabel={copy.copyButton.copyCode}
-          title={copy.copyButton.copy}
-        />
-      </div>
-      <pre>
-        <code>
-          {lines.map((line, i) => (
-            <span key={i} className="code-line">
-              {highlight(line)}
-            </span>
-          ))}
-        </code>
-      </pre>
-    </div>
-  )
-}
 
 // Yarn PnP needs the runtime's undeclared onnxruntime-common import installed
 // at the app level. Copy yields just the command for the active tab.
@@ -243,7 +146,7 @@ export function Developers({
       </header>
 
       <main id="main-content">
-        <article className="prose">
+        <article className="prose prose-with-toc">
           <h1>{copy.developerApi.title}</h1>
           <p className="prose-lede">
             {copy.developerApi.lede}{" "}
@@ -253,11 +156,13 @@ export function Developers({
             {copy.developerApi.modelSuffix}
           </p>
 
+          <PageToc items={copy.developerApi.toc} />
+
           <h2 id="agenter">{copy.developerApi.agentsTitle}</h2>
           <p className="prose-note">{copy.developerApi.agentsBody}</p>
           <AgentSetupCard idPrefix="dev-agent" />
 
-          <h2>{copy.developerApi.installTitle}</h2>
+          <h2 id="installera">{copy.developerApi.installTitle}</h2>
           <InstallTabs />
           <p className="install-note">{copy.developerApi.installNote}</p>
           <aside className="developer-notes" aria-labelledby="developer-notes-title">
@@ -280,19 +185,19 @@ export function Developers({
             </a>
           </aside>
 
-          <h2>{copy.developerApi.maskTitle}</h2>
+          <h2 id="maskera">{copy.developerApi.maskTitle}</h2>
           <Code language={language} onLanguageChange={setLanguage}>
             {maskExample}
           </Code>
 
           <ArchitectureFigure onCoverage={onCoverage} />
 
-          <h2>{copy.developerApi.restoreTitle}</h2>
+          <h2 id="aterstall">{copy.developerApi.restoreTitle}</h2>
           <Code language={language} onLanguageChange={setLanguage}>
             {restoreExample}
           </Code>
 
-          <h2>{copy.developerApi.clinicalTitle}</h2>
+          <h2 id="vardprofil">{copy.developerApi.clinicalTitle}</h2>
           <p className="prose-note">
             {copy.developerApi.clinicalBody}{" "}
             <a

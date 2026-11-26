@@ -7,7 +7,7 @@ import { useSwedishNer } from "../useSwedishNer"
 import { Controls } from "./Controls"
 import { DEMO_ANCHOR } from "./ExtensionInstall"
 import { Header } from "./Header"
-import { HomeProof, HomeTracks } from "./HomeTracks"
+import { HomeClosing, HomeProof, HomeTracks, HomeTrust } from "./HomeTracks"
 import { InputCard } from "./InputCard"
 import { OutputCard } from "./OutputCard"
 import { RestoreDemo } from "./RestoreDemo"
@@ -45,11 +45,27 @@ export function DemoWorkspace({
   const [modelActivation, setModelActivation] = useState(1)
 
   const deferredText = useDeferredValue(text)
-  const ner = useSwedishNer(deferredText, modelActivation)
+  // Every example text is analyzed in the background once the model is ready,
+  // so picking an example shows the model's placeholders at once.
+  const exampleTexts = useMemo(
+    () => scenarios.map((scenario) => scenario.text).filter(Boolean),
+    [scenarios],
+  )
+  const ner = useSwedishNer(deferredText, modelActivation, exampleTexts)
   const invalidPnrs = useMemo(
     () => invalidPersonnummer(deferredText, ner.result.redactions),
     [deferredText, ner.result.redactions],
   )
+
+  // The restore section shows when there is something to restore. While the
+  // model is still answering for a new text, keep the last settled visibility:
+  // the interim rules-only result can be empty (Svensk kontext has only names
+  // the model finds), and hiding the section for that moment makes the page
+  // jump. Settled visibility is updated during render, not in an effect.
+  const hasRestore = Object.keys(ner.result.map).length > 0
+  const [restoreSettled, setRestoreSettled] = useState(hasRestore)
+  if (!ner.pending && restoreSettled !== hasRestore) setRestoreSettled(hasRestore)
+  const showRestore = hasRestore || (ner.pending && restoreSettled)
 
   useEffect(() => {
     if (!requestedScenarioId) return
@@ -74,11 +90,10 @@ export function DemoWorkspace({
     <>
       <Header go={go} goSection={goSection} />
       <main id="main-content">
-        <HomeTracks goSection={goSection} />
         <HomeProof go={go} />
+        <HomeTracks goSection={goSection} />
         <div className="home-try-head">
           <h2 id={DEMO_ANCHOR}>{copy.demo.tryTitle}</h2>
-          <p>{copy.demo.tryLede}</p>
         </div>
         <Controls
           activeId={activeId}
@@ -88,7 +103,7 @@ export function DemoWorkspace({
           analyzing={ner.analyzing}
           onRetryModel={retryModel}
         />
-        <div className="grid">
+        <ol className="try-steps">
           <InputCard
             tagline={active.tagline}
             text={text}
@@ -103,19 +118,18 @@ export function DemoWorkspace({
             onToggleMap={() => setMapOpen((v) => !v)}
             onCoverage={onCoverage}
           />
-        </div>
-        {active.id !== "fritext" && (
-          <p className="exnote">
-            {copy.demo.testDataNote}{" "}
-            <a href={viewPaths.testdata} onClick={navClick(() => go("testdata"))}>
-              {copy.demo.testDataCta}
-            </a>
-            .
-          </p>
-        )}
-        {Object.keys(ner.result.map).length > 0 && (
-          <RestoreDemo key={active.id} result={ner.result} scenarioId={active.id} />
-        )}
+          {showRestore && (
+            <RestoreDemo key={active.id} result={ner.result} scenarioId={active.id} />
+          )}
+        </ol>
+        <p className="exnote">
+          {copy.demo.testDataNote}{" "}
+          <a href={viewPaths.testdata} onClick={navClick(() => go("testdata"))}>
+            {copy.demo.testDataCta}
+          </a>
+        </p>
+        <HomeTrust go={go} />
+        <HomeClosing goSection={goSection} />
       </main>
     </>
   )

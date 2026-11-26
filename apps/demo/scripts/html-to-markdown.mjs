@@ -35,7 +35,7 @@ const DROP_BY_PAGE = {
   // The live demo: scenario tabs, model status, the editor/output cards and
   // the simulated reply. The hero copy, the test-data note, the restore
   // explanation and the footer remain.
-  demo: [".controls", ".grid", ".flow", "#restore-map", ".card-links", ".stats", ".hero-browsers"],
+  demo: [".controls", ".try-steps", ".flow", "#restore-map", ".card-links", ".hero-browsers"],
 }
 
 function service() {

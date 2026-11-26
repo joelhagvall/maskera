@@ -105,6 +105,30 @@
     {
       "source": "/en/about",
       "destination": "/en/about/index.html"
+    },
+    {
+      "source": "/fragor",
+      "destination": "/fragor/index.html"
+    },
+    {
+      "source": "/en/faq",
+      "destination": "/en/faq/index.html"
+    },
+    {
+      "source": "/guider",
+      "destination": "/guider/index.html"
+    },
+    {
+      "source": "/en/guides",
+      "destination": "/en/guides/index.html"
+    },
+    {
+      "source": "/branscher",
+      "destination": "/branscher/index.html"
+    },
+    {
+      "source": "/en/industries",
+      "destination": "/en/industries/index.html"
     }
   ],
   "headers": [

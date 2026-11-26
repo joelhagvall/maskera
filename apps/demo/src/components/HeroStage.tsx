@@ -8,8 +8,17 @@ import {
   restoreMap,
   type HeroStage as Stage,
 } from "../heroScenes"
+import { highlight } from "../highlight"
 import copy from "../i18n"
-import { ChevronLeftIcon, ChevronRightIcon, LockIcon, MaskeraMark } from "../icons"
+import {
+  CheckIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  EyeIcon,
+  LockIcon,
+  MaskeraMark,
+  PencilIcon,
+} from "../icons"
 import { RedactedText, RestoredText } from "../segments"
 
 /** The npm calls the code scene shows: the package README's redact call, then restore. */
@@ -70,7 +79,6 @@ export function HeroStage() {
           </div>
         ))}
       </div>
-      <p className="hero-stage-note">{stage.note}</p>
     </figure>
   )
 }
@@ -128,9 +136,12 @@ function BrowserScene() {
 }
 
 /**
- * A neutral agent window (no real product's look): the agent reads a file,
- * the local proxy masks the tool result before the model sees it, and the
- * model's reply comes back restored. That is the proxy mode end to end.
+ * A neutral coding-agent window (the genre of Codex or T3 Code, no real
+ * product's look): a thread list, the run as compact tool rows and a changed
+ * file. The agent reads a file and the local proxy masks the tool result
+ * before the model sees it; the model writes the decision with placeholders
+ * and the proxy restores them in the tool call before the file is written.
+ * That is the proxy mode end to end.
  */
 function AgentScene() {
   const agent = copy.header.stage.agent
@@ -147,36 +158,63 @@ function AgentScene() {
       </div>
       <div className="agent-body">
         <div className="agent-side">
-          <p>{agent.projectsLabel}</p>
+          <p className="agent-new-thread">
+            <PencilIcon size={13} />
+            {agent.newThread}
+          </p>
+          <p>{agent.threadsLabel}</p>
           <ul>
-            {agent.projects.map((project, i) => (
-              <li key={project} className={i === 0 ? "is-current" : undefined}>
-                {project}
+            {agent.threads.map((thread, i) => (
+              <li key={thread} className={i === 0 ? "is-current" : undefined}>
+                {thread}
               </li>
             ))}
           </ul>
         </div>
         <div className="agent-chat">
           <p className="agent-message">{agent.userMessage}</p>
-          <div className="agent-tool">
-            <p className="agent-tool-head">
-              <span>{agent.toolRead}</span>
+          <div className="agent-step">
+            <p className="agent-step-head">
+              <span>
+                <EyeIcon size={13} />
+                {agent.toolRead}
+              </span>
               <span>
                 {agent.maskedCount.replace("{count}", String(placeholderCount(HERO_SCENE.masked)))}
               </span>
             </p>
-            <p className="agent-tool-body">
+            <p className="agent-step-body">
               <span className="agent-tool-label">{agent.modelSees}</span>{" "}
               <RedactedText text={HERO_SCENE.masked} />
             </p>
           </div>
+          <p className="agent-reply">{agent.plan}</p>
+          <div className="agent-diff">
+            <p className="agent-diff-head">
+              <span>{agent.edited}</span>
+              <span className="agent-diff-stat">+1</span>
+              <span className="agent-diff-note">{agent.writeRestored}</span>
+            </p>
+            <p className="agent-diff-line">
+              <span className="agent-diff-gutter" aria-hidden="true">
+                +
+              </span>
+              <span>
+                <RestoredText text={HERO_SCENE.reply} map={map} />
+              </span>
+            </p>
+          </div>
           <p className="agent-reply">
-            <RestoredText text={HERO_SCENE.reply} map={map} />
+            <CheckIcon size={13} />
+            {agent.done}
           </p>
-          <p className="agent-composer" aria-hidden="true">
+          <div className="agent-composer" aria-hidden="true">
             <span>{agent.composer}</span>
-            <span>↑</span>
-          </p>
+            <span className="agent-composer-bar">
+              <span>{agent.composerMeta}</span>
+              <span className="agent-composer-send">↑</span>
+            </span>
+          </div>
         </div>
       </div>
       <p className="stage-window-foot">
@@ -206,7 +244,7 @@ function CodeScene() {
           <code>
             {CODE_LINES.map((line, i) => (
               <span key={`${i}-${line}`} className="code-line">
-                {line}
+                {highlight(line)}
               </span>
             ))}
           </code>

@@ -83,6 +83,18 @@ export function getViewMeta(locale: Locale): Record<View, ViewMeta> {
       title: strings.about.metaTitle,
       description: strings.about.metaDescription,
     },
+    faq: {
+      title: strings.faq.metaTitle,
+      description: strings.faq.metaDescription,
+    },
+    guides: {
+      title: strings.guides.metaTitle,
+      description: strings.guides.metaDescription,
+    },
+    industries: {
+      title: strings.industries.metaTitle,
+      description: strings.industries.metaDescription,
+    },
   }
 }
 
@@ -101,6 +113,9 @@ export const routeHtmlViews = [
   "accuracy",
   "security",
   "about",
+  "faq",
+  "guides",
+  "industries",
 ] as const
 export type RouteHtmlView = (typeof routeHtmlViews)[number]
 
@@ -166,6 +181,12 @@ function jsonLdFor(view: View, locale: Locale): object {
         return strings.security.title
       case "about":
         return strings.about.title
+      case "faq":
+        return strings.faq.title
+      case "guides":
+        return strings.guides.title
+      case "industries":
+        return strings.industries.title
       default:
         return strings.meta.siteName
     }
@@ -205,6 +226,21 @@ function jsonLdFor(view: View, locale: Locale): object {
         "https://huggingface.co/joelhagvall/maskera-sv-ner",
         "https://hagvall-labs.com",
       ],
+    }
+  }
+
+  if (view === "faq") {
+    return {
+      ...shared,
+      "@type": "FAQPage",
+      publisher: ORGANIZATION_JSON_LD,
+      mainEntity: strings.faq.groups.flatMap((group) =>
+        group.items.map((item) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a },
+        })),
+      ),
     }
   }
 

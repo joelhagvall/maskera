@@ -84,4 +84,12 @@ describe("Developers", () => {
       "https://github.com/joelhagvall/maskera/blob/main/packages/ner/README.md",
     )
   })
+
+  it("links every table-of-contents entry to a section on the page", () => {
+    render(<Developers go={vi.fn()} onCoverage={vi.fn()} />)
+
+    for (const item of copy.developerApi.toc) {
+      expect(document.querySelector(item.href), item.href).toBeTruthy()
+    }
+  })
 })

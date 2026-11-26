@@ -21,11 +21,11 @@
     "modelCardSha256": "d68c7f2fe6d57246b0ac9d83ce6dfd02a549589b53a86ca20132685199dbe0ab"
   },
   "whitepaper": {
-    "version": "1.23",
+    "version": "1.24",
     "source": "docs/whitepaper/whitepaper.tex",
-    "sourceSha256": "eed801ec87af4d4225ee03db24e3bfdaee17011ee86171fd2b3216e7c8ae3ef3",
+    "sourceSha256": "7d23b4b4585cdd5d36a909b3f7bec5606344e04a52d93b909ac0330500573bb8",
     "pdf": "apps/demo/public/whitepaper.pdf",
-    "pdfSha256": "e0de8f3a6c05f9d5703f4df006ab918dca2f55a6d4eecff399593ed6f2520937"
+    "pdfSha256": "f0dea47a1ba39cc75ceb33a73065135bc437c376b97d60b043d0b9102aaa1576"
   },
   "evaluation": {
     "command": "pnpm eval:release",
@@ -238,6 +238,80 @@
         "misses": 297,
         "fullHitRatePct": "63.7",
         "redactions": 735
+      }
+    }
+  },
+  "independentComparison": {
+    "status": "current-v20-independent",
+    "measuredAt": "2026-11-26",
+    "scope": "Independent Swedish end-product comparison: text neither Maskera nor its developer wrote and none of it in Maskera's training. Masked share (any label) and typed F1 for names, places, organisations, addresses, postcodes and e-mail; over-masking on entity-free SUC 3.0 and SIC2 sentences. This is the only benchmark maskera.dev shows.",
+    "commands": {
+      "build": "pnpm eval:independent:build",
+      "maskera": "pnpm eval:independent:maskera",
+      "swedishPii": "pnpm eval:independent:swedish-pii",
+      "python": "pnpm eval:independent:python",
+      "score": "pnpm eval:independent:score"
+    },
+    "resultFile": "docs/benchmark-independent-v20.json",
+    "resultSha256": "ce5ebc19d59c8324ce66a6dcc50b56df16c5238036b5240e523b2f3f789bd9bb",
+    "suiteSha256": "27fa175b9790a9e589a3dbe7035182875f45941d260705f40d8a55de0c4ba360",
+    "files": [
+      "bench/independent/build_corpora.py",
+      "bench/independent/render-markdown.mjs",
+      "bench/independent/requirements.txt",
+      "bench/independent/run-maskera.mjs",
+      "bench/independent/run-swedish-pii.mjs",
+      "bench/independent/run_python_systems.py",
+      "bench/independent/score.mjs",
+      "bench/package.json",
+      "training/benchmark_suc3_external_v20.py",
+      "packages/ner/src/index.ts",
+      "packages/ner/src/model-hashes.ts",
+      "packages/core/src/redact.ts",
+      "packages/core/src/detectors/index.ts"
+    ],
+    "environment": {
+      "hardware": "Apple Silicon macOS (CPU inference)",
+      "node": "v24.22.1",
+      "python": "3.13.18",
+      "requirements": "bench/independent/requirements.txt",
+      "swedishPii": "swedish-pii 1.2.0 (bench/package.json)"
+    },
+    "corpora": {
+      "ai4privacy-sv": {
+        "source": "ai4privacy/pii-masking-openpii-1.5m :: data/validation.jsonl (Swedish rows in Swedish)",
+        "revision": "a785eb528e28be2693c3718a27e066970de5dadb",
+        "license": "CC BY 4.0",
+        "texts": 8248,
+        "sha256": "1924d3fc2b8d6e00405ea659d8cb63587fcd0d0cf85da9ebaed222bf789cbf7e"
+      },
+      "multiconer-sv": {
+        "source": "MultiCoNER/multiconer_v2 :: SV-Swedish/sv_test.conll (seed-42 sample, persons)",
+        "revision": "4be2d62c912977ee26ed14d2553a4fe17ca3d980",
+        "license": "CC BY 4.0",
+        "texts": 2000,
+        "sha256": "d3368438baa90b815a5288b364fe37c919860fe51996f1739172f0f5229ec415"
+      },
+      "suc3-test-cased": {
+        "source": "KBLab/sucx3_ner :: data/simple_tags/cased.tar.gz :: cased/test.jsonl",
+        "revision": "96acc4fd6dad",
+        "license": "CC BY 4.0",
+        "texts": 12923,
+        "sha256": "264dc1f701fa444d8f2b6b88fba3648d1cec4a8a142410827532d1cddaa3862b"
+      },
+      "suc3-test-lower": {
+        "source": "KBLab/sucx3_ner :: data/simple_tags/cased.tar.gz :: cased/test.jsonl, lowercased",
+        "revision": "96acc4fd6dad",
+        "license": "CC BY 4.0",
+        "texts": 12923,
+        "sha256": "ef07bc9c50d7718606cc1b528da1cc04a033e7f57e162c3b8c222da31ac9e458"
+      },
+      "sic2-sv": {
+        "source": "Språkbanken Text SIC2 (DOI 10.23695/se5f-d274) :: sic2.xml.bz2 (manual <name> layer)",
+        "revision": "sha256:fbd11cfb96c00123c45e7238c4b46d030ecac49fdd5b0226746e86106828e204",
+        "license": "CC BY 4.0",
+        "texts": 809,
+        "sha256": "f05d40bc58be64ac7e912994ba8b4308477d7d22439d8a9fc97122a5c4fa9656"
       }
     }
   },

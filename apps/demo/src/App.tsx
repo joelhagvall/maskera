@@ -68,10 +68,15 @@ export function App({ initialView }: { initialView?: View }) {
 
   const goCoverage = useCallback(() => goSection("transparency", "vad-maskeras"), [goSection])
 
-  const goContextDemo = useCallback(() => {
-    setRequestedScenarioId("kontext")
-    go("demo")
-  }, [go])
+  // Open the home demo on one example (a scenario id from copy.scenarios).
+  const goScenario = useCallback(
+    (id: string) => {
+      setRequestedScenarioId(id)
+      go("demo")
+    },
+    [go],
+  )
+  const goContextDemo = useCallback(() => goScenario("kontext"), [goScenario])
 
   const DemoView = view === "demo" ? getLoadedView("demo") : undefined
   const DevView = view === "dev" ? getLoadedView("dev") : undefined
@@ -82,6 +87,9 @@ export function App({ initialView }: { initialView?: View }) {
   const AccuracyView = view === "accuracy" ? getLoadedView("accuracy") : undefined
   const SecurityView = view === "security" ? getLoadedView("security") : undefined
   const AboutView = view === "about" ? getLoadedView("about") : undefined
+  const FaqView = view === "faq" ? getLoadedView("faq") : undefined
+  const GuidesView = view === "guides" ? getLoadedView("guides") : undefined
+  const IndustriesView = view === "industries" ? getLoadedView("industries") : undefined
 
   return (
     <div className="app">
@@ -101,20 +109,14 @@ export function App({ initialView }: { initialView?: View }) {
       {TransparencyView && <TransparencyView go={go} />}
       {TestDataView && <TestDataView go={go} />}
       {PrivacyView && <PrivacyView go={go} />}
-      {ServicesView && <ServicesView go={go} onCoverage={goCoverage} />}
+      {ServicesView && <ServicesView go={go} goSection={goSection} onCoverage={goCoverage} />}
       {AccuracyView && <AccuracyView go={go} onTryContext={goContextDemo} />}
       {SecurityView && <SecurityView go={go} />}
       {AboutView && <AboutView go={go} />}
-      <Footer
-        onServices={() => go("services")}
-        onDevelopers={() => go("dev")}
-        onTransparency={() => go("transparency")}
-        onTestData={() => go("testdata")}
-        onPolicy={() => go("privacy")}
-        onAccuracy={() => go("accuracy")}
-        onSecurity={() => go("security")}
-        onAbout={() => go("about")}
-      />
+      {FaqView && <FaqView go={go} />}
+      {GuidesView && <GuidesView go={go} />}
+      {IndustriesView && <IndustriesView go={go} onTryScenario={goScenario} />}
+      <Footer go={go} />
     </div>
   )
 }

@@ -1,0 +1,13 @@
+# The Python side of the independent benchmark (Presidio, OpenAI Privacy
+# Filter, corpus download). Exact versions of the 2026-11-26 run.
+# Create the venv with Python 3.13 (Presidio 2.2.366 does not support 3.15):
+#   uv venv -p python3.13 bench/.venv
+#   uv pip install -p bench/.venv/bin/python -r bench/independent/requirements.txt
+presidio-analyzer==2.2.366
+spacy==3.8.18
+thinc==8.3.14
+onnxruntime==1.32.0
+tokenizers==0.23.3
+huggingface_hub==1.33.0
+numpy==2.4.6
+sv_core_news_lg @ https://github.com/explosion/spacy-models/releases/download/sv_core_news_lg-3.8.0/sv_core_news_lg-3.8.0-py3-none-any.whl

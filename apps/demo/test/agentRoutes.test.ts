@@ -135,6 +135,15 @@ describe("llms.txt", () => {
     expect(llms).toContain("https://maskera.dev/en/about")
     expect(llms).toContain("hej@maskera.dev")
   })
+
+  it("keeps shared protected words and MDM in Team, not Pro", () => {
+    // The portal answers 403 for Pro on shared words (maskera-cloud 33cd2d5).
+    expect(llms).toContain("Team at SEK 249/user/month excl. VAT")
+    for (const line of llms.split("\n").filter((l) => l.includes("Pro at SEK"))) {
+      const pro = line.slice(line.indexOf("Pro at SEK"), line.indexOf("Team at SEK"))
+      expect(pro).not.toMatch(/shared|MDM/)
+    }
+  })
 })
 
 describe("index.html", () => {

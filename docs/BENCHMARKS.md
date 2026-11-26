@@ -42,6 +42,83 @@ frozen evaluation-environment checksum is
 > Those historical comparison rows used `maskera@0.6.4`; the current v20 npm
 > release is versioned separately and does not relabel them.
 
+<!-- independent-benchmark:start -->
+
+## Independent Swedish benchmark (what maskera.dev shows)
+
+Measured 2026-11-26 on CPU, on Swedish text that neither Maskera nor its
+developer wrote, and that is not in Maskera's training (v20 trains only on
+`training/generate_data.mjs` output). Every system ran on the same texts and
+is scored by one rule set (`bench/independent/score.mjs`). **Hidden** means the
+value is overlapped by any detection, whatever its label: what a masking
+product is judged on. Pooled cells count each independent sentence once.
+
+| System | Names | Lowercase names | Places | Street addresses + postcodes | Entity-free sentences with a hit (SUC + SIC2) |
+|---|---|---|---|---|---|
+| **Maskera v20 (q4)** | 92.4% (11,613/12,570) | 92.8% (4,483/4,829) | 93.6% (5,379/5,749) | 95.2% (5,218/5,482) | 21.4% (2,311/10,800) |
+| Microsoft Presidio 2.2.366 + sv_core_news_lg 3.8.0 | 72.3% (9,087/12,570) | 71.4% (3,450/4,829) | 97.1% (5,581/5,749) | 47.0% (2,579/5,482) | 2.5% (269/10,800) |
+| swedish-pii 1.2.0 | 55.3% (6,955/12,570) | 0.3% (16/4,829) | 82.7% (4,756/5,749) | 77.3% (4,239/5,482) | 7.0% (757/10,800) |
+| OpenAI Privacy Filter (q4 ONNX) | 52.2% (6,567/12,570) | 10.3% (498/4,829) | 33.5% (1,924/5,749) | 63.3% (3,469/5,482) | 3.5% (373/10,800) |
+
+### Per corpus (hidden share and typed F1)
+
+**ai4privacy openpii, Swedish validation rows**: 8,248 texts, 28,736 gold spans, sha256 `1924d3fc2b8d6e00405ea659d8cb63587fcd0d0cf85da9ebaed222bf789cbf7e`
+
+| System | ADDRESS hidden / F1 | CARD* hidden / F1 | EMAIL hidden / F1 | LOC hidden / F1 | PER hidden / F1 | PERSONNUMMER* hidden / F1 | PHONE* hidden / F1 | ZIPCODE hidden / F1 |
+|---|---|---|---|---|---|---|---|---|
+| Maskera v20 (q4) | 91.6% / 67.3% | 48.3% / 18.3% | 100.0% / 99.9% | 94.8% / 88.9% | 91.6% / 81.7% | 75.7% / 31.2% | 46.3% / 52.7% | 99.7% / 99.5% |
+| Microsoft Presidio 2.2.366 + sv_core_news_lg 3.8.0 | 81.0% / 85.7% | 15.1% / 12.9% | 100.0% / 99.9% | 98.0% / 72.6% | 66.6% / 70.7% | 68.9% / 11.8% | 54.9% / 47.4% | 4.3% / 0.0% |
+| swedish-pii 1.2.0 | 85.2% / 78.3% | 26.9% / 42.3% | 100.0% / 99.7% | 99.2% / 93.6% | 65.3% / 56.2% | 75.0% / 49.5% | 26.2% / 38.3% | 67.4% / 80.5% |
+| OpenAI Privacy Filter (q4 ONNX) | 55.0% / 53.1% | 96.3% / 32.6% | 99.5% / 99.7% | 40.8% / 50.9% | 69.7% / 75.1% | 95.6% / 0.0% | 99.4% / 73.5% | 73.8% / 66.9% |
+
+**MultiCoNER v2 Swedish test split (persons only)**: 2,000 texts, 2,522 gold spans, sha256 `d3368438baa90b815a5288b364fe37c919860fe51996f1739172f0f5229ec415`
+
+| System | PER hidden / F1 |
+|---|---|
+| Maskera v20 (q4) | 95.2% / 82.7% |
+| Microsoft Presidio 2.2.366 + sv_core_news_lg 3.8.0 | 68.8% / 76.2% |
+| swedish-pii 1.2.0 | 0.4% / 0.0% |
+| OpenAI Privacy Filter (q4 ONNX) | 13.2% / 21.3% |
+
+**SIC2 Swedish blogs (Språkbanken Text)**: 809 texts, 238 gold spans, sha256 `f05d40bc58be64ac7e912994ba8b4308477d7d22439d8a9fc97122a5c4fa9656`
+
+| System | LOC hidden / F1 | ORG hidden / F1 | PER hidden / F1 |
+|---|---|---|---|
+| Maskera v20 (q4) | 78.7% / 27.6% | 61.9% / 18.0% | 74.7% / 52.4% |
+| Microsoft Presidio 2.2.366 + sv_core_news_lg 3.8.0 | 59.6% / 42.3% | 33.3% / 18.7% | 65.9% / 72.1% |
+| swedish-pii 1.2.0 | 34.0% / 22.6% | 19.0% / 0.0% | 66.5% / 59.6% |
+| OpenAI Privacy Filter (q4 ONNX) | 17.0% / 12.0% | 0.0% / 0.0% | 25.3% / 33.2% |
+
+**SUC 3.0 test split, normal casing**: 12,923 texts, 4,095 gold spans, sha256 `264dc1f701fa444d8f2b6b88fba3648d1cec4a8a142410827532d1cddaa3862b`
+
+| System | LOC hidden / F1 | ORG hidden / F1 | PER hidden / F1 |
+|---|---|---|---|
+| Maskera v20 (q4) | 89.9% / 67.1% | 89.2% / 22.3% | 93.1% / 73.4% |
+| Microsoft Presidio 2.2.366 + sv_core_news_lg 3.8.0 | 95.3% / 92.6% | 75.5% / 69.8% | 95.4% / 93.8% |
+| swedish-pii 1.2.0 | 30.1% / 25.7% | 22.1% / 0.0% | 81.8% / 76.1% |
+| OpenAI Privacy Filter (q4 ONNX) | 9.7% / 3.6% | 3.5% / 0.0% | 39.5% / 47.6% |
+
+**SUC 3.0 test split, lowercased**: 12,923 texts, 4,095 gold spans, sha256 `ef07bc9c50d7718606cc1b528da1cc04a033e7f57e162c3b8c222da31ac9e458`
+
+| System | LOC hidden / F1 | ORG hidden / F1 | PER hidden / F1 |
+|---|---|---|---|
+| Maskera v20 (q4) | 89.8% / 65.2% | 82.4% / 20.4% | 90.2% / 70.9% |
+| Microsoft Presidio 2.2.366 + sv_core_news_lg 3.8.0 | 72.4% / 80.8% | 30.8% / 35.5% | 74.4% / 83.0% |
+| swedish-pii 1.2.0 | 0.8% / 0.0% | 2.4% / 0.0% | 0.2% / 0.0% |
+| OpenAI Privacy Filter (q4 ONNX) | 2.3% / 0.5% | 0.4% / 0.0% | 7.2% / 12.3% |
+
+Notes:
+
+- Presidio's spaCy model `sv_core_news_lg` is trained on SUC 3.0, so it is in-domain on the SUC rows.
+- KB-BERT, Maskera's base model, was pretrained by the National Library of Sweden on broad Swedish text and may have seen the same source texts, never the labels.
+- MultiCoNER v2 scores persons only: its place and organisation labels mark common words and the split injects typos.
+- ai4privacy types marked `*` (phone, personnummer, card) hold many values that are not valid Swedish formats; they are reported here but not on the site.
+- SIC2 (Stockholm Internet Corpus v2, Språkbanken Text, DOI 10.23695/se5f-d274) is manually annotated informal Swedish blog text; sentences with any other `<name>` type (work, animal, product, time) are excluded from the entity-free over-masking count.
+- Adjacent detections of the same type are merged for every system (swedish-pii splits first and last names).
+- The author-written suites below remain internal release gates and are not shown on maskera.dev.
+
+<!-- independent-benchmark:end -->
+
 ## Published privacy-clean v20 release
 
 - **Measured:** 2026-11-25 from a clean build of the current packaged pipeline.

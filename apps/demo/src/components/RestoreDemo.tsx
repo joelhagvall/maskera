@@ -1,9 +1,9 @@
 import type { RedactResult } from "@maskera/core"
 import { useMemo, useState } from "react"
 import copy from "../i18n"
-import { ChatIcon, KeyIcon } from "../icons"
 import { RestoredText, TokenHighlight } from "../segments"
 import { OverlayEditor } from "./OverlayEditor"
+import { TryStep } from "./TryStep"
 
 function fill(template: string, values: Record<string, string | null>): string {
   return template.replace(/\{(\w+)\}/g, (_, key: string) => values[key] ?? "")
@@ -19,9 +19,17 @@ function pickToken(map: Record<string, string>, ...labels: string[]): string | n
   return null
 }
 
+/** Every placeholder token for `label` in `map`, in the order the text produced them. */
+function tokensOf(map: Record<string, string>, label: string): string[] {
+  const index = (token: string) => Number(token.slice(label.length + 2, -1))
+  return Object.keys(map)
+    .filter((k) => k.startsWith(`[${label}_`))
+    .sort((a, b) => index(a) - index(b))
+}
+
 /**
- * Per-scenario AI replies, each written in its own domain (screening, support,
- * journal, litigation, casework) so the answer card follows the scenario the
+ * Per-scenario AI replies, each written in its own domain (screening, name
+ * disambiguation, support, complaints, journal, litigation, casework) so the answer card follows the scenario the
  * visitor picked. Every reply is built from the live map's placeholders, so it
  * restores end to end and gracefully drops a clause when a token is absent.
  */
@@ -37,6 +45,46 @@ const REPLIES: Record<string, (map: Record<string, string>) => string> = {
         })
       : copy.restoreDemo.replies.hr.fallback
     return `${fill(copy.restoreDemo.replies.hr.lead, { person: who })} ${back}`
+  },
+  // The reply keeps the ambiguous words (bo, liv, dag, Parkinsons sjukdom) in
+  // clear text next to the restored names, which is the point of the scenario.
+  kontext: (map) => {
+    const names = tokensOf(map, "NAMN")
+    const place = pickToken(map, "PLATS")
+    const org = pickToken(map, "ORGANISATION")
+    const pnr = pickToken(map, "PERSONNUMMER")
+    const caller = names.length > 2 ? names[names.length - 1] : null
+    const parts = [copy.restoreDemo.replies.kontext.lead]
+    if (names[0] && place)
+      parts.push(fill(copy.restoreDemo.replies.kontext.home, { name: names[0], place }))
+    if (names[1] && org)
+      parts.push(fill(copy.restoreDemo.replies.kontext.work, { name: names[1], org }))
+    parts.push(
+      caller
+        ? fill(copy.restoreDemo.replies.kontext.callback, {
+            name: caller,
+            pnr: pnr ? fill(copy.restoreDemo.replies.kontext.pnr, { pnr }) : "",
+          })
+        : pnr
+          ? fill(copy.restoreDemo.replies.kontext.fallbackPnr, { pnr })
+          : copy.restoreDemo.replies.kontext.fallback,
+    )
+    return parts.join(" ")
+  },
+  klagomal: (map) => {
+    const namn = pickToken(map, "NAMN")
+    const card = pickToken(map, "KORTNUMMER")
+    const phone = pickToken(map, "TELEFON")
+    const who = namn ? fill(copy.restoreDemo.replies.klagomal.person, { name: namn }) : ""
+    const parts = [
+      fill(copy.restoreDemo.replies.klagomal.lead, { person: who }),
+      card
+        ? fill(copy.restoreDemo.replies.klagomal.refund, { card })
+        : copy.restoreDemo.replies.klagomal.refundFallback,
+      copy.restoreDemo.replies.klagomal.compensation,
+    ]
+    if (phone) parts.push(fill(copy.restoreDemo.replies.klagomal.call, { phone }))
+    return parts.join(" ")
   },
   support: (map) => {
     const namn = pickToken(map, "NAMN")
@@ -162,59 +210,60 @@ export function sampleAiReply(map: Record<string, string>, scenarioId?: string):
 /**
  * Step three of the demo: the AI answers with the placeholders still in place,
  * and maskera swaps the originals back in locally, using the key that never
- * left the device. Only rendered when there is something to restore.
+ * left the device. The restored reply shows by default; a toggle shows the
+ * AI's own reply with placeholders, which the visitor can edit. Only rendered
+ * when there is something to restore.
  */
 export function RestoreDemo({ result, scenarioId }: { result: RedactResult; scenarioId?: string }) {
   const { map } = result
   const auto = useMemo(() => sampleAiReply(map, scenarioId), [map, scenarioId])
   // null = untouched (mirror the generated sample); a string = the visitor's edit.
   const [draft, setDraft] = useState<string | null>(null)
+  const [showReply, setShowReply] = useState(false)
   const reply = draft ?? auto
 
+  const toggle = (
+    <span className="try-toggle" role="group" aria-label={copy.restoreDemo.stepTitle}>
+      <button type="button" aria-pressed={!showReply} onClick={() => setShowReply(false)}>
+        {copy.restoreDemo.showRestored}
+      </button>
+      <button type="button" aria-pressed={showReply} onClick={() => setShowReply(true)}>
+        {copy.restoreDemo.showReply}
+      </button>
+    </span>
+  )
+
   return (
-    <section className="restore">
-      <h2 className="restore-title">{copy.restoreDemo.title}</h2>
-      <p className="restore-note">{copy.restoreDemo.body}</p>
-      <div className="grid restore-grid">
-        {/* The reply card is inverted (tinted frame, white editor) so this
-            second editable textarea reads as an incoming message, not as a
-            twin of the visitor's own input card. */}
-        <section className="card reply-card">
-          <div className="card-head">
-            <span className="card-title">
-              <ChatIcon size={14} />
-              {copy.restoreDemo.replyTitle}
-            </span>
-            {draft !== null ? (
-              <button type="button" className="clear" onClick={() => setDraft(null)}>
-                {copy.restoreDemo.resetExample}
-              </button>
-            ) : (
-              <span className="card-sub">{copy.restoreDemo.editableExample}</span>
-            )}
-          </div>
-          <OverlayEditor
-            value={reply}
-            onChange={setDraft}
-            name="ai-response"
-            ariaLabel={copy.restoreDemo.replyAria}
-            className="editor reply-editor"
-            language="sv"
-            highlight={<TokenHighlight text={reply} />}
-          />
-        </section>
-        <section className="card">
-          <div className="card-head">
-            <span className="card-title">
-              <KeyIcon size={14} />
-              {copy.restoreDemo.restoredTitle}
-            </span>
-          </div>
-          <div className="output restored" lang="sv" translate="no">
-            <RestoredText text={reply} map={map} />
-          </div>
-        </section>
-      </div>
-    </section>
+    <TryStep
+      n={3}
+      label={
+        <>
+          {copy.restoreDemo.stepTitle} {toggle}
+        </>
+      }
+      action={
+        showReply && draft !== null ? (
+          <button type="button" className="clear" onClick={() => setDraft(null)}>
+            {copy.restoreDemo.resetExample}
+          </button>
+        ) : null
+      }
+    >
+      {showReply ? (
+        <OverlayEditor
+          value={reply}
+          onChange={setDraft}
+          name="ai-response"
+          ariaLabel={copy.restoreDemo.replyAria}
+          className="editor reply-editor"
+          language="sv"
+          highlight={<TokenHighlight text={reply} />}
+        />
+      ) : (
+        <div className="output restored" lang="sv" translate="no">
+          <RestoredText text={reply} map={map} />
+        </div>
+      )}
+    </TryStep>
   )
 }

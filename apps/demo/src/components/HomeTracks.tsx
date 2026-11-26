@@ -1,8 +1,9 @@
 import { GITHUB } from "../constants"
 import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
+import { formatMb, formatPct, sizeMb, summary } from "../independentBench"
 import { navClick, type View, viewPaths } from "../routing"
-import { SERVICES_SECTIONS } from "./ExtensionInstall"
+import { ExtensionHeroActions, SERVICES_SECTIONS } from "./ExtensionInstall"
 
 const TRACK_SECTIONS: Record<string, string> = {
   extension: SERVICES_SECTIONS.extension,
@@ -40,40 +41,74 @@ export function HomeTracks({ goSection }: { goSection: (view: View, anchor: stri
 }
 
 /**
- * Compact factual proof strip on the home page: reuses the benchmark-synced
- * pipeline hit rate and model size from copy.accuracy.currentStats so the
- * numbers stay in lockstep with docs/benchmark-release.json.
+ * One-line proof strip straight under the hero stage: names hidden in
+ * independent Swedish text, model size and licence, each linking to its
+ * evidence. The numbers come from the benchmark result and the pinned model
+ * artifact, never from copy.
  */
 export function HomeProof({ go }: { go: (view: View) => void }) {
   const proof = copy.homeProof
-  const pipeline = copy.accuracy.currentStats[2]
-  const modelSize = copy.accuracy.currentStats[3]
-  if (!pipeline || !modelSize) return null
+  const names = summary.maskera.names
+  if (!names) return null
 
   return (
     <section className="home-proof" aria-label={proof.label}>
-      <div className="home-proof-item">
-        <p className="home-proof-value">{pipeline.value}</p>
-        <p className="home-proof-desc">{pipeline.label}</p>
-        <a href={viewPaths.accuracy} onClick={navClick(() => go("accuracy"))}>
-          {proof.accuracyCta} →
-        </a>
+      <a href={viewPaths.accuracy} onClick={navClick(() => go("accuracy"))}>
+        <strong>{formatPct(names.maskedPct)}</strong> {proof.accuracyDesc} →
+      </a>
+      <a href={viewPaths.security} onClick={navClick(() => go("security"))}>
+        <strong>{formatMb(sizeMb("maskera"))}</strong>, {proof.localDesc} →
+      </a>
+      <a href={GITHUB} target="_blank" rel="noreferrer">
+        <strong>{proof.licenseValue}</strong>, {proof.licenseDesc}
+        <ArrowUpRightIcon size={12} />
+      </a>
+    </section>
+  )
+}
+
+/**
+ * What IT, security and data protection officers check first, in one block
+ * on the home page, with links to the pages that hold the detail.
+ */
+export function HomeTrust({ go }: { go: (view: View) => void }) {
+  const trust = copy.homeTrust
+  return (
+    <section className="home-trust" aria-labelledby="home-trust-title">
+      <h2 id="home-trust-title">{trust.title}</h2>
+      <p className="home-trust-lede">{trust.lede}</p>
+      <div className="home-trust-grid">
+        {trust.items.map((item) => (
+          <div key={item.title} className="home-trust-item">
+            <h3>{item.title}</h3>
+            <p>{item.body}</p>
+          </div>
+        ))}
       </div>
-      <div className="home-proof-item">
-        <p className="home-proof-value">{modelSize.value}</p>
-        <p className="home-proof-desc">{proof.localDesc}</p>
+      <p className="home-trust-links">
         <a href={viewPaths.security} onClick={navClick(() => go("security"))}>
-          {proof.securityCta} →
+          {trust.securityCta} →
         </a>
-      </div>
-      <div className="home-proof-item">
-        <p className="home-proof-value">{proof.licenseValue}</p>
-        <p className="home-proof-desc">{proof.licenseDesc}</p>
-        <a href={GITHUB} target="_blank" rel="noreferrer">
-          {proof.githubCta}
-          <ArrowUpRightIcon size={12} />
+        <a href={viewPaths.faq} onClick={navClick(() => go("faq"))}>
+          {trust.faqCta} →
         </a>
-      </div>
+      </p>
+    </section>
+  )
+}
+
+/**
+ * The closing call to action at the end of the home page: the hero's own
+ * buttons again (browser icon, agent prompt copy), for visitors who scrolled
+ * through the demo.
+ */
+export function HomeClosing({ goSection }: { goSection: (view: View, anchor: string) => void }) {
+  const closing = copy.homeClosing
+  return (
+    <section className="home-closing" aria-labelledby="home-closing-title">
+      <h2 id="home-closing-title">{closing.title}</h2>
+      <p>{closing.body}</p>
+      <ExtensionHeroActions goSection={goSection} />
     </section>
   )
 }
