@@ -77,6 +77,14 @@ const HOMOGRAPH_CONTRAST_TRAIN_ROWS = Number(process.env.HOMOGRAPH_CONTRAST_TRAI
 const HOMOGRAPH_CONTRAST_VAL_ROWS = Number(process.env.HOMOGRAPH_CONTRAST_VAL_ROWS ?? 0)
 const REGISTER_PRECISION_TRAIN_ROWS = Number(process.env.REGISTER_PRECISION_TRAIN_ROWS ?? 0)
 const REGISTER_PRECISION_VAL_ROWS = Number(process.env.REGISTER_PRECISION_VAL_ROWS ?? 0)
+// v21 contrast families: opt-in, targeting the two measured v20 weaknesses on
+// external SUC 3.0 and homograph stress tests:
+// 1. Sentence-initial capitalised homographs (balanced 1:1 person vs ordinary word)
+// 2. Clean 0-entity Swedish prose (generic institutions, tech/dev nouns, time/finance, editorial prose)
+const CASED_HOMOGRAPH_TRAIN_ROWS = Number(process.env.CASED_HOMOGRAPH_TRAIN_ROWS ?? 0)
+const CASED_HOMOGRAPH_VAL_ROWS = Number(process.env.CASED_HOMOGRAPH_VAL_ROWS ?? 0)
+const CLEAN_PROSE_NEG_TRAIN_ROWS = Number(process.env.CLEAN_PROSE_NEG_TRAIN_ROWS ?? 0)
+const CLEAN_PROSE_NEG_VAL_ROWS = Number(process.env.CLEAN_PROSE_NEG_VAL_ROWS ?? 0)
 
 for (const [name, value] of [
   ["LC_AUG", LC_AUG],
@@ -102,6 +110,10 @@ for (const [name, value] of [
   ["HOMOGRAPH_CONTRAST_VAL_ROWS", HOMOGRAPH_CONTRAST_VAL_ROWS],
   ["REGISTER_PRECISION_TRAIN_ROWS", REGISTER_PRECISION_TRAIN_ROWS],
   ["REGISTER_PRECISION_VAL_ROWS", REGISTER_PRECISION_VAL_ROWS],
+  ["CASED_HOMOGRAPH_TRAIN_ROWS", CASED_HOMOGRAPH_TRAIN_ROWS],
+  ["CASED_HOMOGRAPH_VAL_ROWS", CASED_HOMOGRAPH_VAL_ROWS],
+  ["CLEAN_PROSE_NEG_TRAIN_ROWS", CLEAN_PROSE_NEG_TRAIN_ROWS],
+  ["CLEAN_PROSE_NEG_VAL_ROWS", CLEAN_PROSE_NEG_VAL_ROWS],
 ]) {
   if (!Number.isInteger(value) || value < 0) {
     throw new Error(`${name} must be a non-negative integer; got ${value}`)
@@ -132,6 +144,8 @@ for (const [name, value] of [
   ["CLINICAL_CONTRAST_VAL_ROWS", CLINICAL_CONTRAST_VAL_ROWS],
   ["REGISTER_PRECISION_TRAIN_ROWS", REGISTER_PRECISION_TRAIN_ROWS],
   ["REGISTER_PRECISION_VAL_ROWS", REGISTER_PRECISION_VAL_ROWS],
+  ["CLEAN_PROSE_NEG_TRAIN_ROWS", CLEAN_PROSE_NEG_TRAIN_ROWS],
+  ["CLEAN_PROSE_NEG_VAL_ROWS", CLEAN_PROSE_NEG_VAL_ROWS],
 ]) {
   if (value % 4 !== 0) {
     throw new Error(`${name} must be divisible by 4 (one row per contrast subfamily); got ${value}`)
@@ -140,6 +154,8 @@ for (const [name, value] of [
 for (const [name, value] of [
   ["HOMOGRAPH_CONTRAST_TRAIN_ROWS", HOMOGRAPH_CONTRAST_TRAIN_ROWS],
   ["HOMOGRAPH_CONTRAST_VAL_ROWS", HOMOGRAPH_CONTRAST_VAL_ROWS],
+  ["CASED_HOMOGRAPH_TRAIN_ROWS", CASED_HOMOGRAPH_TRAIN_ROWS],
+  ["CASED_HOMOGRAPH_VAL_ROWS", CASED_HOMOGRAPH_VAL_ROWS],
 ]) {
   if (value % 2 !== 0) {
     throw new Error(`${name} must be divisible by 2 (paired name-use and word-use); got ${value}`)
@@ -2306,6 +2322,442 @@ const REGISTER_PRECISION_SUBFAMILIES = [
   REGISTER_CAPS_TEMPLATES,
 ]
 
+// v21 contrast family 1: sentence-initial capitalised homographs (1:1 person vs ordinary word).
+// Deliberately uses distinct phrasing from evaluation traps so the model learns syntax, not memorisation.
+const CASED_HOMOGRAPH_NAMES = [...HOMOGRAPH_NAMES, "frank"]
+const CASED_HOMO_NAME_ACTIONS = [
+  "ringde angående fakturan i morse",
+  "skickade över underlaget före lunch",
+  "kommer förbi kontoret på tisdag",
+  "bad mig hälsa till hela gruppen",
+  "skrev under det nya avtalet i fredags",
+  "frågade när leveransen beräknas anlända",
+  "tar över handläggningen under veckan",
+  "har redan svarat på meddelandet",
+  "bokade ett kort uppföljningsmöte till måndag",
+  "meddelade att nyckeln finns i receptionen",
+  "lämnade rapporten på skrivbordet igår",
+  "bekräftade tiden via kundservice",
+  "lovade att återkomma med besked innan helgen",
+  "undrade om beställningen redan har gått iväg",
+  "hjälpte till med felsökningen hela eftermiddagen",
+  "har jobbat på avdelningen i snart tre år",
+  "behöver tillgång till den delade mappen",
+  "sköter kontakten med leverantören denna vecka",
+  "har ansvar för att stämma av listan",
+  "berättade att mötet flyttades fram en timme",
+]
+const CASED_HOMO_WORD_SENTENCES = [
+  "Bo billigt i stadens utkant kräver goda bussförbindelser",
+  "Bo hemma under studietiden sparar mycket pengar",
+  "Bo centralt gör vardagen enklare för hela familjen",
+  "Bo i kollektiv blir allt vanligare bland unga vuxna",
+  "Dag för dag märks hur vårvärmen sakta återvänder",
+  "Dag som natt rullar godstrafiken förbi stationen",
+  "Dag och natt är nästan lika långa vid vårdagjämningen",
+  "Liv i luckan blev det när musiken startade på scenen",
+  "Liv och hälsa måste alltid gå före snabba besparingar",
+  "Liv utan bekymmer finns sällan i verkligheten",
+  "Bror och syster delade lika på ansvaret hemma",
+  "Bror min föredrar tåg framför flyg på tjänsteresor",
+  "Bror eller vän, någon måste hjälpa till med flytten",
+  "Tom på energi sjönk han ner i soffan efter passet",
+  "Tom på idéer stirrade gruppen på den vita tavlan",
+  "Tom lokal ekar alltid högre än ett möblerat rum",
+  "Max tre personer får åka i den lilla hissen samtidigt",
+  "Max två arbetsdagar tar behandlingen av ansökan",
+  "Max hundra deltagare ryms i den stora hörsalen",
+  "Max femtio kronor kostar inträdet för studenter",
+  "Dan efter festen städade alla tillsammans i köket",
+  "Dan före midsommar brukar trafiken vara tät på vägarna",
+  "Dan innan avresan packades de sista väskorna",
+  "Axel vid axel stod lagen uppställda före avspark",
+  "Axel och nacke mår bättre av regelbundna pauser",
+  "Axel som värker bör undersökas av en fysioterapeut",
+  "Jack i dörrkarmen syntes tydligt efter inbrottsförsöket",
+  "Jack i parketten kan ofta lagas med träspackel",
+  "Jack längs kanten gjorde skivan svår att slipa",
+  "Karl för sin hatt var ett gammalt uttryck för mod",
+  "Karl eller kvinna spelar ingen roll vid rekryteringen",
+  "Fred på jorden återkommer i nästan varje nyårstal",
+  "Fred och samarbete skapar stabilitet i regionen",
+  "Fred mellan grannländer gagnar både handel och forskning",
+  "Ann eller inte, rutinen följs av samtliga enheter",
+  "Sten på sten lades för att reparera den gamla muren",
+  "Sten och betong tål frost betydligt bättre än obehandlat trä",
+  "Sten från stenbrottet användes till nya gångvägar",
+  "Juni och juli är de mest populära semestermånaderna",
+  "Juni brukar bjuda på varmare vatten längs kusten",
+  "Juni avslutades med kraftiga regnskurar över hela landet",
+  "Maj månad innebär ofta startskottet för uteserveringarna",
+  "Maj bjöd på rekordmånga soltimmar enligt statistiken",
+  "Maj är den tid då träden slår ut som snabbast",
+  "Klara besked från ledningen uppskattas alltid av personalen",
+  "Klara riktlinjer minskar risken för missförstånd i arbetet",
+  "Klara av tentamen på första försöket kräver planering",
+  "Klara färger syns bäst mot en helt mörk bakgrund",
+  "Linda bandaget jämnt utan att dra åt för hårt",
+  "Linda om kabeln så att den inte trasslar ihop sig",
+  "Linda in presenten i brunt papper med ett snöre",
+  "Stig på och häng av er ytterkläderna i korridoren",
+  "Stig upp i tid om du vill hinna med morgontåget",
+  "Stig ner försiktigt eftersom trappstegen kan vara hala",
+  "Stig längs sjökanten leder direkt fram till utsiktsplatsen",
+  "Björn och varg tillhör de stora rovdjuren i vår fauna",
+  "Björn som vaknar ur idet söker snabbt efter föda",
+  "Per kvadratmeter har priserna legat stilla sedan i höstas",
+  "Per styck kostar skruvarna bara några få ören",
+  "Per timme debiteras arbetet enligt gällande ramavtal",
+  "Per telefon går det snabbast att ändra bokningen",
+  "Per mejl skickas kvittot automatiskt efter betalningen",
+  "Rosa blommor täckte hela slänten vid sommarstugan",
+  "Rosa och grått bildade en lugn färgskala i rummet",
+  "Urban planering kräver balans mellan bostäder och grönytor",
+  "Urban arkitektur förändrar ofta hur människor rör sig i staden",
+  "Knut på linan måste lösas upp innan båten lägger ut",
+  "Knut av nerver kändes det som precis före talet",
+  "Saga och myt blandas ofta i äldre nordisk litteratur",
+  "Saga för barn läses högt varje torsdag på biblioteket",
+  "Lova runt och hålla tunt skadar förtroendet på sikt",
+  "Lova aldrig mer än teamet faktiskt har kapacitet att leverera",
+  "Rita tydliga pilar i diagrammet så flödet blir lätt att följa",
+  "Rita upp rummets mått innan möblerna beställs",
+  "Mina kollegor arbetar mestadels på distans under vintern",
+  "Mina anteckningar från seminariet ligger redan i arkivet",
+  "Mina erfarenheter av verktyget har varit genomgående goda",
+  "Tina brödet i rumstemperatur i ungefär tjugo minuter",
+  "Tina upp fisken långsamt i kylen för bästa resultat",
+  "Sanna vänner hör av sig även när det blåser motvind",
+  "Sanna siffror från mätningen presenteras i bilagan",
+  "Lena händer får man lättare med oparfymerad handkräm",
+  "Lena ytor reflekterar ljuset mycket jämnare än grova",
+  "Frank kritik kan ibland vara den mest hjälpsamma återkopplingen",
+  "Frank och ärlig dialog löser knutar snabbare än långa mejl",
+]
+function buildCasedHomographNameExample() {
+  const raw = pick(CASED_HOMOGRAPH_NAMES)
+  const name = raw[0].toUpperCase() + raw.slice(1)
+  const action = pick(CASED_HOMO_NAME_ACTIONS)
+  const tail = chance(0.45) ? pick(HOMOGRAPH_WORD_TAIL) : ""
+  const rest = [action, tail].filter(Boolean).join(" ")
+  const restTokens = tokenizeFiller(rest)
+  const tokens = [name, ...restTokens]
+  const tags = ["B-PER", ...restTokens.map(() => "O")]
+  if (chance(0.75)) {
+    tokens.push(".")
+    tags.push("O")
+  }
+  return { tokens, tags }
+}
+function buildCasedHomographWordExample() {
+  const base = pick(CASED_HOMO_WORD_SENTENCES)
+  const tail = chance(0.55) ? pick(HOMOGRAPH_WORD_TAIL) : ""
+  const sentence = [base, tail].filter(Boolean).join(" ")
+  const tokens = tokenizeFiller(sentence)
+  const tags = tokens.map(() => "O")
+  if (tokens.length && chance(0.12)) {
+    for (let k = 0; k < tokens.length; k++) tokens[k] = tokens[k].toLowerCase()
+  }
+  if (chance(0.75)) {
+    tokens.push(".")
+    tags.push("O")
+  }
+  return { tokens, tags }
+}
+const CASED_HOMOGRAPH_SUBFAMILIES = [buildCasedHomographNameExample, buildCasedHomographWordExample]
+
+// v21 contrast family 2: clean 0-entity Swedish prose across 4 domains where v20 over-masked.
+const CLEAN_GENERIC_INSTITUTIONS = [
+  "kyrkogården",
+  "domstolen",
+  "bostadsdomstolen",
+  "hyresnämnden",
+  "hyresnämnderna",
+  "länsstyrelsen",
+  "tingsrätten",
+  "hovrätten",
+  "förvaltningsrätten",
+  "regeringen",
+  "riksdagen",
+  "kommunen",
+  "myndigheten",
+  "arbetsgruppen",
+  "styrelsen",
+  "kommittén",
+  "konsumentköplagen",
+  "arbetsmiljölagen",
+  "offentlighetsprincipen",
+  "förordningen",
+  "lagstiftningen",
+  "biblioteket",
+  "stationen",
+  "hamnen",
+  "flygplatsen",
+  "sjukhuset",
+  "vårdcentralen",
+  "skolan",
+  "universitetet",
+  "gymnasiet",
+  "förskolan",
+  "museet",
+  "teatern",
+  "biografen",
+  "restaurangen",
+  "hotellet",
+  "apoteket",
+  "banken",
+  "posten",
+  "tullen",
+  "polisen",
+  "brandkåren",
+  "försvaret",
+  "kyrkan",
+  "församlingen",
+  "föreningen",
+  "stiftelsen",
+  "aktiebolaget",
+  "koncernen",
+  "avdelningen",
+  "enheten",
+  "kansliet",
+  "receptionen",
+  "kundtjänsten",
+  "ekonomiavdelningen",
+  "personalavdelningen",
+]
+const CLEAN_TECH_TERMS = [
+  "TypeScript",
+  "JavaScript",
+  "Python",
+  "Rust",
+  "Java",
+  "Node",
+  "React",
+  "Vue",
+  "Angular",
+  "Vite",
+  "Docker",
+  "Kubernetes",
+  "Linux",
+  "macOS",
+  "Windows",
+  "PostgreSQL",
+  "SQLite",
+  "Redis",
+  "GraphQL",
+  "REST",
+  "JSON",
+  "YAML",
+  "HTML",
+  "CSS",
+  "SQL",
+  "Git",
+  "HTTP",
+  "TLS",
+  "ONNX",
+  "WebAssembly",
+  "WebGPU",
+  "API",
+  "SDK",
+  "CLI",
+  "Biome",
+  "Vitest",
+]
+const CLEAN_BUSINESS_TERMS = [
+  "kvartal",
+  "kvartalet",
+  "räkenskapsåret",
+  "budgetåret",
+  "månadsskiftet",
+  "årsskiftet",
+  "halvåret",
+  "årsredovisningen",
+  "delårsrapporten",
+  "omsättningen",
+  "marginalen",
+  "räntan",
+  "momsen",
+  "fakturan",
+  "offerten",
+  "ramavtalet",
+  "garantin",
+  "leveransen",
+  "uppsägningstiden",
+  "prislistan",
+  "kampanjveckan",
+  "inventeringen",
+  "driftkostnaden",
+  "förbrukningen",
+]
+const CLEAN_PROSE_LEADERS = [
+  "Dessa",
+  "Tolkning",
+  "Ändå",
+  "Dessutom",
+  "Samtidigt",
+  "Däremot",
+  "Emellertid",
+  "Följaktligen",
+  "Sammantaget",
+  "Avslutningsvis",
+  "Slutligen",
+  "Resultatet",
+  "Undersökningen",
+  "Utredningen",
+  "Rapporten",
+  "Förslaget",
+  "Beslutet",
+  "Reglerna",
+  "Metoden",
+  "Analysen",
+  "Slutsatsen",
+  "Erfarenheten",
+  "Utvecklingen",
+  "Förändringen",
+  "Situationen",
+  "Bedömningen",
+  "Jämförelsen",
+  "Sammanfattningen",
+]
+const CLEAN_PROSE_NOUNS = [
+  "diafragma",
+  "lungorna",
+  "hjärtat",
+  "musklerna",
+  "vävnaden",
+  "blodflödet",
+  "skogen",
+  "sjön",
+  "fjällen",
+  "kusten",
+  "skärgården",
+  "åkrarna",
+  "ängarna",
+  "trädgården",
+  "bryggan",
+  "gränden",
+  "torget",
+  "parken",
+  "bron",
+  "bäcken",
+  "myren",
+  "källaren",
+  "vinden",
+  "garaget",
+]
+const CLEAN_SAFE_NUMS = [
+  "12",
+  "15",
+  "18",
+  "24",
+  "30",
+  "36",
+  "42",
+  "48",
+  "64",
+  "75",
+  "85",
+  "90",
+  "1200",
+  "2400",
+  "3600",
+]
+const CLEAN_MONTHS = [
+  "januari",
+  "februari",
+  "mars",
+  "april",
+  "maj",
+  "juni",
+  "juli",
+  "augusti",
+  "september",
+  "oktober",
+  "november",
+  "december",
+]
+function buildCleanInstitutionExample() {
+  const a = pick(CLEAN_GENERIC_INSTITUTIONS)
+  const b = pick(CLEAN_GENERIC_INSTITUTIONS)
+  const m = pick(CLEAN_MONTHS)
+  const n = pick(CLEAN_SAFE_NUMS)
+  const capA = a[0].toUpperCase() + a.slice(1)
+  const templates = [
+    `${capA} bör endast medge undantag när särskilda skäl föreligger enligt ${b}.`,
+    `Vid sammanträdet på ${a} beslutades att nya riktlinjer gäller från ${m}.`,
+    `Enligt ${a} ska handläggningen på ${b} slutföras inom ${n} dagar.`,
+    `Besökare till ${a} hänvisas numera direkt till ${b} under vardagar.`,
+    `Utredningen visar att ${a} och ${b} samverkar bättre efter omläggningen.`,
+    `Frågan prövas i första hand av ${a} innan den går vidare till ${b}.`,
+    `Kontrollen vid ${a} omfattade ${n} ärenden under hela ${m}.`,
+    `Det är viktigt för rättstillämpningen att ${a} redovisar beslutet öppet.`,
+  ]
+  const tokens = tokenizeFiller(pick(templates))
+  return { tokens, tags: tokens.map(() => "O") }
+}
+function buildCleanTechExample() {
+  const t1 = pick(CLEAN_TECH_TERMS)
+  const t2 = pick(CLEAN_TECH_TERMS)
+  const n1 = pick(CLEAN_SAFE_NUMS)
+  const n2 = pick(CLEAN_SAFE_NUMS)
+  const templates = [
+    `Koden kompilerar rent utan varningar i ${t1} och ${t2} efter uppdateringen.`,
+    `Vi migrerade hela tjänsten från ${t1} till ${t2} under helgen utan driftstopp.`,
+    `Databasen i ${t1} svarar under ${n1} ms vid ${n2} samtidiga anrop via ${t2}.`,
+    `Paketet bygger automatiskt för ${t1}, ${t2} och moderna webbläsare.`,
+    `Konfigurationen lagras i ${t1} och valideras av ${t2} i varje körning.`,
+    `Projektet kräver minst ${n1} GB utrymme för lokal körning med ${t1} och ${t2}.`,
+    `Dokumentationen för ${t1} beskriver hur man felsöker ${t2} lokalt.`,
+    `Testsviten i ${t1} passerade alla ${n2} kontroller mot ${t2}.`,
+  ]
+  const tokens = tokenizeFiller(pick(templates))
+  return { tokens, tags: tokens.map(() => "O") }
+}
+function buildCleanBusinessExample() {
+  const b1 = pick(CLEAN_BUSINESS_TERMS)
+  const b2 = pick(CLEAN_BUSINESS_TERMS)
+  const n1 = pick(CLEAN_SAFE_NUMS)
+  const n2 = pick(CLEAN_SAFE_NUMS)
+  const m = pick(CLEAN_MONTHS)
+  const capB1 = b1[0].toUpperCase() + b1.slice(1)
+  const templates = [
+    `${capB1} för ${b2} landade på ${n1} procent jämfört med ${n2} procent året före.`,
+    `Enligt ${b1} förfaller betalningen den ${pick(["5", "10", "15", "20", "28"])} ${m} enligt gällande villkor.`,
+    `Under nästa ${b1} planeras en översyn av både ${b2} och lagernivåerna.`,
+    `Förbrukningen sjönk till ${n1} kWh i ${m} trots högre belastning under ${b1}.`,
+    `Kostnaden justerades med ${pick(["0,25", "1,5", "2,4", "3,8"])} procentenheter inför ${b1}.`,
+    `Se bilaga ${pick(["1", "2", "3", "4"])} på sidan ${n1} för fullständig sammanställning av ${b2}.`,
+    `${capB1} löper i ${n1} månader med tre månaders uppsägningstid efter ${m}.`,
+    `Leveransen innehöll ${n1} kollin med en totalvikt på ${n2} kilo enligt ${b2}.`,
+  ]
+  const tokens = tokenizeFiller(pick(templates))
+  return { tokens, tags: tokens.map(() => "O") }
+}
+function buildCleanEditorialExample() {
+  const lead = pick(CLEAN_PROSE_LEADERS)
+  const noun1 = pick(CLEAN_PROSE_NOUNS)
+  const noun2 = pick(CLEAN_PROSE_NOUNS)
+  const m = pick(CLEAN_MONTHS)
+  const templates = [
+    `${lead} visar tydligt hur förhållandena kring ${noun1} förändrades under ${m}.`,
+    `${lead} kan ibland bli missvisande om man bortser från utvecklingen vid ${noun1}.`,
+    `${lead} präglades inte av konflikt utan av skilda synpunkter kring ${noun1} och ${noun2}.`,
+    `Genom att granska ${noun1} noggrannare syns små detaljer som tidigare saknats vid ${noun2}.`,
+    `${lead} pekar på att både ${noun1} och ${noun2} påverkades av vädret i ${m}.`,
+    `Längs ${noun1} märktes en tydlig skillnad jämfört med hur det såg ut nära ${noun2}.`,
+    `${lead} sammanfattar de viktigaste iakttagelserna från arbetet med ${noun1}.`,
+    `Utan tydlig kontroll av ${noun1} riskerar man att dra förhastade slutsatser om ${noun2}.`,
+  ]
+  const tokens = tokenizeFiller(pick(templates))
+  return { tokens, tags: tokens.map(() => "O") }
+}
+const CLEAN_PROSE_NEG_SUBFAMILIES = [
+  buildCleanInstitutionExample,
+  buildCleanTechExample,
+  buildCleanBusinessExample,
+  buildCleanEditorialExample,
+]
+
 function tokenizeFiller(str) {
   const out = []
   for (const raw of str.trim().split(/\s+/)) {
@@ -2517,6 +2969,30 @@ const registerValDuplicates = appendSubfamilySet(
   REGISTER_PRECISION_SUBFAMILIES,
   "register-precision",
 )
+const casedHomographTrainDuplicates = appendSubfamilySet(
+  trainPath,
+  CASED_HOMOGRAPH_TRAIN_ROWS,
+  CASED_HOMOGRAPH_SUBFAMILIES,
+  "cased-homograph",
+)
+const casedHomographValDuplicates = appendSubfamilySet(
+  valPath,
+  CASED_HOMOGRAPH_VAL_ROWS,
+  CASED_HOMOGRAPH_SUBFAMILIES,
+  "cased-homograph",
+)
+const cleanProseTrainDuplicates = appendSubfamilySet(
+  trainPath,
+  CLEAN_PROSE_NEG_TRAIN_ROWS,
+  CLEAN_PROSE_NEG_SUBFAMILIES,
+  "clean-prose-neg",
+)
+const cleanProseValDuplicates = appendSubfamilySet(
+  valPath,
+  CLEAN_PROSE_NEG_VAL_ROWS,
+  CLEAN_PROSE_NEG_SUBFAMILIES,
+  "clean-prose-neg",
+)
 
 function fileDescription(path, rows) {
   const bytes = readFileSync(path)
@@ -2524,9 +3000,17 @@ function fileDescription(path, rows) {
 }
 
 const extraTrainRows =
-  CLINICAL_CONTRAST_TRAIN_ROWS + HOMOGRAPH_CONTRAST_TRAIN_ROWS + REGISTER_PRECISION_TRAIN_ROWS
+  CLINICAL_CONTRAST_TRAIN_ROWS +
+  HOMOGRAPH_CONTRAST_TRAIN_ROWS +
+  REGISTER_PRECISION_TRAIN_ROWS +
+  CASED_HOMOGRAPH_TRAIN_ROWS +
+  CLEAN_PROSE_NEG_TRAIN_ROWS
 const extraValRows =
-  CLINICAL_CONTRAST_VAL_ROWS + HOMOGRAPH_CONTRAST_VAL_ROWS + REGISTER_PRECISION_VAL_ROWS
+  CLINICAL_CONTRAST_VAL_ROWS +
+  HOMOGRAPH_CONTRAST_VAL_ROWS +
+  REGISTER_PRECISION_VAL_ROWS +
+  CASED_HOMOGRAPH_VAL_ROWS +
+  CLEAN_PROSE_NEG_VAL_ROWS
 const v20Config =
   extraTrainRows > 0 || extraValRows > 0
     ? {
@@ -2536,6 +3020,17 @@ const v20Config =
         homographContrastValidationRows: HOMOGRAPH_CONTRAST_VAL_ROWS,
         registerPrecisionTrainRows: REGISTER_PRECISION_TRAIN_ROWS,
         registerPrecisionValidationRows: REGISTER_PRECISION_VAL_ROWS,
+        ...(CASED_HOMOGRAPH_TRAIN_ROWS > 0 ||
+        CASED_HOMOGRAPH_VAL_ROWS > 0 ||
+        CLEAN_PROSE_NEG_TRAIN_ROWS > 0 ||
+        CLEAN_PROSE_NEG_VAL_ROWS > 0
+          ? {
+              casedHomographTrainRows: CASED_HOMOGRAPH_TRAIN_ROWS,
+              casedHomographValidationRows: CASED_HOMOGRAPH_VAL_ROWS,
+              cleanProseNegTrainRows: CLEAN_PROSE_NEG_TRAIN_ROWS,
+              cleanProseNegValidationRows: CLEAN_PROSE_NEG_VAL_ROWS,
+            }
+          : {}),
       }
     : {}
 
@@ -2587,11 +3082,13 @@ console.log(
   `Wrote ${trainCount} base + ${BARE_DECLARATIVE_TRAIN_ROWS} bare-declarative + ` +
     `${BALANCED_REPLAY_TRAIN_ROWS} balanced-replay + ${HARD_NEGATIVE_TRAIN_ROWS} hard-negative + ` +
     `${CLINICAL_CONTRAST_TRAIN_ROWS} clinical + ${HOMOGRAPH_CONTRAST_TRAIN_ROWS} homograph + ` +
-    `${REGISTER_PRECISION_TRAIN_ROWS} register train; ` +
+    `${REGISTER_PRECISION_TRAIN_ROWS} register + ${CASED_HOMOGRAPH_TRAIN_ROWS} cased-homograph + ` +
+    `${CLEAN_PROSE_NEG_TRAIN_ROWS} clean-prose train; ` +
     `${valCount} base + ${BARE_DECLARATIVE_VAL_ROWS} bare-declarative + ` +
     `${BALANCED_REPLAY_VAL_ROWS} balanced-replay + ${HARD_NEGATIVE_VAL_ROWS} hard-negative + ` +
     `${CLINICAL_CONTRAST_VAL_ROWS} clinical + ${HOMOGRAPH_CONTRAST_VAL_ROWS} homograph + ` +
-    `${REGISTER_PRECISION_VAL_ROWS} register val examples`,
+    `${REGISTER_PRECISION_VAL_ROWS} register + ${CASED_HOMOGRAPH_VAL_ROWS} cased-homograph + ` +
+    `${CLEAN_PROSE_NEG_VAL_ROWS} clean-prose val examples`,
 )
 console.log(
   `Uniqueness: skipped ${trainDuplicates} base-t / ${valDuplicates} base-v / ` +
@@ -2600,7 +3097,9 @@ console.log(
     `${hardNegativeTrainDuplicates + hardNegativeValDuplicates} hard-neg / ` +
     `${clinicalTrainDuplicates + clinicalValDuplicates} clinical / ` +
     `${homographTrainDuplicates + homographValDuplicates} homograph / ` +
-    `${registerTrainDuplicates + registerValDuplicates} register duplicates`,
+    `${registerTrainDuplicates + registerValDuplicates} register / ` +
+    `${casedHomographTrainDuplicates + casedHomographValDuplicates} cased-homograph / ` +
+    `${cleanProseTrainDuplicates + cleanProseValDuplicates} clean-prose duplicates`,
 )
 console.log(
   `Gazetteers: ${FIRST.length} first, ${LAST.length} last, ${CITIES.length} cities, ${ORGS.length} orgs, ${TEMPLATES.length} templates`,
