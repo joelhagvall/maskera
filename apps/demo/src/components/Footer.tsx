@@ -2,7 +2,12 @@ import { GITHUB, HF_MODEL } from "../constants"
 import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
 import { portalUrl } from "../portal"
-import { navClick, viewPaths } from "../routing"
+import { navClick, type View, viewPaths } from "../routing"
+import { loadView } from "../views"
+
+const warm = (view: View) => () => {
+  void loadView(view)
+}
 
 export function Footer({
   onServices,
@@ -33,6 +38,8 @@ export function Footer({
               <a
                 className="footer-link"
                 href={viewPaths.services}
+                onMouseEnter={warm("services")}
+                onFocus={warm("services")}
                 onClick={onServices ? navClick(onServices) : undefined}
               >
                 {copy.navigation.services}
@@ -42,13 +49,21 @@ export function Footer({
               <a
                 className="footer-link"
                 href={viewPaths.dev}
+                onMouseEnter={warm("dev")}
+                onFocus={warm("dev")}
                 onClick={onDevelopers ? navClick(onDevelopers) : undefined}
               >
                 {copy.navigation.developers}
               </a>
             </li>
             <li>
-              <a className="footer-link" href={viewPaths.accuracy} onClick={navClick(onAccuracy)}>
+              <a
+                className="footer-link"
+                href={viewPaths.accuracy}
+                onMouseEnter={warm("accuracy")}
+                onFocus={warm("accuracy")}
+                onClick={navClick(onAccuracy)}
+              >
                 {copy.navigation.accuracy}
               </a>
             </li>
@@ -64,7 +79,13 @@ export function Footer({
           <p className="footer-heading">{copy.footer.columns.trust}</p>
           <ul>
             <li>
-              <a className="footer-link" href={viewPaths.security} onClick={navClick(onSecurity)}>
+              <a
+                className="footer-link"
+                href={viewPaths.security}
+                onMouseEnter={warm("security")}
+                onFocus={warm("security")}
+                onClick={navClick(onSecurity)}
+              >
                 {copy.navigation.security}
               </a>
             </li>
@@ -72,18 +93,32 @@ export function Footer({
               <a
                 className="footer-link"
                 href={viewPaths.transparency}
+                onMouseEnter={warm("transparency")}
+                onFocus={warm("transparency")}
                 onClick={navClick(onTransparency)}
               >
                 {copy.navigation.transparency}
               </a>
             </li>
             <li>
-              <a className="footer-link" href={viewPaths.privacy} onClick={navClick(onPolicy)}>
+              <a
+                className="footer-link"
+                href={viewPaths.privacy}
+                onMouseEnter={warm("privacy")}
+                onFocus={warm("privacy")}
+                onClick={navClick(onPolicy)}
+              >
                 {copy.navigation.privacyPolicy}
               </a>
             </li>
             <li>
-              <a className="footer-link" href={viewPaths.testdata} onClick={navClick(onTestData)}>
+              <a
+                className="footer-link"
+                href={viewPaths.testdata}
+                onMouseEnter={warm("testdata")}
+                onFocus={warm("testdata")}
+                onClick={navClick(onTestData)}
+              >
                 {copy.navigation.testData}
               </a>
             </li>
@@ -111,7 +146,13 @@ export function Footer({
               </a>
             </li>
             <li>
-              <a className="footer-link" href={viewPaths.about} onClick={navClick(onAbout)}>
+              <a
+                className="footer-link"
+                href={viewPaths.about}
+                onMouseEnter={warm("about")}
+                onFocus={warm("about")}
+                onClick={navClick(onAbout)}
+              >
                 {copy.navigation.about}
               </a>
             </li>

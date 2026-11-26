@@ -2,6 +2,7 @@ import { GITHUB } from "../constants"
 import copy from "../i18n"
 import { ArrowUpRightIcon, MaskeraMark } from "../icons"
 import { navClick, type View, viewPaths } from "../routing"
+import { loadView } from "../views"
 import { LanguageToggle } from "./LanguageToggle"
 import { ThemeToggle } from "./ThemeToggle"
 
@@ -36,6 +37,12 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
         <a
           className="wordmark"
           href={viewPaths.demo}
+          onMouseEnter={() => {
+            if (!home) void loadView("demo")
+          }}
+          onFocus={() => {
+            if (!home) void loadView("demo")
+          }}
           onClick={navClick(() => (home ? window.scrollTo(0, 0) : go("demo")))}
         >
           <MaskeraMark size={20} />
@@ -52,6 +59,8 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
               className="ghlink"
               href={viewPaths[item.view]}
               aria-current={item.view === current ? "page" : undefined}
+              onMouseEnter={() => void loadView(item.view)}
+              onFocus={() => void loadView(item.view)}
               onClick={navClick(() => go(item.view))}
             >
               {item.label}
