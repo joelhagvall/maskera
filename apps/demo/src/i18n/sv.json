@@ -1,11 +1,13 @@
 {
   "header": {
-    "title": "Skydda personuppgifter innan texten skickas till AI.",
-    "titleMobile": "Skydda personuppgifter\ninnan texten skickas\ntill AI.",
-    "lede": "maskera döljer namn, personnummer och adresser från AI‑tjänster som ChatGPT.",
-    "browserLead": "All maskering sker",
+    "title": "Använd AI utan att dela personuppgifter.",
+    "titleMobile": "Använd AI utan att\ndela personuppgifter.",
+    "lede": "maskera byter namn, personnummer och e-post mot markörer som {marker} innan du skickar till ChatGPT eller Claude, och fyller i dem igen i svaret.",
+    "browserLead": "Allt sker",
     "browserEmphasis": "direkt i din webbläsare",
-    "browserPrivacy": "Din text och nyckeln med originaluppgifterna lämnar inte enheten."
+    "productLabel": "Maskera i en AI-chatt",
+    "productPreviewAlt": "Maskeras förhandsvisning under skrivfältet i en AI-chatt: Nora Lind, 19900101-2385 och nora.lind@example.com visas som [NAMN_1], [PERSONNUMMER_1] och [EPOST_1].",
+    "productPopupAlt": "Maskeras popup med reglaget Maskera när jag skickar, den svenska AI-modellen och 10 av 10 AI-maskeringar kvar."
   },
   "demo": {
     "testDataNote": "Exemplen använder påhittade personer och officiellt reserverade testvärden, aldrig verkliga personers uppgifter.",
@@ -906,7 +908,7 @@
     "services": "Tillägg"
   },
   "meta": {
-    "demoTitle": "Skydda personuppgifter innan texten skickas till AI · maskera",
+    "demoTitle": "Använd AI utan att dela personuppgifter · maskera",
     "demoDescription": "maskera döljer svenska personuppgifter innan text skickas till AI. Kör samma lokala maskering i webbläsaren, med tillägget för ChatGPT och Claude, eller via npm. Endast maskerad text går vidare.",
     "devTitle": "för utvecklare: svensk PII-maskering med npm · maskera",
     "devDescription": "Installera maskera för svensk PII-maskering lokalt i webbläsaren eller Node. Öppen källkod, TypeScript och en egentränad svensk AI-modell.",
@@ -914,7 +916,7 @@
     "servicesDescription": "Jämför Maskeras webbläsartillägg för ChatGPT och Claude med npm-paketen i öppen källkod. All maskering sker lokalt utan att text skickas till Maskera.",
     "siteName": "maskera",
     "servicesSchemaName": "Maskera webbläsartillägg och öppen källkod",
-    "ogImageAlt": "maskera: Skydda personuppgifter innan texten skickas till AI. En exempelmening där namn, personnummer och ort har ersatts med platshållare."
+    "ogImageAlt": "maskera: Använd AI utan att dela personuppgifter. En exempelmening där namn, personnummer och ort har ersatts med platshållare."
   },
   "about": {
     "metaTitle": "om & kontakt: Hägvall Labs AB · maskera",

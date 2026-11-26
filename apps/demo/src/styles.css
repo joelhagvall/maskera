@@ -222,6 +222,91 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
   letter-spacing: -0.035em;
   max-width: 18ch;
 }
+/* Centered hero: headline, call to action and a capture of the extension. */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.hero .title {
+  margin-top: 64px;
+  font-size: 56px;
+  line-height: 1.04;
+  letter-spacing: -0.04em;
+  max-width: 16ch;
+}
+.hero .lede {
+  max-width: 60ch;
+}
+.lede-marker {
+  padding: 1px 6px;
+  font: 600 0.88em var(--mono);
+  color: var(--fg);
+  background: var(--gray-200);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.hero .hero-cta-row,
+.hero .hero-browsers {
+  justify-content: center;
+}
+.hero .demo-language-note {
+  text-align: left;
+}
+.hero-product {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  margin: 44px 0 0;
+  padding: 0 120px 290px 0;
+}
+.hero-window {
+  overflow: hidden;
+  border: 1px solid var(--border-2);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow:
+    0 24px 60px rgb(0 0 0 / 0.1),
+    0 2px 8px rgb(0 0 0 / 0.05);
+}
+.hero-window-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-bottom: 1px solid #eaeaea;
+  background: #fafafa;
+}
+.hero-window-bar span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #e4e4e7;
+}
+.hero-window-bar em {
+  margin-left: 10px;
+  font: 12px var(--sans);
+  color: #666;
+  font-style: normal;
+}
+.hero-window img,
+.hero-popup {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.hero-popup {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 230px;
+  border: 1px solid var(--border-2);
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.16);
+}
 .lede {
   margin: 18px 0 0;
   max-width: 60ch;
@@ -1082,6 +1167,18 @@ html[data-theme="dark"] .tag {
   border-radius: 999px;
 }
 @media (max-width: 720px) {
+  .hero .title {
+    margin-top: 40px;
+    font-size: 36px;
+  }
+  /* Phones cannot run the extension: keep the chat capture, drop the popup. */
+  .hero-product {
+    margin-top: 32px;
+    padding: 0;
+  }
+  .hero-popup {
+    display: none;
+  }
   .hero-cta {
     flex: 1 1 auto;
     min-height: 44px;

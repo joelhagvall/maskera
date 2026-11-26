@@ -10,19 +10,19 @@ function markdownFor(pathname: string): string {
 describe("htmlToMarkdown", () => {
   it("turns the home page into a title, summary and the hero copy without the live demo", () => {
     const md = markdownFor("/")
-    expect(md.startsWith("# Skydda personuppgifter innan texten skickas till AI.\n\n> ")).toBe(true)
+    expect(md.startsWith("# Använd AI utan att dela personuppgifter.\n\n> ")).toBe(true)
     expect(md).toContain("Canonical: https://maskera.dev/ (sv)")
     expect(md).toContain("en: https://maskera.dev/en")
     expect(md).toContain("Markdown: https://maskera.dev/index.md")
     expect(md).toContain("https://maskera.dev/llms.txt")
-    expect(md).toContain("maskera döljer namn, personnummer och adresser")
+    expect(md).toContain("maskera byter namn, personnummer och e-post mot markörer")
     // Interactive regions and chrome are gone
     expect(md).not.toContain("Kandidat: Sara Lindgren")
     expect(md).not.toContain("Hoppa till huvudinnehållet")
     expect(md).not.toContain("Testa ett exempel")
     expect(md).not.toContain("Kopiera")
     // The hero title is emitted once, not three times (sr-only + two aria-hidden copies)
-    expect(md.match(/Skydda personuppgifter innan texten skickas till AI\./g)?.length).toBe(1)
+    expect(md.match(/Använd AI utan att dela personuppgifter\./g)?.length).toBe(1)
     expect(md.length).toBeGreaterThan(500)
   })
 

@@ -14,7 +14,7 @@ import { navClick, useRoute, viewFromPath } from "../src/routing"
  * rendered title). The home view's runtime title must equal the static one.
  */
 
-const STATIC_TITLE = "Skydda personuppgifter innan texten skickas till AI · maskera"
+const STATIC_TITLE = "Använd AI utan att dela personuppgifter · maskera"
 vi.spyOn(window, "scrollTo").mockImplementation(() => {})
 
 beforeEach(() => {

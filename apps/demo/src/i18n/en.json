@@ -1,11 +1,13 @@
 {
   "header": {
-    "title": "Protect personal data before it reaches AI.",
-    "titleMobile": "Protect personal data\nbefore it reaches AI.",
-    "lede": "maskera hides names, Swedish personal identity numbers and addresses from AI services such as ChatGPT.",
-    "browserLead": "All masking happens",
+    "title": "Use AI without sharing personal data.",
+    "titleMobile": "Use AI without\nsharing personal data.",
+    "lede": "maskera swaps names, Swedish personal identity numbers and email addresses for placeholders such as {marker} before you send to ChatGPT or Claude, and fills them back into the reply.",
+    "browserLead": "Everything happens",
     "browserEmphasis": "directly in your browser",
-    "browserPrivacy": "Your text and the key containing the original data never leave your device."
+    "productLabel": "Maskera in an AI chat",
+    "productPreviewAlt": "Maskera's preview below the composer of an AI chat: Nora Lind, 19900101-2385 and nora.lind@example.com are shown as [NAMN_1], [PERSONNUMMER_1] and [EPOST_1].",
+    "productPopupAlt": "Maskera's popup with the Mask when I send switch, the Swedish AI model and 10 of 10 AI redactions left."
   },
   "demo": {
     "testDataNote": "The examples use fictional people and officially reserved test values, never real people's data.",
@@ -906,7 +908,7 @@
     "services": "Extension"
   },
   "meta": {
-    "demoTitle": "Protect personal data before it reaches AI · maskera",
+    "demoTitle": "Use AI without sharing personal data · maskera",
     "demoDescription": "maskera hides Swedish personal data before text is sent to AI. Run the same local masking in the browser, with the extension for ChatGPT and Claude, or via npm. Only masked text is forwarded.",
     "devTitle": "for developers: Swedish PII masking with npm · maskera",
     "devDescription": "Install maskera for local Swedish PII masking in the browser or Node. Open source, TypeScript and a custom-trained Swedish AI model.",
@@ -914,7 +916,7 @@
     "servicesDescription": "Compare Maskera's browser extension for ChatGPT and Claude with the open-source npm packages. All masking runs locally without sending text to Maskera.",
     "siteName": "maskera",
     "servicesSchemaName": "Maskera browser extension and open source",
-    "ogImageAlt": "maskera: Protect personal data before it reaches AI. A sample sentence where a name, a personal identity number and a town are replaced with placeholders."
+    "ogImageAlt": "maskera: Use AI without sharing personal data. A sample sentence where a name, a personal identity number and a town are replaced with placeholders."
   },
   "about": {
     "metaTitle": "about & contact: Hägvall Labs AB · maskera",

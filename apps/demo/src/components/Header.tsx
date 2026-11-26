@@ -8,25 +8,68 @@ export function Header({ go }: { go: (view: View) => void }) {
   return (
     <header className="header">
       <TopBar current="demo" go={go} />
-      {/* One copy of the heading text: crawlers and screen readers read the
-          same sentence once, and CSS turns the spans into the deliberate
-          phone line breaks. */}
-      <h1 className="title">
-        {copy.header.titleMobile.split("\n").map((line, index) => (
-          <Fragment key={`${index}-${line}`}>
-            {index > 0 ? " " : null}
-            <span className="title-line">{line}</span>
-          </Fragment>
-        ))}
-      </h1>
-      <p className="lede">
-        {copy.header.lede} {copy.header.browserLead} <strong>{copy.header.browserEmphasis}</strong>.{" "}
-        {copy.header.browserPrivacy}
-      </p>
-      <ExtensionHeroActions go={go} />
-      {activeLocale === "en" ? (
-        <p className="demo-language-note">{copy.demo.languageNote}</p>
-      ) : null}
+      <div className="hero">
+        {/* One copy of the heading text: crawlers and screen readers read the
+            same sentence once, and CSS turns the spans into the deliberate
+            phone line breaks. */}
+        <h1 className="title">
+          {copy.header.titleMobile.split("\n").map((line, index) => (
+            <Fragment key={`${index}-${line}`}>
+              {index > 0 ? " " : null}
+              <span className="title-line">{line}</span>
+            </Fragment>
+          ))}
+        </h1>
+        <p className="lede">
+          {copy.header.lede.split("{marker}").map((part, index) => (
+            <Fragment key={`${index}-${part}`}>
+              {index > 0 ? <code className="lede-marker">[NAMN_1]</code> : null}
+              {part}
+            </Fragment>
+          ))}{" "}
+          {copy.header.browserLead} <strong>{copy.header.browserEmphasis}</strong>.
+        </p>
+        <ExtensionHeroActions go={go} />
+        {activeLocale === "en" ? (
+          <p className="demo-language-note">{copy.demo.languageNote}</p>
+        ) : null}
+        <HeroProduct />
+      </div>
     </header>
+  )
+}
+
+/**
+ * Real captures of the extension (0.1.4, fictional test data) in a neutral
+ * chat window: the preview under the composer, with the popup on top.
+ */
+function HeroProduct() {
+  return (
+    <figure className="hero-product">
+      <div className="hero-window">
+        <div className="hero-window-bar" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <em>{copy.header.productLabel}</em>
+        </div>
+        <img
+          src="/hero/extension-preview.webp"
+          width={1368}
+          height={358}
+          alt={copy.header.productPreviewAlt}
+          fetchPriority="high"
+          decoding="async"
+        />
+      </div>
+      <img
+        className="hero-popup"
+        src="/hero/extension-popup.webp"
+        width={500}
+        height={751}
+        alt={copy.header.productPopupAlt}
+        decoding="async"
+      />
+    </figure>
   )
 }
