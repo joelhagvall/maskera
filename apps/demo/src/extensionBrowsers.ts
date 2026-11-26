@@ -23,7 +23,7 @@ export const EXTENSION_BROWSERS: readonly ExtensionBrowser[] = [
 ]
 
 /** Manual-install fallback (load unpacked) until the stores are live. */
-export const EXTENSION_DOWNLOAD_URL = `${PORTAL_ORIGIN}/downloads/maskera-extension-0.1.4.zip`
+export const EXTENSION_DOWNLOAD_URL = `${PORTAL_ORIGIN}/downloads/maskera-extension-0.2.0.zip`
 
 /**
  * Maps a user agent to the extension build the visitor can install. Phones

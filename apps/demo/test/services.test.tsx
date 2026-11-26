@@ -27,7 +27,7 @@ describe("Services", () => {
       "Öppen källkod",
     ])
 
-    const trialLinks = screen.getAllByRole("link", { name: /Testa Pro gratis i 14 dagar/ })
+    const trialLinks = screen.getAllByRole("link", { name: /Testa Pro gratis i 7 dagar/ })
     expect(trialLinks.length).toBe(2)
     for (const link of trialLinks) {
       expect(link.getAttribute("href")).toContain(
@@ -39,7 +39,7 @@ describe("Services", () => {
       "#installera",
     )
     expect(screen.getByRole("link", { name: /Ladda ner ZIP-filen/ }).getAttribute("href")).toBe(
-      "https://app.maskera.dev/downloads/maskera-extension-0.1.4.zip",
+      "https://app.maskera.dev/downloads/maskera-extension-0.2.0.zip",
     )
     expect(screen.getByRole("heading", { name: copy.extensionInstall.title })).toBeTruthy()
     expect(screen.getByRole("list", { name: copy.extensionInstall.listLabel })).toBeTruthy()

@@ -2,12 +2,12 @@
   "header": {
     "title": "Use AI without sharing personal data.",
     "titleMobile": "Use AI without\nsharing personal data.",
-    "lede": "maskera swaps names, Swedish personal identity numbers and email addresses for placeholders such as {marker} before you send to ChatGPT or Claude, and fills them back into the reply.",
+    "lede": "maskera swaps names, Swedish personal identity numbers and email addresses for placeholders such as {marker} before you send to ChatGPT, Claude, Gemini, Copilot and more, and fills them back into the reply.",
     "browserLead": "Everything happens",
     "browserEmphasis": "directly in your browser",
     "productLabel": "Maskera in an AI chat",
-    "productPreviewAlt": "Maskera's preview below the composer of an AI chat: Nora Lind, 19900101-2385 and nora.lind@example.com are shown as [NAMN_1], [PERSONNUMMER_1] and [EPOST_1].",
-    "productPopupAlt": "Maskera's popup with the Mask when I send switch, the Swedish AI model and 10 of 10 AI redactions left."
+    "productPreviewAlt": "Maskera's preview below the composer of an AI chat: Nora Lind, 19900101-2385 and Provgatan 14 become [NAMN_1], [PERSONNUMMER_1] and [ADRESS_1] in the text that is sent.",
+    "productPopupAlt": "Maskera's popup with the Mask when I send switch, the Swedish AI model and 20 of 20 AI redactions left."
   },
   "demo": {
     "testDataNote": "The examples use fictional people and officially reserved test values, never real people's data.",
@@ -788,24 +788,24 @@
   },
   "services": {
     "title": "Browser extension and open source",
-    "lede": "Choose the browser extension to mask directly in ChatGPT and Claude, or the npm packages if you want to build masking into your own code.",
-    "sublede": "All masking runs locally on your device. Pro starts with a 14-day free trial through app.maskera.dev.",
+    "lede": "Choose the browser extension to mask directly in ChatGPT, Claude, Gemini, Copilot, Perplexity, Mistral and custom AI sites, or the npm packages if you want to build masking into your own code.",
+    "sublede": "All masking runs locally on your device. Pro starts with a 7-day free trial through app.maskera.dev.",
     "extensionPortalNote": "Create an account and activate on app.maskera.dev",
     "products": [
       {
         "id": "extension",
         "name": "Browser extension",
-        "price": "SEK 149/month",
-        "freeLine": "Free: SEK 0/month (rules + 10 AI/month)",
-        "trialTerms": "Pro starts with a 14-day free trial, incl. VAT. No lock-in.",
-        "tagline": "For people who want to mask text directly in ChatGPT and Claude.",
+        "price": "SEK 149/user/month",
+        "freeLine": "Free: SEK 0/month (rules + 20 AI/month)",
+        "trialTerms": "Pro starts with a 7-day free trial, incl. VAT. No lock-in.",
+        "tagline": "For individuals and teams who want to mask text directly in their AI tools.",
         "points": [
-          "All masking runs locally in the browser",
-          "Unlimited Swedish AI masking in Pro",
-          "Restores placeholders in AI replies with one click, also in Free",
-          "Custom protected words, case numbers and project names"
+          "Works in ChatGPT, Claude, Gemini, Microsoft Copilot, Perplexity, Mistral and any opt-in AI site",
+          "Unlimited local Swedish AI masking in Pro, fully offline after activation",
+          "Organization-wide protected words with optional client-side encryption (E2EE)",
+          "Ready for central deployment via Intune, Jamf and Google Workspace (MDM)"
         ],
-        "cta": "Try Pro free for 14 days",
+        "cta": "Try Pro free for 7 days",
         "secondaryCta": "Install for free",
         "note": "Signed offline licence from app.maskera.dev. No text leaves your device."
       },
@@ -836,20 +836,20 @@
         },
         {
           "feature": "Local AI masking for names and addresses",
-          "free": "10 per month",
+          "free": "20 per month",
           "pro": "Unlimited"
         },
         {
-          "feature": "Custom protected words (case IDs, projects, etc.)",
+          "feature": "Personal and organization-wide protected words (optional E2EE) + MDM deployment",
           "free": "Pro only",
           "pro": "Included"
         }
       ],
-      "trialPrice": "Your first 14 days of Pro cost SEK 0. Then SEK 149/month including VAT.",
+      "trialPrice": "Your first 7 days of Pro cost SEK 0. Then SEK 149/user/month including VAT.",
       "trialDetails": "A card is required. Cancel in the customer portal before the next charge.",
       "termsCta": "Maskera Pro terms of sale",
       "privacyCta": "Extension privacy",
-      "startTrialCta": "Try Pro free for 14 days"
+      "startTrialCta": "Try Pro free for 7 days"
     },
     "flowTitle": "How the extension protects your AI chats",
     "flowBody": "Text is masked locally in your browser before it is sent. The original text and restoration key stay in your browser and are never sent to Maskera.",
@@ -879,10 +879,10 @@
     "heroLearnMore": "About the extension",
     "alsoFor": "Also for",
     "builtFor": "Built for",
-    "freeNote": "Free, 10 AI redactions/month",
+    "freeNote": "Free, 20 AI redactions/month",
     "title": "Install Maskera",
-    "body": "Mask names and personal identity numbers directly in ChatGPT and Claude. Free with unlimited rules and 10 AI redactions a month. No account needed. Pro costs SEK 149/month incl. VAT after 14 days free.",
-    "trialCta": "Try Pro free for 14 days",
+    "body": "Mask names and personal identity numbers directly in ChatGPT, Claude, Gemini, Copilot, Perplexity, Mistral and any opt-in AI site. Free with unlimited rules and 20 AI redactions a month. Pro costs SEK 149/user/month incl. VAT after 7 days free.",
+    "trialCta": "Try Pro free for 7 days",
     "zipLead": "Waiting for your browser's store?",
     "zipCta": "Download the ZIP file",
     "zipTail": "and load it unpacked via chrome://extensions or edge://extensions.",
@@ -950,7 +950,7 @@
     "useTitle": "Two ways to use it",
     "use": [
       "The npm packages maskera and @maskera/core are open source under the MIT licence and free to use in your own integrations. The model maskera-sv-ner is published openly on Hugging Face.",
-      "The browser extension for Chrome and Edge runs the same local masking directly in ChatGPT and Claude. The free tier includes unlimited rules and 10 local AI redactions per month; Pro (SEK 149/month incl. VAT, 14-day free trial) activates with a signed offline licence from app.maskera.dev. The customer portal app.maskera.dev handles accounts, licences and payment. No customer text is processed there, and there is no Maskera-hosted masking service."
+      "The browser extension for Chrome and Edge runs the same local masking directly in ChatGPT and Claude. The free tier includes unlimited rules and 20 local AI redactions per month; Pro (SEK 149/user/month incl. VAT, 7-day free trial) activates with a signed offline licence from app.maskera.dev. The customer portal app.maskera.dev handles accounts, licences and payment. No customer text is processed there, and there is no Maskera-hosted masking service."
     ],
     "whoTitle": "Who is behind it",
     "who": "Maskera is developed and operated by Hägvall Labs AB (Swedish company reg. no. 559598-0110), a Swedish limited company in Stockholm founded by Joel Hägvall. The company is the data controller for maskera.dev; how the website itself processes data is described in the privacy policy. The source code, training pipeline and benchmarks are public on GitHub so the results can be reviewed and reproduced.",

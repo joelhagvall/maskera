@@ -40,8 +40,9 @@ export function Header({ go }: { go: (view: View) => void }) {
 }
 
 /**
- * Real captures of the extension (0.1.4, fictional test data) in a neutral
- * chat window: the preview under the composer, with the popup on top.
+ * Real captures of the extension (0.2.0, fictional test data) in a neutral
+ * chat window: the preview under the composer with the masked text open,
+ * and the popup on top.
  */
 function HeroProduct() {
   return (
@@ -56,7 +57,7 @@ function HeroProduct() {
         <img
           src="/hero/extension-preview.webp"
           width={1368}
-          height={358}
+          height={452}
           alt={copy.header.productPreviewAlt}
           fetchPriority="high"
           decoding="async"
@@ -65,8 +66,8 @@ function HeroProduct() {
       <img
         className="hero-popup"
         src="/hero/extension-popup.webp"
-        width={500}
-        height={751}
+        width={680}
+        height={1052}
         alt={copy.header.productPopupAlt}
         decoding="async"
       />

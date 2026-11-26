@@ -43,7 +43,7 @@ Not a fit: non-Swedish text (English names work only incidentally), image/PDF OC
 ## How an agent should call it
 
 - In code: `npm install maskera` (rules + NER, 43 MB model fetched once from Hugging Face or self-hosted) or `npm install @maskera/core` (rules only, zero dependencies, synchronous). Use `redact(text)` from core for rules only, or `createNerRecognizer()` + `redactWithNer(text, { recognizer })` from `maskera` for rules + NER. The result is `{ text, map, restore }`; keep `map`, send `text`, call `restore(reply)` on the LLM output.
-- In ChatGPT and Claude: install the local Maskera browser extension from https://maskera.dev/en/services (Swedish: https://maskera.dev/tjanster; Free with unlimited rules + 10 AI redactions/month, or Pro at SEK 149/month incl. VAT with a 14-day free trial via the customer portal at https://app.maskera.dev).
+- In ChatGPT, Claude, Gemini, Copilot, Perplexity, Mistral and opt-in internal AI sites: install the local Maskera browser extension from https://maskera.dev/en/services (Swedish: https://maskera.dev/tjanster; Free with unlimited rules + 20 AI redactions/month, or Pro at SEK 149/user/month incl. VAT with a 7-day free trial, shared E2EE org protected words and MDM support via https://app.maskera.dev).
 - On this site: every page has a Markdown rendering. Send `Accept: text/markdown` to any page URL, or fetch the `.md` sibling directly (`https://maskera.dev/index.md`, `https://maskera.dev/en/developers.md`, `https://maskera.dev/en/about.md`). Unknown paths return HTTP 404 with a Markdown (default), JSON (`Accept: application/json` or `/api/*`) or HTML body that lists these entry points. `maskera.dev/api/*` is not an API: it answers 404 in JSON with the same hints.
 
 ## Docs

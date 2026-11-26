@@ -110,7 +110,7 @@ describe("ExtensionInstall", () => {
     expect(within(list).queryAllByRole("link")).toHaveLength(0)
     expect(
       screen.getByRole("link", { name: copy.extensionInstall.zipCta }).getAttribute("href"),
-    ).toBe("https://app.maskera.dev/downloads/maskera-extension-0.1.4.zip")
+    ).toBe("https://app.maskera.dev/downloads/maskera-extension-0.2.0.zip")
     expect(screen.queryByRole("link", { name: /Testa Pro/ })).toBeNull()
   })
 
