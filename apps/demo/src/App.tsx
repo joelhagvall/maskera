@@ -92,6 +92,11 @@ export function App({ initialView }: { initialView?: View }) {
     setAnchor("vad-maskeras")
     navigate("transparency", { skipScrollRestoration: true })
   }
+  const goContextDemo = () => {
+    const kontext = scenarios.find((scenario) => scenario.id === "kontext")
+    if (kontext) pick(kontext)
+    go("demo")
+  }
 
   return (
     <div className="app">
@@ -155,10 +160,12 @@ export function App({ initialView }: { initialView?: View }) {
       {view === "testdata" && <TestData go={go} />}
       {view === "privacy" && <PrivacyPolicy go={go} />}
       {view === "services" && <Services go={go} onCoverage={goCoverage} />}
-      {view === "accuracy" && <Accuracy go={go} />}
+      {view === "accuracy" && <Accuracy go={go} onTryContext={goContextDemo} />}
       {view === "security" && <Security go={go} />}
       {view === "about" && <About go={go} />}
       <Footer
+        onServices={() => navigate("services")}
+        onDevelopers={() => navigate("dev")}
         onTransparency={() => navigate("transparency")}
         onTestData={() => navigate("testdata")}
         onPolicy={() => navigate("privacy")}

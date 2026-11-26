@@ -9,7 +9,7 @@
   },
   "artifacts": {
     "joelhagvall/maskera-sv-ner": {
-      "revision": "bb35467e9310095a81bf4e3d5779586ea842507a",
+      "revision": "f417d65c08bcf814f639f8bf9221e30a79a53f39",
       "path": "onnx/model_q4.onnx",
       "sha256": "0a4ad3c3d87b0c53c67556177a668acfb8a91726a2af78e16a857403f6bed7fa",
       "bytes": 42705681
@@ -38,7 +38,7 @@
         {
           "label": "maskera (model_q4.onnx)",
           "model": "joelhagvall/maskera-sv-ner",
-          "revision": "bb35467e9310095a81bf4e3d5779586ea842507a",
+          "revision": "f417d65c08bcf814f639f8bf9221e30a79a53f39",
           "goldEntities": 211,
           "redactionHits": 211,
           "typedHits": 201,
@@ -73,7 +73,7 @@
         {
           "label": "maskera (model_q4.onnx)",
           "model": "joelhagvall/maskera-sv-ner",
-          "revision": "bb35467e9310095a81bf4e3d5779586ea842507a",
+          "revision": "f417d65c08bcf814f639f8bf9221e30a79a53f39",
           "goldEntities": 211,
           "redactionHits": 211,
           "typedHits": 201,

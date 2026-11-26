@@ -104,7 +104,7 @@ describe("ExtensionInstall", () => {
   it("lets users step through the sample while autoplay is paused for reduced motion", () => {
     allSoon()
     vi.stubGlobal("matchMedia", vi.fn().mockReturnValue({ matches: true }))
-    render(<ExtensionInstall />)
+    render(<ExtensionInstall showFlowDemo />)
 
     const flow = copy.extensionInstall.flowDemo
     const demo = within(screen.getByRole("region", { name: flow.regionLabel }))
@@ -114,6 +114,15 @@ describe("ExtensionInstall", () => {
     fireEvent.click(demo.getByRole("button", { name: flow.steps[2] }))
     expect(demo.getByRole("button", { name: flow.steps[2], pressed: true })).toBeTruthy()
     expect(demo.getByText("[NAMN_1]")).toBeTruthy()
+  })
+
+  it("omits the flow demo by default so the home page does not repeat the live demo", () => {
+    allSoon()
+    render(<ExtensionInstall />)
+
+    expect(
+      screen.queryByRole("region", { name: copy.extensionInstall.flowDemo.regionLabel }),
+    ).toBeNull()
   })
 
   it("shows Snart rows without links and keeps the ZIP fallback", () => {

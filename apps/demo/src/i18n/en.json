@@ -3,11 +3,28 @@
     "title": "Use AI without sharing personal data.",
     "titleMobile": "Use AI without\nsharing personal data.",
     "exampleMarker": "[NAMN_1]",
-    "lede": "maskera swaps names, Swedish personal identity numbers and email addresses for placeholders such as {marker} before you send to ChatGPT, Claude, Gemini, Copilot and more, and fills them back into the reply.",
+    "lede": "maskera swaps names, addresses, Swedish personal identity numbers, email addresses and other personal data for placeholders such as {marker} before you send to ChatGPT, Claude, Gemini, Copilot and more, and fills them back into the reply.",
     "browserLead": "Everything happens",
     "browserEmphasis": "directly in your browser",
-    "productLabel": "Maskera in an AI chat",
-    "productPreviewAlt": "Maskera's preview below the composer of an AI chat: Nora Lind, 19900101-2385 and Provgatan 14 become [NAMN_1], [PERSONNUMMER_1] and [ADRESS_1] in the text that is sent.",
+    "productLabel": "Your AI chat",
+    "heroScenesLabel": "Example tasks",
+    "heroScenes": [
+      {
+        "id": "myndighet",
+        "label": "Public sector",
+        "alt": "Maskera's preview in an AI chat: Bo Ek, the personal identity number, Boden, Liv and the bankgiro number become placeholders, while the housing adaptation and the Swedish words bo kvar and i dag stay, so the AI can write the decision."
+      },
+      {
+        "id": "hr",
+        "label": "HR",
+        "alt": "Maskera's preview in an AI chat: Dag Parkinson, the personal identity number and Uppsala become placeholders, while i dag, the diagnosis Parkinson's disease and 75 % stay, so the AI can suggest how to adapt the job."
+      },
+      {
+        "id": "kundtjanst",
+        "label": "Customer service",
+        "alt": "Maskera's preview in an AI chat: Liv Lund and the email address become placeholders, while the words liv and i dag and the amount stay, so the AI can write an apology."
+      }
+    ],
     "productPopupAlt": "Maskera's popup with the Mask when I send switch, the Swedish AI model and 20 of 20 AI redactions left."
   },
   "demo": {
@@ -41,7 +58,7 @@
     "pluralCount": "items masked",
     "title": "What the AI sees",
     "analyzing": "analysing…",
-    "restoreMapNote": "The key stays on your device. The AI service sees placeholders instead of the data that maskera detected. You can use the key to restore the original values in the response afterwards.",
+    "restoreMapNote": "The key stays on your device. The AI only sees placeholders, and you swap the originals back into the reply afterwards.",
     "showKey": "Show restoration key",
     "hideKey": "Hide restoration key",
     "coverageLink": "What gets masked?"
@@ -53,8 +70,7 @@
   },
   "restoreDemo": {
     "title": "How restoration works",
-    "body": "The AI sees placeholders instead of the data that maskera detected. When the response comes back, maskera restores the data locally. The key containing the original data never leaves your device.",
-    "flow": ["Your text", "AI sees", "AI responds", "You see"],
+    "body": "When the reply comes back with placeholders, maskera swaps the originals back in locally. The key never leaves your device.",
     "replyTitle": "AI response",
     "resetExample": "Reset example",
     "editableExample": "Simulated response, freely editable",
@@ -119,6 +135,12 @@
       "text": "Kandidat: Sara Lindgren, 991201-2391. Mail: sara.lindgren@example.com, tel 0701740605. Nuvarande lön 48 000 kr/mån. Referens: Per Holmberg, 08-465 004 12. Bedöm CV mot rollbeskrivningen och föreslå intervjufrågor."
     },
     {
+      "id": "kontext",
+      "name": "Swedish context",
+      "tagline": "Tells names apart from ordinary words and diagnoses",
+      "text": "Bo ska bo i Boden. Liv jobbar på Karolinska och har bott hela sitt liv i Uppsala. Dag åker till Medelpad en vanlig dag i maj. Patienten har Parkinsons sjukdom, men Kalle Parkinson ringde nyss om sin tid."
+    },
+    {
       "id": "support",
       "name": "Customer support",
       "tagline": "A support case being logged",
@@ -175,9 +197,9 @@
   },
   "developerApi": {
     "title": "For developers",
-    "lede": "Install maskera, create a recogniser once and mask text locally in the browser or Node.",
+    "lede": "Mask Swedish personal data locally in the browser or Node with one package.",
     "modelLink": "The Swedish AI model",
-    "modelSuffix": "is downloaded on first use and then reused from the local cache.",
+    "modelSuffix": "runs directly on-device via Transformers.js.",
     "installTitle": "Install",
     "packageManagerLabel": "Package manager",
     "installNote": "Rules and AI model are included; import the entire API from maskera.",
@@ -220,7 +242,7 @@
       {
         "id": "model",
         "title": "AI model: free text",
-        "description": "Identified from context. This is probabilistic and the model can miss data.",
+        "description": "Found from context. Accurate on everyday Swedish, though unusual names or phrasing can still slip through.",
         "items": [
           { "label": "NAMN", "name": "Names" },
           { "label": "PLATS", "name": "Places" },
@@ -240,7 +262,7 @@
       {
         "id": "rules",
         "title": "Rules: fixed formats",
-        "description": "Identified with deterministic format checks and selective checksums. Swedish personal identity numbers are masked even if the check digit is wrong, provided the date format is valid. Web links are detected when they start with http, https or www.",
+        "description": "Found with fixed format rules. Swedish personal identity numbers are masked even if the check digit is mistyped, as long as the date shape is valid. Web links are caught when they start with http, https or www.",
         "items": [
           { "label": "PERSONNUMMER", "name": "Swedish personal identity numbers" },
           { "label": "SAMORDNINGSNUMMER", "name": "Swedish coordination numbers" },
@@ -289,337 +311,199 @@
   "footer": {
     "openSource": "Open source",
     "modelLink": "Custom-trained Swedish AI model",
-    "navLabel": "Privacy and documentation",
+    "portal": "Customer portal",
+    "navLabel": "Footer navigation",
     "whitepaper": "White paper (PDF)",
     "creditPrefix": "A product of",
-    "author": "Hägvall Labs AB"
+    "author": "Hägvall Labs AB",
+    "columns": {
+      "product": "Product",
+      "trust": "Trust",
+      "project": "Project"
+    }
   },
   "accuracy": {
     "metaTitle": "accuracy & test results for Swedish PII · maskera",
-    "metaDescription": "See how much Swedish personal data Maskera found, how much was missed and exactly how the current tests were conducted.",
-    "title": "Accuracy, reported openly",
-    "lede": "What matters most is how much personal data remains after masking. We therefore report both exact-span F1 and complete misses, with the test texts, method and limitations open for review.",
+    "metaDescription": "How well Maskera finds Swedish personal data compared with other models that support Swedish, and what the tests do not cover.",
+    "title": "How well does Maskera find personal data?",
+    "lede": "What matters most is how little personal data stays in plain text. Here are our current numbers, a plain comparison with other models that support Swedish, and what to keep in mind.",
     "inlineCta": "accuracy page",
     "servicesCta": "See test results and limitations",
     "tocLabel": "On this page",
     "toc": [
-      { "href": "#matt", "label": "What the metrics mean" },
-      { "href": "#aktuellt", "label": "Current results" },
-      { "href": "#kblab", "label": "Compared with KBLab" },
-      { "href": "#logosguard", "label": "End-to-end test" },
-      { "href": "#modeller", "label": "Broader historical comparison" },
-      { "href": "#tolkning", "label": "How to interpret the results" },
-      { "href": "#begransningar", "label": "Limitations" },
-      { "href": "#kallor", "label": "Sources and reproduction" }
+      { "href": "#aktuellt", "label": "Quick summary" },
+      { "href": "#jamforelse", "label": "Compared with other models" },
+      { "href": "#kontext", "label": "Swedish context" },
+      { "href": "#begransningar", "label": "Good to know" }
     ],
-    "metricsTitle": "Misses are the most important metric",
-    "metricsBody": "A complete miss means that a piece of personal data remains in plain text. Precision shows how often a detection was correct, while recall shows what proportion of all personal data was found. Exact-span F1 combines the two. Complete misses are reported separately.",
-    "externalLinkLabel": "Open external source page",
-    "currentTitle": "Current test results",
-    "currentBody": "The published model was measured on synthetic Swedish test sets on 2026-11-25. The results show the model's known strengths and limits.",
+    "currentTitle": "Quick summary",
+    "currentBody": "Published Maskera v20 (43 MB), measured on Swedish test sets on 2026-11-25.",
     "currentStats": [
-      { "value": "99.5% / 0 of 205", "label": "mixed Swedish test texts: F1 / misses" },
-      { "value": "100.0% / 0 of 57", "label": "synthetic addresses: F1 / misses" }
+      { "value": "99.5% · 0 misses", "label": "Mixed Swedish text (205 items)" },
+      { "value": "100% · 0 misses", "label": "Swedish street addresses (57 items)" },
+      { "value": "99.1% (943 of 952)", "label": "Full pipeline: rules + AI (258 texts)" },
+      { "value": "43 MB", "label": "7-11x smaller than compared models" }
     ],
-    "redactionComparisonTitle": "End-to-end test with LogosGuard",
-    "redactionComparisonBody": "LogosGuard is a Chrome extension for masking in the browser, not a standalone NER model. This therefore compares LogosGuard's complete file-masking flow with Maskera's complete local pipeline. Maskera v20 (2026-11-25) and LogosGuard 2.4.4 (2026-08-14) were run over the same 258 synthetic Swedish texts with 952 labelled pieces of personal data, including names, addresses, Swedish personal and coordination numbers, phone numbers, and government, healthcare and legal language. LogosGuard ran on the free plan with Balanced accuracy. Both systems used the same strict measure: a full hit requires every letter and digit from the labelled value to be removed.",
-    "redactionComparisonTable": {
-      "system": "System",
-      "fullHits": "Fully masked",
-      "partialLeaks": "Partial leaks",
-      "misses": "Plain-text misses"
-    },
-    "redactionComparisonRows": [
+    "comparisonTitle": "Compared with other models that support Swedish",
+    "comparisonBody": "We only compare models that actively support Swedish. All three ran on the same 121 Swedish texts with 211 names, places and organisations, both with normal casing and all lowercase (like a quick chat message).",
+    "comparisonBarGroups": [
       {
-        "system": "Maskera v20 q4",
-        "href": "https://huggingface.co/joelhagvall/maskera-sv-ner",
-        "fullHits": "941 of 952 (98.8%)",
-        "partialLeaks": "5",
-        "misses": "6",
+        "title": "Normal text",
+        "items": [
+          { "label": "Maskera v20 (43 MB)", "valueText": "100.0%", "pct": 100, "ours": true },
+          { "label": "KBLab lowermix (496 MB)", "valueText": "97.2%", "pct": 97.2, "ours": false },
+          {
+            "label": "Bards AI EU PII v3 (309 MB)",
+            "valueText": "85.8%",
+            "pct": 85.8,
+            "ours": false
+          }
+        ]
+      },
+      {
+        "title": "All lowercase",
+        "items": [
+          { "label": "Maskera v20 (43 MB)", "valueText": "100.0%", "pct": 100, "ours": true },
+          { "label": "KBLab lowermix (496 MB)", "valueText": "88.6%", "pct": 88.6, "ours": false },
+          {
+            "label": "Bards AI EU PII v3 (309 MB)",
+            "valueText": "56.4%",
+            "pct": 56.4,
+            "ours": false
+          }
+        ]
+      }
+    ],
+    "comparisonTable": {
+      "caption": "Comparison of models that support Swedish across 121 Swedish texts",
+      "system": "Model",
+      "size": "Size",
+      "normal": "Normal text",
+      "lowercase": "Lowercase"
+    },
+    "comparisonRows": [
+      {
+        "system": "Maskera v20",
+        "description": "Swedish model built for local in-browser use",
+        "size": "43 MB",
+        "normal": "211 of 211 (100.0%)",
+        "lowercase": "211 of 211 (100.0%)",
         "ours": true
       },
       {
-        "system": "LogosGuard 2.4.4",
-        "href": "https://chromewebstore.google.com/detail/logosguard-ai-privacy-fil/hgcmlpgonpfegfdeijcngpdokpdpapam",
-        "fullHits": "606 of 952 (63.7%)",
-        "partialLeaks": "49",
-        "misses": "297"
-      }
-    ],
-    "redactionComparisonSummary": "Maskera fully masked 335 more of the 952 labelled values. Some material remained in 11 cases with Maskera and 346 cases with LogosGuard, a 35.1 percentage-point difference in full-hit rate.",
-    "redactionComparisonLimit": "Maskera's developer wrote the synthetic test set, so this is author-coupled evidence rather than an independent ranking. The corpus is not exhaustively annotated for precision. LogosGuard's file export also converted Swedish UTF-8 characters into Windows-1252 mojibake; the characters were restored before scoring.",
-    "comparisonTitle": "Compared with KBLab",
-    "comparisonBody": "Maskera is a small Swedish NER model built for local masking. KBLab lowermix is a full-size Swedish BERT model whose casing mix makes it more robust on text without capitals. Maskera's published 43 MB q4 model and KBLab lowermix's 496 MB fp32 model were run on 2026-11-25 over the same 121 synthetic Swedish texts with 211 names, places and organisations. An entity counts as masked when a detection overlaps it; typed F1 additionally requires the correct category.",
-    "comparisonTable": {
-      "system": "System",
-      "masked": "Masked",
-      "typedF1": "Typed F1"
-    },
-    "comparisonCases": [
-      {
-        "title": "Original casing",
-        "rows": [
-          {
-            "system": "Maskera v20 q4",
-            "href": "https://huggingface.co/joelhagvall/maskera-sv-ner",
-            "masked": "211 of 211 (100.0%)",
-            "typedF1": "88.2%",
-            "ours": true
-          },
-          {
-            "system": "KBLab lowermix fp32",
-            "href": "https://huggingface.co/KBLab/bert-base-swedish-lowermix-reallysimple-ner",
-            "masked": "205 of 211 (97.2%)",
-            "typedF1": "89.4%"
-          }
-        ]
+        "system": "KBLab lowermix",
+        "description": "Full-size Swedish BERT from the National Library of Sweden",
+        "size": "496 MB",
+        "normal": "205 of 211 (97.2%)",
+        "lowercase": "187 of 211 (88.6%)",
+        "ours": false
       },
       {
-        "title": "The same texts lowercased",
-        "rows": [
-          {
-            "system": "Maskera v20 q4",
-            "href": "https://huggingface.co/joelhagvall/maskera-sv-ner",
-            "masked": "211 of 211 (100.0%)",
-            "typedF1": "87.4%",
-            "ours": true
-          },
-          {
-            "system": "KBLab lowermix fp32",
-            "href": "https://huggingface.co/KBLab/bert-base-swedish-lowermix-reallysimple-ner",
-            "masked": "187 of 211 (88.6%)",
-            "typedF1": "83.2%"
-          }
-        ]
+        "system": "Bards AI EU PII v3",
+        "description": "Multilingual EU model (24 languages incl. Swedish, INT8 ONNX)",
+        "size": "309 MB",
+        "normal": "181 of 211 (85.8%)",
+        "lowercase": "119 of 211 (56.4%)",
+        "ours": false
       }
     ],
-    "comparisonSummary": "Maskera masked all 211 labelled names, places and organisations in both runs. KBLab had the higher typed F1 with original casing; Maskera had the higher typed F1 in lowercase.",
-    "comparisonLimit": "Maskera's developer wrote the test, so it shows a direction rather than an independent ranking. Street addresses and Maskera's post-processing are excluded.",
-    "historicalComparisonTitle": "Broader historical NER comparison",
-    "historicalComparisonBody": "The repository's broader model run covers eleven rows on the same 22 independent Swedish Wikipedia texts with 58 labelled people, places and organisations. Competitors were measured from 2026-07-04 through 2026-07-19, and Maskera's v18 row was measured on 2026-07-19. Overlap counts as masked; typed F1 additionally requires the correct category.",
-    "historicalComparisonTable": {
-      "system": "Model or library",
-      "size": "Size",
-      "masked": "Masking recall",
-      "typedF1": "Typed F1"
-    },
-    "historicalComparisonCases": [
+    "comparisonSummary": "Maskera caught all 211 names, places and organisations in both runs despite being 7 to 11 times smaller. KBLab edged ahead slightly on exact category label in normal text (89.4% vs 88.2%); in lowercase Maskera led clearly (87.4% vs 83.2% and 62.1%).",
+    "contextTitle": "Why Swedish context matters",
+    "contextBody": "Personal identity numbers are easy to catch with rules. The hard part in Swedish is words that can be either a person's name or an everyday word or diagnosis.",
+    "contextExamples": [
       {
-        "title": "Original casing",
-        "showSize": true,
-        "rows": [
-          {
-            "system": "Maskera student",
-            "href": "https://huggingface.co/joelhagvall/maskera-sv-ner",
-            "description": "Small Swedish NER model for local masking",
-            "size": "43 MB",
-            "masked": "97%",
-            "typedF1": "96%",
-            "ours": true
-          },
-          {
-            "system": "KBLab lowermix reallysimple-ner",
-            "href": "https://huggingface.co/KBLab/bert-base-swedish-lowermix-reallysimple-ner",
-            "description": "Swedish BERT model designed for casing robustness",
-            "size": "≈475 MB",
-            "masked": "100%",
-            "typedF1": "94%"
-          },
-          {
-            "system": "nbailab scandi-ner",
-            "href": "https://huggingface.co/saattrupdan/nbailab-base-ner-scandi",
-            "description": "Multilingual Scandinavian NER model",
-            "size": "≈500 MB",
-            "masked": "100%",
-            "typedF1": "94%"
-          },
-          {
-            "system": "KBLab neriob (IOB head)",
-            "href": "https://huggingface.co/KBLab/bert-base-swedish-cased-neriob",
-            "description": "Swedish BERT model with an IOB classification head",
-            "size": "≈475 MB",
-            "masked": "100%",
-            "typedF1": "94%"
-          },
-          {
-            "system": "KB-NER (the SUC classic)",
-            "href": "https://huggingface.co/KB/bert-base-swedish-cased-ner",
-            "description": "Classic Swedish BERT model trained on SUC",
-            "size": "≈475 MB",
-            "masked": "100%",
-            "typedF1": "92%"
-          },
-          {
-            "system": "KBLab reallysimple-ner",
-            "href": "https://huggingface.co/KBLab/bert-base-swedish-cased-reallysimple-ner",
-            "description": "Casing-sensitive Swedish BERT model for NER",
-            "size": "≈475 MB",
-            "masked": "98%",
-            "typedF1": "91%"
-          },
-          {
-            "system": "RecordedFuture Swedish-NER",
-            "href": "https://huggingface.co/RecordedFuture/Swedish-NER",
-            "description": "Swedish NER model trained on internet and forum text",
-            "size": "≈500 MB",
-            "masked": "100%",
-            "typedF1": "88%"
-          },
-          {
-            "system": "sbx PII general / detailed",
-            "links": [
-              {
-                "label": "general",
-                "href": "https://huggingface.co/sbx/KB-bert-swedish_PI-detection-general-iob"
-              },
-              {
-                "label": "detailed",
-                "href": "https://huggingface.co/sbx/KB-bert-swedish_PI-detection-detailed-iob"
-              }
-            ],
-            "description": "Two KB-BERT models with a different PI label scheme",
-            "size": "≈475 MB",
-            "masked": "5 / 10%",
-            "typedF1": "10 / 19%"
-          },
-          {
-            "system": "Rampart (nationaldesignstudio)",
-            "href": "https://huggingface.co/nationaldesignstudio/rampart",
-            "description": "Small multilingual browser PII model",
-            "size": "14.7 MB",
-            "masked": "34%",
-            "typedF1": "42%"
-          },
-          {
-            "system": "Desert Ant redact (multilingual)",
-            "href": "https://huggingface.co/desert-ant-labs/redact",
-            "description": "Multilingual on-device redaction model",
-            "size": "13 MB",
-            "masked": "36%",
-            "typedF1": "53%"
-          },
-          {
-            "system": "swedish-pii (regex + name lists)",
-            "href": "https://github.com/okasi/swedish-pii",
-            "description": "Rules and Swedish name lists, not an AI model",
-            "size": "2.5 MB",
-            "masked": "50%",
-            "typedF1": "52%"
-          }
-        ]
+        "input": "Bo ska bo i Boden.",
+        "result": "Masks the name Bo and town Boden, while leaving the verb bo (live) untouched."
       },
       {
-        "title": "The same texts lowercased",
-        "showSize": false,
-        "rows": [
-          {
-            "system": "KBLab lowermix reallysimple-ner",
-            "href": "https://huggingface.co/KBLab/bert-base-swedish-lowermix-reallysimple-ner",
-            "masked": "97%",
-            "typedF1": "90%"
-          },
-          {
-            "system": "Maskera student",
-            "href": "https://huggingface.co/joelhagvall/maskera-sv-ner",
-            "masked": "95%",
-            "typedF1": "91%",
-            "ours": true
-          },
-          {
-            "system": "RecordedFuture Swedish-NER",
-            "href": "https://huggingface.co/RecordedFuture/Swedish-NER",
-            "masked": "83%",
-            "typedF1": "82%"
-          },
-          {
-            "system": "nbailab scandi-ner",
-            "href": "https://huggingface.co/saattrupdan/nbailab-base-ner-scandi",
-            "masked": "69%",
-            "typedF1": "77%"
-          },
-          {
-            "system": "KB-NER (the SUC classic)",
-            "href": "https://huggingface.co/KB/bert-base-swedish-cased-ner",
-            "masked": "28%",
-            "typedF1": "35%"
-          },
-          {
-            "system": "KBLab reallysimple-ner",
-            "href": "https://huggingface.co/KBLab/bert-base-swedish-cased-reallysimple-ner",
-            "masked": "29%",
-            "typedF1": "39%"
-          },
-          {
-            "system": "KBLab neriob (IOB head)",
-            "href": "https://huggingface.co/KBLab/bert-base-swedish-cased-neriob",
-            "masked": "24%",
-            "typedF1": "33%"
-          },
-          {
-            "system": "Desert Ant redact (multilingual)",
-            "href": "https://huggingface.co/desert-ant-labs/redact",
-            "masked": "24%",
-            "typedF1": "39%"
-          },
-          {
-            "system": "sbx PII general / detailed",
-            "links": [
-              {
-                "label": "general",
-                "href": "https://huggingface.co/sbx/KB-bert-swedish_PI-detection-general-iob"
-              },
-              {
-                "label": "detailed",
-                "href": "https://huggingface.co/sbx/KB-bert-swedish_PI-detection-detailed-iob"
-              }
-            ],
-            "masked": "9%",
-            "typedF1": "16%"
-          },
-          {
-            "system": "swedish-pii (regex + name lists)",
-            "href": "https://github.com/okasi/swedish-pii",
-            "masked": "0%",
-            "typedF1": "0%"
-          }
-        ]
+        "input": "Liv har bott hela sitt liv i Uppsala.",
+        "result": "Masks the name Liv and Uppsala, while leaving the noun liv (life) untouched."
+      },
+      {
+        "input": "Patienten har Parkinsons sjukdom, men Kalle Parkinson ringde.",
+        "result": "Masks the person Kalle Parkinson, while leaving the diagnosis Parkinsons sjukdom untouched."
       }
     ],
-    "historicalComparisonSummary": "In the dated v18 run, Maskera had the highest typed F1 on originally cased text. On lowercase text, KBLab lowermix had the highest masking recall while Maskera had the highest typed F1.",
-    "historicalComparisonLimit": "These are historical v18 results and must not be read as v20 scores. The independent raw corpus was removed before the privacy-clean v19/v20 release line, so the aggregates are retained for transparency but cannot be reproduced document by document from today's checkout. Separate system tests including Presidio, Privacy Filter, EU PII Safeguard and Blindfold use different runs and are reported in BENCHMARKS.md.",
-    "interpretationTitle": "How to interpret the results",
-    "interpretation": [
-      "No labelled data was left in plain text in either the mixed Swedish text test (0 of 205) or the synthetic address test (0 of 57).",
-      "All 35 street addresses were found with an exact span and 35 of 35 address precision, including the house number.",
-      "These test sets verify regression protection on known patterns rather than guaranteeing coverage across all Swedish free text."
-    ],
-    "limitsTitle": "What these tests do not show",
+    "contextDemoCta": "Try the example in the demo",
+    "limitsTitle": "Good to know",
     "limits": [
-      "The test sets are synthetic or author-coupled. They are used to prevent regressions, not as an independent rating of all Swedish text.",
-      "No automatic masking is perfect. Unusual names, OCR noise and phrasing far from the training data can be missed. Have a person review the text when an error could have serious consequences.",
-      "These corpora measure free text. Structured identifiers such as Swedish personal identity numbers and IBANs are handled by the rule engine and are not included in these model tests."
+      "The test texts were written by Maskera's developer. They show direction and catch regressions between releases, but they are not an independent benchmark across all Swedish text.",
+      "The table above measures the AI model alone (names, places and organisations). Personal identity numbers, phone numbers, IBANs and card numbers are handled by fixed rules alongside the model.",
+      "No automatic masking is 100% error-free. Unusual names or noisy scans can slip through, so always review the text yourself when a mistake would carry high impact."
     ],
-    "sourcesTitle": "Sources and reproduction",
-    "provenance": [
-      "Published maskera-sv-ner v20 (q4, about 43 MB) was measured on the synthetic release gates on 2026-11-25."
+    "detailsToggle": "Show older tests (v18) and technical details",
+    "historicalTitle": "Earlier comparison on Swedish Wikipedia texts (v18)",
+    "historicalBody": "Run between 2026-07-04 and 2026-07-19 on 22 independent Swedish Wikipedia texts (58 names, places and organisations). These numbers belong to older v18, not current v20. Only the 7 Swedish and Scandinavian models are shown here.",
+    "historicalTable": {
+      "system": "Model",
+      "size": "Size",
+      "normal": "Normal text",
+      "lowercase": "Lowercase"
+    },
+    "historicalRows": [
+      {
+        "system": "Maskera student",
+        "size": "43 MB",
+        "normal": "97%",
+        "lowercase": "95%",
+        "ours": true
+      },
+      {
+        "system": "KBLab lowermix reallysimple-ner",
+        "size": "≈475 MB",
+        "normal": "100%",
+        "lowercase": "97%",
+        "ours": false
+      },
+      {
+        "system": "RecordedFuture Swedish-NER",
+        "size": "≈500 MB",
+        "normal": "100%",
+        "lowercase": "83%",
+        "ours": false
+      },
+      {
+        "system": "nbailab scandi-ner",
+        "size": "≈500 MB",
+        "normal": "100%",
+        "lowercase": "69%",
+        "ours": false
+      },
+      {
+        "system": "KBLab reallysimple-ner",
+        "size": "≈475 MB",
+        "normal": "98%",
+        "lowercase": "29%",
+        "ours": false
+      },
+      {
+        "system": "KB-NER (the SUC classic)",
+        "size": "≈475 MB",
+        "normal": "100%",
+        "lowercase": "28%",
+        "ours": false
+      },
+      {
+        "system": "KBLab neriob (IOB head)",
+        "size": "≈475 MB",
+        "normal": "100%",
+        "lowercase": "24%",
+        "ours": false
+      }
     ],
-    "sourcesBody": "The test texts, method, runner scripts and complete Maskera results are available in the open repository. BENCHMARKS.md is the source of truth if a number elsewhere differs.",
-    "benchmarksCta": "Read the benchmark source",
-    "redactionComparisonCta": "Open the machine-readable LogosGuard run",
-    "redactionScriptsCta": "View the LogosGuard scorer",
-    "comparisonCta": "Open the machine-readable KBLab run",
-    "scriptsCta": "View the runner script",
-    "demoCta": "Try the current model in the browser demo"
+    "provenance": "Maskera v20 (43 MB q4) and KBLab lowermix (496 MB fp32) were measured on 2026-11-25; Bards AI EU PII v3 (309 MB INT8 ONNX) was measured on 2026-11-26 on the same 121 Swedish texts. All test scripts and machine-readable results live openly in our GitHub repo.",
+    "demoCta": "Try in the browser demo",
+    "benchmarksCta": "Full report and scripts on GitHub"
   },
   "security": {
     "metaTitle": "security: network requests and model integrity · maskera",
     "metaDescription": "Maskera's security boundaries, network requests, pinned model artefacts, safe restoration and private vulnerability reporting.",
     "title": "Security in maskera",
-    "lede": "Security here covers both what must never leave your environment and the boundaries around masking and restoration. This page collects the operational security model for the npm packages and the open browser demo.",
+    "lede": "All masking runs locally on your device. Here is how data moves, how model files are verified and how to report a vulnerability.",
     "tocLabel": "On this page",
     "toc": [
       { "href": "#dataflode", "label": "Data flow and network" },
-      { "href": "#artefakter", "label": "Pinned artefacts" },
+      { "href": "#artefakter", "label": "Verified model files" },
       { "href": "#aterstallning", "label": "Safe restoration" },
       { "href": "#omfattning", "label": "What counts as a vulnerability?" },
       { "href": "#rapportera", "label": "Report privately" },
@@ -627,13 +511,13 @@
     ],
     "dataFlowTitle": "Data flow and network",
     "dataFlow": [
-      "The text and the key containing the original data are not sent to Maskera for masking. The rule layer has no network dependencies. The model variant runs inference locally in the browser or in your own Node process.",
-      "The npm package's default configuration downloads the model and runtime on first use and caches them. These are static software and model artefacts, never the text being masked. Environments that prohibit external downloads can serve all model files themselves."
+      "Your text and restoration key are never sent to Maskera. The rule layer has no network dependencies and the AI model runs locally in the browser or your own Node process.",
+      "On first use, the npm package downloads the AI model (43 MB) once as a regular static file and caches it locally. You can also host the model files on your own server with no external requests."
     ],
-    "artifactsTitle": "Pinned artefacts",
+    "artifactsTitle": "Verified model files",
     "artifacts": [
-      "The published npm version points to an immutable revision of the model on Hugging Face. The same package version therefore runs the same weights measured by the benchmark; new weights reach users through a new npm version.",
-      "The demo verifies model files with file-specific SHA-256 values during the build. An unexpected or incomplete model package should therefore stop the build rather than silently being used."
+      "Every npm release is pinned to an exact model version on Hugging Face, so weights cannot change quietly without a new package release.",
+      "The build checks every model file with SHA-256. An unexpected or corrupted file stops the build instead of being used silently."
     ],
     "restoreTitle": "Restoration is a security boundary",
     "restore": [
@@ -682,11 +566,9 @@
     ],
     "dataTitle": "How your text is processed",
     "data": [
-      "All masking happens on your device, in the browser or on your own server. The text and the key containing the original data are not sent to Maskera or any other service for masking.",
-      "Vercel Analytics counts page views anonymously and without cookies. Text entered in the tool is never included in the statistics.",
-      "Vercel may process technical request data, such as IP addresses, to deliver and protect the website. The text and restoration key are not part of these requests.",
-      "The npm package's default configuration downloads the model file and runtime on first use and caches them. These are static artefacts, never the text being masked. Everything can be self-hosted.",
-      "The rule layer has no network dependencies and works independently."
+      "All masking runs locally on your device (browser, extension or your own Node process). Text and restoration keys are never sent to Maskera.",
+      "Vercel Analytics counts page views anonymously without cookies, and Vercel handles technical request data for hosting. Text entered in the tool is never included.",
+      "The rule layer has no network dependencies. The npm package downloads the model and runtime once as static files and can be self-hosted (details on the security page)."
     ],
     "trainingTitle": "How the model was trained",
     "limitsTitle": "Limitations",
@@ -700,17 +582,17 @@
     "fullDocsPrefix": "The complete technical disclosure and all source code are available on GitHub.",
     "fullDocsCta": "Read the full document",
     "training": {
-      "syntheticTitle": "Published v20 is the privacy-clean model.",
-      "syntheticBody": "v20 passed every release gate with 108,400 generated training rows and 6,900 separated validation rows (distilled from a 3-seed KB-BERT teacher ensemble). IBANs, personal and organisation numbers, phone numbers, emails, account and payment identifiers, public IP addresses, postcodes and realistic street-address pairs are blocked before training. Historical v18 also used documented, openly licensed Swedish corpora and is reported separately.",
+      "syntheticTitle": "Trained on 100% synthetic Swedish text (v20).",
+      "syntheticBody": "The model is trained on 108,400 generated Swedish texts, with zero customer data or real personal information. An automated filter blocks personal identity numbers, account numbers, emails, phone numbers and real street addresses before training starts.",
       "policyCta": "Read the technical data-protection policy",
-      "attestationBody": "Every published v20 artefact carries the same attestation with row counts and SHA-256 hashes for the exact data, generator and audit code. The published provenance is summarised in the",
+      "attestationBody": "Every release ships with verifiable SHA-256 checksums for the training data and scripts in the",
       "modelCardCta": "model card",
       "baseTitle": "Base model:",
       "baseBody": "KB-BERT from the National Library of Sweden, published under CC0.",
       "baseCta": "See KB-BERT",
-      "baseBoundary": "The attestation covers Maskera's own fine-tuning. It makes no absolute claim about which public text may have been included when KB-BERT was originally pre-trained.",
-      "reproTitle": "The entire chain can be reproduced from scratch.",
-      "reproBody": "Generation, privacy review, training, distillation, compression, export and evaluation are open scripts. If a training row changes, a synthetic address marker disappears or a corpus is added, the manifest breaks and the pipeline refuses to continue."
+      "baseBoundary": "This covers our own training. The base model KB-BERT was originally pre-trained by the National Library of Sweden on public Swedish text.",
+      "reproTitle": "The whole pipeline can be audited and rerun.",
+      "reproBody": "Every script for data generation, training and testing is open on GitHub. If a single training row changes, the check stops the build."
     }
   },
   "testData": {
@@ -784,14 +666,17 @@
         "body": "Contact us if you have questions about the website's processing or want to exercise your rights."
       }
     ],
+    "extensionNote": "Using the browser extension?",
+    "extensionCta": "Read the extension privacy policy",
     "contactCta": "Contact details at hagvall-labs.com",
-    "updated": "Last updated 21 August 2026."
+    "updated": "Last updated 26 November 2026."
   },
   "services": {
     "title": "Browser extension and open source",
-    "lede": "Choose the browser extension to mask directly in ChatGPT, Claude, Gemini, Copilot, Perplexity, Mistral and custom AI sites, or the npm packages if you want to build masking into your own code.",
+    "lede": "Mask personal data directly in your AI tools with the browser extension, or embed the open-source packages in your own code.",
     "sublede": "All masking runs locally on your device. Pro starts with a 7-day free trial through app.maskera.dev.",
     "extensionPortalNote": "Create an account and activate on app.maskera.dev",
+    "accuracyLead": "Automated masking reduces risk, but is not a guarantee.",
     "products": [
       {
         "id": "extension",
@@ -803,8 +688,8 @@
         "points": [
           "Works in ChatGPT, Claude, Gemini, Microsoft Copilot, Perplexity, Mistral and any opt-in AI site",
           "Unlimited local Swedish AI masking in Pro, fully offline after activation",
-          "Organization-wide protected words with optional client-side encryption (E2EE)",
-          "Ready for central deployment via Intune, Jamf and Google Workspace (MDM)"
+          "Shared protected words for your whole team, encrypted locally if you choose",
+          "Central deployment to company devices via Intune, Jamf and Google Workspace"
         ],
         "cta": "Try Pro free for 7 days",
         "secondaryCta": "Install for free",
@@ -841,7 +726,7 @@
           "pro": "Unlimited"
         },
         {
-          "feature": "Personal and organization-wide protected words (optional E2EE) + MDM deployment",
+          "feature": "Shared team protected words and central deployment (MDM)",
           "free": "Pro only",
           "pro": "Included"
         }
@@ -851,27 +736,7 @@
       "termsCta": "Maskera Pro terms of sale",
       "privacyCta": "Extension privacy",
       "startTrialCta": "Try Pro free for 7 days"
-    },
-    "flowTitle": "How the extension protects your AI chats",
-    "flowBody": "Text is masked locally in your browser before it is sent. The original text and restoration key stay in your browser and are never sent to Maskera.",
-    "flowLabel": "Browser extension data flow",
-    "flow": [
-      "You write in ChatGPT or Claude",
-      "Extension masks locally in your browser",
-      "AI service sees masked text only",
-      "Extension restores the reply on screen"
-    ],
-    "considerTitle": "Good to know before choosing",
-    "considerations": [
-      {
-        "title": "Masking reduces risk, but is not a guarantee.",
-        "body": "Names and places are identified by an AI model that can miss data. Accuracy is measured openly and one hundred per cent is never promised."
-      },
-      {
-        "title": "No lock-in at the core.",
-        "body": "The open-source packages are MIT-licensed and work independently without a subscription or lock-in."
-      }
-    ]
+    }
   },
   "extensionInstall": {
     "heroAddTo": "Add to {browser}, it's free",
@@ -882,7 +747,8 @@
     "builtFor": "Built for",
     "freeNote": "Free, 20 AI redactions/month",
     "title": "Install Maskera",
-    "body": "Mask names and personal identity numbers directly in ChatGPT, Claude, Gemini, Copilot, Perplexity, Mistral and any opt-in AI site. Free with unlimited rules and 20 AI redactions a month. Pro costs SEK 149/user/month incl. VAT after 7 days free.",
+    "body": "Mask directly in ChatGPT, Claude, Gemini, Copilot and more. Free for everyday needs, or Pro (SEK 149/user/month incl. VAT) after 7 days free.",
+    "compactBody": "Pick your browser below to install the free version. No account is needed until you activate Pro.",
     "trialCta": "Try Pro free for 7 days",
     "zipLead": "Waiting for your browser's store?",
     "zipCta": "Download the ZIP file",
@@ -893,7 +759,7 @@
       "chrome": { "name": "Chrome", "store": "Chrome Web Store" },
       "edge": { "name": "Edge", "store": "Microsoft Edge Add-ons" },
       "firefox": { "name": "Firefox", "store": "Firefox Add-ons" },
-      "safari": { "name": "Safari", "store": "Mac App Store" }
+      "safari": { "name": "Safari", "store": "Mac App Store · coming later" }
     },
     "flowDemo": {
       "regionLabel": "Example of how the extension masks before send",
@@ -922,17 +788,18 @@
     "switchLabel": "Visa sidan på svenska"
   },
   "topBar": {
-    "backHome": "Back to the home page",
+    "breadcrumbLabel": "Breadcrumb",
     "developers": "Developers",
-    "services": "Extension"
+    "services": "Extension",
+    "accuracy": "Accuracy"
   },
   "meta": {
     "demoTitle": "Use AI without sharing personal data · maskera",
-    "demoDescription": "maskera hides Swedish personal data before text is sent to AI. Run the same local masking in the browser, with the extension for ChatGPT and Claude, or via npm. Only masked text is forwarded.",
+    "demoDescription": "maskera hides Swedish personal data before text is sent to AI. Run the same local masking in the browser, with the extension for ChatGPT, Claude, Gemini, Copilot and more, or via npm. Only masked text is forwarded.",
     "devTitle": "for developers: Swedish PII masking with npm · maskera",
     "devDescription": "Install maskera for local Swedish PII masking in the browser or Node. Open source, TypeScript and a custom-trained Swedish AI model.",
     "servicesTitle": "browser extension and open source: local Swedish PII masking · maskera",
-    "servicesDescription": "Compare Maskera's browser extension for ChatGPT and Claude with the open-source npm packages. All masking runs locally without sending text to Maskera.",
+    "servicesDescription": "Compare Maskera's browser extension for ChatGPT, Claude, Gemini, Copilot, Perplexity and Mistral with the open-source npm packages. All masking runs locally.",
     "siteName": "maskera",
     "servicesSchemaName": "Maskera browser extension and open source",
     "ogImageAlt": "maskera: Use AI without sharing personal data. A sample sentence where a name, a personal identity number and a town are replaced with placeholders."
@@ -941,7 +808,7 @@
     "metaTitle": "about & contact: Hägvall Labs AB · maskera",
     "metaDescription": "About Maskera: what the tool does, who is behind it (Hägvall Labs AB in Stockholm) and how to reach us at hej@maskera.dev.",
     "title": "About Maskera",
-    "lede": "Maskera hides Swedish personal data in text before it reaches an AI service, a log or analytics. This page describes what Maskera is, who is behind it and how to reach us.",
+    "lede": "Maskera hides Swedish personal data locally before text reaches an AI service, log or analytics.",
     "tocLabel": "On this page",
     "toc": [
       {
@@ -963,13 +830,13 @@
     ],
     "whatTitle": "What Maskera is",
     "what": [
-      "Maskera combines deterministic rules for structured Swedish personal data (personal identity numbers, coordination numbers, organisation numbers, phone numbers, email addresses, postcodes, bankgiro, plusgiro, IBAN, card numbers, IP addresses and URLs) with a custom-trained Swedish NER model that finds names, places, organisations and street addresses in free text, including all-lowercase text.",
-      "Masking is reversible: every run produces a restoration key that stays local, so the AI response can be unmasked on screen or in your code. Everything runs where the text already is: in the browser or in Node.js. No text is sent to Maskera to be masked."
+      "Maskera combines fixed rules (for Swedish personal identity numbers, phone numbers, emails and IBANs) with a custom-trained 43 MB Swedish AI model that finds names, places, organisations and addresses in free text.",
+      "Everything can be restored in the AI's reply using a local key that never leaves your device."
     ],
     "useTitle": "Two ways to use it",
     "use": [
-      "The npm packages maskera and @maskera/core are open source under the MIT licence and free to use in your own integrations. The model maskera-sv-ner is published openly on Hugging Face.",
-      "The browser extension for Chrome and Edge runs the same local masking directly in ChatGPT and Claude. The free tier includes unlimited rules and 20 local AI redactions per month; Pro (SEK 149/user/month incl. VAT, 7-day free trial) activates with a signed offline licence from app.maskera.dev. The customer portal app.maskera.dev handles accounts, licences and payment. No customer text is processed there, and there is no Maskera-hosted masking service."
+      "Open source: the maskera and @maskera/core npm packages under the MIT licence, plus the maskera-sv-ner model on Hugging Face.",
+      "Browser extension for Chrome, Edge and Firefox (Safari coming later) in ChatGPT, Claude, Gemini, Copilot and more. Free for everyday needs (rules + 20 AI/month); Pro costs SEK 149/user/month incl. VAT after 7 days free, with shared protected words and central deployment via app.maskera.dev."
     ],
     "whoTitle": "Who is behind it",
     "who": "Maskera is developed and operated by Hägvall Labs AB (Swedish company reg. no. 559598-0110), a Swedish limited company in Stockholm founded by Joel Hägvall. The company is the data controller for maskera.dev; how the website itself processes data is described in the privacy policy. The source code, training pipeline and benchmarks are public on GitHub so the results can be reviewed and reproduced.",

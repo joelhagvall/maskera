@@ -33,7 +33,8 @@ describe("Header", () => {
 
   it("shows real extension captures that ship with the site", () => {
     const { container } = render(<Header go={vi.fn()} />)
-    for (const alt of [copy.header.productPreviewAlt, copy.header.productPopupAlt]) {
+    const alts = [...copy.header.heroScenes.map((scene) => scene.alt), copy.header.productPopupAlt]
+    for (const alt of alts) {
       const image = within(container).getByAltText(alt)
       const src = image.getAttribute("src") ?? ""
       const publicDir = join(dirname(fileURLToPath(import.meta.url)), "../public")
@@ -41,5 +42,22 @@ describe("Header", () => {
       expect(image.getAttribute("width")).toBeTruthy()
       expect(image.getAttribute("height")).toBeTruthy()
     }
+  })
+
+  it("rotates task scenes; picking one shows it and pauses the rotation", () => {
+    const { container } = render(<Header go={vi.fn()} />)
+    const scenes = copy.header.heroScenes
+    const active = () => container.querySelector(".hero-preview.is-active")?.getAttribute("alt")
+    expect(active()).toBe(scenes[0].alt)
+
+    const group = within(container).getByRole("group", { name: copy.header.heroScenesLabel })
+    fireEvent.click(within(group).getByRole("button", { name: scenes[1].label }))
+    expect(active()).toBe(scenes[1].alt)
+    expect(
+      within(container).getByRole("button", { name: copy.extensionInstall.flowDemo.play }),
+    ).toBeTruthy()
+    // Only the shown scene is exposed to assistive tech.
+    const exposed = [...container.querySelectorAll(".hero-preview:not([aria-hidden])")]
+    expect(exposed.map((img) => img.getAttribute("alt"))).toEqual([scenes[1].alt])
   })
 })

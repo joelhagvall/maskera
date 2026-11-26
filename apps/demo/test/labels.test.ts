@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from "node:fs"
+import { resolve } from "node:path"
 import { describe, expect, it } from "vitest"
 import { LABEL_META } from "../src/labels"
 
@@ -46,6 +48,29 @@ describe("PII label contrast", () => {
           ).toBeGreaterThanOrEqual(4.5)
         }
       }
+    }
+  })
+})
+
+// The browser extension draws the same placeholders in the chat preview and
+// in the hero captures on this site, so its palette must be this one. The
+// extension is a sibling checkout (../maskera-extension); the check runs
+// wherever both are present and is skipped elsewhere.
+const extensionPalette = resolve(
+  __dirname,
+  "../../../../maskera-extension/src/shared/label-colors.ts",
+)
+
+describe.skipIf(!existsSync(extensionPalette))("extension palette", () => {
+  it("uses the website's light and dark colour for every label", () => {
+    const source = readFileSync(extensionPalette, "utf8")
+    const entries = new Map(
+      [...source.matchAll(/^\s*([A-Z_]+): site\("(#[0-9a-f]{6})", "(#[0-9a-f]{6})"\)/gm)].map(
+        (m) => [m[1], { color: m[2], dark: m[3] }],
+      ),
+    )
+    for (const [label, meta] of Object.entries(LABEL_META)) {
+      expect(entries.get(label), label).toEqual({ color: meta.color, dark: meta.dark })
     }
   })
 })

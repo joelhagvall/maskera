@@ -18,7 +18,7 @@ locks the selected resolved dependency closure that executes the evaluation.
 Type-only peers and unrelated build, lint, browser-audit and test-tool updates
 are outside that closure and cannot masquerade as changed accuracy evidence.
 The frozen suite checksum is
-`8f56319f986214b220f576ad2f6171748b568578283100479b721bf2f1a20bc7` and the
+`e2558e5796970043fefa147d57336c1e519c0efc220ed1cf65d11ac9b89ab135` and the
 frozen evaluation-environment checksum is
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`.
 
@@ -26,7 +26,7 @@ frozen evaluation-environment checksum is
 - **Artifact:** [`joelhagvall/maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner),
   `onnx/model_q4.onnx` (`dtype: "q4"`, the default and what the demo ships),
   sha256 `0a4ad3c3d87b0c53c67556177a668acfb8a91726a2af78e16a857403f6bed7fa`,
-  Hub revision `bb35467e9310095a81bf4e3d5779586ea842507a`, 42,705,681 bytes.
+  Hub revision `f417d65c08bcf814f639f8bf9221e30a79a53f39`, 42,705,681 bytes.
   This is the attested privacy-clean v20 release; see
   [training/README.md](../training/README.md).
 - **Pipeline:** the shipped `maskera` path (model + `reconstruct()`
@@ -46,7 +46,7 @@ frozen evaluation-environment checksum is
 
 - **Measured:** 2026-11-25 from a clean build of the current packaged pipeline.
 - **Artifact:** `student-v20b-s777-onnx`, published as Hub revision
-  `bb35467e9310095a81bf4e3d5779586ea842507a`; q4,
+  `f417d65c08bcf814f639f8bf9221e30a79a53f39`; q4,
   42,705,681 bytes, evaluated through the current packaged reconstruction and
   default whole-word precision guard.
 - **Release state:** every defined gate passes; the Hub, npm source pin and demo
@@ -94,9 +94,29 @@ held out of training and outside the generator's templates. The q4-vs-fp32
 choice compares the artifacts users can actually obtain, not equal numeric
 precision. Reproduce with `pnpm eval:kblab`; the machine result is
 [`benchmark-kblab-v20.json`](benchmark-kblab-v20.json). Comparison suite
-checksum: `b7d2962c24153be19ff6e9dc442731eb49732df760d159cb810d78f9f6bc05fa`.
+checksum: `d7c4d29502c684423bfa47160b43c1fd53ffccbf9f618467f1947b689dc56e81`.
 Python environment checksum:
 `3e87b961ccb80856a45610d6b8d637b2fa3cc57b479794116ad912e63603c1ff`.
+
+### Current v20 comparison with Bards AI EU PII v3
+
+Measured 2026-11-26 on the exact same 121-text Swedish corpus (`training/eval/gold.txt`,
+211 PER / LOC / ORG entities, overlap matching) using the published INT8 ONNX weights of
+`bardsai/eu-pii-anonimization-multilang-v3` (309 MB, revision
+`091984b5fbce4c161abc4776ed0f4e3206e1b374`, 24 EU languages including Swedish) and its
+official word-level decoder (`pii_detector.py`).
+
+| casing | model | size | masked at all | typed F1 |
+| --- | --- | ---: | ---: | ---: |
+| original | **Maskera v20 q4** | **43 MB** | **100.0% (211/211)** | **88.2%** |
+| original | Bards AI EU PII v3 INT8 | 309 MB | 85.8% (181/211) | 74.6% |
+| lowercase | **Maskera v20 q4** | **43 MB** | **100.0% (211/211)** | **87.4%** |
+| lowercase | Bards AI EU PII v3 INT8 | 309 MB | 56.4% (119/211) | 62.1% |
+
+Bards AI EU PII v3 missed 30 of 211 entities in normal text and 92 of 211 in lowercase
+while requiring 7x larger weights (309 MB ONNX plus 34 MB tokenizer). Reproduce with
+`cd training && .venv/bin/python benchmark_bardsai_v20.py`; machine result:
+[`benchmark-bardsai-v20.json`](benchmark-bardsai-v20.json).
 
 ### Current v20 end-product comparison with LogosGuard
 
@@ -141,7 +161,7 @@ exported chunks manually in the pinned LogosGuard surface, then run
 per-document outcomes, masked-text hashes and capture hashes are in
 [`benchmark-logosguard-2.4.4.json`](benchmark-logosguard-2.4.4.json).
 Product-comparison result checksum: `97bc535079d60af22ca5f952cc467816cc6c213a434e4d41f5e93d5480bb71f1`.
-Product-comparison suite checksum: `479e2db6a390ad597da6aa8bc77231421e25565faf02571bdc60fd78276c4c19`.
+Product-comparison suite checksum: `6c45d522d7d7f75fe566360940be5201f489f5cf35012832e1a1d660be2ffa4c`.
 Selected runtime-environment checksum:
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`;
 corpus checksum:

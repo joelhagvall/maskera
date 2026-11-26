@@ -21,6 +21,15 @@ describe("Footer", () => {
     const link = screen.getByRole("link", { name: copy.footer.openSource })
     expect(link.getAttribute("href")).toBe(GITHUB)
     expect(link.getAttribute("target")).toBe("_blank")
+    expect(screen.getByRole("link", { name: copy.footer.portal }).getAttribute("href")).toContain(
+      "https://app.maskera.dev/login",
+    )
+    expect(screen.getByRole("link", { name: copy.navigation.services }).getAttribute("href")).toBe(
+      "/tjanster",
+    )
+    expect(
+      screen.getByRole("link", { name: copy.navigation.developers }).getAttribute("href"),
+    ).toBe("/utvecklare")
   })
 
   it("links the about and contact page", () => {

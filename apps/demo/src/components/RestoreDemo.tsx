@@ -1,7 +1,7 @@
 import type { RedactResult } from "@maskera/core"
 import { useMemo, useState } from "react"
 import copy from "../i18n"
-import { ChatIcon, CheckIcon, KeyIcon } from "../icons"
+import { ChatIcon, KeyIcon } from "../icons"
 import { RestoredText, TokenHighlight } from "../segments"
 import { OverlayEditor } from "./OverlayEditor"
 
@@ -166,7 +166,6 @@ export function sampleAiReply(map: Record<string, string>, scenarioId?: string):
  */
 export function RestoreDemo({ result, scenarioId }: { result: RedactResult; scenarioId?: string }) {
   const { map } = result
-  const flow = copy.restoreDemo.flow
   const auto = useMemo(() => sampleAiReply(map, scenarioId), [map, scenarioId])
   // null = untouched (mirror the generated sample); a string = the visitor's edit.
   const [draft, setDraft] = useState<string | null>(null)
@@ -176,24 +175,6 @@ export function RestoreDemo({ result, scenarioId }: { result: RedactResult; scen
     <section className="restore">
       <h2 className="restore-title">{copy.restoreDemo.title}</h2>
       <p className="restore-note">{copy.restoreDemo.body}</p>
-      <div className="flow">
-        {/* Arrow and step share a no-wrap unit: when the band wraps on narrow
-            screens the arrow follows onto the new line ("→ Du ser") instead of
-            dangling at the end of the previous one. */}
-        {flow.map((step, i) => (
-          <span className="flow-item" key={step}>
-            {i > 0 && (
-              <span className="flow-arrow" aria-hidden="true">
-                →
-              </span>
-            )}
-            <span className="flow-step">
-              {i === flow.length - 1 && <CheckIcon size={12} />}
-              {step}
-            </span>
-          </span>
-        ))}
-      </div>
       <div className="grid restore-grid">
         {/* The reply card is inverted (tinted frame, white editor) so this
             second editable textarea reads as an incoming message, not as a

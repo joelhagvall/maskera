@@ -127,13 +127,6 @@ export const ArrowUpRightIcon = (p: IconProps) => (
   </Svg>
 )
 
-export const ArrowLeftIcon = (p: IconProps) => (
-  <Svg {...p}>
-    <path d="m11 17-5-5 5-5" />
-    <path d="M18 12H6" />
-  </Svg>
-)
-
 export const CopyIcon = (p: IconProps) => (
   <Svg {...p}>
     <rect x="9" y="9" width="11" height="11" rx="2" />
@@ -151,6 +144,26 @@ export const ChatIcon = (p: IconProps) => (
   <Svg {...p}>
     <path d="M4 5h16v11H9l-4 4v-4H4z" />
     <path d="M8 10h8M8 13h5" />
+  </Svg>
+)
+
+/* Browser chrome for the hero's window frame. */
+export const LockIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="5" y="11" width="14" height="10" rx="2" />
+    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+  </Svg>
+)
+
+export const ChevronLeftIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m15 18-6-6 6-6" />
+  </Svg>
+)
+
+export const ChevronRightIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m9 18 6-6-6-6" />
   </Svg>
 )
 
@@ -208,6 +221,7 @@ export const DOMAIN_ICONS: Record<string, (p: IconProps) => ReactElement> = {
   vard: HealthIcon,
   juridik: LawIcon,
   hr: HrIcon,
+  kontext: ChatIcon,
   support: SupportIcon,
   klagomal: MailAlertIcon,
   kommun: LandmarkIcon,

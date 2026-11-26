@@ -127,7 +127,8 @@ const {
   redactionComparison,
   whitepaper,
 } = contract
-const { curated, syntheticAdr, linkedinStyle, syntheticGold, rareSurnames } = metrics
+const { curated, syntheticAdr, linkedinStyle, syntheticGold, rareSurnames, structuredRegression } =
+  metrics
 const bytes = formatBytes(artifact.bytes)
 const historicalModelRows = historical.modelComparison.rows
 
@@ -234,60 +235,50 @@ await expectFragments("docs/BENCHMARKS.md", [
   ]),
 ])
 
+// The public accuracy page displays only the 7 Swedish/Scandinavian NER models
+// from the historical v18 run (dropping non-Swedish, rule-only and mismatched-
+// scheme rows that belong only in the full docs/BENCHMARKS.md archive).
+const PUBLIC_HISTORICAL_EXCLUDED_SYSTEMS = new Set([
+  "sbx PII general / detailed",
+  "Rampart (nationaldesignstudio)",
+  "Desert Ant redact (multilingual)",
+  "swedish-pii (regex + name lists)",
+])
+const publicHistoricalModelRows = historicalModelRows.filter(
+  (row) => !PUBLIC_HISTORICAL_EXCLUDED_SYSTEMS.has(row.system),
+)
+
 for (const locale of ["sv", "en"]) {
   const file = `apps/demo/src/i18n/${locale}.json`
   const localeCopy = await readJson(resolve(repoRoot, file))
-  const cases = localeCopy.accuracy?.historicalComparisonCases
-  if (!Array.isArray(cases) || cases.length !== 2) {
-    drift("historical model table cases", file, "two comparison cases", cases)
+  const rows = localeCopy.accuracy?.historicalRows
+  if (!Array.isArray(rows) || rows.length !== publicHistoricalModelRows.length) {
+    drift(
+      "historical model table rows",
+      file,
+      `${publicHistoricalModelRows.length} rows`,
+      Array.isArray(rows) ? rows.length : rows,
+    )
     continue
   }
 
-  const originalExpected = historicalModelRows.map((row) => ({
-    system: row.system,
-    masked: historicalScoreForLocale(row.redactionRecall, locale),
-    typedF1: historicalScoreForLocale(row.typedF1, locale),
-  }))
-  const originalActual = cases[0].rows?.map(({ system, masked, typedF1 }) => ({
-    system,
-    masked,
-    typedF1,
-  }))
-  const originalDifference = firstDifference(originalExpected, originalActual)
-  if (originalDifference) {
-    drift(
-      `historical original-casing table at ${originalDifference.path}`,
-      file,
-      originalDifference.expected,
-      originalDifference.actual,
-    )
-  }
-
-  const lowercaseExpected = new Map(
-    historicalModelRows
-      .filter((row) => row.lowercaseRedactionRecall && row.lowercaseTypedF1)
-      .map((row) => [
-        row.system,
-        {
-          masked: historicalScoreForLocale(row.lowercaseRedactionRecall, locale),
-          typedF1: historicalScoreForLocale(row.lowercaseTypedF1, locale),
-        },
-      ]),
+  const expectedBySystem = new Map(
+    publicHistoricalModelRows.map((row) => [
+      row.system,
+      {
+        normal: historicalScoreForLocale(row.redactionRecall, locale),
+        lowercase: historicalScoreForLocale(row.lowercaseRedactionRecall, locale),
+      },
+    ]),
   )
-  const lowercaseRows = cases[1].rows ?? []
-  requireValue(
-    `${locale} historical lowercase row count`,
-    lowercaseExpected.size,
-    lowercaseRows.length,
-  )
-  for (const row of lowercaseRows) {
-    const expected = lowercaseExpected.get(row.system)
+  for (const row of rows) {
+    const expected = expectedBySystem.get(row.system)
     if (!expected) {
-      drift(`historical lowercase row: ${row.system}`, file, "a contract row", row)
+      drift(`historical model row: ${row.system}`, file, "a contract row", row)
       continue
     }
-    requireValue(`${locale} ${row.system} lowercase recall`, expected.masked, row.masked)
-    requireValue(`${locale} ${row.system} lowercase typed F1`, expected.typedF1, row.typedF1)
+    requireValue(`${locale} ${row.system} normal recall`, expected.normal, row.normal)
+    requireValue(`${locale} ${row.system} lowercase recall`, expected.lowercase, row.lowercase)
   }
 }
 
@@ -604,45 +595,48 @@ await expectFragments("training/README.md", [
 await expectFragments("README.md", [
   [
     "root curated claim",
-    `span F1 **${curated.spanF1Pct}%** on curated (${curated.leaks}/${curated.entities} leaks)`,
+    `**${curated.spanF1Pct}% span F1**, **${curated.leaks}/${curated.entities} leaks**`,
   ],
-  ["root ADR claim", `**${syntheticAdr.spanF1Pct}%**`],
-  ["root LinkedIn claim", `**${linkedinStyle.spanF1Pct}%**`],
   [
-    "root historical boundary",
-    `broader dated public-model comparison still\nbelongs to ${historical.release}`,
+    "root ADR claim",
+    `**${syntheticAdr.spanF1Pct}% span F1**, **${syntheticAdr.leaks}/${syntheticAdr.entities} leaks**`,
   ],
+  [
+    "root LinkedIn claim",
+    `**${linkedinStyle.spanF1Pct}% span F1**, **${linkedinStyle.leaks}/${linkedinStyle.entities} leaks**`,
+  ],
+  ["root historical boundary", `historical ${historical.release}`],
   [
     "root current KBLab Maskera result",
-    `Maskera masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities}`,
+    `**${comparison.normal.maskera.masked}/${comparison.corpus.entities}** orig & lower`,
   ],
   [
     "root current KBLab result",
-    `KBLab masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}.`,
+    `vs ${comparison.normal.kblab.masked}/${comparison.corpus.entities} & ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}`,
   ],
   [
-    "root LogosGuard comparison",
-    `Maskera ${contract.release} fully removed **${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%)**; LogosGuard ${redactionComparison.systems.logosguard.version} in Chrome`,
+    "root hybrid pipeline",
+    `**${structuredRegression.fullHits}/${structuredRegression.entities} (${structuredRegression.hitRatePct}%)** full hits`,
   ],
 ])
 await expectFragments("packages/core/README.md", [
   [
-    "core package LogosGuard comparison",
-    `hybrid fully removed\n${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%); LogosGuard ${redactionComparison.systems.logosguard.version} in Chrome`,
+    "core package hybrid pipeline",
+    `reaches ${structuredRegression.fullHits}/${structuredRegression.entities} (${structuredRegression.hitRatePct}%) full hits`,
   ],
 ])
 await expectFragments("packages/ner/README.md", [
   [
     "package curated claim",
-    `curated set ${contract.release} reaches ${curated.spanF1Pct}% span F1 with ${curated.leaks}/${curated.entities} leaks`,
+    `**Curated set:** ${curated.spanF1Pct}% span F1, ${curated.leaks}/${curated.entities} leaks.`,
   ],
   [
     "package LinkedIn claim",
-    `LinkedIn-style set it reaches ${linkedinStyle.spanF1Pct}% with ${linkedinStyle.leaks}/${linkedinStyle.entities} leaks`,
+    `**LinkedIn-style set:** ${linkedinStyle.spanF1Pct}% span F1, ${linkedinStyle.leaks}/${linkedinStyle.entities} leaks.`,
   ],
   [
     "package historical boundary",
-    `historical ${historical.release} scored ${historical.curated.spanF1Pct}% span-F1`,
+    `Historical ${historical.release} comparisons (${historical.curated.spanF1Pct}% curated span-F1`,
   ],
   [
     "package current KBLab Maskera result",
@@ -650,25 +644,28 @@ await expectFragments("packages/ner/README.md", [
   ],
   [
     "package current KBLab result",
-    `KBLab masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}.`,
+    `KBLab masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}`,
   ],
   [
-    "package LogosGuard comparison",
-    `removed ${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%) and LogosGuard ${redactionComparison.systems.logosguard.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.logosguard.fullHitRatePct}%)`,
+    "package hybrid pipeline",
+    `${structuredRegression.fullHits}/${structuredRegression.entities} (${structuredRegression.hitRatePct}%) full hits`,
   ],
 ])
 await expectFragments("training/maskera-sv-ner-card/README.md", [
   ["model-card current heading", `Published privacy-clean ${contract.release}`],
   [
     "model-card curated claim",
-    `curated span F1 ${curated.spanF1Pct}% with ${curated.leaks}/${curated.entities} leaks`,
+    `| Curated (${curated.documents} docs / ${curated.entities} entities) | **${curated.spanF1Pct}%** | **${curated.leaks}/${curated.entities}** |`,
   ],
-  ["model-card LinkedIn claim", `LinkedIn-style span F1 ${linkedinStyle.spanF1Pct}% with`],
+  [
+    "model-card LinkedIn claim",
+    `| LinkedIn-style (${linkedinStyle.documents} docs / ${linkedinStyle.entities} entities) | **${linkedinStyle.spanF1Pct}%** | **${linkedinStyle.leaks}/${linkedinStyle.entities}** |`,
+  ],
   [
     "model-card rare-surname claim",
-    `${rareSurnames.maskedRecallPct}% (${rareSurnames.masked}/${rareSurnames.entities})`,
+    `**${rareSurnames.maskedRecallPct}%** masked recall (${rareSurnames.masked}/${rareSurnames.entities})`,
   ],
-  ["model-card historical boundary", `${historical.release} comparison metrics`],
+  ["model-card historical boundary", `Historical ${historical.release} comparison metrics`],
   [
     "model-card current KBLab original row",
     `| original | **maskera-sv-ner ${contract.release} q4** | **${comparison.normal.maskera.maskedRecallPct}% (${comparison.normal.maskera.masked}/${comparison.corpus.entities})** | ${comparison.normal.maskera.typedF1Pct}% |`,
@@ -676,10 +673,6 @@ await expectFragments("training/maskera-sv-ner-card/README.md", [
   [
     "model-card current KBLab lowercase row",
     `| lowercase | KBLab lowermix fp32 | ${comparison.lowercase.kblab.maskedRecallPct}% (${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}) | ${comparison.lowercase.kblab.typedF1Pct}% |`,
-  ],
-  [
-    "model-card LogosGuard comparison",
-    `removed **${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%)** and LogosGuard **${redactionComparison.systems.logosguard.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.logosguard.fullHitRatePct}%)**`,
   ],
 ])
 await expectFragments("apps/demo/public/llms.txt", [
@@ -698,11 +691,15 @@ await expectFragments("apps/demo/public/llms.txt", [
   ["llms historical boundary", `Historical ${historical.release} public-model comparisons`],
   [
     "llms current KBLab comparison",
-    `Maskera q4 masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities} with original casing and ${comparison.lowercase.maskera.masked}/${comparison.corpus.entities} lowercased; KBLab fp32 masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities}.`,
+    `Maskera q4 (43 MB) masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities} with original casing and ${comparison.lowercase.maskera.masked}/${comparison.corpus.entities} lowercased; KBLab fp32 (496 MB, measured 2026-11-25) masked ${comparison.normal.kblab.masked}/${comparison.corpus.entities} and ${comparison.lowercase.kblab.masked}/${comparison.corpus.entities};`,
   ],
   [
-    "llms LogosGuard comparison",
-    `Maskera q4 fully removed ${redactionComparison.systems.maskera.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.maskera.fullHitRatePct}%), with ${redactionComparison.systems.maskera.partialLeaks} partial leaks and ${redactionComparison.systems.maskera.misses} clear-text misses. LogosGuard in Chrome, Free/Balanced, fully removed ${redactionComparison.systems.logosguard.fullHits}/${redactionComparison.corpus.annotations} (${redactionComparison.systems.logosguard.fullHitRatePct}%)`,
+    "llms Bards AI v3 comparison",
+    "Bards AI EU PII v3 int8 ONNX (309 MB, 24 EU languages incl. Swedish, measured 2026-11-26) masked 181/211 (85.8%) and 119/211 (56.4%).",
+  ],
+  [
+    "llms hybrid pipeline",
+    `Maskera ${contract.release} q4 reached ${structuredRegression.fullHits}/${structuredRegression.entities} (${structuredRegression.hitRatePct}%) full hits, with ${structuredRegression.partialLeaks} partial leaks and ${structuredRegression.misses} clear-text misses.`,
   ],
 ])
 await expectFragments("bench/README.md", [
@@ -792,29 +789,29 @@ await expectFragments(whitepaper.source, [
 await expectFragments("apps/demo/src/i18n/sv.json", [
   [
     "Swedish current KBLab Maskera result",
-    `"masked": "${comparison.normal.maskera.masked} av ${comparison.corpus.entities} (${comparison.normal.maskera.maskedRecallPct.replace(".", ",")} %)"`,
+    `"normal": "${comparison.normal.maskera.masked} av ${comparison.corpus.entities} (${comparison.normal.maskera.maskedRecallPct.replace(".", ",")} %)"`,
   ],
   [
     "Swedish current KBLab lowercase result",
-    `"masked": "${comparison.lowercase.kblab.masked} av ${comparison.corpus.entities} (${comparison.lowercase.kblab.maskedRecallPct.replace(".", ",")} %)"`,
+    `"lowercase": "${comparison.lowercase.kblab.masked} av ${comparison.corpus.entities} (${comparison.lowercase.kblab.maskedRecallPct.replace(".", ",")} %)"`,
   ],
   [
-    "Swedish LogosGuard comparison",
-    `"fullHits": "${redactionComparison.systems.logosguard.fullHits} av ${redactionComparison.corpus.annotations} (${redactionComparison.systems.logosguard.fullHitRatePct.replace(".", ",")} %)"`,
+    "Swedish hybrid pipeline stat",
+    `"value": "${structuredRegression.hitRatePct.replace(".", ",")} % (${structuredRegression.fullHits} av ${structuredRegression.entities})"`,
   ],
 ])
 await expectFragments("apps/demo/src/i18n/en.json", [
   [
     "English current KBLab Maskera result",
-    `"masked": "${comparison.normal.maskera.masked} of ${comparison.corpus.entities} (${comparison.normal.maskera.maskedRecallPct}%)"`,
+    `"normal": "${comparison.normal.maskera.masked} of ${comparison.corpus.entities} (${comparison.normal.maskera.maskedRecallPct}%)"`,
   ],
   [
     "English current KBLab lowercase result",
-    `"masked": "${comparison.lowercase.kblab.masked} of ${comparison.corpus.entities} (${comparison.lowercase.kblab.maskedRecallPct}%)"`,
+    `"lowercase": "${comparison.lowercase.kblab.masked} of ${comparison.corpus.entities} (${comparison.lowercase.kblab.maskedRecallPct}%)"`,
   ],
   [
-    "English LogosGuard comparison",
-    `"fullHits": "${redactionComparison.systems.logosguard.fullHits} of ${redactionComparison.corpus.annotations} (${redactionComparison.systems.logosguard.fullHitRatePct}%)"`,
+    "English hybrid pipeline stat",
+    `"value": "${structuredRegression.hitRatePct}% (${structuredRegression.fullHits} of ${structuredRegression.entities})"`,
   ],
 ])
 

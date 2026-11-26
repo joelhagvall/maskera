@@ -23,8 +23,8 @@ const DROP_EVERYWHERE = [
   '[aria-hidden="true"]',
   ".skip-link",
   ".head-row",
-  ".topbar",
-  ".back",
+  // Breadcrumb (home / page): the document title already names the page.
+  ".crumbs",
   ".backdrop",
   // In-page table of contents: the headings carry the structure in Markdown.
   ".toc-rail",

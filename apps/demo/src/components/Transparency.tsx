@@ -88,6 +88,14 @@ export function Transparency({ go }: { go: (view: View) => void }) {
             <a href={`${GITHUB}/blob/main/docs/TRANSPARENCY.md`} target="_blank" rel="noreferrer">
               {copy.transparency.fullDocsCta}
               <ArrowUpRightIcon size={13} />
+            </a>{" "}
+            ·{" "}
+            <a href={viewPaths.security} onClick={navClick(() => go("security"))}>
+              {copy.navigation.security}
+            </a>{" "}
+            ·{" "}
+            <a href={viewPaths.privacy} onClick={navClick(() => go("privacy"))}>
+              {copy.navigation.privacyPolicy}
             </a>
           </p>
         </article>

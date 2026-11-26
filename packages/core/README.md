@@ -73,14 +73,9 @@ and are enabled by the hybrid pipeline.
 Note: the model-hybrid `redactWithNer` in the `maskera` package enables
 `adress`, `lagenhetsnummer` and the context-labeled account/journal identifiers
 by default (its callers have free text by definition); only the synchronous
-`redact()` here keeps the structured default set.
-
-In the 2026-11-25 end-product comparison on 258 synthetic Swedish domain texts
-with 952 annotated PII strings, that complete Maskera v20 hybrid fully removed
-941/952 (98.8%); LogosGuard 2.4.4 in Chrome, Free/`Balanced`, fully removed
-606/952 (63.7%). Partial/clear-text leaks were 5/6 and 49/297 respectively.
-The corpus is author-coupled and not exhaustively annotated for precision; see
-the exact settings, outputs and caveats in
+`redact()` here keeps the structured default set. On the 258-text Swedish domain
+regression corpus (952 annotated PII strings), that complete Maskera v20 hybrid
+reaches 943/952 (99.1%) full hits (3 partial leaks, 6 clear-text misses); see
 [docs/BENCHMARKS.md](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md).
 
 ## API
@@ -121,7 +116,7 @@ value to redact. `validate` can reject false positives (e.g. failing a checksum)
 documents and book-length text. The constant factor is worst on digit-dense
 input: a megabyte of pure digits (a log dump) blocks the thread for roughly a
 second per call. For documents in the megabyte class and up, split the text on
-line or paragraph boundaries and redact chunk by chunk — detection is local to
+line or paragraph boundaries and redact chunk by chunk: detection is local to
 each chunk, so only an identifier straddling a split point is affected.
 
 ## More

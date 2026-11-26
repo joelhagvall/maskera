@@ -1481,7 +1481,7 @@ entities, overlap matching), Maskera masked 211/211 with original casing and
 89.4% with original casing and 87.4% vs 83.2% lowercased (`docs/benchmark-kblab-v20.json`).
 
 **Release state:** published on the Hub at revision
-`bb35467e9310095a81bf4e3d5779586ea842507a`; the npm source pin, demo hashes
+`f417d65c08bcf814f639f8bf9221e30a79a53f39`; the npm source pin, demo hashes
 and versioned demo folder all target the same artifact.
 
 ## Publish to Hugging Face (single hosted source)

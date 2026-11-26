@@ -1,107 +1,75 @@
 import { GITHUB } from "../constants"
 import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
-import { navClick, type View } from "../routing"
+import { navClick, type View, viewPaths } from "../routing"
 import { PageToc } from "./PageToc"
 import { TopBar } from "./TopBar"
 
+interface BarGroup {
+  title: string
+  items: { label: string; valueText: string; pct: number; ours: boolean }[]
+}
+
 interface ComparisonRow {
   system: string
-  href?: string
-  masked: string
-  typedF1: string
-  ours?: boolean
+  description: string
+  size: string
+  normal: string
+  lowercase: string
+  ours: boolean
 }
 
-interface ComparisonCase {
-  title: string
-  rows: ComparisonRow[]
+interface ContextExample {
+  input: string
+  result: string
 }
 
-interface RedactionComparisonRow {
+interface HistoricalRow {
   system: string
-  href: string
-  fullHits: string
-  partialLeaks: string
-  misses: string
-  ours?: boolean
+  size: string
+  normal: string
+  lowercase: string
+  ours: boolean
 }
 
-interface SystemLink {
-  label: string
-  href: string
-}
-
-interface HistoricalComparisonRow {
-  system: string
-  href?: string
-  links?: SystemLink[]
-  description?: string
-  size?: string
-  masked: string
-  typedF1: string
-  ours?: boolean
-}
-
-interface HistoricalComparisonCase {
-  title: string
-  showSize: boolean
-  rows: HistoricalComparisonRow[]
-}
-
-function SystemReference({
-  system,
-  href,
-  links,
-  externalLabel,
+function ComparisonBars({
+  items,
 }: {
-  system: string
-  href?: string
-  links?: SystemLink[]
-  externalLabel: string
+  items: { label: string; valueText: string; pct: number; ours?: boolean }[]
 }) {
   return (
-    <>
-      {href ? (
-        <a
-          className="model-link"
-          href={href}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={`${system} — ${externalLabel}`}
-          translate="no"
-        >
-          {system}
-          <ArrowUpRightIcon size={11} />
-        </a>
-      ) : (
-        <span translate="no">{system}</span>
-      )}
-      {links && (
-        <span className="model-links">
-          {links.map((link) => (
-            <a
-              href={link.href}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={`${system}, ${link.label} — ${externalLabel}`}
-              key={link.href}
-            >
-              {link.label}
-              <ArrowUpRightIcon size={10} />
-            </a>
-          ))}
-        </span>
-      )}
-    </>
+    <div className="bench-bars" aria-hidden="true">
+      {items.map((item) => (
+        <div className={`bench-bar-row${item.ours ? " is-ours" : ""}`} key={item.label}>
+          <div className="bench-bar-meta">
+            <span className="bench-bar-label" translate="no">
+              {item.label}
+            </span>
+            <span className="bench-bar-value">{item.valueText}</span>
+          </div>
+          <div className="bench-bar-track">
+            <div
+              className="bench-bar-fill"
+              style={{ width: `${Math.min(100, Math.max(0, item.pct))}%` }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }
 
-export function Accuracy({ go }: { go: (view: View) => void }) {
-  const comparisonCases = copy.accuracy.comparisonCases as ComparisonCase[]
-  const historicalComparisonCases = copy.accuracy
-    .historicalComparisonCases as HistoricalComparisonCase[]
-  const redactionComparisonRows = copy.accuracy.redactionComparisonRows as RedactionComparisonRow[]
+export function Accuracy({
+  go,
+  onTryContext,
+}: {
+  go: (view: View) => void
+  onTryContext?: () => void
+}) {
+  const barGroups = copy.accuracy.comparisonBarGroups as BarGroup[]
+  const rows = copy.accuracy.comparisonRows as ComparisonRow[]
+  const contextExamples = copy.accuracy.contextExamples as ContextExample[]
+  const historicalRows = copy.accuracy.historicalRows as HistoricalRow[]
 
   return (
     <>
@@ -110,22 +78,19 @@ export function Accuracy({ go }: { go: (view: View) => void }) {
       </header>
 
       <main id="main-content">
-        <article className="prose prose-wide prose-with-toc accuracy-page">
+        <article className="prose prose-with-toc accuracy-page">
           <h1>{copy.accuracy.title}</h1>
           <p className="prose-lede">{copy.accuracy.lede}</p>
 
           <PageToc label={copy.accuracy.tocLabel} items={copy.accuracy.toc} />
 
-          <h2 id="matt">{copy.accuracy.metricsTitle}</h2>
-          <p className="prose-body">{copy.accuracy.metricsBody}</p>
-
           <section className="benchmark-section" id="aktuellt" aria-labelledby="aktuellt-heading">
             <div className="benchmark-current">
-              <div>
+              <div className="benchmark-current-head">
                 <h2 id="aktuellt-heading">{copy.accuracy.currentTitle}</h2>
                 <p>{copy.accuracy.currentBody}</p>
               </div>
-              <dl>
+              <dl className="benchmark-tldr">
                 {copy.accuracy.currentStats.map((stat) => (
                   <div key={stat.label}>
                     <dt>{stat.label}</dt>
@@ -138,224 +103,136 @@ export function Accuracy({ go }: { go: (view: View) => void }) {
 
           <section
             className="benchmark-section comparison-section"
-            id="kblab"
-            aria-labelledby="kblab-heading"
+            id="jamforelse"
+            aria-labelledby="jamforelse-heading"
           >
-            <h2 id="kblab-heading">{copy.accuracy.comparisonTitle}</h2>
+            <h2 id="jamforelse-heading">{copy.accuracy.comparisonTitle}</h2>
             <p className="prose-body">{copy.accuracy.comparisonBody}</p>
+
             <div className="comparison-grid">
-              {comparisonCases.map((comparisonCase) => (
-                <section className="comparison-case" key={comparisonCase.title}>
-                  <h3>{comparisonCase.title}</h3>
-                  <table>
-                    <caption className="sr-only">{comparisonCase.title}</caption>
-                    <thead>
-                      <tr>
-                        <th scope="col">{copy.accuracy.comparisonTable.system}</th>
-                        <th scope="col">{copy.accuracy.comparisonTable.masked}</th>
-                        <th scope="col">{copy.accuracy.comparisonTable.typedF1}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {comparisonCase.rows.map((row) => (
-                        <tr className={row.ours ? "comparison-own" : undefined} key={row.system}>
-                          <th scope="row">
-                            <SystemReference
-                              system={row.system}
-                              href={row.href}
-                              externalLabel={copy.accuracy.externalLinkLabel}
-                            />
-                          </th>
-                          <td>{row.masked}</td>
-                          <td>{row.typedF1}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              {barGroups.map((group) => (
+                <section className="comparison-case" key={group.title}>
+                  <h3>{group.title}</h3>
+                  <div className="comparison-case-bars comparison-case-bars-clean">
+                    <ComparisonBars items={group.items} />
+                  </div>
                 </section>
               ))}
             </div>
-            <p className="comparison-summary">{copy.accuracy.comparisonSummary}</p>
-            <p className="comparison-limit">{copy.accuracy.comparisonLimit}</p>
-          </section>
 
-          <section
-            className="benchmark-section comparison-section"
-            id="logosguard"
-            aria-labelledby="logosguard-heading"
-          >
-            <h2 id="logosguard-heading">{copy.accuracy.redactionComparisonTitle}</h2>
-            <p className="prose-body">{copy.accuracy.redactionComparisonBody}</p>
-            <div className="comparison-case redaction-comparison">
-              <table>
-                <caption className="sr-only">{copy.accuracy.redactionComparisonTitle}</caption>
+            <div className="comparison-case comparison-unified model-comparison">
+              <table className="data-table">
+                <caption className="sr-only">{copy.accuracy.comparisonTable.caption}</caption>
                 <thead>
                   <tr>
-                    <th scope="col">{copy.accuracy.redactionComparisonTable.system}</th>
-                    <th scope="col">{copy.accuracy.redactionComparisonTable.fullHits}</th>
-                    <th scope="col">{copy.accuracy.redactionComparisonTable.partialLeaks}</th>
-                    <th scope="col">{copy.accuracy.redactionComparisonTable.misses}</th>
+                    <th scope="col">{copy.accuracy.comparisonTable.system}</th>
+                    <th scope="col">{copy.accuracy.comparisonTable.size}</th>
+                    <th scope="col">{copy.accuracy.comparisonTable.normal}</th>
+                    <th scope="col">{copy.accuracy.comparisonTable.lowercase}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {redactionComparisonRows.map((row) => (
+                  {rows.map((row) => (
                     <tr className={row.ours ? "comparison-own" : undefined} key={row.system}>
                       <th scope="row">
-                        <SystemReference
-                          system={row.system}
-                          href={row.href}
-                          externalLabel={copy.accuracy.externalLinkLabel}
-                        />
+                        <span translate="no">{row.system}</span>
+                        <span className="model-description">{row.description}</span>
                       </th>
-                      <td data-label={copy.accuracy.redactionComparisonTable.fullHits}>
-                        {row.fullHits}
-                      </td>
-                      <td data-label={copy.accuracy.redactionComparisonTable.partialLeaks}>
-                        {row.partialLeaks}
-                      </td>
-                      <td data-label={copy.accuracy.redactionComparisonTable.misses}>
-                        {row.misses}
-                      </td>
+                      <td data-label={copy.accuracy.comparisonTable.size}>{row.size}</td>
+                      <td data-label={copy.accuracy.comparisonTable.normal}>{row.normal}</td>
+                      <td data-label={copy.accuracy.comparisonTable.lowercase}>{row.lowercase}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className="comparison-summary">{copy.accuracy.redactionComparisonSummary}</p>
-            <p className="comparison-limit">{copy.accuracy.redactionComparisonLimit}</p>
+
+            <p className="comparison-summary">{copy.accuracy.comparisonSummary}</p>
+          </section>
+
+          <section className="benchmark-section" id="kontext" aria-labelledby="kontext-heading">
+            <h2 id="kontext-heading">{copy.accuracy.contextTitle}</h2>
+            <p className="prose-body">{copy.accuracy.contextBody}</p>
+            <div className="context-showcase">
+              {contextExamples.map((ex) => (
+                <div className="context-card" key={ex.input}>
+                  <p className="context-input" lang="sv">
+                    {ex.input}
+                  </p>
+                  <p className="context-result">{ex.result}</p>
+                </div>
+              ))}
+            </div>
+            <p className="context-action">
+              <a
+                href={viewPaths.demo}
+                onClick={navClick(() => (onTryContext ? onTryContext() : go("demo")))}
+              >
+                {copy.accuracy.contextDemoCta}
+              </a>
+            </p>
           </section>
 
           <section
-            className="benchmark-section comparison-section"
-            id="modeller"
-            aria-labelledby="modeller-heading"
+            className="benchmark-section"
+            id="begransningar"
+            aria-labelledby="begransningar-heading"
           >
-            <h2 id="modeller-heading">{copy.accuracy.historicalComparisonTitle}</h2>
-            <p className="prose-body">{copy.accuracy.historicalComparisonBody}</p>
-            <div className="historical-comparison-grid">
-              {historicalComparisonCases.map((comparisonCase) => (
-                <section className="comparison-case model-comparison" key={comparisonCase.title}>
-                  <h3>{comparisonCase.title}</h3>
-                  <table>
-                    <caption className="sr-only">{comparisonCase.title}</caption>
+            <h2 id="begransningar-heading">{copy.accuracy.limitsTitle}</h2>
+            <ul>
+              {copy.accuracy.limits.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+
+            <details className="historical-details">
+              <summary>{copy.accuracy.detailsToggle}</summary>
+              <div className="historical-details-body">
+                <h3>{copy.accuracy.historicalTitle}</h3>
+                <p className="prose-body">{copy.accuracy.historicalBody}</p>
+                <div className="comparison-case model-comparison">
+                  <table className="data-table">
+                    <caption className="sr-only">{copy.accuracy.historicalTitle}</caption>
                     <thead>
                       <tr>
-                        <th scope="col">{copy.accuracy.historicalComparisonTable.system}</th>
-                        {comparisonCase.showSize && (
-                          <th scope="col">{copy.accuracy.historicalComparisonTable.size}</th>
-                        )}
-                        <th scope="col">{copy.accuracy.historicalComparisonTable.masked}</th>
-                        <th scope="col">{copy.accuracy.historicalComparisonTable.typedF1}</th>
+                        <th scope="col">{copy.accuracy.historicalTable.system}</th>
+                        <th scope="col">{copy.accuracy.historicalTable.size}</th>
+                        <th scope="col">{copy.accuracy.historicalTable.normal}</th>
+                        <th scope="col">{copy.accuracy.historicalTable.lowercase}</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {comparisonCase.rows.map((row) => (
+                      {historicalRows.map((row) => (
                         <tr className={row.ours ? "comparison-own" : undefined} key={row.system}>
                           <th scope="row">
-                            <SystemReference
-                              system={row.system}
-                              href={row.href}
-                              links={row.links}
-                              externalLabel={copy.accuracy.externalLinkLabel}
-                            />
-                            {row.description && (
-                              <span className="model-description">{row.description}</span>
-                            )}
+                            <span translate="no">{row.system}</span>
                           </th>
-                          {comparisonCase.showSize && (
-                            <td data-label={copy.accuracy.historicalComparisonTable.size}>
-                              {row.size}
-                            </td>
-                          )}
-                          <td data-label={copy.accuracy.historicalComparisonTable.masked}>
-                            {row.masked}
-                          </td>
-                          <td data-label={copy.accuracy.historicalComparisonTable.typedF1}>
-                            {row.typedF1}
+                          <td data-label={copy.accuracy.historicalTable.size}>{row.size}</td>
+                          <td data-label={copy.accuracy.historicalTable.normal}>{row.normal}</td>
+                          <td data-label={copy.accuracy.historicalTable.lowercase}>
+                            {row.lowercase}
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                </section>
-              ))}
-            </div>
-            <p className="comparison-summary">{copy.accuracy.historicalComparisonSummary}</p>
-            <p className="comparison-limit">{copy.accuracy.historicalComparisonLimit}</p>
+                </div>
+                <p className="comparison-limit">{copy.accuracy.provenance}</p>
+              </div>
+            </details>
           </section>
 
-          <h2 id="tolkning">{copy.accuracy.interpretationTitle}</h2>
-          {copy.accuracy.interpretation.map((paragraph) => (
-            <p className="prose-body" key={paragraph}>
-              {paragraph}
-            </p>
-          ))}
-
-          <h2 id="begransningar">{copy.accuracy.limitsTitle}</h2>
-          <ul>
-            {copy.accuracy.limits.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-
-          <h2 id="kallor">{copy.accuracy.sourcesTitle}</h2>
-          {copy.accuracy.provenance.map((paragraph) => (
-            <p className="prose-body" key={paragraph}>
-              {paragraph}
-            </p>
-          ))}
-          <p className="prose-body">{copy.accuracy.sourcesBody}</p>
-          <nav className="prose-foot foot-links" aria-label={copy.accuracy.sourcesTitle}>
+          <nav className="prose-foot foot-links" aria-label={copy.accuracy.limitsTitle}>
             <ul>
+              <li>
+                <a href={viewPaths.demo} onClick={navClick(() => go("demo"))}>
+                  {copy.accuracy.demoCta}
+                </a>
+              </li>
               <li>
                 <a href={GITHUB + "/blob/main/docs/BENCHMARKS.md"} target="_blank" rel="noreferrer">
                   {copy.accuracy.benchmarksCta}
                   <ArrowUpRightIcon size={13} />
-                </a>
-              </li>
-              <li>
-                <a
-                  href={GITHUB + "/blob/main/docs/benchmark-logosguard-2.4.4.json"}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {copy.accuracy.redactionComparisonCta}
-                  <ArrowUpRightIcon size={13} />
-                </a>
-              </li>
-              <li>
-                <a
-                  href={GITHUB + "/blob/main/bench/score-logosguard-domain.mjs"}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {copy.accuracy.redactionScriptsCta}
-                  <ArrowUpRightIcon size={13} />
-                </a>
-              </li>
-              <li>
-                <a
-                  href={GITHUB + "/blob/main/docs/benchmark-kblab-v20.json"}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {copy.accuracy.comparisonCta}
-                  <ArrowUpRightIcon size={13} />
-                </a>
-              </li>
-              <li>
-                <a
-                  href={GITHUB + "/blob/main/training/benchmark_competitors.py"}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {copy.accuracy.scriptsCta}
-                  <ArrowUpRightIcon size={13} />
-                </a>
-              </li>
-              <li>
-                <a href="/" onClick={navClick(() => go("demo"))}>
-                  {copy.accuracy.demoCta}
                 </a>
               </li>
             </ul>

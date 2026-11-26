@@ -406,6 +406,67 @@ exception needs a different idea; see the journal.
       on the attested synthetic-only recipe. The old public-text pseudo-label
       pool was deleted and is not an eligible prerequisite.
 
+## Next: clinical retention (over-redaction in short care text)
+
+Found 2026-10-08 when Kodhjälpen (icd-kodhjalp, ICD-10-SE coding help) tried
+maskera as its name filter. Names were caught, but on short telegraphic case
+text the hybrid pipeline also masked diagnoses ("Gonartros", "höftfraktur"),
+body parts as PLATS ("överarmen"), "Kvinna" as NAMN and every eponym
+(Parkinsons sjukdom, Colles fraktur). `profile: "clinical"` barely helped: its
+filter is an 8-word denylist. A coding model cannot code "[NAMN_1] med
+[NAMN_2]".
+
+Measured with `packages/ner/eval/benchmark-clinical-retention.mjs` (82 PII-free
+texts, 20 held-out texts never used to tune, 6 controls, plus the domain
+regression corpus read-only as a recall guard). The experimental
+`clinical-lexicon-filter.mjs`, a word list built from the ICD-10-SE and KVÅ
+code texts (`build-clinical-lexicon.mjs`), moved the clinical profile on
+2026-10-08 from 9/102 untouched texts and 124 false flags to 92/102 and 15
+(held out: 2/20 to 13/20), with control leaks 0/6 and domain leaks 10/952 both
+unchanged. Not shipped; the rules were tuned on the 82, so the held-out row is
+the honest one.
+
+- [ ] **Protect every name the filter could unmask.** The word list holds
+      surnames and given names that are also ordinary words: Stark, Lång,
+      Mild, Hård, Kort, Grön, Ring, Sjö, Tor. Alone at a sentence start
+      ("Stark ringde om remissen") such a name is unmasked today; inside a
+      sentence it is already kept. Subtract SCB's full given-name and surname
+      lists (the source `homograph-first-names.txt` was built from), not just
+      the ~500 names in the generator's lists. Highest priority: this is the
+      one way the filter can cause a leak.
+- [ ] **A larger held-out set with names that are words.** 102 texts and 6
+      controls, all written by one author, show the direction, not a leak
+      rate. Add independently written fictional care text, and controls where
+      the name is also a lexicon word, an eponym surname (Lisa Parkinson) or
+      sits sentence-initial.
+- [ ] **Decide the genitive trade-off.** A capitalized genitive before a
+      diagnosis noun is dropped even when the code lists lack the eponym
+      ("Wilms tumör", "Perthes sjukdom"), so "Holmquists sjukdom" about a
+      patient would be unmasked too. A bare "Holmquist" never is (control-05).
+      Keep, restrict to eponyms in the word list, or drop the rule.
+- [ ] **Settle the word list's licence.** It is derived from ICD-10-SE (WHO and
+      Socialstyrelsen) and KVÅ, published by eHälsomyndigheten. Until reuse in
+      an MIT package is confirmed, it stays generated and gitignored
+      (`training/.benchmark/clinical-lexicon.json`), built from icd-kodhjalp's
+      `data/codes.sqlite`.
+- [ ] **Ship it only with the clinical profile.** ~16k words would add tens of
+      kB to the browser bundle; load the list lazily when `profile: "clinical"`
+      is used, never in the general path.
+- [ ] **Promote into `profile: "clinical"` as its own release step.**
+      `packages/ner/src/index.ts` is in the release contract: new suite
+      checksum, `pnpm eval:release`, every current metric must reproduce.
+      Add the benchmark as a gate (clean texts, zero control leaks, domain
+      leaks not above the unfiltered run).
+- [ ] **Medication names.** Most of what is left (Eliquis, doxycyklin,
+      bensylpenicillin) is drug names; a list from Läkemedelsverket's open
+      product data would cover them, same licence check.
+- [ ] **Then a training round for the rest.** What no word list fixes
+      ("trottoaren", "kanelbullar", "suicidsyfte", "urosepsis") is the model
+      reading short capitalized or rare words in telegraphic text as names.
+      A `HARD_NEGATIVE_*` family of PII-free care text, the same register with
+      real names (eponym surnames as both names and diagnoses), through the
+      full release gates.
+
 ## Next: independent evaluation and generator coverage
 
 - [ ] **Larger source-isolated synthetic gold set.** The old raw external set

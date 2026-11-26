@@ -7,29 +7,29 @@
   "lastMeasuredAt": "2026-11-25",
   "scope": "Synthetic or author-coupled release gates, not an independent universal quality estimate.",
   "packages": {
-    "maskera": "0.11.0",
-    "core": "0.8.3"
+    "maskera": "0.11.1",
+    "core": "0.8.4"
   },
   "artifact": {
     "model": "maskera-sv-ner-v20",
     "hubRepo": "joelhagvall/maskera-sv-ner",
-    "revision": "bb35467e9310095a81bf4e3d5779586ea842507a",
+    "revision": "f417d65c08bcf814f639f8bf9221e30a79a53f39",
     "dtype": "q4",
     "path": "onnx/model_q4.onnx",
     "sha256": "0a4ad3c3d87b0c53c67556177a668acfb8a91726a2af78e16a857403f6bed7fa",
     "bytes": 42705681,
-    "modelCardSha256": "1a8e8e099f93986a681c44cc8af6ad91b345ac565484c97e1becaf12128d8ab0"
+    "modelCardSha256": "d68c7f2fe6d57246b0ac9d83ce6dfd02a549589b53a86ca20132685199dbe0ab"
   },
   "whitepaper": {
     "version": "1.23",
     "source": "docs/whitepaper/whitepaper.tex",
-    "sourceSha256": "00581d4270206358b2d39c8edcff619e27ad0d420563f1216e67afe445cad876",
+    "sourceSha256": "eed801ec87af4d4225ee03db24e3bfdaee17011ee86171fd2b3216e7c8ae3ef3",
     "pdf": "apps/demo/public/whitepaper.pdf",
-    "pdfSha256": "59f90c415b94826d0ddf420b123732192b1d6cbf0dbacc3f368e1850f4ea3f51"
+    "pdfSha256": "e0de8f3a6c05f9d5703f4df006ab918dca2f55a6d4eecff399593ed6f2520937"
   },
   "evaluation": {
     "command": "pnpm eval:release",
-    "suiteSha256": "8f56319f986214b220f576ad2f6171748b568578283100479b721bf2f1a20bc7",
+    "suiteSha256": "e2558e5796970043fefa147d57336c1e519c0efc220ed1cf65d11ac9b89ab135",
     "files": [
       "apps/demo/scripts/evaluate-candidate-gates.mjs",
       "apps/demo/scripts/fetch-model.mjs",
@@ -91,8 +91,8 @@
     "scope": "Synthetic, author-coupled PER/LOC/ORG comparison. Address labels and Maskera product post-processing are excluded; this is not an independent universal quality estimate.",
     "command": "pnpm eval:kblab",
     "resultFile": "docs/benchmark-kblab-v20.json",
-    "resultSha256": "9ba7001c8f68a83550ac8b789cb0896a6ec4797610fc598b7d2d2796472ec477",
-    "suiteSha256": "b7d2962c24153be19ff6e9dc442731eb49732df760d159cb810d78f9f6bc05fa",
+    "resultSha256": "5a9757cc4b5638f4b0b4881daad176c4a94f24b1bee87147576d01aa02a8132a",
+    "suiteSha256": "d7c4d29502c684423bfa47160b43c1fd53ffccbf9f618467f1947b689dc56e81",
     "files": [
       "training/benchmark_competitors.py",
       "training/benchmark-requirements.txt",
@@ -113,7 +113,7 @@
     "models": {
       "maskera": {
         "id": "joelhagvall/maskera-sv-ner",
-        "revision": "bb35467e9310095a81bf4e3d5779586ea842507a",
+        "revision": "f417d65c08bcf814f639f8bf9221e30a79a53f39",
         "dtype": "q4",
         "path": "onnx/model_q4.onnx",
         "sha256": "0a4ad3c3d87b0c53c67556177a668acfb8a91726a2af78e16a857403f6bed7fa",
@@ -165,7 +165,7 @@
     "manualStep": "Redact both exported text chunks with LogosGuard 2.4.4 in Chrome, Free plan, Balanced accuracy, and save the two returned files under tmp before scoring.",
     "resultFile": "docs/benchmark-logosguard-2.4.4.json",
     "resultSha256": "97bc535079d60af22ca5f952cc467816cc6c213a434e4d41f5e93d5480bb71f1",
-    "suiteSha256": "479e2db6a390ad597da6aa8bc77231421e25565faf02571bdc60fd78276c4c19",
+    "suiteSha256": "6c45d522d7d7f75fe566360940be5201f489f5cf35012832e1a1d660be2ffa4c",
     "files": [
       "apps/demo/scripts/fetch-model.mjs",
       "apps/demo/src/model-meta.json",

@@ -1,6 +1,7 @@
 import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
 import { linkify } from "../linkify"
+import { portalUrl } from "../portal"
 import type { View } from "../routing"
 import { TopBar } from "./TopBar"
 
@@ -21,6 +22,18 @@ export function PrivacyPolicy({ go }: { go: (view: View) => void }) {
               </li>
             ))}
           </ul>
+          <p className="prose-body">
+            {copy.privacy.extensionNote}{" "}
+            <a
+              href={portalUrl("/extension/privacy", "privacy_extension_policy")}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {copy.privacy.extensionCta}
+              <ArrowUpRightIcon size={13} />
+            </a>
+            .
+          </p>
           <p className="prose-body">
             <a href="https://hagvall-labs.com" target="_blank" rel="noreferrer">
               {copy.privacy.contactCta}

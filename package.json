@@ -24,6 +24,7 @@
     "eval:logosguard:score": "node bench/score-logosguard-domain.mjs",
     "eval:domain": "pnpm -C packages/core build && pnpm -C packages/ner build && pnpm -C packages/ner eval:domain",
     "eval:domain:clinical": "pnpm -C packages/core build && pnpm -C packages/ner build && MASKERA_PROFILE=clinical pnpm -C packages/ner eval:domain",
+    "eval:clinical-retention": "pnpm -C packages/core build && pnpm -C packages/ner build && node packages/ner/eval/benchmark-clinical-retention.mjs",
     "demo": "pnpm -C apps/demo dev",
     "lint": "pnpm check:benchmarks && pnpm check:fixtures && pnpm check:training-privacy && biome check .",
     "format": "biome format --write .",

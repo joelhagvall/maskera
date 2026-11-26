@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-26",
+  "matching": "overlap",
+  "labels": ["LOC", "ORG", "PER"],
+  "corpus": {
+    "path": "training/eval/gold.txt",
+    "sha256": "9f29f6dbffa92422fb6eb3097c400509289d9b8890e6c2b93e20fa618d4c64ff"
+  },
+  "artifacts": {
+    "bardsai/eu-pii-anonimization-multilang-v3": {
+      "revision": "091984b5fbce4c161abc4776ed0f4e3206e1b374",
+      "path": "onnx/model_quantized.onnx",
+      "sha256": "762c851fd948915cc40c5b226f0c8d19dd3a48064a171368fbc56ba97a8d1ce5",
+      "bytes": 308593401,
+      "tokenizerBytes": 34363188
+    }
+  },
+  "runtime": {
+    "python": "3.11.18",
+    "onnxruntime": "1.27.0",
+    "torch": "2.12.1",
+    "transformers": "4.57.6"
+  },
+  "runs": [
+    {
+      "name": "synthetic hand-authored set",
+      "documents": 121,
+      "entities": 211,
+      "results": [
+        {
+          "label": "Bards AI EU PII v3 (int8)",
+          "model": "bardsai/eu-pii-anonimization-multilang-v3",
+          "revision": "091984b5fbce4c161abc4776ed0f4e3206e1b374",
+          "goldEntities": 211,
+          "redactionHits": 181,
+          "typedHits": 154,
+          "typedPredictions": 202,
+          "typedPredictionHits": 154,
+          "redactionRecall": 0.857819905213,
+          "typedPrecision": 0.762376237624,
+          "typedRecall": 0.729857819905,
+          "typedF1": 0.745762711864
+        }
+      ]
+    },
+    {
+      "name": "synthetic hand-authored set LOWERCASED",
+      "documents": 121,
+      "entities": 211,
+      "results": [
+        {
+          "label": "Bards AI EU PII v3 (int8)",
+          "model": "bardsai/eu-pii-anonimization-multilang-v3",
+          "revision": "091984b5fbce4c161abc4776ed0f4e3206e1b374",
+          "goldEntities": 211,
+          "redactionHits": 119,
+          "typedHits": 109,
+          "typedPredictions": 140,
+          "typedPredictionHits": 109,
+          "redactionRecall": 0.563981042654,
+          "typedPrecision": 0.778571428571,
+          "typedRecall": 0.516587677725,
+          "typedF1": 0.621082621083
+        }
+      ]
+    }
+  ]
+}

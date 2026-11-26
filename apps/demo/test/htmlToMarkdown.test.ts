@@ -15,7 +15,9 @@ describe("htmlToMarkdown", () => {
     expect(md).toContain("en: https://maskera.dev/en")
     expect(md).toContain("Markdown: https://maskera.dev/index.md")
     expect(md).toContain("https://maskera.dev/llms.txt")
-    expect(md).toContain("maskera byter namn, personnummer och e-post mot markörer")
+    expect(md).toContain(
+      "maskera byter namn, adresser, personnummer, e-post och andra personuppgifter mot markörer",
+    )
     // Interactive regions and chrome are gone
     expect(md).not.toContain("Kandidat: Sara Lindgren")
     expect(md).not.toContain("Hoppa till huvudinnehållet")

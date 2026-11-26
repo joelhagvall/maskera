@@ -1,4 +1,4 @@
-import { type ReactElement, useEffect, useState } from "react"
+import type { ReactElement } from "react"
 import {
   EXTENSION_BROWSERS,
   EXTENSION_DOWNLOAD_URL,
@@ -10,6 +10,7 @@ import { ArrowUpRightIcon, BROWSER_ICONS } from "../icons"
 import { hlStyle, labelMeta, pillStyle } from "../labels"
 import { portalUrl } from "../portal"
 import { navClick, type View, viewPaths } from "../routing"
+import { useRotation } from "../useRotation"
 
 export const INSTALL_ANCHOR = "installera"
 
@@ -17,22 +18,12 @@ const FLOW_STEP_MS = 2_800
 
 function ExtensionFlowDemo() {
   const demo = copy.extensionInstall.flowDemo
-  const [step, setStep] = useState(0)
-  const [paused, setPaused] = useState(false)
-
-  useEffect(() => {
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
-      setPaused(true)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (paused) return
-    const timer = window.setInterval(() => {
-      setStep((current) => (current + 1) % demo.steps.length)
-    }, FLOW_STEP_MS)
-    return () => window.clearInterval(timer)
-  }, [paused, demo.steps.length])
+  const {
+    index: step,
+    setIndex: setStep,
+    paused,
+    setPaused,
+  } = useRotation(demo.steps.length, FLOW_STEP_MS)
 
   const nameMeta = labelMeta("NAMN")
   const pnrMeta = labelMeta("PERSONNUMMER")
@@ -213,7 +204,15 @@ export function ExtensionHeroActions({ go }: { go: (view: View) => void }) {
  * the stores are live. `trialContent` adds the Pro trial link with that
  * attribution tag; pages that already offer the trial leave it out.
  */
-export function ExtensionInstall({ trialContent }: { trialContent?: string }) {
+export function ExtensionInstall({
+  trialContent,
+  compact = false,
+  showFlowDemo = false,
+}: {
+  trialContent?: string
+  compact?: boolean
+  showFlowDemo?: boolean
+}) {
   const text = copy.extensionInstall
 
   return (
@@ -222,7 +221,7 @@ export function ExtensionInstall({ trialContent }: { trialContent?: string }) {
         <h2 id="installera-heading" className="ext-install-title">
           {text.title}
         </h2>
-        <p className="ext-install-body">{text.body}</p>
+        <p className="ext-install-body">{compact ? text.compactBody : text.body}</p>
         {trialContent ? (
           <a
             className="ext-install-trial"
@@ -271,7 +270,7 @@ export function ExtensionInstall({ trialContent }: { trialContent?: string }) {
           )
         })}
       </ul>
-      <ExtensionFlowDemo />
+      {showFlowDemo ? <ExtensionFlowDemo /> : null}
     </section>
   )
 }

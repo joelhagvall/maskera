@@ -1,25 +1,38 @@
 import { GITHUB } from "../constants"
 import copy from "../i18n"
-import { ArrowLeftIcon, ArrowUpRightIcon, MaskeraMark } from "../icons"
+import { ArrowUpRightIcon, MaskeraMark } from "../icons"
 import { navClick, type View, viewPaths } from "../routing"
 import { LanguageToggle } from "./LanguageToggle"
 import { ThemeToggle } from "./ThemeToggle"
 
 /**
- * The shared top bar: wordmark linking home, the nav links minus the current
- * page's own, and GitHub. Sub-pages also get the "back to start" link; the
- * home view instead scrolls to top on the wordmark and keeps the tighter
- * head-row spacing.
+ * The shared top bar. Every page shows the same nav; the current page is
+ * marked with aria-current instead of being dropped, so the bar never shifts
+ * between pages. Sub-pages add a breadcrumb (home / page name) in place of a
+ * separate back link.
  */
 export function TopBar({ current, go }: { current: View; go: (view: View) => void }) {
   const home = current === "demo"
-  const nav: { view: View; label: string }[] = [
-    { view: "dev", label: copy.topBar.developers },
+  // Read localized labels during render (never at module load) so SSR
+  // prerendering for /en/* and in-page locale switches stay in sync.
+  const pageNames: Record<Exclude<View, "demo">, string> = {
+    services: copy.navigation.services,
+    dev: copy.navigation.developers,
+    accuracy: copy.navigation.accuracy,
+    security: copy.navigation.security,
+    transparency: copy.navigation.transparency,
+    testdata: copy.navigation.testData,
+    privacy: copy.navigation.privacyPolicy,
+    about: copy.navigation.about,
+  }
+  const nav: readonly { view: View; label: string }[] = [
     { view: "services", label: copy.topBar.services },
+    { view: "dev", label: copy.topBar.developers },
+    { view: "accuracy", label: copy.topBar.accuracy },
   ]
   return (
     <>
-      <div className={home ? "head-row" : "topbar"}>
+      <div className="head-row">
         <a
           className="wordmark"
           href={viewPaths.demo}
@@ -33,18 +46,17 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
               toggle position when a visitor clicks between the two sites. */}
           <ThemeToggle />
           <LanguageToggle current={current} />
-          {nav
-            .filter((item) => item.view !== current)
-            .map((item) => (
-              <a
-                key={item.view}
-                className="ghlink"
-                href={viewPaths[item.view]}
-                onClick={navClick(() => go(item.view))}
-              >
-                {item.label}
-              </a>
-            ))}
+          {nav.map((item) => (
+            <a
+              key={item.view}
+              className="ghlink"
+              href={viewPaths[item.view]}
+              aria-current={item.view === current ? "page" : undefined}
+              onClick={navClick(() => go(item.view))}
+            >
+              {item.label}
+            </a>
+          ))}
           <a className="ghlink head-github" href={GITHUB} target="_blank" rel="noreferrer">
             {copy.navigation.github}
             <ArrowUpRightIcon size={13} />
@@ -52,10 +64,13 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
         </nav>
       </div>
       {!home && (
-        <a className="back" href={viewPaths.demo} onClick={navClick(() => go("demo"))}>
-          <ArrowLeftIcon className="back-arrow" size={16} />
-          <span>{copy.topBar.backHome}</span>
-        </a>
+        <nav className="crumbs" aria-label={copy.topBar.breadcrumbLabel}>
+          <a href={viewPaths.demo} onClick={navClick(() => go("demo"))}>
+            {copy.meta.siteName}
+          </a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">{pageNames[current]}</span>
+        </nav>
       )}
     </>
   )

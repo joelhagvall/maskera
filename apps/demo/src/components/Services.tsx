@@ -112,7 +112,6 @@ function ProductCard({ product, go }: { product: Product; go: (view: View) => vo
 }
 
 export function Services({ go, onCoverage }: { go: (view: View) => void; onCoverage: () => void }) {
-  const extensionFlow = copy.services.flow
   const compare = copy.services.compare
 
   return (
@@ -122,7 +121,7 @@ export function Services({ go, onCoverage }: { go: (view: View) => void; onCover
       </header>
 
       <main id="main-content">
-        <article className="prose prose-wide">
+        <article className="prose">
           <h1>{copy.services.title}</h1>
           <p className="prose-lede">{copy.services.lede}</p>
           <p className="prose-sub">{copy.services.sublede}</p>
@@ -133,19 +132,17 @@ export function Services({ go, onCoverage }: { go: (view: View) => void; onCover
             ))}
           </div>
 
-          <ExtensionInstall />
+          <ExtensionInstall compact showFlowDemo />
 
           <section id="jamfor" aria-labelledby="jamfor-heading" className="ext-compare">
             <h2 id="jamfor-heading">{compare.title}</h2>
             <div className="ext-table-wrap">
-              <table className="ext-table" aria-labelledby="jamfor-heading">
+              <table className="data-table" aria-labelledby="jamfor-heading">
                 <thead>
                   <tr>
                     <th scope="col">{compare.featureColumn}</th>
                     <th scope="col">{compare.freeTitle}</th>
-                    <th scope="col" className="ext-col-pro">
-                      {compare.proTitle}
-                    </th>
+                    <th scope="col">{compare.proTitle}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -153,7 +150,7 @@ export function Services({ go, onCoverage }: { go: (view: View) => void; onCover
                     <tr key={row.feature}>
                       <th scope="row">{row.feature}</th>
                       <td>{row.free}</td>
-                      <td className="ext-col-pro">{row.pro}</td>
+                      <td>{row.pro}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -199,42 +196,13 @@ export function Services({ go, onCoverage }: { go: (view: View) => void; onCover
             {copy.coverage.servicesLink}{" "}
             <a href={`${viewPaths.transparency}#vad-maskeras`} onClick={navClick(onCoverage)}>
               {copy.coverage.linkCta}
+            </a>{" "}
+            {copy.services.accuracyLead}{" "}
+            <a href={viewPaths.accuracy} onClick={navClick(() => go("accuracy"))}>
+              {copy.accuracy.servicesCta}
             </a>
+            .
           </p>
-
-          <h2>{copy.services.flowTitle}</h2>
-          <p>{copy.services.flowBody}</p>
-          <div className="flow-band">
-            <p className="flow-band-label">{copy.services.flowLabel}</p>
-            <div className="flow">
-              {extensionFlow.map((step, index) => (
-                <span className="flow-item" key={step}>
-                  {index > 0 ? (
-                    <span className="flow-arrow" aria-hidden="true">
-                      →
-                    </span>
-                  ) : null}
-                  <span className="flow-step">{step}</span>
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <h2>{copy.services.considerTitle}</h2>
-          <ul>
-            <li>
-              <strong>{copy.services.considerations[0].title}</strong>{" "}
-              {copy.services.considerations[0].body}{" "}
-              <a href={viewPaths.accuracy} onClick={navClick(() => go("accuracy"))}>
-                {copy.accuracy.servicesCta}
-              </a>
-              .
-            </li>
-            <li>
-              <strong>{copy.services.considerations[1].title}</strong>{" "}
-              {copy.services.considerations[1].body}
-            </li>
-          </ul>
         </article>
       </main>
     </>
