@@ -2,7 +2,7 @@
 # Recreate with Python 3.11.15 before running training/benchmark_competitors.py.
 accelerate==1.14.0
 aiohappyeyeballs==2.6.2
-aiohttp==3.14.1
+aiohttp==3.14.4
 aiosignal==1.4.0
 annotated-doc==0.0.4
 anyio==4.14.1
