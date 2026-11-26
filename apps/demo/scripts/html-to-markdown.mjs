@@ -28,9 +28,6 @@ const DROP_EVERYWHERE = [
   ".backdrop",
   // In-page table of contents: the headings carry the structure in Markdown.
   ".toc-rail",
-  // Copy variants that CSS swaps in on small screens; the desktop one stays.
-  ".hero-local-production-mobile-copy",
-  ".hero-local-production-mobile-cta",
 ]
 
 /** Page-specific interactive regions (selectors per pathname prefix). */
@@ -38,7 +35,7 @@ const DROP_BY_PAGE = {
   // The live demo: scenario tabs, model status, the editor/output cards and
   // the simulated reply. The hero copy, the test-data note, the restore
   // explanation and the footer remain.
-  demo: [".controls", ".grid", ".flow", "#restore-map", ".card-links", ".stats"],
+  demo: [".controls", ".grid", ".flow", "#restore-map", ".card-links", ".stats", ".hero-browsers"],
 }
 
 function service() {

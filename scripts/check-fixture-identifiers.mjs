@@ -36,7 +36,13 @@ try {
 }
 
 const SKIP_PREFIXES = ["apps/demo/public/models/", "apps/demo/reports/", "training/data/"]
-const SKIP_FILES = new Set(["pnpm-lock.yaml", "apps/demo/public/whitepaper.pdf"])
+// browserLogos.ts holds vendored simple-icons SVG path data, whose decimal
+// coordinates read as IP addresses and postnummer; it holds no text.
+const SKIP_FILES = new Set([
+  "pnpm-lock.yaml",
+  "apps/demo/public/whitepaper.pdf",
+  "apps/demo/src/browserLogos.ts",
+])
 
 // Skatteverket open test-person datasets. Ten-digit forms are accepted by
 // matching the suffix of the corresponding twelve-digit value.

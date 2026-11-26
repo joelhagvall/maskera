@@ -40,6 +40,12 @@ describe("localized copy", () => {
     }
   })
 
+  it("never uses em dashes in visible copy", () => {
+    for (const value of [...leaves(sv), ...leaves(en)]) {
+      if (typeof value === "string") expect(value).not.toContain("\u2014")
+    }
+  })
+
   it("translates the interface without translating the simulated Swedish AI response", () => {
     expect(en.restoreDemo.title).not.toBe(sv.restoreDemo.title)
     expect(en.restoreDemo.joinWord).toBe(sv.restoreDemo.joinWord)

@@ -1,11 +1,10 @@
 import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
-import { PORTAL_ORIGIN, portalUrl } from "../portal"
+import { portalUrl } from "../portal"
 import type { View } from "../routing"
 import { navClick, viewPaths } from "../routing"
+import { ExtensionInstall, INSTALL_ANCHOR } from "./ExtensionInstall"
 import { TopBar } from "./TopBar"
-
-const EXTENSION_DOWNLOAD_URL = `${PORTAL_ORIGIN}/downloads/maskera-extension-0.1.4.zip`
 
 type Product = {
   name: string
@@ -40,7 +39,7 @@ function products(): Product[] {
       cta: extension.cta!,
       href: portalUrl("/login?buy=extension-pro&signup=true", "services_extension_trial"),
       secondaryCta: extension.secondaryCta,
-      secondaryHref: "#installera",
+      secondaryHref: `#${INSTALL_ANCHOR}`,
       destination: copy.services.extensionPortalNote,
       note: extension.note,
     },
@@ -114,7 +113,6 @@ function ProductCard({ product, go }: { product: Product; go: (view: View) => vo
 
 export function Services({ go, onCoverage }: { go: (view: View) => void; onCoverage: () => void }) {
   const extensionFlow = copy.services.flow
-  const install = copy.services.install
   const compare = copy.services.compare
 
   return (
@@ -135,24 +133,7 @@ export function Services({ go, onCoverage }: { go: (view: View) => void; onCover
             ))}
           </div>
 
-          <section id="installera" aria-labelledby="installera-heading" className="ext-install">
-            <div className="ext-install-head">
-              <h2 id="installera-heading">{install.title}</h2>
-              <p className="ext-install-req">{install.requirements}</p>
-              <a className="ext-install-cta" href={EXTENSION_DOWNLOAD_URL} download>
-                {install.downloadCta}
-                <ArrowUpRightIcon size={13} />
-              </a>
-            </div>
-            <ol className="ext-install-steps">
-              {install.steps.map((step) => (
-                <li key={step.title}>
-                  <strong>{step.title}</strong>
-                  <p>{step.detail}</p>
-                </li>
-              ))}
-            </ol>
-          </section>
+          <ExtensionInstall />
 
           <section id="jamfor" aria-labelledby="jamfor-heading" className="ext-compare">
             <h2 id="jamfor-heading">{compare.title}</h2>

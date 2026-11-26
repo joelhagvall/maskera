@@ -1,4 +1,6 @@
 import type { ReactElement, ReactNode, SVGProps } from "react"
+import { BROWSER_LOGO_PATHS } from "./browserLogos"
+import type { BrowserId } from "./extensionBrowsers"
 
 type IconProps = SVGProps<SVGSVGElement> & { size?: number }
 
@@ -173,6 +175,32 @@ export const SunIcon = (p: IconProps) => (
     <path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
   </Svg>
 )
+
+// --- browser logos ------------------------------------------------------
+
+/* Monochrome brand marks filled with currentColor so they follow the theme
+   like the line icons above. Path data lives in browserLogos.ts. */
+function BrowserLogo({ size = 16, browser, ...rest }: IconProps & { browser: BrowserId }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      {...rest}
+    >
+      <path d={BROWSER_LOGO_PATHS[browser]} />
+    </svg>
+  )
+}
+
+export const BROWSER_ICONS: Record<BrowserId, (p: IconProps) => ReactElement> = {
+  chrome: (p) => <BrowserLogo {...p} browser="chrome" />,
+  edge: (p) => <BrowserLogo {...p} browser="edge" />,
+  firefox: (p) => <BrowserLogo {...p} browser="firefox" />,
+  safari: (p) => <BrowserLogo {...p} browser="safari" />,
+}
 
 // --- mapping: scenario id -> icon ---------------------------------------
 

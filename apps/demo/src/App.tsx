@@ -3,7 +3,7 @@ import { About } from "./components/About"
 import { Accuracy } from "./components/Accuracy"
 import { Controls } from "./components/Controls"
 import { Developers } from "./components/Developers"
-import { ExtensionPromo } from "./components/ExtensionPromo"
+import { ExtensionInstall } from "./components/ExtensionInstall"
 import { Footer } from "./components/Footer"
 import { Header } from "./components/Header"
 import { InputCard } from "./components/InputCard"
@@ -146,7 +146,7 @@ export function App({ initialView }: { initialView?: View }) {
             {Object.keys(ner.result.map).length > 0 && (
               <RestoreDemo key={active.id} result={ner.result} scenarioId={active.id} />
             )}
-            <ExtensionPromo go={go} />
+            <ExtensionInstall trialContent="demo_extension_trial" />
           </main>
         </>
       )}

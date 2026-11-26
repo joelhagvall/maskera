@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from "@testing-library/react"
+import { cleanup, render, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { ExtensionPromo } from "../src/components/ExtensionPromo"
 import { Services } from "../src/components/Services"
 import copy from "../src/i18n/sv.json"
 import { portalUrl } from "../src/portal"
@@ -42,6 +41,8 @@ describe("Services", () => {
     expect(screen.getByRole("link", { name: /Ladda ner ZIP-filen/ }).getAttribute("href")).toBe(
       "https://app.maskera.dev/downloads/maskera-extension-0.1.4.zip",
     )
+    expect(screen.getByRole("heading", { name: copy.extensionInstall.title })).toBeTruthy()
+    expect(screen.getByRole("list", { name: copy.extensionInstall.listLabel })).toBeTruthy()
     expect(screen.getByRole("table", { name: copy.services.compare.title })).toBeTruthy()
     expect(
       screen
@@ -54,26 +55,6 @@ describe("Services", () => {
         .getAttribute("href"),
     ).toContain("app.maskera.dev/extension/privacy")
     expect(container.querySelector(".implementation-help")).toBeNull()
-  })
-})
-
-describe("ExtensionPromo", () => {
-  it("links trial CTA to the customer portal and info CTA in-app to /tjanster", () => {
-    const go = vi.fn()
-    render(<ExtensionPromo go={go} />)
-
-    expect(screen.getByRole("heading", { name: copy.extensionPromo.title })).toBeTruthy()
-    expect(
-      screen
-        .getByRole("link", { name: new RegExp(copy.extensionPromo.primaryCta) })
-        .getAttribute("href"),
-    ).toContain("app.maskera.dev/login?buy=extension-pro&signup=true")
-    const infoLink = screen.getByRole("link", {
-      name: new RegExp(copy.extensionPromo.secondaryCta),
-    })
-    expect(infoLink.getAttribute("href")).toBe("/tjanster")
-    fireEvent.click(infoLink)
-    expect(go).toHaveBeenCalledWith("services")
   })
 })
 

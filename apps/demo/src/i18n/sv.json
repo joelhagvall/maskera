@@ -5,11 +5,7 @@
     "lede": "maskera döljer namn, personnummer och adresser från AI‑tjänster som ChatGPT.",
     "browserLead": "All maskering sker",
     "browserEmphasis": "direkt i din webbläsare",
-    "browserPrivacy": "Din text och nyckeln med originaluppgifterna lämnar inte enheten.",
-    "localProduction": "Vill du använda samma lokala maskering direkt i ChatGPT och Claude? Webbläsartillägget maskerar texten innan du skickar och återställer svaret på skärmen.",
-    "localProductionMobile": "Maskera direkt i ChatGPT och Claude med webbläsartillägget. Allt sker lokalt.",
-    "servicesCta": "Webbläsartillägg och öppen källkod",
-    "servicesCtaMobile": "Läs mer"
+    "browserPrivacy": "Din text och nyckeln med originaluppgifterna lämnar inte enheten."
   },
   "demo": {
     "testDataNote": "Exemplen använder påhittade personer och officiellt reserverade testvärden, aldrig verkliga personers uppgifter.",
@@ -802,9 +798,9 @@
         "trialTerms": "Pro börjar med 14 dagars gratis provperiod, inkl. moms. Ingen bindningstid.",
         "tagline": "För dig som vill maskera text direkt i ChatGPT och Claude.",
         "points": [
-          "All maskering körs lokalt i Chrome och Edge",
+          "All maskering körs lokalt i webbläsaren",
           "Obegränsad svensk AI-maskering i Pro",
-          "Återställer platshållare i AI-svaren med ett klick",
+          "Återställer platshållare i AI-svaren med ett klick, även i Gratis",
           "Egna skyddade ord, kundnummer och projektnamn"
         ],
         "cta": "Testa Pro gratis i 14 dagar",
@@ -825,25 +821,6 @@
         "cta": "Installera och kom igång"
       }
     ],
-    "install": {
-      "title": "Installera webbläsartillägget",
-      "requirements": "För Chrome och Edge på dator. Gratisversionen kräver inget konto.",
-      "downloadCta": "Ladda ner ZIP-filen",
-      "steps": [
-        {
-          "title": "Packa upp ZIP-filen",
-          "detail": "Behåll den uppackade mappen efter installationen."
-        },
-        {
-          "title": "Öppna webbläsarens tillägg",
-          "detail": "Gå till chrome://extensions eller edge://extensions och slå på utvecklarläget."
-        },
-        {
-          "title": "Läs in tillägget",
-          "detail": "Välj Läs in okomprimerat och öppna den uppackade mappen."
-        }
-      ]
-    },
     "compare": {
       "title": "Jämför Gratis och Pro",
       "featureColumn": "Funktion",
@@ -893,12 +870,28 @@
       }
     ]
   },
-  "extensionPromo": {
-    "eyebrow": "Chrome och Edge",
-    "title": "Använd samma maskering direkt i ChatGPT och Claude",
-    "body": "Webbläsartillägget maskerar namn, personnummer och adresser lokalt innan du skickar och återställer svaret på skärmen. Gratis med obegränsade regler och 10 AI-maskeringar/mån, eller Pro för 149 kr/mån inkl. moms med 14 dagars gratis provperiod.",
-    "primaryCta": "Testa Pro gratis i 14 dagar",
-    "secondaryCta": "Läs om tillägget"
+  "extensionInstall": {
+    "heroAddTo": "Lägg till i {browser}, gratis",
+    "heroInstall": "Installera gratis",
+    "heroTryDemo": "Testa i webbläsaren",
+    "heroLearnMore": "Läs om tillägget",
+    "alsoFor": "Finns även för",
+    "builtFor": "Byggt för",
+    "freeNote": "Gratis, 10 AI-maskeringar/mån",
+    "title": "Installera Maskera",
+    "body": "Maskera namn och personnummer direkt i ChatGPT och Claude. Gratis med regler utan gräns och 10 AI-maskeringar i månaden. Inget konto behövs. Pro kostar 149 kr/mån inkl. moms efter 14 dagar gratis.",
+    "trialCta": "Testa Pro gratis i 14 dagar",
+    "zipLead": "Väntar du på din webbläsares butik?",
+    "zipCta": "Ladda ner ZIP-filen",
+    "zipTail": "och läs in den okomprimerad via chrome://extensions eller edge://extensions.",
+    "listLabel": "Webbläsare och butiker",
+    "soon": "Snart",
+    "browsers": {
+      "chrome": { "name": "Chrome", "store": "Chrome Web Store" },
+      "edge": { "name": "Edge", "store": "Microsoft Edge-tillägg" },
+      "firefox": { "name": "Firefox", "store": "Firefox Add-ons" },
+      "safari": { "name": "Safari", "store": "Mac App Store" }
+    }
   },
   "theme": {
     "toggle": "Växla mellan ljust och mörkt läge"

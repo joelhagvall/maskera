@@ -1,6 +1,7 @@
 import { Fragment } from "react"
 import copy, { activeLocale } from "../i18n"
-import { navClick, type View, viewPaths } from "../routing"
+import type { View } from "../routing"
+import { ExtensionHeroActions } from "./ExtensionInstall"
 import { TopBar } from "./TopBar"
 
 export function Header({ go }: { go: (view: View) => void }) {
@@ -22,17 +23,7 @@ export function Header({ go }: { go: (view: View) => void }) {
         {copy.header.lede} {copy.header.browserLead} <strong>{copy.header.browserEmphasis}</strong>.{" "}
         {copy.header.browserPrivacy}
       </p>
-      <p className="hero-local-production">
-        <span className="hero-local-production-desktop-copy">{copy.header.localProduction}</span>
-        <span className="hero-local-production-mobile-copy">
-          {copy.header.localProductionMobile}
-        </span>{" "}
-        <a href={viewPaths.services} onClick={navClick(() => go("services"))}>
-          <span className="hero-local-production-desktop-cta">{copy.header.servicesCta}</span>
-          <span className="hero-local-production-mobile-cta">{copy.header.servicesCtaMobile}</span>{" "}
-          <span aria-hidden="true">→</span>
-        </a>
-      </p>
+      <ExtensionHeroActions go={go} />
       {activeLocale === "en" ? (
         <p className="demo-language-note">{copy.demo.languageNote}</p>
       ) : null}

@@ -5,11 +5,7 @@
     "lede": "maskera hides names, Swedish personal identity numbers and addresses from AI services such as ChatGPT.",
     "browserLead": "All masking happens",
     "browserEmphasis": "directly in your browser",
-    "browserPrivacy": "Your text and the key containing the original data never leave your device.",
-    "localProduction": "Want to use the same local masking directly in ChatGPT and Claude? The browser extension masks your text before you send and restores the reply on screen.",
-    "localProductionMobile": "Mask directly in ChatGPT and Claude with the browser extension. Everything runs locally.",
-    "servicesCta": "Browser extension and open source",
-    "servicesCtaMobile": "Learn more"
+    "browserPrivacy": "Your text and the key containing the original data never leave your device."
   },
   "demo": {
     "testDataNote": "The examples use fictional people and officially reserved test values, never real people's data.",
@@ -802,9 +798,9 @@
         "trialTerms": "Pro starts with a 14-day free trial, incl. VAT. No lock-in.",
         "tagline": "For people who want to mask text directly in ChatGPT and Claude.",
         "points": [
-          "All masking runs locally in Chrome and Edge",
+          "All masking runs locally in the browser",
           "Unlimited Swedish AI masking in Pro",
-          "Restores placeholders in AI replies with one click",
+          "Restores placeholders in AI replies with one click, also in Free",
           "Custom protected words, case numbers and project names"
         ],
         "cta": "Try Pro free for 14 days",
@@ -825,25 +821,6 @@
         "cta": "Install and get started"
       }
     ],
-    "install": {
-      "title": "Install the browser extension",
-      "requirements": "For desktop Chrome and Edge. The free version requires no account.",
-      "downloadCta": "Download the ZIP file",
-      "steps": [
-        {
-          "title": "Unzip the download",
-          "detail": "Keep the extracted folder after installation."
-        },
-        {
-          "title": "Open your browser's extensions",
-          "detail": "Go to chrome://extensions or edge://extensions and turn on Developer mode."
-        },
-        {
-          "title": "Load the extension",
-          "detail": "Choose Load unpacked and select the extracted folder."
-        }
-      ]
-    },
     "compare": {
       "title": "Compare Free and Pro",
       "featureColumn": "Feature",
@@ -893,12 +870,28 @@
       }
     ]
   },
-  "extensionPromo": {
-    "eyebrow": "Chrome and Edge",
-    "title": "Use the same masking directly in ChatGPT and Claude",
-    "body": "The browser extension masks names, personal identity numbers and addresses locally before you send and restores the reply on screen. Free with unlimited rules and 10 AI redactions/month, or Pro for SEK 149/month incl. VAT with a 14-day free trial.",
-    "primaryCta": "Try Pro free for 14 days",
-    "secondaryCta": "Learn about the extension"
+  "extensionInstall": {
+    "heroAddTo": "Add to {browser}, it's free",
+    "heroInstall": "Install for free",
+    "heroTryDemo": "Try it in your browser",
+    "heroLearnMore": "About the extension",
+    "alsoFor": "Also for",
+    "builtFor": "Built for",
+    "freeNote": "Free, 10 AI redactions/month",
+    "title": "Install Maskera",
+    "body": "Mask names and personal identity numbers directly in ChatGPT and Claude. Free with unlimited rules and 10 AI redactions a month. No account needed. Pro costs SEK 149/month incl. VAT after 14 days free.",
+    "trialCta": "Try Pro free for 14 days",
+    "zipLead": "Waiting for your browser's store?",
+    "zipCta": "Download the ZIP file",
+    "zipTail": "and load it unpacked via chrome://extensions or edge://extensions.",
+    "listLabel": "Browsers and stores",
+    "soon": "Soon",
+    "browsers": {
+      "chrome": { "name": "Chrome", "store": "Chrome Web Store" },
+      "edge": { "name": "Edge", "store": "Microsoft Edge Add-ons" },
+      "firefox": { "name": "Firefox", "store": "Firefox Add-ons" },
+      "safari": { "name": "Safari", "store": "Mac App Store" }
+    }
   },
   "theme": {
     "toggle": "Switch between light and dark mode"
