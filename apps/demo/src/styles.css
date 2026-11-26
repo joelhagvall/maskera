@@ -794,11 +794,12 @@ html[data-theme="dark"] .hl {
   white-space: pre-wrap;
   overflow-wrap: break-word;
   word-break: break-word;
-  transition: opacity 0.2s ease;
+  transition: border-color 0.2s ease;
 }
-/* the model is reanalyzing: what shows is the instant rule result */
+/* The model is reanalyzing: keep text and tokens at full contrast so WCAG AA
+   always holds while the header label and status dot show progress. */
 .output.analyzing {
-  opacity: 0.6;
+  border-color: var(--border-hover);
 }
 /* The one placeholder look, in the demo, the hero copy and the install demo:
    label-coloured text on its own 10% tint. The colours in labels.ts are
@@ -819,11 +820,9 @@ html[data-theme="dark"] .hl {
 }
 @keyframes mask-token-in {
   from {
-    opacity: 0.25;
     transform: translateY(2px);
   }
   to {
-    opacity: 1;
     transform: translateY(0);
   }
 }

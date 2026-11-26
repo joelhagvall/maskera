@@ -74,4 +74,11 @@ describe("design system guard", () => {
       })
     expect(offenders).toEqual([])
   })
+
+  it("never dims .output.analyzing or mask-token-in opacity below 1 (preserves WCAG AA contrast)", () => {
+    const analyzingRule = rules(css).find(([selector]) => selector === ".output.analyzing")
+    expect(analyzingRule?.[1] ?? "").not.toMatch(/opacity\s*:/)
+    const tokenAnim = css.match(/@keyframes\s+mask-token-in\s*\{[\s\S]*?\n\}/)?.[0] ?? ""
+    expect(tokenAnim).not.toMatch(/opacity\s*:/)
+  })
 })
