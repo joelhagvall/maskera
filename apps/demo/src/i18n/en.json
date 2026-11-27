@@ -230,7 +230,7 @@
         "title": "Claude Desktop",
         "body": "Start the proxy and keep it running. Then choose Help → Troubleshooting → Enable Developer Mode, followed by Developer → Configure Third-Party Inference…. Enter the base URL http://127.0.0.1:8787 without /v1, your Anthropic API key and the x-api-key auth scheme. Click Apply Changes and then Save & Restart.",
         "code": "npx -y @maskera/mcp proxy",
-        "note": "The exact field names, and how to switch back to your Claude account, are in the guide on GitHub.",
+        "note": "The exact field names, and how to switch back to your Claude account, are in the client guide.",
         "noteLink": "desktop"
       },
       {
@@ -493,7 +493,7 @@
       "Create the recognizer once and reuse it between calls.",
       "Works in browsers (WASM or WebGPU) and in Node 18+."
     ],
-    "practicalDocsCta": "Full guide on GitHub",
+    "practicalDocsCta": "SDK and operations docs",
     "sharedLanguageLabel": "JS / TS",
     "diagramTitle": "How it works",
     "diagramAlt": "Diagram of maskera's two layers: your text is split between rules for fixed-format data and a Swedish AI model for free text, then merged into masked text.",

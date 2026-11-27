@@ -1,12 +1,18 @@
 import { type KeyboardEvent, useRef, useState } from "react"
-import { MCP_DESKTOP_GUIDE } from "../constants"
 import copy from "../i18n"
 import { AgentLogoStack, ArrowUpRightIcon } from "../icons"
+import { navClick, type View, viewPaths } from "../routing"
 import { CopyButton } from "./CopyButton"
 
 export type AgentModeId = "proxy" | "mcp" | "guard"
 
-export function AgentSetupCard({ idPrefix = "agent" }: { idPrefix?: string }) {
+export function AgentSetupCard({
+  idPrefix = "agent",
+  goSection,
+}: {
+  idPrefix?: string
+  goSection?: (view: View, id: string) => void
+}) {
   const agent = copy.agentSetup
   const modes = agent.modes
   const [activeId, setActiveId] = useState<AgentModeId>("proxy")
@@ -104,9 +110,15 @@ export function AgentSetupCard({ idPrefix = "agent" }: { idPrefix?: string }) {
               {active.id === "proxy" ? (
                 <>
                   {" "}
-                  <a href={MCP_DESKTOP_GUIDE} target="_blank" rel="noreferrer">
+                  <a
+                    href={`${viewPaths.docsClients}#claude-desktop`}
+                    onClick={
+                      goSection
+                        ? navClick(() => goSection("docsClients", "claude-desktop"))
+                        : undefined
+                    }
+                  >
                     {agent.desktopGuideCta}
-                    <ArrowUpRightIcon size={12} />
                   </a>
                 </>
               ) : null}

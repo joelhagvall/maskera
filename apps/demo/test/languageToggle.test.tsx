@@ -40,7 +40,7 @@ describe("LanguageToggle", () => {
     expect(document.documentElement.lang).toBe("en")
     expect(screen.getByRole("heading", { name: en.header.title })).toBeTruthy()
     expect(screen.getByRole("link", { name: en.topBar.services })).toBeTruthy()
-    expect(screen.getByRole("link", { name: en.topBar.developers })).toBeTruthy()
+    expect(screen.getByRole("link", { name: en.topBar.docs })).toBeTruthy()
     expect(screen.getByRole("link", { name: en.topBar.accuracy })).toBeTruthy()
     expect(screen.getByRole("textbox", { name: "draft" })).toHaveProperty("value", "ska vara kvar")
     const swedishLink = screen.getByRole("link", { name: en.language.switchLabel })

@@ -4,7 +4,11 @@ import type { View } from "./routing"
 
 export interface ViewComponents {
   demo: ComponentType<DemoWorkspaceProps>
-  dev: ComponentType<{ go: (next: View) => void; onCoverage: () => void }>
+  dev: ComponentType<{
+    go: (next: View) => void
+    goSection?: (next: View, id: string) => void
+    onCoverage: () => void
+  }>
   docs: ComponentType<{ go: (next: View) => void }>
   docsMcp: ComponentType<{ go: (next: View) => void }>
   docsClients: ComponentType<{ go: (next: View) => void }>
@@ -22,7 +26,10 @@ export interface ViewComponents {
   security: ComponentType<{ go: (next: View) => void }>
   about: ComponentType<{ go: (next: View) => void }>
   faq: ComponentType<{ go: (next: View) => void }>
-  guides: ComponentType<{ go: (next: View) => void }>
+  guides: ComponentType<{
+    go: (next: View) => void
+    goSection?: (next: View, id: string) => void
+  }>
   industries: ComponentType<{ go: (next: View) => void; onTryScenario: (id: string) => void }>
 }
 

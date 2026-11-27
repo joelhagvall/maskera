@@ -111,7 +111,7 @@ export function App({ initialView }: { initialView?: View }) {
           onRequestedScenarioConsumed={consumeRequestedScenario}
         />
       )}
-      {DevView && <DevView go={go} onCoverage={goCoverage} />}
+      {DevView && <DevView go={go} goSection={goSection} onCoverage={goCoverage} />}
       {DocsView && <DocsView go={go} />}
       {DocsMcpView && <DocsMcpView go={go} />}
       {DocsClientsView && <DocsClientsView go={go} />}
@@ -125,7 +125,7 @@ export function App({ initialView }: { initialView?: View }) {
       {SecurityView && <SecurityView go={go} />}
       {AboutView && <AboutView go={go} />}
       {FaqView && <FaqView go={go} />}
-      {GuidesView && <GuidesView go={go} />}
+      {GuidesView && <GuidesView go={go} goSection={goSection} />}
       {IndustriesView && <IndustriesView go={go} onTryScenario={goScenario} />}
       <Footer go={go} />
     </div>

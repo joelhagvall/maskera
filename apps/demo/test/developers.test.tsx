@@ -80,9 +80,7 @@ describe("Developers", () => {
     for (const item of copy.developerApi.practicalItems) {
       expect(notes?.textContent).toContain(item)
     }
-    expect(notes?.querySelector<HTMLAnchorElement>("a")?.href).toBe(
-      "https://github.com/joelhagvall/maskera/blob/main/packages/ner/README.md",
-    )
+    expect(notes?.querySelector<HTMLAnchorElement>("a")?.getAttribute("href")).toBe("/docs/sdk")
   })
 
   it("links every table-of-contents entry to a section on the page", () => {

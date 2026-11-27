@@ -1,22 +1,21 @@
-import { GITHUB, MCP_DESKTOP_GUIDE } from "../constants"
 import copy from "../i18n"
-import { ArrowUpRightIcon } from "../icons"
-import type { View } from "../routing"
+import { navClick, type View, viewPaths } from "../routing"
 import { Code } from "./CodeSnippet"
 import { PageToc } from "./PageToc"
 import { TopBar } from "./TopBar"
-
-/** Per-section links named in the copy, so the JSON stays free of URLs. */
-const NOTE_LINKS: Record<string, string> = {
-  desktop: MCP_DESKTOP_GUIDE,
-}
 
 /**
  * Step-by-step setup per AI client. The copy owns the steps; the code blocks
  * reuse the developer page's snippet component, so copying strips the
  * comment lines the same way everywhere.
  */
-export function Guides({ go }: { go: (view: View) => void }) {
+export function Guides({
+  go,
+  goSection,
+}: {
+  go: (view: View) => void
+  goSection?: (view: View, id: string) => void
+}) {
   const guides = copy.guides
   return (
     <>
@@ -41,11 +40,17 @@ export function Guides({ go }: { go: (view: View) => void }) {
               <h2 id={section.id}>{section.title}</h2>
               <p className="prose-body">{section.body}</p>
               <Code languageLabel={section.codeLabel}>{section.code}</Code>
-              {section.note && NOTE_LINKS[section.noteLink] ? (
+              {section.note && section.noteLink === "desktop" ? (
                 <p className="prose-note">
-                  <a href={NOTE_LINKS[section.noteLink]} target="_blank" rel="noreferrer">
+                  <a
+                    href={`${viewPaths.docsClients}#claude-desktop`}
+                    onClick={
+                      goSection
+                        ? navClick(() => goSection("docsClients", "claude-desktop"))
+                        : navClick(() => go("docsClients"))
+                    }
+                  >
                     {section.note}
-                    <ArrowUpRightIcon size={13} />
                   </a>
                 </p>
               ) : null}
@@ -54,9 +59,8 @@ export function Guides({ go }: { go: (view: View) => void }) {
 
           <p className="prose-foot">
             {guides.moreLead}{" "}
-            <a href={`${GITHUB}/tree/main/packages/mcp#readme`} target="_blank" rel="noreferrer">
+            <a href={viewPaths.docsMcp} onClick={navClick(() => go("docsMcp"))}>
               {guides.moreCta}
-              <ArrowUpRightIcon size={13} />
             </a>
           </p>
         </article>

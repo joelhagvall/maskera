@@ -4,7 +4,6 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import { Faq } from "../src/components/Faq"
 import { Guides } from "../src/components/Guides"
 import { Industries } from "../src/components/Industries"
-import { MCP_DESKTOP_GUIDE } from "../src/constants"
 import copy from "../src/i18n/sv.json"
 import { renderRouteHtml } from "../src/meta"
 
@@ -31,13 +30,13 @@ describe("FAQ page", () => {
 })
 
 describe("Guides page", () => {
-  it("links every section, points Claude Desktop at the README guide and never says Gateway", () => {
+  it("links every section, points Claude Desktop at /docs/klienter and never says Gateway", () => {
     const { container } = render(<Guides go={vi.fn()} />)
     for (const section of copy.guides.sections) {
       expect(container.querySelector(`#${section.id}`)).toBeTruthy()
     }
     const desktop = screen.getByRole("link", { name: new RegExp(copy.guides.sections[0].note) })
-    expect(desktop.getAttribute("href")).toBe(MCP_DESKTOP_GUIDE)
+    expect(desktop.getAttribute("href")).toBe("/docs/klienter#claude-desktop")
     // "Gateway" is Maskera's hosted product name, kept off the public site.
     expect(container.textContent?.toLowerCase()).not.toContain("gateway")
   })

@@ -128,9 +128,11 @@ function ArchitectureFigure({ onCoverage }: { onCoverage: () => void }) {
 
 export function Developers({
   go,
+  goSection,
   onCoverage,
 }: {
   go: (view: View) => void
+  goSection?: (view: View, id: string) => void
   onCoverage: () => void
 }) {
   const dev = copy.developerApi
@@ -150,7 +152,7 @@ export function Developers({
 
           <h2 id="agenter">{dev.agentsTitle}</h2>
           <p className="prose-note">{dev.agentsBody}</p>
-          <AgentSetupCard idPrefix="dev-agent" />
+          <AgentSetupCard idPrefix="dev-agent" goSection={goSection} />
 
           <h2 id="installera">{dev.installTitle}</h2>
           <InstallTabs />
@@ -166,12 +168,10 @@ export function Developers({
             </ul>
             <a
               className="developer-notes-link"
-              href={`${GITHUB}/blob/main/packages/ner/README.md`}
-              target="_blank"
-              rel="noreferrer"
+              href={viewPaths.docsSdk}
+              onClick={navClick(() => go("docsSdk"))}
             >
               {dev.practicalDocsCta}
-              <ArrowUpRightIcon size={13} />
             </a>
           </aside>
 

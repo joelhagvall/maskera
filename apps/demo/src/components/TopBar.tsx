@@ -35,6 +35,7 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
     industries: copy.navigation.industries,
   }
   const isDocsCurrent =
+    current === "dev" ||
     current === "docs" ||
     current === "docsMcp" ||
     current === "docsClients" ||
@@ -42,7 +43,6 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
     current === "docsTroubleshooting"
   const nav: readonly { view: View; label: string }[] = [
     { view: "services", label: copy.topBar.services },
-    { view: "dev", label: copy.topBar.developers },
     { view: "docs", label: copy.topBar.docs },
     { view: "accuracy", label: copy.topBar.accuracy },
   ]
