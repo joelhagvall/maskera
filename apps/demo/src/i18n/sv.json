@@ -10,6 +10,8 @@
     "productPopupAlt": "Maskeras popup med reglaget Maskera när jag skickar, den svenska AI-modellen och 20 av 20 AI-maskeringar kvar.",
     "stage": {
       "label": "Välj var maskera körs",
+      "pause": "Pausa bildspelet",
+      "play": "Spela bildspelet",
       "tabs": {
         "browser": "Webbläsare",
         "agent": "AI-agent",

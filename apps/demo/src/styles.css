@@ -344,6 +344,29 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
   margin-bottom: 14px;
   text-align: left;
 }
+.hero-stage-play {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--muted);
+  cursor: pointer;
+}
+.hero-stage-play:hover,
+.hero-stage-play:focus-visible {
+  color: var(--fg);
+  border-color: var(--fg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-stage-play {
+    display: none;
+  }
+}
 /* The three scenes share one grid cell, so the stage keeps the tallest
    scene's height and the active one fades in over the others. */
 .hero-stage {
@@ -381,7 +404,7 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
   padding: 20px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--gray-100);
+  background: var(--gray-200);
 }
 .product-scene .hero-window {
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.08);
@@ -1775,6 +1798,9 @@ html[data-browser="mobile"] .hero-cta-primary[data-for="mobile"] {
   /* On phones, fit each tab to its own height so the browser chat capture
      does not carry empty white space from the taller agent and code scenes. */
   .hero-stage-scene:not(.is-active) {
+    display: none;
+  }
+  .hero-stage-play {
     display: none;
   }
   .hero-scenes {

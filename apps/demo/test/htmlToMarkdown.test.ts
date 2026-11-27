@@ -27,6 +27,13 @@ describe("htmlToMarkdown", () => {
     expect(md.length).toBeGreaterThan(500)
   })
 
+  it("leaves the mock product windows out of the products page", () => {
+    const md = markdownFor("/tjanster")
+    expect(md).toContain("## Webbläsartillägg")
+    expect(md).not.toContain("Ny tråd")
+    expect(md).not.toContain("781101-2397")
+  })
+
   it("keeps headings, lists, tables, code and absolute links on the content pages", () => {
     const accuracy = markdownFor("/traffsakerhet")
     expect(accuracy).toMatch(/^\| .+ \|$/m)

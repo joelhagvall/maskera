@@ -10,6 +10,8 @@
     "productPopupAlt": "Maskera's popup with the Mask when I send switch, the Swedish AI model and 20 of 20 AI redactions left.",
     "stage": {
       "label": "Choose where maskera runs",
+      "pause": "Pause the slideshow",
+      "play": "Play the slideshow",
       "tabs": {
         "browser": "Browser",
         "agent": "AI agent",

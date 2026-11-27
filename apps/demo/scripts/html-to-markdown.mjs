@@ -28,6 +28,9 @@ const DROP_EVERYWHERE = [
   ".backdrop",
   // In-page table of contents: the headings carry the structure in Markdown.
   ".toc-rail",
+  // Mock product windows on the products page (thread list, composer, fictional
+  // test data): the prose around each one already says what the product does.
+  ".product-scene",
 ]
 
 /** Page-specific interactive regions (selectors per pathname prefix). */

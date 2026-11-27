@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react"
+import type { ReactNode } from "react"
 import {
   AGENT_CONNECTOR,
   AGENT_FILES,
@@ -12,8 +12,17 @@ import {
 } from "../heroScenes"
 import { highlight } from "../highlight"
 import copy from "../i18n"
-import { ChevronLeftIcon, ChevronRightIcon, LockIcon, MaskeraMark, PencilIcon } from "../icons"
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  LockIcon,
+  MaskeraMark,
+  PauseIcon,
+  PencilIcon,
+  PlayIcon,
+} from "../icons"
 import { RedactedText, RestoredText } from "../segments"
+import { useAutoAdvance } from "../useAutoAdvance"
 
 /** The npm calls the code scene shows: the package README's redact call, then restore. */
 const CODE_LINES = [
@@ -36,7 +45,11 @@ const CODE_LINES = [
  */
 export function HeroStage() {
   const stage = copy.header.stage
-  const [index, setIndex] = useState(0)
+  // Phones give each scene its own height (styles.css), so a switch there
+  // would move the page under the reader: no rotation at that width.
+  const { index, select, playing, toggle, hold } = useAutoAdvance(HERO_STAGES.length, {
+    stillOn: "(max-width: 720px)",
+  })
   const scenes: Record<Stage, ReactNode> = {
     browser: <BrowserScene />,
     agent: <AgentScene />,
@@ -44,7 +57,13 @@ export function HeroStage() {
   }
 
   return (
-    <figure className="hero-product">
+    <figure
+      className="hero-product"
+      onMouseEnter={() => hold(true)}
+      onMouseLeave={() => hold(false)}
+      onFocus={() => hold(true)}
+      onBlur={() => hold(false)}
+    >
       <figcaption className="hero-scene-bar">
         <div className="tabs" role="group" aria-label={stage.label}>
           {HERO_STAGES.map((id, i) => (
@@ -53,12 +72,22 @@ export function HeroStage() {
               type="button"
               className={`tab${i === index ? " on" : ""}`}
               aria-pressed={i === index}
-              onClick={() => setIndex(i)}
+              onClick={() => select(i)}
             >
               {stage.tabs[id]}
             </button>
           ))}
         </div>
+        <button
+          type="button"
+          className="hero-stage-play"
+          aria-pressed={!playing}
+          aria-label={playing ? stage.pause : stage.play}
+          title={playing ? stage.pause : stage.play}
+          onClick={toggle}
+        >
+          {playing ? <PauseIcon size={14} /> : <PlayIcon size={14} />}
+        </button>
       </figcaption>
       <div className="hero-stage">
         {HERO_STAGES.map((id, i) => (
