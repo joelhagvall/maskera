@@ -103,12 +103,14 @@ function syncSiblingWorkingTrees(version) {
 }
 
 function verifyAndPushTags(tags) {
-  const head = git(ROOT, "rev-parse", "HEAD")
   for (const { tag, dir } of tags) {
     const pkg = JSON.parse(git(ROOT, "show", `${tag}:${dir}/package.json`))
     const expected = tag.slice(tag.lastIndexOf("@") + 1)
     if (pkg.version !== expected) throw new Error(`${tag} points at version ${pkg.version}`)
-    if (git(ROOT, "rev-list", "-n1", tag) !== head) throw new Error(`${tag} is not on HEAD ${head}`)
+    // An ancestor, not HEAD itself: --after-publish may run after later commits.
+    if (run("git", ["merge-base", "--is-ancestor", tag, "HEAD"], ROOT, { allowFail: true }) !== 0) {
+      throw new Error(`${tag} is not in the history of HEAD`)
+    }
   }
   run("git", ["push", "origin", ...tags.map(({ tag }) => tag)])
 }
