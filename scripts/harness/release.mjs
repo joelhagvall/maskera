@@ -69,7 +69,7 @@ function run(command, args, cwd = ROOT, { capture = false, allowFail = false } =
       `${command} ${args.join(" ")} failed in ${cwd} (status ${result.status})${detail}`,
     )
   }
-  return capture ? result.stdout.trim() : result.status
+  return capture ? result.stdout.trimEnd() : result.status
 }
 
 const git = (cwd, ...args) => run("git", args, cwd, { capture: true })
@@ -85,12 +85,20 @@ function versions() {
   )
 }
 
+/**
+ * Paths in `git status --porcelain` output. The two status columns can start
+ * with a space (" M path"), so the text must not be trimmed before parsing.
+ */
+export function parsePorcelain(text) {
+  return text
+    .split("\n")
+    .filter((line) => line.length > 3)
+    .map((line) => line.slice(3))
+}
+
 /** Paths with uncommitted changes in a sibling, relative to its root. */
 function dirtyPaths(cwd) {
-  return git(cwd, "status", "--porcelain")
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => line.slice(3))
+  return parsePorcelain(git(cwd, "status", "--porcelain"))
 }
 
 function syncSiblingWorkingTrees(version) {

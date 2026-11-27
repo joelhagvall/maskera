@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import test from "node:test"
-import { bumpHagvallVersion, bumpMaskeraRange, releaseTags } from "./release.mjs"
+import { bumpHagvallVersion, bumpMaskeraRange, parsePorcelain, releaseTags } from "./release.mjs"
 
 test("bumpMaskeraRange moves every maskera range and leaves other packages alone", () => {
   const before =
@@ -29,4 +29,12 @@ test("releaseTags names the tags changesets creates", () => {
 test("pnpm release runs the release script, not a bare changeset publish", () => {
   const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"))
   assert.equal(pkg.scripts.release, "node scripts/harness/release.mjs")
+})
+
+test("parsePorcelain keeps the path of a first line that starts with a space", () => {
+  assert.deepEqual(parsePorcelain(" M src/seo.ts\n?? docs/\nM  bun.lock\n"), [
+    "src/seo.ts",
+    "docs/",
+    "bun.lock",
+  ])
 })
