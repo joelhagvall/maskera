@@ -17,6 +17,7 @@ import {
   MASKERA_STATUS_URI,
   runDoctor,
   runInstall,
+  SERVER_VERSION,
   SessionVault,
   startMaskeraProxy,
 } from "../src/index"
@@ -170,8 +171,12 @@ describe("MaskeraMcpServer JSON-RPC protocol and tools", () => {
     })
     expect(init?.result).toMatchObject({
       protocolVersion: "2024-11-05",
-      serverInfo: { name: "maskera-mcp" },
+      serverInfo: { name: "maskera-mcp", version: SERVER_VERSION },
     })
+    const pkgJson = JSON.parse(await readFile(join(pkgRoot, "package.json"), "utf8")) as {
+      version: string
+    }
+    expect(SERVER_VERSION).toBe(pkgJson.version)
 
     const initModern = await server.handleMessage({
       jsonrpc: "2.0",
