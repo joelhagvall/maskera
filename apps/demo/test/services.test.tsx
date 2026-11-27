@@ -60,7 +60,7 @@ describe("Services", () => {
       screen.getByRole("link", { name: copy.services.compare.teamInvoiceCta }).getAttribute("href"),
     ).toBe("mailto:hej@maskera.dev?subject=Maskera%20Team")
     expect(screen.getByRole("link", { name: /Ladda ner ZIP-filen/ }).getAttribute("href")).toBe(
-      "https://app.maskera.dev/downloads/maskera-extension-0.2.0.zip",
+      "https://app.maskera.dev/downloads/maskera-extension-0.2.2.zip",
     )
     expect(
       screen

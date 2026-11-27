@@ -103,7 +103,7 @@ describe("EXTENSION_BROWSERS", () => {
       "safari",
     ])
     expect(EXTENSION_DOWNLOAD_URL).toBe(
-      "https://app.maskera.dev/downloads/maskera-extension-0.2.0.zip",
+      "https://app.maskera.dev/downloads/maskera-extension-0.2.2.zip",
     )
   })
 })

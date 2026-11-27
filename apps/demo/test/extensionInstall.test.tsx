@@ -121,7 +121,7 @@ describe("ExtensionInstall", () => {
     expect(within(list).queryAllByRole("link")).toHaveLength(0)
     const zipLink = screen.getByRole("link", { name: copy.extensionInstall.zipCta })
     expect(zipLink.getAttribute("href")).toBe(
-      "https://app.maskera.dev/downloads/maskera-extension-0.2.0.zip",
+      "https://app.maskera.dev/downloads/maskera-extension-0.2.2.zip",
     )
     expect(zipLink.className).toContain("ext-zip-cta")
     expect(screen.queryByRole("link", { name: /Testa Pro/ })).toBeNull()

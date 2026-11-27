@@ -25,7 +25,7 @@ export const EXTENSION_BROWSERS: readonly ExtensionBrowser[] = [
 ]
 
 /** Manual-install fallback (load unpacked) until the stores are live. */
-export const EXTENSION_DOWNLOAD_URL = `${PORTAL_ORIGIN}/downloads/maskera-extension-0.2.0.zip`
+export const EXTENSION_DOWNLOAD_URL = `${PORTAL_ORIGIN}/downloads/maskera-extension-0.2.2.zip`
 
 /**
  * The hero's store button for one kind of visitor. public/theme-init.js reads
