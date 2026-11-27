@@ -12,58 +12,29 @@
  */
 
 import assert from "node:assert/strict"
-import { execSync, spawnSync } from "node:child_process"
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { spawnSync } from "node:child_process"
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
-import { dirname, join, resolve } from "node:path"
-import { fileURLToPath } from "node:url"
+import { join } from "node:path"
+import {
+  hasLocalNerModel,
+  installPackedTarballs,
+  localModelId,
+  localModelsDir,
+  packWorkspaceTarballs,
+  pkgRoot,
+} from "../audit/lib/harness.mjs"
 
-const here = dirname(fileURLToPath(import.meta.url))
-const pkgRoot = resolve(here, "..")
-const repoRoot = resolve(pkgRoot, "../..")
-const localModelsDir = resolve(repoRoot, "apps/demo/public/models")
-const hasLocalNerModel = existsSync(join(localModelsDir, "maskera-sv-ner-v20"))
 const coldHf = process.argv.includes("--cold-hf")
 
-const rootPkg = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8"))
 const mcpPkg = JSON.parse(readFileSync(join(pkgRoot, "package.json"), "utf8"))
 
 const dir = mkdtempSync(join(tmpdir(), "maskera-mcp-pack-"))
 try {
-  const pkgs = ["@maskera/core", "maskera", "@maskera/mcp"]
-  const tarballs = pkgs.map((name) => {
-    const out = execSync(`pnpm --filter ${name} pack --pack-destination "${dir}"`, {
-      cwd: repoRoot,
-      encoding: "utf8",
-    })
-    const tgz = out.trim().split("\n").filter(Boolean).pop()
-    assert.ok(tgz, `failed to pack ${name}`)
-    return tgz
+  const packed = packWorkspaceTarballs(dir)
+  const { installMs, binPath } = installPackedTarballs(dir, packed, {
+    packageName: "maskera-mcp-pack-smoke",
   })
-
-  writeFileSync(
-    join(dir, "package.json"),
-    JSON.stringify(
-      {
-        name: "maskera-mcp-pack-smoke",
-        private: true,
-        ...(rootPkg.packageManager ? { packageManager: rootPkg.packageManager } : {}),
-      },
-      null,
-      2,
-    ),
-  )
-
-  const tInstall = Date.now()
-  execSync(`pnpm add ${tarballs.map((t) => `"${t}"`).join(" ")}`, {
-    cwd: dir,
-    stdio: ["ignore", "pipe", "pipe"],
-    env: { ...process.env, COREPACK_ENABLE_STRICT: "0" },
-  })
-  const installMs = Date.now() - tInstall
-
-  const binPath = join(dir, "node_modules/.bin/maskera-mcp")
-  assert.equal(existsSync(binPath), true, "maskera-mcp binary missing after install")
 
   const ver = spawnSync(binPath, ["--version"], { cwd: dir, encoding: "utf8" })
   assert.equal(ver.status, 0, `--version failed: ${ver.stderr}`)
@@ -113,7 +84,7 @@ try {
     ? {
         ...process.env,
         MASKERA_MODEL_PATH: localModelsDir,
-        MASKERA_MODEL_ID: "maskera-sv-ner-v20",
+        MASKERA_MODEL_ID: localModelId,
         MASKERA_ALLOW_REMOTE_MODELS: "0",
       }
     : {

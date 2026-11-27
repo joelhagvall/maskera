@@ -1,9 +1,10 @@
 /**
  * Shared helpers for `@maskera/mcp` audit suites.
  */
-import { spawn } from "node:child_process"
-import { existsSync } from "node:fs"
-import { dirname, join, resolve } from "node:path"
+import assert from "node:assert/strict"
+import { execFileSync, spawn } from "node:child_process"
+import { existsSync, readFileSync, writeFileSync } from "node:fs"
+import { basename, dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -12,8 +13,118 @@ export const repoRoot = resolve(pkgRoot, "../..")
 export const distIndexPath = resolve(pkgRoot, "dist/index.js")
 export const distCliPath = resolve(pkgRoot, "dist/cli.js")
 export const localModelsDir = resolve(repoRoot, "apps/demo/public/models")
-export const localModelId = "maskera-sv-ner-v20"
+
+function readDemoModelDirectory() {
+  try {
+    const metaPath = resolve(repoRoot, "apps/demo/src/model-meta.json")
+    const meta = JSON.parse(readFileSync(metaPath, "utf8"))
+    if (typeof meta?.directory === "string" && meta.directory.trim()) {
+      return meta.directory.trim()
+    }
+  } catch {
+    // Fall back when running outside a full monorepo checkout.
+  }
+  return "maskera-sv-ner-v21"
+}
+
+export const localModelId = readDemoModelDirectory()
 export const hasLocalNerModel = existsSync(join(localModelsDir, localModelId))
+
+const WORKSPACE_TARBALL_PACKAGES = ["@maskera/core", "maskera", "@maskera/mcp"]
+
+/**
+ * Packs `@maskera/core`, `maskera`, and `@maskera/mcp` into `targetDir` via
+ * `pnpm pack` and returns their absolute tarball paths.
+ */
+export function packWorkspaceTarballs(targetDir) {
+  const byName = {}
+  const paths = []
+  for (const name of WORKSPACE_TARBALL_PACKAGES) {
+    const out = execFileSync("pnpm", ["--filter", name, "pack", "--pack-destination", targetDir], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    })
+    const tgz = out.trim().split("\n").filter(Boolean).pop()
+    assert.ok(tgz && existsSync(tgz), `Failed to pack ${name}`)
+    byName[name] = tgz
+    paths.push(tgz)
+  }
+  return {
+    core: byName["@maskera/core"],
+    ner: byName.maskera,
+    mcp: byName["@maskera/mcp"],
+    byName,
+    paths,
+  }
+}
+
+/**
+ * Installs packed workspace tarballs into a clean throwaway directory with
+ * `pnpm.overrides` pinning `@maskera/core` and `maskera` to the local `.tgz`
+ * files so transitive dependencies resolve locally instead of querying npm
+ * (which fails before a version bump is published and would otherwise test
+ * stale registry releases instead of the freshly packed artifacts).
+ */
+export function installPackedTarballs(
+  targetDir,
+  tarballs,
+  { packageName = "maskera-mcp-clean-install" } = {},
+) {
+  const rootPkg = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8"))
+  writeFileSync(
+    join(targetDir, "package.json"),
+    JSON.stringify(
+      {
+        name: packageName,
+        private: true,
+        ...(rootPkg.packageManager ? { packageManager: rootPkg.packageManager } : {}),
+        pnpm: {
+          overrides: {
+            "@maskera/core": `file:${tarballs.core}`,
+            maskera: `file:${tarballs.ner}`,
+          },
+        },
+      },
+      null,
+      2,
+    ),
+  )
+
+  const t0 = performance.now()
+  try {
+    execFileSync("pnpm", ["add", ...tarballs.paths], {
+      cwd: targetDir,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      env: { ...process.env, COREPACK_ENABLE_STRICT: "0" },
+    })
+  } catch (err) {
+    const detail = [err?.stderr, err?.stdout]
+      .filter((part) => typeof part === "string" && part.trim())
+      .join("\n")
+      .trim()
+    throw new Error(
+      detail ? `${err instanceof Error ? err.message : String(err)}\n${detail}` : String(err),
+    )
+  }
+  const installMs = Math.round(performance.now() - t0)
+
+  const lockfile = readFileSync(join(targetDir, "pnpm-lock.yaml"), "utf8")
+  for (const tgzPath of [tarballs.core, tarballs.ner, tarballs.mcp]) {
+    const fileName = basename(tgzPath)
+    assert.equal(
+      lockfile.includes(`file:${fileName}`) || lockfile.includes(`file:${tgzPath}`),
+      true,
+      `Expected pnpm-lock.yaml to resolve ${fileName} from local tarball`,
+    )
+  }
+
+  const binPath = join(targetDir, "node_modules/.bin/maskera-mcp")
+  const cliPath = join(targetDir, "node_modules/@maskera/mcp/dist/cli.js")
+  assert.equal(existsSync(binPath), true, "Installed maskera-mcp binary missing")
+  assert.equal(existsSync(cliPath), true, "Installed @maskera/mcp dist/cli.js missing")
+  return { installMs, binPath, cliPath }
+}
 
 export function getLocalNerEnv() {
   if (!hasLocalNerModel) return {}

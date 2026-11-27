@@ -14,8 +14,9 @@
 
 import { spawn } from "node:child_process"
 import { existsSync } from "node:fs"
-import { dirname, join, resolve } from "node:path"
+import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
+import { hasLocalNerModel, localModelId, localModelsDir } from "../audit/lib/harness.mjs"
 import {
   createMaskeraEngine,
   redactLlmRequestBody,
@@ -26,8 +27,6 @@ import {
 const here = dirname(fileURLToPath(import.meta.url))
 const pkgRoot = resolve(here, "..")
 const cliPath = resolve(pkgRoot, "dist/cli.js")
-const localModelsDir = resolve(pkgRoot, "../../apps/demo/public/models")
-const hasLocalNerModel = existsSync(join(localModelsDir, "maskera-sv-ner-v20"))
 const jsonOut = process.argv.includes("--json")
 
 if (!existsSync(cliPath)) {
@@ -102,7 +101,7 @@ async function benchProxyTurns(mode) {
       mode === "auto"
         ? {
             localModelPath: localModelsDir,
-            model: "maskera-sv-ner-v20",
+            model: localModelId,
             allowRemoteModels: false,
           }
         : undefined,

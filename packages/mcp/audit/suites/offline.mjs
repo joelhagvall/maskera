@@ -24,6 +24,7 @@ import {
   distCliPath,
   getLocalNerEnv,
   hasLocalNerModel,
+  localModelId,
   runProcess,
 } from "../lib/harness.mjs"
 
@@ -175,7 +176,7 @@ export async function runOfflineAudit() {
         "offline-hybrid-onnx-local-model",
         "Hybrid ONNX NER offline check",
         "NOT_TESTED",
-        "Local ONNX model apps/demo/public/models/maskera-sv-ner-v20 not present",
+        `Local ONNX model apps/demo/public/models/${localModelId} not present`,
       )
     }
 

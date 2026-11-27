@@ -21,8 +21,9 @@ import {
   createSuiteCollector,
   getLocalNerEnv,
   hasLocalNerModel,
+  installPackedTarballs,
+  packWorkspaceTarballs,
   pkgRoot,
-  repoRoot,
   runProcess,
 } from "../lib/harness.mjs"
 
@@ -40,7 +41,6 @@ const FORBIDDEN_TARBALL_PATTERNS = [
 export async function runPackageAudit() {
   const suite = createSuiteCollector("package")
   const dir = await mkdtemp(join(tmpdir(), "maskera-audit-pkg-"))
-  const rootPkg = JSON.parse(await readFile(join(repoRoot, "package.json"), "utf8"))
   const mcpPkg = JSON.parse(await readFile(join(pkgRoot, "package.json"), "utf8"))
   const metrics = {
     packageVersion: mcpPkg.version,
@@ -59,22 +59,14 @@ export async function runPackageAudit() {
       "pack-and-inspect-contents",
       "Packs tarballs, verifies license/metadata, SHA-256 checksums, and 0 forbidden/dev/secret files",
       async () => {
-        const pkgs = ["@maskera/core", "maskera", "@maskera/mcp"]
-        const tarballPaths = []
-        for (const name of pkgs) {
-          const out = execFileSync("pnpm", ["--filter", name, "pack", "--pack-destination", dir], {
-            cwd: repoRoot,
-            encoding: "utf8",
-          })
-          const tgz = out.trim().split("\n").filter(Boolean).pop()
-          assert.ok(tgz && existsSync(tgz), `Failed to pack ${name}`)
+        const packed = packWorkspaceTarballs(dir)
+        for (const [name, tgz] of Object.entries(packed.byName)) {
           const bytes = await readFile(tgz)
           const sha256 = createHash("sha256").update(bytes).digest("hex")
           metrics.tarballs[name] = { bytes: bytes.byteLength, sha256 }
-          tarballPaths.push(tgz)
         }
 
-        const mcpTgz = tarballPaths[2]
+        const mcpTgz = packed.mcp
         const listing = execFileSync("tar", ["-tzf", mcpTgz], { encoding: "utf8" })
           .trim()
           .split("\n")
@@ -106,28 +98,12 @@ export async function runPackageAudit() {
         assert.equal(mcpPkg.license, "MIT")
         assert.match(MASKERA_SV_NER_REVISION, /^[a-f0-9]{40}$/)
 
-        // Clean install into fresh throwaway directory
-        await writeFile(
-          join(dir, "package.json"),
-          JSON.stringify(
-            {
-              name: "maskera-mcp-audit-clean-install",
-              private: true,
-              ...(rootPkg.packageManager ? { packageManager: rootPkg.packageManager } : {}),
-            },
-            null,
-            2,
-          ),
-        )
-        const t0 = performance.now()
-        execFileSync("pnpm", ["add", ...tarballPaths], {
-          cwd: dir,
-          stdio: ["ignore", "pipe", "pipe"],
-          env: { ...process.env, COREPACK_ENABLE_STRICT: "0" },
+        // Clean install into fresh throwaway directory using local tarball overrides
+        const installed = installPackedTarballs(dir, packed, {
+          packageName: "maskera-mcp-audit-clean-install",
         })
-        metrics.installMs = Math.round(performance.now() - t0)
-        installedBin = join(dir, "node_modules/.bin/maskera-mcp")
-        assert.equal(existsSync(installedBin), true, "Installed maskera-mcp binary missing")
+        metrics.installMs = installed.installMs
+        installedBin = installed.binPath
         return `Packed ${listing.length} files (${metrics.tarballs["@maskera/mcp"].bytes} bytes), clean install ${metrics.installMs}ms`
       },
     )

@@ -461,6 +461,7 @@ export async function runPrivacyAudit() {
           port: 0,
           upstream: egress.url,
           engine,
+          customTerms,
           onLog: (line) => stderrLogs.push(line),
         })
         try {
@@ -482,6 +483,7 @@ export async function runPrivacyAudit() {
           }).catch(() => {})
 
           assertZeroLeaks("error/cancel proxy logs", stderrLogs.join("\n"), activeCanaries)
+          surfacesChecked += egress.captured.length * 2
           const egressLeaks = egress.scanAll(activeCanaries)
           totalLeaks += egressLeaks.length
           assert.equal(

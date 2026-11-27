@@ -9,9 +9,9 @@
  * 3. Explicitly reports unavailable GUI/daemon/paid-cloud clients as NOT_TESTED.
  */
 import assert from "node:assert/strict"
-import { execFileSync, spawn, spawnSync } from "node:child_process"
+import { spawn, spawnSync } from "node:child_process"
 import { existsSync } from "node:fs"
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
+import { mkdtemp, rm } from "node:fs/promises"
 import { createServer } from "node:http"
 import { createServer as createNetServer } from "node:net"
 import { homedir, tmpdir } from "node:os"
@@ -21,8 +21,9 @@ import {
   createSuiteCollector,
   getLocalNerOptions,
   hasLocalNerModel,
+  installPackedTarballs,
+  packWorkspaceTarballs,
   pkgRoot,
-  repoRoot,
   runProcess,
 } from "../lib/harness.mjs"
 
@@ -96,34 +97,10 @@ export async function runClientsAudit(options = {}) {
     // Pack & install real tarball first so we test the distributable artifact
     const installDir = await mkdtemp(join(tmpdir(), "maskera-audit-clients-"))
     try {
-      const rootPkg = JSON.parse(await readFile(join(repoRoot, "package.json"), "utf8"))
-      const tarballs = ["@maskera/core", "maskera", "@maskera/mcp"].map((name) => {
-        const out = execFileSync(
-          "pnpm",
-          ["--filter", name, "pack", "--pack-destination", installDir],
-          { cwd: repoRoot, encoding: "utf8" },
-        )
-        return out.trim().split("\n").filter(Boolean).pop()
+      const packed = packWorkspaceTarballs(installDir)
+      const { cliPath: installedCli } = installPackedTarballs(installDir, packed, {
+        packageName: "maskera-audit-client-install",
       })
-      await writeFile(
-        join(installDir, "package.json"),
-        JSON.stringify(
-          {
-            name: "maskera-audit-client-install",
-            private: true,
-            ...(rootPkg.packageManager ? { packageManager: rootPkg.packageManager } : {}),
-          },
-          null,
-          2,
-        ),
-      )
-      execFileSync("pnpm", ["add", ...tarballs], {
-        cwd: installDir,
-        stdio: ["ignore", "pipe", "pipe"],
-        env: { ...process.env, COREPACK_ENABLE_STRICT: "0" },
-      })
-      const installedCli = join(installDir, "node_modules/@maskera/mcp/dist/cli.js")
-      assert.equal(existsSync(installedCli), true, "Installed @maskera/mcp dist/cli.js missing")
 
       const harnessScript = resolve(pkgRoot, "scripts/e2e-harnesses.mjs")
       const modeArg = hasLocalNerModel ? "both" : "rules"

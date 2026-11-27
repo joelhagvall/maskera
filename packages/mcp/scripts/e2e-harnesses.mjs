@@ -20,12 +20,13 @@ import { createServer } from "node:http"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { brotliDecompressSync, gunzipSync, inflateSync } from "node:zlib"
+import { hasLocalNerModel, localModelId, localModelsDir } from "../audit/lib/harness.mjs"
 
 const here = dirname(fileURLToPath(import.meta.url))
 const pkgRoot = resolve(here, "..")
-const cliPath = resolve(pkgRoot, "dist/cli.js")
-const localModelsDir = resolve(pkgRoot, "../../apps/demo/public/models")
-const hasLocalNerModel = existsSync(join(localModelsDir, "maskera-sv-ner-v20"))
+const cliPath = process.env.MASKERA_MCP_CLI
+  ? resolve(process.env.MASKERA_MCP_CLI)
+  : resolve(pkgRoot, "dist/cli.js")
 
 if (!existsSync(cliPath)) {
   throw new Error(
@@ -99,7 +100,7 @@ function parseCliFlags(argv) {
     throw new Error(`Invalid --mode "${mode}": expected rules, auto, or both.`)
   }
   if ((live || mode === "auto" || mode === "both") && !hasLocalNerModel) {
-    throw new Error(`Local ONNX model not found at ${join(localModelsDir, "maskera-sv-ner-v20")}`)
+    throw new Error(`Local ONNX model not found at ${join(localModelsDir, localModelId)}`)
   }
   return { only, mode, live, claudeModel, opencodeModel, opencodeUpstream, jsonOut, keepTmp }
 }
@@ -231,7 +232,7 @@ function startMockUpstream(handler) {
 
 const NER_ENV = {
   MASKERA_MODEL_PATH: localModelsDir,
-  MASKERA_MODEL_ID: "maskera-sv-ner-v20",
+  MASKERA_MODEL_ID: localModelId,
   MASKERA_ALLOW_REMOTE_MODELS: "0",
 }
 

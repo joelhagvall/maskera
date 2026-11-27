@@ -24,6 +24,7 @@ import { tmpdir } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { gzipSync } from "node:zlib"
+import { hasLocalNerModel, localModelId, localModelsDir } from "../audit/lib/harness.mjs"
 
 const here = dirname(fileURLToPath(import.meta.url))
 const pkgRoot = resolve(here, "..")
@@ -33,8 +34,6 @@ const pkgRoot = resolve(here, "..")
 const cliPath = process.env.MASKERA_MCP_CLI
   ? resolve(process.env.MASKERA_MCP_CLI)
   : resolve(pkgRoot, "dist/cli.js")
-const localModelsDir = resolve(pkgRoot, "../../apps/demo/public/models")
-const hasLocalNerModel = existsSync(join(localModelsDir, "maskera-sv-ner-v20"))
 
 if (!existsSync(cliPath)) {
   throw new Error(
@@ -1062,7 +1061,7 @@ try {
     await test("Real local Swedish ONNX NER (offline): MCP + Guard + Proxy free-text names", async () => {
       const nerEnv = {
         MASKERA_MODEL_PATH: localModelsDir,
-        MASKERA_MODEL_ID: "maskera-sv-ner-v20",
+        MASKERA_MODEL_ID: localModelId,
         MASKERA_ALLOW_REMOTE_MODELS: "0",
       }
       const { responses } = await runMcpSession(
@@ -1126,9 +1125,7 @@ try {
       }
     })
   } else {
-    console.log(
-      "  skip  local ONNX NER lane (apps/demo/public/models/maskera-sv-ner-v20 not present)",
-    )
+    console.log(`  skip  local ONNX NER lane (apps/demo/public/models/${localModelId} not present)`)
   }
 
   console.log(`\n@maskera/mcp E2E PASS: ${passed} suites passed.`)
