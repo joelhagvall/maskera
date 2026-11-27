@@ -52,7 +52,17 @@
     "test:e2e": "node scripts/e2e-agent-test.mjs",
     "test:harnesses": "node scripts/e2e-harnesses.mjs",
     "test:pack": "node scripts/pack-smoke.mjs",
-    "bench": "node scripts/bench-mcp.mjs"
+    "bench": "node scripts/bench-mcp.mjs",
+    "audit:quick": "node audit/run-audit.mjs quick",
+    "audit:privacy": "node audit/run-audit.mjs privacy",
+    "audit:security": "node audit/run-audit.mjs security",
+    "audit:e2e": "node audit/run-audit.mjs e2e",
+    "audit:clients": "node audit/run-audit.mjs clients",
+    "audit:adversarial": "node audit/run-audit.mjs adversarial",
+    "audit:package": "node audit/run-audit.mjs package",
+    "audit:offline": "node audit/run-audit.mjs offline",
+    "audit:benchmark": "node audit/run-audit.mjs benchmark",
+    "audit:full": "node audit/run-audit.mjs full"
   },
   "dependencies": {
     "@huggingface/transformers": "^4.2.0",

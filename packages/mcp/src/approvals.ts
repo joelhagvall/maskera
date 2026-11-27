@@ -16,6 +16,7 @@ export interface ApprovalSummary {
 }
 
 interface ApprovalRecord {
+  owner: string
   summary: ApprovalSummary
   expiresAtMs: number
   execute: (() => Promise<Record<string, unknown>>) | null
@@ -27,6 +28,12 @@ export type ApprovalResumeResult =
 
 const DEFAULT_TTL_MS = 5 * 60 * 1_000
 const MAX_RECORDS = 50
+const DEFAULT_OWNER = "default"
+
+function normalizeOwner(owner?: string): string {
+  const trimmed = owner?.trim()
+  return trimmed || DEFAULT_OWNER
+}
 
 /**
  * Process-local approval broker for sensitive MCP actions that would return
@@ -76,6 +83,7 @@ export class ApprovalBroker {
     tool: string
     reason: string
     sessionId?: string | null
+    owner?: string
     placeholderCount: number
     execute: () => Promise<Record<string, unknown>>
   }): ApprovalSummary {
@@ -98,6 +106,7 @@ export class ApprovalBroker {
       decidedAt: null,
     }
     this.records.set(id, {
+      owner: normalizeOwner(input.owner),
       summary,
       expiresAtMs: now + this.ttlMs,
       execute: input.execute,
@@ -125,10 +134,13 @@ export class ApprovalBroker {
     return { ...record.summary }
   }
 
-  async resume(id: string): Promise<ApprovalResumeResult> {
+  async resume(id: string, owner?: string): Promise<ApprovalResumeResult> {
     this.expireStale()
     const record = this.records.get(id.trim())
     if (!record) return { status: "not_found" }
+    if (owner !== undefined && record.owner !== normalizeOwner(owner)) {
+      return { status: "not_found" }
+    }
     const { status } = record.summary
     if (status === "pending" || status === "declined" || status === "expired") {
       return { status, summary: { ...record.summary } }
@@ -142,6 +154,19 @@ export class ApprovalBroker {
     record.summary.status = "completed"
     this.notify()
     return { status: "completed", result, summary: { ...record.summary } }
+  }
+
+  clearOwner(owner: string): void {
+    const resolvedOwner = normalizeOwner(owner)
+    let changed = false
+    for (const [id, record] of this.records.entries()) {
+      if (record.owner === resolvedOwner) {
+        record.execute = null
+        this.records.delete(id)
+        changed = true
+      }
+    }
+    if (changed) this.notify()
   }
 
   clearAll(): void {

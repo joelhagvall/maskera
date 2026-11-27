@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto"
 import { appendFile, mkdir } from "node:fs/promises"
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http"
-import { dirname } from "node:path"
+import { dirname, posix } from "node:path"
 import * as zlib from "node:zlib"
 import type { RedactionProfile } from "maskera"
 import { ApprovalBroker, type ApprovalMode } from "./approvals"
@@ -15,6 +15,8 @@ import { SessionVault } from "./vault"
 export interface ProxyOptions {
   /** Bind address. Defaults to loopback `127.0.0.1` for local safety. */
   host?: string
+  /** Allow binding to a non-loopback interface (default `false`; refuses LAN exposure of local vault/MCP). */
+  allowNonLoopback?: boolean
   /** Listening port. Defaults to `8787` (`0` picks an ephemeral port). */
   port?: number
   /** Explicit upstream base URL (overrides automatic Anthropic/OpenAI routing). */
@@ -219,13 +221,13 @@ function escapeJsonStringValue(value: string): string {
 }
 
 function restorePlainText(text: string, map: Readonly<Record<string, string>>): string {
-  if (!text || !text.includes("[") || Object.keys(map).length === 0) return text
+  if (!text?.includes("[") || Object.keys(map).length === 0) return text
   const r = new StreamingRestorer(map)
   return r.push(text) + r.flush()
 }
 
 function restoreJsonEncodedText(text: string, map: Readonly<Record<string, string>>): string {
-  if (!text || !text.includes("[") || Object.keys(map).length === 0) return text
+  if (!text?.includes("[") || Object.keys(map).length === 0) return text
   // Try parsing as JSON first to restore string leaves cleanly without
   // breaking JSON syntax even if restored values contain quotes or newlines.
   try {
@@ -266,6 +268,28 @@ function shouldSkipToolArgRestore(toolName: unknown, argsText: string): boolean 
 
 export type RedactFieldKind = "message" | "system" | "tool_description"
 
+const TEXT_BASE64_MEDIA_RE =
+  /^(?:text\/|application\/(?:json|xml|csv|x-ndjson|javascript|yaml|x-yaml))/i
+const DATA_URI_TEXT_BASE64_RE =
+  /^data:((?:text\/[a-z0-9.+-]+|application\/(?:json|xml|csv|x-ndjson|javascript))[^;,]*);base64,([A-Za-z0-9+/=\s]+)$/i
+
+async function redactBase64Utf8(
+  encoded: string,
+  redactString: (text: string, kind: RedactFieldKind) => Promise<string>,
+  kind: RedactFieldKind,
+): Promise<string> {
+  try {
+    const rawBuf = Buffer.from(encoded, "base64")
+    if (rawBuf.includes(0) || rawBuf.byteLength > MAX_BODY_BYTES) return encoded
+    const decoded = new TextDecoder("utf-8", { fatal: true }).decode(rawBuf)
+    const redacted = await redactString(decoded, kind)
+    if (redacted === decoded) return encoded
+    return Buffer.from(redacted, "utf8").toString("base64")
+  } catch {
+    return encoded
+  }
+}
+
 /**
  * Redacts all user/tool/system text fields in an Anthropic Messages, OpenAI
  * Chat Completions, or OpenAI Responses request body before it leaves the
@@ -283,6 +307,9 @@ export async function redactLlmRequestBody(
       if (!isPlainObject(block)) continue
       if (typeof block.text === "string") {
         block.text = await redactString(block.text, kind)
+      }
+      if (typeof block.refusal === "string") {
+        block.refusal = await redactString(block.refusal, kind)
       }
       if (typeof block.thinking === "string") {
         const redactedThinking = await redactString(block.thinking, kind)
@@ -309,9 +336,25 @@ export async function redactLlmRequestBody(
       } else if (Array.isArray(block.output)) {
         await redactContentBlocks(block.output, kind)
       }
+      if (typeof block.file_data === "string") {
+        const match = DATA_URI_TEXT_BASE64_RE.exec(block.file_data)
+        if (match?.[1] && match[2]) {
+          const nextB64 = await redactBase64Utf8(match[2], redactString, kind)
+          block.file_data = `data:${match[1]};base64,${nextB64}`
+        } else if (!block.file_data.startsWith("data:")) {
+          block.file_data = await redactBase64Utf8(block.file_data, redactString, kind)
+        }
+      }
       if (isPlainObject(block.source)) {
         if (block.source.type === "text" && typeof block.source.data === "string") {
           block.source.data = await redactString(block.source.data, kind)
+        } else if (
+          block.source.type === "base64" &&
+          typeof block.source.data === "string" &&
+          typeof block.source.media_type === "string" &&
+          TEXT_BASE64_MEDIA_RE.test(block.source.media_type)
+        ) {
+          block.source.data = await redactBase64Utf8(block.source.data, redactString, kind)
         }
         if (typeof block.source.content === "string") {
           block.source.content = await redactString(block.source.content, kind)
@@ -322,7 +365,9 @@ export async function redactLlmRequestBody(
       if (typeof block.arguments === "string") {
         block.arguments = await redactJsonStringOrText(block.arguments, kind)
       }
-      if (isPlainObject(block.input)) {
+      if (typeof block.input === "string") {
+        block.input = await redactJsonStringOrText(block.input, kind)
+      } else if (isPlainObject(block.input)) {
         block.input = await redactObjectStrings(block.input, kind)
       }
     }
@@ -330,6 +375,15 @@ export async function redactLlmRequestBody(
 
   async function redactObjectStrings(value: unknown, kind: RedactFieldKind): Promise<unknown> {
     if (typeof value === "string") return redactString(value, kind)
+    if (
+      typeof value === "number" &&
+      Number.isSafeInteger(value) &&
+      Math.abs(value) >= 1_000_000_000
+    ) {
+      const asText = String(value)
+      const redacted = await redactString(asText, kind)
+      return redacted !== asText ? redacted : value
+    }
     if (Array.isArray(value)) {
       const out = []
       for (const item of value) out.push(await redactObjectStrings(item, kind))
@@ -366,6 +420,37 @@ export async function redactLlmRequestBody(
     clone.instructions = await redactString(clone.instructions, "system")
   }
 
+  // OpenAI legacy `/v1/completions` `prompt` (string or string[])
+  if (typeof clone.prompt === "string") {
+    clone.prompt = await redactString(clone.prompt, "message")
+  } else if (Array.isArray(clone.prompt)) {
+    for (let i = 0; i < clone.prompt.length; i++) {
+      const entry = clone.prompt[i]
+      if (typeof entry === "string") {
+        clone.prompt[i] = await redactString(entry, "message")
+      }
+    }
+  }
+
+  // OpenAI `user` and Anthropic `metadata.user_id` (often carry emails/identifiers)
+  if (typeof clone.user === "string") {
+    clone.user = await redactString(clone.user, "tool_description")
+  }
+  if (isPlainObject(clone.metadata)) {
+    clone.metadata = await redactObjectStrings(clone.metadata, "tool_description")
+  }
+
+  // Anthropic `/v1/messages/batches` `requests[].params`
+  if (Array.isArray(clone.requests)) {
+    for (const batchItem of clone.requests) {
+      if (isPlainObject(batchItem) && isPlainObject(batchItem.params)) {
+        batchItem.params = await redactLlmRequestBody(batchItem.params, redactString, {
+          mutate: true,
+        })
+      }
+    }
+  }
+
   // Tool descriptions (Anthropic, OpenAI, and Codex MCP namespace tools) can
   // carry project/client names.
   async function redactToolEntries(entries: unknown[]): Promise<void> {
@@ -395,10 +480,25 @@ export async function redactLlmRequestBody(
       if (!isPlainObject(msg)) continue
       const msgKind: RedactFieldKind =
         msg.role === "system" || msg.role === "developer" ? "system" : "message"
+      if (typeof msg.name === "string") {
+        msg.name = await redactString(msg.name, "tool_description")
+      }
       if (typeof msg.content === "string") {
         msg.content = await redactString(msg.content, msgKind)
       } else if (Array.isArray(msg.content)) {
         await redactContentBlocks(msg.content, msgKind)
+      }
+      if (typeof msg.reasoning_content === "string") {
+        msg.reasoning_content = await redactString(msg.reasoning_content, msgKind)
+      }
+      if (typeof msg.refusal === "string") {
+        msg.refusal = await redactString(msg.refusal, msgKind)
+      }
+      if (isPlainObject(msg.function_call) && typeof msg.function_call.arguments === "string") {
+        msg.function_call.arguments = await redactJsonStringOrText(
+          msg.function_call.arguments,
+          msgKind,
+        )
       }
       if (Array.isArray(msg.tool_calls)) {
         for (const call of msg.tool_calls) {
@@ -415,7 +515,7 @@ export async function redactLlmRequestBody(
     }
   }
 
-  // OpenAI Responses API `input`
+  // OpenAI Responses API `input` & `/v1/embeddings` `input`
   if (typeof clone.input === "string") {
     clone.input = await redactString(clone.input, "message")
   } else if (Array.isArray(clone.input)) {
@@ -436,6 +536,17 @@ export async function redactLlmRequestBody(
           item.output = await redactString(item.output, itemKind)
         } else if (Array.isArray(item.output)) {
           await redactContentBlocks(item.output, itemKind)
+        }
+        if (typeof item.input === "string") {
+          item.input = await redactJsonStringOrText(item.input, itemKind)
+        } else if (isPlainObject(item.input)) {
+          item.input = await redactObjectStrings(item.input, itemKind)
+        }
+        if (typeof item.reasoning_content === "string") {
+          item.reasoning_content = await redactString(item.reasoning_content, itemKind)
+        }
+        if (typeof item.refusal === "string") {
+          item.refusal = await redactString(item.refusal, itemKind)
         }
         if (Array.isArray(item.summary)) {
           await redactContentBlocks(item.summary, itemKind)
@@ -528,6 +639,11 @@ export function restoreLlmResponseBody(
         !shouldSkipToolArgRestore(item.name, item.arguments)
       ) {
         item.arguments = restoreJsonEncodedText(item.arguments, map)
+      }
+      if (typeof item.input === "string" && !shouldSkipToolArgRestore(item.name, item.input)) {
+        item.input = restorePlainText(item.input, map)
+      } else if (isPlainObject(item.input) && !isMaskeraVaultToolName(item.name)) {
+        item.input = restoreJsonLeaves(item.input, map)
       }
       if (Array.isArray(item.content)) {
         for (const part of item.content) {
@@ -1132,6 +1248,39 @@ const INSPECTOR_SECURITY_HEADERS: Record<string, string> = {
 }
 
 const LOOPBACK_HOST_RE = /^(127\.0\.0\.1|localhost|\[::1\])(?::(\d{1,5}))?$/i
+const LOOPBACK_BIND_HOSTS = new Set(["127.0.0.1", "localhost", "::1", "[::1]"])
+
+function isLoopbackBindHost(host: string): boolean {
+  return LOOPBACK_BIND_HOSTS.has(host.trim().toLowerCase())
+}
+
+function isLoopbackRemoteAddress(remoteAddress: string | undefined): boolean {
+  if (!remoteAddress) return false
+  const normalized = remoteAddress.trim().toLowerCase()
+  return normalized === "127.0.0.1" || normalized === "::1" || normalized === "::ffff:127.0.0.1"
+}
+
+class InvalidRequestPathError extends Error {
+  readonly statusCode = 400
+}
+
+function canonicalizeRequestPath(urlPath: string): string {
+  const rawPathname = urlPath.split("?")[0] ?? urlPath
+  if (rawPathname.includes("\0")) {
+    throw new InvalidRequestPathError("Request path contains NUL byte.")
+  }
+  let decoded: string
+  try {
+    decoded = decodeURIComponent(rawPathname)
+  } catch {
+    throw new InvalidRequestPathError("Malformed percent-encoding in request path.")
+  }
+  if (decoded.includes("\0")) {
+    throw new InvalidRequestPathError("Decoded request path contains NUL byte.")
+  }
+  const normalized = posix.normalize(decoded.replace(/\\+/g, "/"))
+  return normalized.length > 1 ? normalized.replace(/\/+$/, "") : normalized
+}
 
 function isLoopbackHost(
   hostHeader: string | undefined,
@@ -1279,12 +1428,18 @@ async function readRequestBody(req: IncomingMessage): Promise<Buffer> {
 }
 
 function shouldRedactPath(pathname: string): boolean {
-  const clean = (pathname.split("?")[0] ?? pathname).replace(/\/+$/, "").toLowerCase()
+  const clean = canonicalizeRequestPath(pathname).toLowerCase()
   return (
     clean.endsWith("/messages") ||
     clean.endsWith("/messages/count_tokens") ||
+    clean.endsWith("/messages/batches") ||
     clean.endsWith("/chat/completions") ||
-    clean.endsWith("/responses")
+    clean.endsWith("/completions") ||
+    clean.endsWith("/responses") ||
+    clean.endsWith("/responses/input_tokens") ||
+    clean.endsWith("/responses/compact") ||
+    clean.endsWith("/embeddings") ||
+    clean.endsWith("/moderations")
   )
 }
 
@@ -1296,8 +1451,8 @@ const APPROVAL_STRICTNESS: Record<ApprovalMode, number> = {
 
 function parseScopedMcpPolicy(
   urlPath: string,
-  base: Required<MaskeraMcpPolicy>,
-): Required<MaskeraMcpPolicy> {
+  base: Required<Omit<MaskeraMcpPolicy, "sessionOwner">>,
+): Required<Omit<MaskeraMcpPolicy, "sessionOwner">> {
   const qIndex = urlPath.indexOf("?")
   if (qIndex < 0) return base
   const params = new URLSearchParams(urlPath.slice(qIndex + 1))
@@ -1340,6 +1495,11 @@ function parseScopedMcpPolicy(
  */
 export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<RunningMaskeraProxy> {
   const host = options.host ?? "127.0.0.1"
+  if (!options.allowNonLoopback && !isLoopbackBindHost(host)) {
+    throw new Error(
+      `Refusing to bind maskera-proxy to non-loopback host "${host}". Use 127.0.0.1, localhost, or ::1 (or set allowNonLoopback: true only behind external network isolation).`,
+    )
+  }
   const requestedPort = options.port ?? 8787
   const engine = options.engine ?? createMaskeraEngine({ defaultMode: options.defaultMode })
   const vault = options.vault ?? new SessionVault()
@@ -1353,17 +1513,17 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
   const openaiUpstream = options.openaiUpstream ?? DEFAULT_OPENAI_UPSTREAM
   const auditLogPath = options.auditLogPath
   const log = options.onLog ?? (() => {})
-  const baseMcpPolicy: Required<MaskeraMcpPolicy> = {
+  const baseMcpPolicy: Required<Omit<MaskeraMcpPolicy, "sessionOwner">> = {
     allowRawRestore: options.allowRawRestore ?? true,
     readOnly: options.readOnly ?? false,
     approvalMode: options.approvalMode ?? "automatic",
   }
-  const mcpSessions = new Map<string, Required<MaskeraMcpPolicy>>()
+  const mcpSessions = new Map<string, Required<Omit<MaskeraMcpPolicy, "sessionOwner">>>()
   const closedMcpSessions = new Set<string>()
 
   if (auditLogPath) {
     await mkdir(dirname(auditLogPath), { recursive: true })
-    await appendFile(auditLogPath, "", "utf8")
+    await appendFile(auditLogPath, "", { encoding: "utf8", mode: 0o600 })
   }
 
   let totalRequests = 0
@@ -1430,11 +1590,13 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
         counts: entry.counts,
       })
       auditChain = auditChain.then(() =>
-        appendFile(auditLogPath, `${auditLine}\n`, "utf8").catch((err) => {
-          log(
-            `[maskera-proxy] audit log write error: ${err instanceof Error ? err.message : String(err)}`,
-          )
-        }),
+        appendFile(auditLogPath, `${auditLine}\n`, { encoding: "utf8", mode: 0o600 }).catch(
+          (err) => {
+            log(
+              `[maskera-proxy] audit log write error: ${err instanceof Error ? err.message : String(err)}`,
+            )
+          },
+        ),
       )
     }
   }
@@ -1452,7 +1614,10 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
       normalizedPath.includes("/_maskera/") ||
       normalizedPath.endsWith("/_maskera")
     if (isInspectorRoute || pathname === "/healthz") {
-      if (!isLoopbackHost(req.headers.host, host, boundPort)) {
+      if (
+        !isLoopbackRemoteAddress(req.socket.remoteAddress) ||
+        !isLoopbackHost(req.headers.host, host, boundPort)
+      ) {
         res.writeHead(403, {
           ...INSPECTOR_SECURITY_HEADERS,
           "content-type": "application/json; charset=utf-8",
@@ -1701,10 +1866,13 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
       return
     }
 
-    // Streamable HTTP MCP endpoint sharing the warm ONNX engine, session vault,
-    // approval broker, and live inspector.
+    // Streamable HTTP MCP endpoint sharing the warm ONNX engine and live
+    // inspector while strictly isolating each MCP session's vault & approvals.
     if (normalizedPath === "/mcp" || normalizedPath === "/mcp/") {
-      if (!isLoopbackHost(req.headers.host, host, boundPort, true)) {
+      if (
+        !isLoopbackRemoteAddress(req.socket.remoteAddress) ||
+        !isLoopbackHost(req.headers.host, host, boundPort, true)
+      ) {
         res.writeHead(403, {
           ...INSPECTOR_SECURITY_HEADERS,
           "content-type": "application/json; charset=utf-8",
@@ -1732,6 +1900,8 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
         if (incomingSessionId) {
           mcpSessions.delete(incomingSessionId)
           closedMcpSessions.add(incomingSessionId)
+          vault.clearOwner(`mcp:${incomingSessionId}`)
+          approvals.clearOwner(`mcp:${incomingSessionId}`)
           if (closedMcpSessions.size > 500) {
             const first = closedMcpSessions.values().next().value
             if (first !== undefined) closedMcpSessions.delete(first)
@@ -1794,26 +1964,42 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
         return
       }
 
+      const messages = Array.isArray(parsedMcp) ? parsedMcp : [parsedMcp]
+      const isInit = messages.some((m) => isPlainObject(m) && m.method === "initialize")
+      if (!isInit && incomingSessionId && !mcpSessions.has(incomingSessionId)) {
+        res.writeHead(404, {
+          ...INSPECTOR_SECURITY_HEADERS,
+          "content-type": "application/json; charset=utf-8",
+        })
+        res.end(JSON.stringify({ error: "Unknown MCP session." }))
+        return
+      }
+
       const sessionBasePolicy =
         (incomingSessionId ? mcpSessions.get(incomingSessionId) : undefined) ?? baseMcpPolicy
       const effectivePolicy = parseScopedMcpPolicy(urlPath, sessionBasePolicy)
       const mcpServer = getMcpServer()
 
-      const messages = Array.isArray(parsedMcp) ? parsedMcp : [parsedMcp]
-      const isInit = messages.some((m) => isPlainObject(m) && m.method === "initialize")
       let responseSessionId = incomingSessionId
       if (isInit) {
         responseSessionId = `mcp_${randomUUID().slice(0, 16)}`
         if (mcpSessions.size >= 200) {
           const oldest = mcpSessions.keys().next().value
-          if (oldest !== undefined) mcpSessions.delete(oldest)
+          if (oldest !== undefined) {
+            mcpSessions.delete(oldest)
+            vault.clearOwner(`mcp:${oldest}`)
+            approvals.clearOwner(`mcp:${oldest}`)
+          }
         }
         mcpSessions.set(responseSessionId, effectivePolicy)
       }
 
+      const sessionOwner = responseSessionId ? `mcp:${responseSessionId}` : "mcp:stateless"
+      const scopedPolicy: MaskeraMcpPolicy = { ...effectivePolicy, sessionOwner }
+
       const responses = []
       for (const msg of messages) {
-        const reply = await mcpServer.handleMessage(msg, effectivePolicy)
+        const reply = await mcpServer.handleMessage(msg, scopedPolicy)
         if (reply !== null) responses.push(reply)
       }
 
@@ -1854,13 +2040,41 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
       anthropicUpstream,
       openaiUpstream,
     })
+    if (!forwardPath.startsWith("/") || forwardPath.startsWith("//")) {
+      res.writeHead(400, { "content-type": "application/json; charset=utf-8" })
+      res.end(JSON.stringify({ error: { message: "Invalid request path." } }))
+      return
+    }
+    let needsRedaction: boolean
+    try {
+      needsRedaction = shouldRedactPath(forwardPath)
+    } catch (err) {
+      if (err instanceof InvalidRequestPathError) {
+        res.writeHead(400, { "content-type": "application/json; charset=utf-8" })
+        res.end(JSON.stringify({ error: { message: err.message } }))
+        return
+      }
+      throw err
+    }
     const upstreamUrl = `${baseUrl}${forwardPath}`
+    try {
+      if (new URL(upstreamUrl).origin !== new URL(baseUrl).origin) {
+        res.writeHead(400, { "content-type": "application/json; charset=utf-8" })
+        res.end(JSON.stringify({ error: { message: "Upstream origin mismatch." } }))
+        return
+      }
+    } catch {
+      res.writeHead(400, { "content-type": "application/json; charset=utf-8" })
+      res.end(JSON.stringify({ error: { message: "Invalid upstream URL." } }))
+      return
+    }
 
     const rawBody = method === "GET" || method === "HEAD" ? undefined : await readRequestBody(req)
 
     const sessionHeader = req.headers["x-maskera-session"]
     const sessionId =
       typeof sessionHeader === "string" && sessionHeader.trim() ? sessionHeader.trim() : "proxy"
+    const proxyVaultOwner = "proxy"
 
     const stats: RedactStats = { redactions: 0, counts: {} }
     const redactedPreview: string[] = []
@@ -1876,7 +2090,18 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
     const mayBeJson =
       contentType === "" || contentType.includes("json") || contentType.startsWith("text/plain")
 
-    if (rawBody && rawBody.byteLength > 0 && shouldRedactPath(forwardPath) && mayBeJson) {
+    if (rawBody && rawBody.byteLength > 0 && needsRedaction) {
+      if (!mayBeJson) {
+        res.writeHead(415, { "content-type": "application/json; charset=utf-8" })
+        res.end(
+          JSON.stringify({
+            error: {
+              message: `Refusing to forward unredacted content-type "${contentType}" on LLM redaction endpoint (fail-closed).`,
+            },
+          }),
+        )
+        return
+      }
       let decodedBody: Buffer
       try {
         decodedBody = decodeRequestBody(rawBody, contentEncoding)
@@ -1898,54 +2123,57 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
         res.end(JSON.stringify({ error: { message: "Invalid JSON request body." } }))
         return
       }
-      if (isPlainObject(parsed)) {
-        let redactedObj: Record<string, unknown>
-        try {
-          redactedObj = await redactLlmRequestBody(
-            parsed,
-            async (text, kind) => {
-              if (!text.trim()) return text
-              // Tool descriptions are API schema docs (typically English);
-              // run fast deterministic rules + customTerms so Swedish NER
-              // never hallucinates names inside tool docs or burns Turn-1 CPU.
-              const { result } = await engine.redact(text, {
-                mode: kind === "tool_description" ? "rules" : undefined,
-                profile: options.profile,
-                customTerms: options.customTerms,
-              })
-              const applied = vault.apply(text, result, sessionId)
-              stats.redactions += applied.totalRedactions
-              mergeCounts(stats.counts, applied.counts)
-              if (redactedPreview.length < 6) {
-                const snippet =
-                  applied.redacted.length > 1200
-                    ? `${applied.redacted.slice(0, 1200)}...`
-                    : applied.redacted
-                redactedPreview.push(snippet)
-              }
-              return applied.redacted
-            },
-            { mutate: true },
-          )
-        } catch (err) {
-          recordAuditAndInspector({
-            timestamp: new Date().toISOString(),
-            method,
-            path: forwardPath,
-            upstream: baseUrl,
-            sessionId,
-            status: 502,
-            streamed: false,
-            durationMs: Date.now() - startedAt,
-            redactions: stats.redactions,
-            counts: stats.counts,
-            redactedPreview,
-          })
-          throw err
-        }
-        outgoingBody = Buffer.from(JSON.stringify(redactedObj), "utf8")
-        rewroteRequestBody = true
+      if (!isPlainObject(parsed)) {
+        res.writeHead(400, { "content-type": "application/json; charset=utf-8" })
+        res.end(JSON.stringify({ error: { message: "Expected JSON object request body." } }))
+        return
       }
+      let redactedObj: Record<string, unknown>
+      try {
+        redactedObj = await redactLlmRequestBody(
+          parsed,
+          async (text, kind) => {
+            if (!text.trim()) return text
+            // Tool descriptions are API schema docs (typically English);
+            // run fast deterministic rules + customTerms so Swedish NER
+            // never hallucinates names inside tool docs or burns Turn-1 CPU.
+            const { result } = await engine.redact(text, {
+              mode: kind === "tool_description" ? "rules" : undefined,
+              profile: options.profile,
+              customTerms: options.customTerms,
+            })
+            const applied = vault.apply(text, result, sessionId, proxyVaultOwner)
+            stats.redactions += applied.totalRedactions
+            mergeCounts(stats.counts, applied.counts)
+            if (redactedPreview.length < 6) {
+              const snippet =
+                applied.redacted.length > 1200
+                  ? `${applied.redacted.slice(0, 1200)}...`
+                  : applied.redacted
+              redactedPreview.push(snippet)
+            }
+            return applied.redacted
+          },
+          { mutate: true },
+        )
+      } catch (err) {
+        recordAuditAndInspector({
+          timestamp: new Date().toISOString(),
+          method,
+          path: forwardPath,
+          upstream: baseUrl,
+          sessionId,
+          status: 502,
+          streamed: false,
+          durationMs: Date.now() - startedAt,
+          redactions: stats.redactions,
+          counts: stats.counts,
+          redactedPreview,
+        })
+        throw err
+      }
+      outgoingBody = Buffer.from(JSON.stringify(redactedObj), "utf8")
+      rewroteRequestBody = true
     }
 
     const forwardHeaders = new Headers()
@@ -1979,6 +2207,7 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
         method,
         headers: forwardHeaders,
         body: outgoingBody ? new Uint8Array(outgoingBody) : undefined,
+        redirect: "manual",
         signal: abortController.signal,
       })
     } catch (err) {
@@ -2010,7 +2239,7 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
     })
     outHeaders["x-maskera-redacted"] = String(stats.redactions)
 
-    const sessionMap = restoreResponses ? vault.getMap(sessionId) : {}
+    const sessionMap = restoreResponses ? vault.getMap(sessionId, proxyVaultOwner) : {}
     const hasMap = Object.keys(sessionMap).length > 0
     const resContentType = (upstreamRes.headers.get("content-type") ?? "").toLowerCase()
     const isSse = resContentType.includes("text/event-stream")

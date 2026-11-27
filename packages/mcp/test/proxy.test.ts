@@ -743,4 +743,128 @@ describe("guard (harness-agnostic pre-prompt / pre-tool / pipe check)", () => {
       await proxy.close()
     }
   })
+
+  it("blocks fail-open bypasses, isolates /mcp and proxy vaults, refuses non-loopback bind, and redacts numeric guard JSON", async () => {
+    // Non-loopback bind refused by default
+    await expect(
+      startMaskeraProxy({ host: [0, 0, 0, 0].join("."), port: 0, defaultMode: "rules" }),
+    ).rejects.toThrow(/non-loopback/i)
+
+    // Guard --redact masks numeric PII inside JSON envelopes
+    const guardNum = await runGuard(
+      JSON.stringify({ tool_input: { personnummer: 199001012385 } }),
+      createMaskeraEngine({ defaultMode: "rules" }),
+      { preserveJsonStructure: true },
+    )
+    expect(guardNum.blocked).toBe(true)
+    expect(guardNum.redacted).not.toContain("199001012385")
+    expect(guardNum.redacted).toContain("[PERSONNUMMER_1]")
+
+    const upstream = await startMockUpstream(() => ({
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ok: true }),
+    }))
+    const proxy = await startMaskeraProxy({
+      port: 0,
+      upstream: upstream.url,
+      defaultMode: "rules",
+    })
+    cleanups.push(() => proxy.close())
+
+    // Percent-encoded path is redacted
+    const pct = await fetch(`${proxy.url}/v1/%6dessages`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ messages: [{ role: "user", content: "19900101-2385" }] }),
+    })
+    expect(pct.status).toBe(200)
+    expect(upstream.seen[0]?.body).not.toContain("19900101-2385")
+
+    // Non-JSON content-type on redaction path fails closed with 415
+    const ctSmuggle = await fetch(`${proxy.url}/v1/messages`, {
+      method: "POST",
+      headers: { "content-type": "application/octet-stream" },
+      body: JSON.stringify({ messages: [{ role: "user", content: "19900101-2385" }] }),
+    })
+    expect(ctSmuggle.status).toBe(415)
+    expect(upstream.seen).toHaveLength(1)
+
+    // Responses custom_tool_call item.input and base64 text document are redacted
+    await fetch(`${proxy.url}/v1/responses`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        input: [{ type: "custom_tool_call", name: "apply_patch", input: "Pnr 19900101-2385" }],
+      }),
+    })
+    expect(upstream.seen[1]?.body).not.toContain("19900101-2385")
+
+    // Cross-session isolation between /mcp sessions and proxy vault
+    const initA = await fetch(proxy.mcpUrl, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "initialize",
+        params: { protocolVersion: "2025-11-25" },
+      }),
+    })
+    const sidA = initA.headers.get("mcp-session-id") ?? ""
+    const initB = await fetch(proxy.mcpUrl, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "initialize",
+        params: { protocolVersion: "2025-11-25" },
+      }),
+    })
+    const sidB = initB.headers.get("mcp-session-id") ?? ""
+
+    await fetch(proxy.mcpUrl, {
+      method: "POST",
+      headers: { "content-type": "application/json", "mcp-session-id": sidA },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 2,
+        method: "tools/call",
+        params: {
+          name: "maskera_redact",
+          arguments: { text: "provnamn.maskera@example.com", session_id: "s" },
+        },
+      }),
+    })
+    const steal = await (
+      await fetch(proxy.mcpUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json", "mcp-session-id": sidB },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 3,
+          method: "tools/call",
+          params: { name: "maskera_restore", arguments: { text: "[EPOST_1]", session_id: "s" } },
+        }),
+      })
+    ).text()
+    expect(steal).not.toContain("provnamn.maskera@example.com")
+
+    const stealProxy = await (
+      await fetch(proxy.mcpUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json", "mcp-session-id": sidB },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 4,
+          method: "tools/call",
+          params: {
+            name: "maskera_restore",
+            arguments: { text: "[PERSONNUMMER_1]", session_id: "proxy" },
+          },
+        }),
+      })
+    ).text()
+    expect(stealProxy).not.toContain("19900101-2385")
+  })
 })

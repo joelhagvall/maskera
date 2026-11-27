@@ -11,6 +11,7 @@ export interface SessionSummary {
 
 interface SessionEntry {
   id: string
+  owner: string
   createdAt: string
   updatedAt: string
   /** Length-prefixed `${label.length}:${label}:${value}` -> placeholder */
@@ -25,7 +26,21 @@ interface SessionEntry {
 
 const DEFAULT_MAX_SESSIONS = 100
 const DEFAULT_MAX_ENTITIES_PER_SESSION = 5_000
+const DEFAULT_OWNER = "default"
 const EXISTING_TOKEN_RE = /\[[A-ZÅÄÖ][A-ZÅÄÖ0-9_]*_\d+\]/g
+
+function hasOwn(obj: Record<string, string>, key: string): boolean {
+  return Object.hasOwn(obj, key)
+}
+
+function ownerStorageKey(owner: string, id: string): string {
+  return `${owner}\0${id}`
+}
+
+function normalizeOwner(owner?: string): string {
+  const trimmed = owner?.trim()
+  return trimmed || DEFAULT_OWNER
+}
 
 function valueKey(label: PiiLabel, value: string): string {
   return `${label.length}:${label}:${value}`
@@ -60,13 +75,15 @@ export class SessionVault {
     this.maxEntitiesPerSession = Math.max(1, maxEntitiesPerSession)
   }
 
-  private getOrCreate(sessionId?: string): SessionEntry {
+  private getOrCreate(sessionId?: string, owner?: string): SessionEntry {
     const id = sessionId?.trim() || `s_${randomUUID().slice(0, 12)}`
-    const existing = this.sessions.get(id)
+    const resolvedOwner = normalizeOwner(owner)
+    const storageKey = ownerStorageKey(resolvedOwner, id)
+    const existing = this.sessions.get(storageKey)
     if (existing) {
       // Refresh LRU position.
-      this.sessions.delete(id)
-      this.sessions.set(id, existing)
+      this.sessions.delete(storageKey)
+      this.sessions.set(storageKey, existing)
       existing.updatedAt = new Date().toISOString()
       return existing
     }
@@ -77,14 +94,15 @@ export class SessionVault {
     const now = new Date().toISOString()
     const created: SessionEntry = {
       id,
+      owner: resolvedOwner,
       createdAt: now,
       updatedAt: now,
       tokenByKey: new Map(),
-      map: {},
+      map: Object.create(null) as Record<string, string>,
       counters: new Map(),
       countsByLabel: {},
     }
-    this.sessions.set(id, created)
+    this.sessions.set(storageKey, created)
     return created
   }
 
@@ -97,6 +115,7 @@ export class SessionVault {
     originalInput: string,
     result: RedactResult,
     sessionId?: string,
+    owner?: string,
   ): {
     sessionId: string
     redacted: string
@@ -104,7 +123,7 @@ export class SessionVault {
     totalRedactions: number
     map: Record<string, string>
   } {
-    const session = this.getOrCreate(sessionId)
+    const session = this.getOrCreate(sessionId, owner)
     if (result.redactions.length === 0) {
       return {
         sessionId: session.id,
@@ -136,7 +155,7 @@ export class SessionVault {
         for (;;) {
           next += 1
           const candidate = `[${r.label}_${next}]`
-          if (!(candidate in session.map) && !existingTokens?.has(candidate)) {
+          if (!hasOwn(session.map, candidate) && !existingTokens?.has(candidate)) {
             token = candidate
             break
           }
@@ -177,7 +196,7 @@ export class SessionVault {
 
   restore(
     text: string,
-    options: { sessionId?: string; map?: Record<string, string> },
+    options: { sessionId?: string; map?: Record<string, string>; owner?: string },
   ): { restored: string; sessionId: string | null; knownPlaceholders: number } {
     const normalizedId = options.sessionId?.trim() || undefined
     if (options.map && Object.keys(options.map).length > 0) {
@@ -190,7 +209,8 @@ export class SessionVault {
     if (!normalizedId) {
       throw new Error("Provide either session_id or map to restore placeholders.")
     }
-    const session = this.sessions.get(normalizedId)
+    const resolvedOwner = normalizeOwner(options.owner)
+    const session = this.sessions.get(ownerStorageKey(resolvedOwner, normalizedId))
     if (!session) {
       throw new Error(`Unknown session_id "${normalizedId}".`)
     }
@@ -203,14 +223,14 @@ export class SessionVault {
 
   /**
    * Picks the session that restores `text` when the caller named none.
-   * A candidate must know every placeholder in the text. When several do and
-   * would restore it differently, the choice is ambiguous and refused, so a
-   * missing session_id can never put another document's values into a file.
+   * Confined strictly to sessions belonging to `owner` so a missing session_id
+   * can never read another client's or the proxy's vault entries.
    */
-  resolveSessionFor(text: string): string {
+  resolveSessionFor(text: string, owner?: string): string {
+    const resolvedOwner = normalizeOwner(owner)
     const tokens = [...new Set(text.match(EXISTING_TOKEN_RE) ?? [])]
-    const candidates = [...this.sessions.values()].filter((s) =>
-      tokens.every((token) => token in s.map),
+    const candidates = [...this.sessions.values()].filter(
+      (s) => s.owner === resolvedOwner && tokens.every((token) => hasOwn(s.map, token)),
     )
     if (candidates.length === 0) {
       throw new Error(
@@ -232,8 +252,9 @@ export class SessionVault {
     return latest.id
   }
 
-  getMap(sessionId: string): Record<string, string> {
-    const session = this.sessions.get(sessionId.trim())
+  getMap(sessionId: string, owner?: string): Record<string, string> {
+    const resolvedOwner = normalizeOwner(owner)
+    const session = this.sessions.get(ownerStorageKey(resolvedOwner, sessionId.trim()))
     return session ? { ...session.map } : {}
   }
 
@@ -251,18 +272,47 @@ export class SessionVault {
     this.sessions.clear()
   }
 
-  list(): SessionSummary[] {
-    return [...this.sessions.values()].map((s) => ({
-      sessionId: s.id,
-      entityCount: Object.keys(s.map).length,
-      countsByLabel: { ...s.countsByLabel },
-      createdAt: s.createdAt,
-      updatedAt: s.updatedAt,
-    }))
+  clearOwner(owner: string): number {
+    const resolvedOwner = normalizeOwner(owner)
+    let removed = 0
+    for (const [key, entry] of this.sessions.entries()) {
+      if (entry.owner === resolvedOwner) {
+        this.sessions.delete(key)
+        removed += 1
+      }
+    }
+    return removed
   }
 
-  clear(sessionId: string): boolean {
-    return this.sessions.delete(sessionId.trim())
+  list(owner?: string): SessionSummary[] {
+    const resolvedOwner = owner !== undefined ? normalizeOwner(owner) : undefined
+    const out: SessionSummary[] = []
+    for (const s of this.sessions.values()) {
+      if (resolvedOwner !== undefined && s.owner !== resolvedOwner) continue
+      out.push({
+        sessionId: s.id,
+        entityCount: Object.keys(s.map).length,
+        countsByLabel: { ...s.countsByLabel },
+        createdAt: s.createdAt,
+        updatedAt: s.updatedAt,
+      })
+    }
+    return out
+  }
+
+  clear(sessionId: string, owner?: string): boolean {
+    const resolvedOwner = normalizeOwner(owner)
+    return this.sessions.delete(ownerStorageKey(resolvedOwner, sessionId.trim()))
+  }
+
+  sizeForOwner(owner?: string): number {
+    if (owner === undefined) return this.sessions.size
+    const resolvedOwner = normalizeOwner(owner)
+    let count = 0
+    for (const s of this.sessions.values()) {
+      if (s.owner === resolvedOwner) count += 1
+    }
+    return count
   }
 
   get size(): number {

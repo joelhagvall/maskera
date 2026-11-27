@@ -102,6 +102,25 @@ export async function runGuard(
             }
             return out.result.text
           }
+          if (typeof value === "number" && Number.isFinite(value)) {
+            const asText = String(value)
+            if (asText.length >= 7) {
+              const out = await engine.redact(asText, {
+                mode: options.mode,
+                profile: options.profile,
+                customTerms: options.customTerms,
+              })
+              if (out.result.redactions.length > 0) {
+                modeUsed = out.modeUsed
+                totalRedactions += out.result.redactions.length
+                for (const r of out.result.redactions) {
+                  counts[r.label] = (counts[r.label] ?? 0) + 1
+                }
+                return out.result.text
+              }
+            }
+            return value
+          }
           if (Array.isArray(value)) {
             const arr = []
             for (const item of value) arr.push(await redactJson(item))

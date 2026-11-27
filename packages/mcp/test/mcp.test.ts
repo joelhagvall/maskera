@@ -1271,3 +1271,82 @@ describe.runIf(existsSync(cliDistPath))("maskera-mcp stdio CLI", () => {
     expect(await readFile(outFile, "utf8")).toBe("Klart: 070-174 06 58 / 19900101-2385")
   })
 })
+
+describe("Security audit regression guards", () => {
+  it("blocks mode='rules' downgrade on file tools, prevents search exfil under --no-raw-restore, and redacts before truncating", async () => {
+    const root = await makeTempDir()
+    const longLine = `${"a".repeat(495)}19900101-2385`
+    await writeFile(
+      join(root, "case.txt"),
+      `Patient Anna Lindqvist (19900101-2385).\n${longLine}\n`,
+      "utf8",
+    )
+    const engine = createMaskeraEngine({
+      defaultMode: "auto",
+      recognizer: stubRecognizer([{ value: "Anna Lindqvist", label: "NAMN" }]),
+    })
+    const server = createMaskeraMcpServer({
+      engine,
+      allowedRoots: [root],
+      allowRawRestore: false,
+    })
+
+    const readOk = await server.handleMessage({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "tools/call",
+      params: { name: "maskera_read_file", arguments: { path: "case.txt", session_id: "s1" } },
+    })
+    expect(JSON.stringify(readOk)).not.toContain("Anna Lindqvist")
+
+    const downgradedRead = await server.handleMessage({
+      jsonrpc: "2.0",
+      id: 2,
+      method: "tools/call",
+      params: {
+        name: "maskera_read_file",
+        arguments: { path: "case.txt", session_id: "s1", mode: "rules" },
+      },
+    })
+    expect((downgradedRead?.result as { isError?: boolean } | undefined)?.isError).toBe(true)
+    expect(JSON.stringify(downgradedRead)).not.toContain("Anna Lindqvist")
+
+    const downgradedSearch = await server.handleMessage({
+      jsonrpc: "2.0",
+      id: 3,
+      method: "tools/call",
+      params: {
+        name: "maskera_search_files",
+        arguments: { query: "[NAMN_1]", session_id: "s1", mode: "rules" },
+      },
+    })
+    expect((downgradedSearch?.result as { isError?: boolean } | undefined)?.isError).toBe(true)
+    expect(JSON.stringify(downgradedSearch)).not.toContain("Anna Lindqvist")
+
+    const truncSearch = await server.handleMessage({
+      jsonrpc: "2.0",
+      id: 4,
+      method: "tools/call",
+      params: { name: "maskera_search_files", arguments: { query: "aaaaa", session_id: "s1" } },
+    })
+    expect(JSON.stringify(truncSearch)).not.toContain("19900")
+  })
+
+  it("canonicalizes NFD custom terms and zero-width obfuscated names for lossless roundtrip", async () => {
+    const engine = createMaskeraEngine({
+      defaultMode: "auto",
+      recognizer: stubRecognizer([{ value: "Anna Lindqvist", label: "NAMN" }]),
+    })
+    const nfdTerm = "Åsa Öberg".normalize("NFD")
+    const nfcRes = await engine.redact("Kontakta Åsa Öberg idag.".normalize("NFC"), {
+      mode: "rules",
+      customTerms: [nfdTerm],
+    })
+    expect(nfcRes.result.text).not.toContain("Åsa")
+
+    const zwText = "Patient A\u200bnna Lind\u00adqvist ringde."
+    const zwRes = await engine.redact(zwText, { mode: "auto" })
+    expect(zwRes.result.text).toBe("Patient [NAMN_1] ringde.")
+    expect(zwRes.result.restore(zwRes.result.text)).toBe(zwText)
+  })
+})

@@ -1,0 +1,53 @@
+name: MCP Production Readiness Audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/mcp/**"
+      - "packages/core/**"
+      - "packages/ner/**"
+      - ".github/workflows/mcp-audit.yml"
+  pull_request:
+    paths:
+      - "packages/mcp/**"
+      - "packages/core/**"
+      - "packages/ner/**"
+      - ".github/workflows/mcp-audit.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: mcp-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  mcp-release-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build packages
+        run: pnpm --filter @maskera/core --filter maskera --filter @maskera/mcp build
+      - name: Fetch checksum-pinned Swedish ONNX model
+        run: node apps/demo/scripts/fetch-model.mjs
+      - name: Run @maskera/mcp unit tests (randomized order)
+        run: pnpm --filter @maskera/mcp exec vitest run --sequence.shuffle
+      - name: Run full @maskera/mcp production audit and release gates
+        run: pnpm audit:full -- --ci --out tmp/mcp-audit-report.json
+      - name: Upload machine-readable audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-audit-report-${{ github.sha }}
+          path: tmp/mcp-audit-report.json
+          if-no-files-found: error
+          retention-days: 90

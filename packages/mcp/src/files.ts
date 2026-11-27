@@ -310,6 +310,7 @@ export function createFileGuard(roots: readonly string[] = [process.cwd()]): Fil
       await writeFile(targetReal, content, {
         encoding: "utf8",
         flag: options.overwrite ? "w" : "wx",
+        mode: 0o600,
       }).catch((err: NodeJS.ErrnoException) => {
         if (err.code === "EEXIST") {
           throw new Error(`File already exists: "${filePath}". Pass overwrite=true to replace it.`)
@@ -387,10 +388,12 @@ export function createFileGuard(roots: readonly string[] = [process.cwd()]): Fil
           const lineText = lines[i] ?? ""
           const haystack = caseSensitive ? lineText : lineText.toLowerCase()
           if (haystack.includes(needle)) {
+            // Keep the full line (up to a safe ceiling) so callers redact
+            // BEFORE truncating and never slice a PII token in half.
             matches.push({
               path: file.relPath,
               line: i + 1,
-              lineText: lineText.length > 500 ? `${lineText.slice(0, 500)}...` : lineText,
+              lineText: lineText.length > 16_384 ? lineText.slice(0, 16_384) : lineText,
             })
             if (matches.length >= maxMatches) {
               truncated = true

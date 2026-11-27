@@ -1,6 +1,6 @@
 import { createRequire } from "node:module"
 import type { RedactionProfile } from "maskera"
-import { type ApprovalBroker, type ApprovalMode } from "./approvals"
+import type { ApprovalBroker, ApprovalMode } from "./approvals"
 import { createMaskeraEngine, type MaskeraEngine, type MaskMode } from "./engine"
 import { createFileGuard, type FileGuard } from "./files"
 import {
@@ -586,6 +586,47 @@ export interface MaskeraMcpPolicy {
   readOnly?: boolean
   /** Gate raw PII release (`automatic`, `browser`, or `native` MCP elicitation). Default: `"automatic"`. */
   approvalMode?: ApprovalMode
+  /** Vault & approval isolation owner namespace (e.g. per Streamable HTTP `Mcp-Session-Id`). */
+  sessionOwner?: string
+}
+
+interface ResolvedPolicy {
+  allowRawRestore: boolean
+  readOnly: boolean
+  approvalMode: ApprovalMode
+  sessionOwner: string
+}
+
+function truncatePreservingPlaceholders(text: string, maxLength = 500): string {
+  if (text.length <= maxLength) return text
+  let cut = maxLength
+  const open = text.lastIndexOf("[", cut - 1)
+  if (open >= 0) {
+    const close = text.indexOf("]", open)
+    if (close >= cut) {
+      // Avoid slicing a `[LABEL_N]` placeholder in half.
+      cut = open
+    }
+  }
+  return `${text.slice(0, cut)}...`
+}
+
+function enforceSessionSecretsRedacted(
+  text: string,
+  sessionMap: Readonly<Record<string, string>>,
+): { text: string; extraRedactions: number } {
+  const entries = Object.entries(sessionMap)
+    .filter(([, value]) => value.length >= 2)
+    .sort((a, b) => b[1].length - a[1].length)
+  let out = text
+  let extraRedactions = 0
+  for (const [token, rawValue] of entries) {
+    if (!out.includes(rawValue)) continue
+    const parts = out.split(rawValue)
+    extraRedactions += parts.length - 1
+    out = parts.join(token)
+  }
+  return { text: out, extraRedactions }
 }
 
 export interface MaskeraMcpOptions extends MaskeraMcpPolicy {
@@ -619,15 +660,16 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
 
   let clientSupportsElicitation = false
 
-  function resolvePolicy(override?: MaskeraMcpPolicy): Required<MaskeraMcpPolicy> {
+  function resolvePolicy(override?: MaskeraMcpPolicy): ResolvedPolicy {
     return {
       allowRawRestore: override?.allowRawRestore ?? options.allowRawRestore ?? true,
       readOnly: override?.readOnly ?? options.readOnly ?? false,
       approvalMode: override?.approvalMode ?? options.approvalMode ?? "automatic",
+      sessionOwner: override?.sessionOwner ?? options.sessionOwner ?? "default",
     }
   }
 
-  function visibleTools(policy: Required<MaskeraMcpPolicy>): ToolDefinition[] {
+  function visibleTools(policy: ResolvedPolicy): ToolDefinition[] {
     return TOOLS.filter((tool) => {
       if (tool.name === "maskera_resume") {
         return policy.approvalMode === "browser" && Boolean(approvals)
@@ -644,12 +686,12 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
     return [...defaultCustomTerms, ...callTerms]
   }
 
-  function statusPayload(policy: Required<MaskeraMcpPolicy>): Record<string, unknown> {
+  function statusPayload(policy: ResolvedPolicy): Record<string, unknown> {
     return {
       server: SERVER_NAME,
       version: SERVER_VERSION,
       engine: engine.status(),
-      active_sessions: vault.size,
+      active_sessions: vault.sizeForOwner(policy.sessionOwner),
       allowed_roots: files.allowedRoots,
       policy: {
         read_only: policy.readOnly,
@@ -660,7 +702,7 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
   }
 
   async function gateRawPiiExport(input: {
-    policy: Required<MaskeraMcpPolicy>
+    policy: ResolvedPolicy
     tool: string
     reason: string
     sessionId?: string | null
@@ -716,6 +758,7 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
       tool: input.tool,
       reason: input.reason,
       sessionId: input.sessionId,
+      owner: policy.sessionOwner,
       placeholderCount: input.placeholderCount,
       execute: input.execute,
     })
@@ -732,9 +775,10 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
     })
   }
 
-  async function callTool(name: string, rawArgs: unknown, policy: Required<MaskeraMcpPolicy>) {
+  async function callTool(name: string, rawArgs: unknown, policy: ResolvedPolicy) {
     const startedAt = Date.now()
     const args = asObject(rawArgs)
+    const owner = policy.sessionOwner
     let telemetrySessionId: string | undefined
     let telemetryRedactions = 0
     let telemetryCounts: Record<string, number> = {}
@@ -775,6 +819,7 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
           args.text,
           result,
           typeof args.session_id === "string" ? args.session_id : undefined,
+          owner,
         )
         telemetrySessionId = applied.sessionId
         telemetryRedactions = applied.totalRedactions
@@ -804,6 +849,13 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
       }
 
       if (name === "maskera_restore") {
+        if (!policy.allowRawRestore) {
+          return finish(
+            toolError(
+              "Raw PII export is disabled by server policy (--no-raw-restore). Use maskera_write_file to restore directly to disk without exposing raw PII to the model.",
+            ),
+          )
+        }
         if (typeof args.text !== "string") return finish(toolError("Missing required string: text"))
         const explicitMap =
           args.map && typeof args.map === "object" && !Array.isArray(args.map)
@@ -820,6 +872,7 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
         const preview = vault.restore(args.text, {
           sessionId: sessionIdArg,
           map: explicitMap,
+          owner,
         })
         return finish(
           await gateRawPiiExport({
@@ -845,7 +898,7 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
           return finish(toolError("Missing required non-empty string: request_id"))
         }
         const requestId = args.request_id.trim()
-        const resumed = await approvals.resume(requestId)
+        const resumed = await approvals.resume(requestId, owner)
         if (resumed.status === "not_found") {
           return finish(toolError(`Unknown approval request_id "${requestId}".`))
         }
@@ -868,9 +921,17 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
 
       if (name === "maskera_read_file") {
         if (typeof args.path !== "string") return finish(toolError("Missing required string: path"))
+        const requestedMode = asMode(args.mode)
+        if (engine.status().defaultMode === "auto" && requestedMode === "rules") {
+          return finish(
+            toolError(
+              'Downgrading mode to "rules" is not allowed on maskera_read_file when the server runs in hybrid "auto" mode.',
+            ),
+          )
+        }
         const file = await files.readText(args.path)
         const { result, modeUsed } = await engine.redact(file.content, {
-          mode: asMode(args.mode),
+          mode: requestedMode,
           profile: asProfile(args.profile) ?? defaultProfile,
           customTerms: mergeCustomTerms(asStringArray(args.custom_terms)),
         })
@@ -878,6 +939,7 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
           file.content,
           result,
           typeof args.session_id === "string" ? args.session_id : undefined,
+          owner,
         )
         telemetrySessionId = applied.sessionId
         telemetryRedactions = applied.totalRedactions
@@ -901,10 +963,11 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
         const normalizedSessionId =
           typeof args.session_id === "string" && args.session_id.trim()
             ? args.session_id.trim()
-            : vault.resolveSessionFor(args.text)
+            : vault.resolveSessionFor(args.text, owner)
         telemetrySessionId = normalizedSessionId
         const { restored, knownPlaceholders } = vault.restore(args.text, {
           sessionId: normalizedSessionId,
+          owner,
         })
         const written = await files.writeText(args.path, restored, {
           overwrite: args.overwrite === true,
@@ -940,16 +1003,24 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
         if (typeof args.query !== "string" || !args.query.trim()) {
           return finish(toolError("Missing required non-empty string: query"))
         }
+        const mode = asMode(args.mode)
+        if (engine.status().defaultMode === "auto" && mode === "rules") {
+          return finish(
+            toolError(
+              'Downgrading mode to "rules" is not allowed on maskera_search_files when the server runs in hybrid "auto" mode.',
+            ),
+          )
+        }
         const requestedSession =
           typeof args.session_id === "string" && args.session_id.trim()
             ? args.session_id.trim()
             : undefined
+        const existingSessionMap = requestedSession ? vault.getMap(requestedSession, owner) : {}
         let resolvedQuery = args.query.trim()
         // Allow searching by an existing Maskera placeholder (e.g. [NAMN_1])
         // by resolving it locally from the session vault without exposing it.
         if (requestedSession && PLACEHOLDER_QUERY_RE.test(resolvedQuery)) {
-          const map = vault.getMap(requestedSession)
-          const mapped = map[resolvedQuery]
+          const mapped = existingSessionMap[resolvedQuery]
           if (mapped) {
             resolvedQuery = mapped
           }
@@ -959,7 +1030,6 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
           caseSensitive: args.case_sensitive === true,
           maxMatches: asOptionalInt(args.max_matches),
         })
-        const mode = asMode(args.mode)
         const profile = asProfile(args.profile) ?? defaultProfile
         const customTerms = mergeCustomTerms(asStringArray(args.custom_terms))
 
@@ -974,16 +1044,22 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
             profile,
             customTerms,
           })
-          const applied = vault.apply(match.lineText, result, activeSessionId)
+          const applied = vault.apply(match.lineText, result, activeSessionId, owner)
           activeSessionId = applied.sessionId
           totalRedactions += applied.totalRedactions
           for (const [label, count] of Object.entries(applied.counts)) {
             totalCounts[label] = (totalCounts[label] ?? 0) + count
           }
+          // Guarantee that any vault secret already known in this session
+          // (including placeholder-resolved search terms) can never leak in
+          // plaintext when isolated single-line context weakens NER recall.
+          const currentMap = vault.getMap(activeSessionId, owner)
+          const safeguarded = enforceSessionSecretsRedacted(applied.redacted, currentMap)
+          totalRedactions += safeguarded.extraRedactions
           redactedMatches.push({
             path: match.path,
             line: match.line,
-            redacted_line: applied.redacted,
+            redacted_line: truncatePreservingPlaceholders(safeguarded.text, 500),
           })
         }
 
@@ -993,6 +1069,7 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
             "",
             { text: "", map: {}, redactions: [], restore: (s) => s },
             requestedSession,
+            owner,
           ).sessionId
         telemetrySessionId = ensuredSessionId
         telemetryRedactions = totalRedactions
@@ -1012,7 +1089,7 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
       }
 
       if (name === "maskera_list_sessions") {
-        return finish(toolOk({ sessions: vault.list() }))
+        return finish(toolOk({ sessions: vault.list(owner) }))
       }
 
       if (name === "maskera_clear_session") {
@@ -1024,7 +1101,7 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
         return finish(
           toolOk({
             session_id: normalizedSessionId,
-            cleared: vault.clear(normalizedSessionId),
+            cleared: vault.clear(normalizedSessionId, owner),
           }),
         )
       }
@@ -1053,7 +1130,7 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
         }
       }
       const req = raw as JsonRpcRequest
-      const hasIdProp = Object.prototype.hasOwnProperty.call(req, "id")
+      const hasIdProp = Object.hasOwn(req, "id")
       const validId =
         typeof req.id === "string" || typeof req.id === "number" || req.id === null
           ? req.id
@@ -1082,9 +1159,7 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
       if (req.method === "initialize") {
         const params = asObject(req.params)
         const clientCaps = asObject(params.capabilities)
-        if ("elicitation" in clientCaps && clientCaps.elicitation) {
-          clientSupportsElicitation = true
-        }
+        clientSupportsElicitation = Boolean("elicitation" in clientCaps && clientCaps.elicitation)
         const requested =
           typeof params.protocolVersion === "string" ? params.protocolVersion : undefined
         const protocolVersion =

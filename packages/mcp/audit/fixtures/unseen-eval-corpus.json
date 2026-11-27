@@ -1,0 +1,157 @@
+{
+  "schema": "maskera-mcp-unseen-eval/v1",
+  "description": "Previously unseen synthetic Swedish multi-domain evaluation corpus for auditing the full @maskera/mcp production pipeline (MCP tools + local HTTP proxy). Never used for model training or tuning.",
+  "domains": ["hr", "healthcare", "legal", "support", "finance", "software"],
+  "documents": [
+    {
+      "id": "hr-01",
+      "domain": "hr",
+      "text": "Kandidatutvärdering HR: Astrid Holmberg (19900101-2385) söker rollen som tech lead. Kontakt: provnamn.maskera@example.com, mobil 070-174 06 58. Nuvarande adress: Provgatan 12, 123 45 Uppsala.",
+      "entities": [
+        { "label": "NAMN", "value": "Astrid Holmberg" },
+        { "label": "PERSONNUMMER", "value": "19900101-2385" },
+        { "label": "EPOST", "value": "provnamn.maskera@example.com" },
+        { "label": "TELEFON", "value": "070-174 06 58" },
+        { "label": "ADRESS", "value": "Provgatan 12" },
+        { "label": "POSTNUMMER", "value": "123 45" },
+        { "label": "PLATS", "value": "Uppsala" }
+      ],
+      "protectedNonPii": ["Kandidatutvärdering", "tech lead"]
+    },
+    {
+      "id": "hr-02",
+      "domain": "hr",
+      "text": "Referenstagning för Oskar Nyström. Tidigare chef Henrik Lindström nås på 08-465 00 412 eller chef.test@example.org.",
+      "entities": [
+        { "label": "NAMN", "value": "Oskar Nyström" },
+        { "label": "NAMN", "value": "Henrik Lindström" },
+        { "label": "TELEFON", "value": "08-465 00 412" },
+        { "label": "EPOST", "value": "chef.test@example.org" }
+      ],
+      "protectedNonPii": ["Referenstagning", "Tidigare chef"]
+    },
+    {
+      "id": "hc-01",
+      "domain": "healthcare",
+      "profile": "clinical",
+      "text": "Journalanteckning: Patient Maja Lundgren (19850601-2387) inkom med feber. CRP 42, Hb 134, ordinerad 500 mg Alvedon. Anhörig Stefan Lundgren har telefon 070-174 06 61.",
+      "entities": [
+        { "label": "NAMN", "value": "Maja Lundgren" },
+        { "label": "PERSONNUMMER", "value": "19850601-2387" },
+        { "label": "NAMN", "value": "Stefan Lundgren" },
+        { "label": "TELEFON", "value": "070-174 06 61" }
+      ],
+      "protectedNonPii": ["CRP 42", "Hb 134", "500 mg"]
+    },
+    {
+      "id": "hc-02",
+      "domain": "healthcare",
+      "profile": "clinical",
+      "text": "Remissvar från kliniken i Linköping för Nils Forsberg, samordningsnummer 19640372-2397. Blodtryck 125/80, ingen diabetes. Boende på Testvägen 8B.",
+      "entities": [
+        { "label": "PLATS", "value": "Linköping" },
+        { "label": "NAMN", "value": "Nils Forsberg" },
+        { "label": "SAMORDNINGSNUMMER", "value": "19640372-2397" },
+        { "label": "ADRESS", "value": "Testvägen 8B" }
+      ],
+      "protectedNonPii": ["Blodtryck 125/80", "diabetes"]
+    },
+    {
+      "id": "legal-01",
+      "domain": "legal",
+      "text": "Fullmakt i ärende PROV-2026-0042: Klient Kristina Wallin (19781101-2397) företräds av ombudet Johan Viklund. Motpart är Kommun A, org.nr 202100-4748.",
+      "entities": [
+        { "label": "NAMN", "value": "Kristina Wallin" },
+        { "label": "PERSONNUMMER", "value": "19781101-2397" },
+        { "label": "NAMN", "value": "Johan Viklund" },
+        { "label": "ORGANISATIONSNUMMER", "value": "202100-4748" }
+      ],
+      "protectedNonPii": ["Fullmakt"]
+    },
+    {
+      "id": "legal-02",
+      "domain": "legal",
+      "text": "Avtalsbilaga mellan köparen Anders Engström, Maskeragatan 44, 123 45 Malmö och säljaren Eva Sjöholm (saljare.test@example.net).",
+      "entities": [
+        { "label": "NAMN", "value": "Anders Engström" },
+        { "label": "ADRESS", "value": "Maskeragatan 44" },
+        { "label": "POSTNUMMER", "value": "123 45" },
+        { "label": "PLATS", "value": "Malmö" },
+        { "label": "NAMN", "value": "Eva Sjöholm" },
+        { "label": "EPOST", "value": "saljare.test@example.net" }
+      ],
+      "protectedNonPii": ["Avtalsbilaga"]
+    },
+    {
+      "id": "support-01",
+      "domain": "support",
+      "text": "Ärende från kund Sara Ekström angående utebliven leverans till Syntetgränd 7 i Göteborg. Kunden ringde från 031-390 06 14 och mejlade sara.ekstrom@example.com.",
+      "entities": [
+        { "label": "NAMN", "value": "Sara Ekström" },
+        { "label": "ADRESS", "value": "Syntetgränd 7" },
+        { "label": "PLATS", "value": "Göteborg" },
+        { "label": "TELEFON", "value": "031-390 06 14" },
+        { "label": "EPOST", "value": "sara.ekstrom@example.com" }
+      ],
+      "protectedNonPii": ["utebliven leverans"]
+    },
+    {
+      "id": "support-02",
+      "domain": "support",
+      "text": "Kundsupport chattlogg: hej jag heter patrik olsson och mitt personnummer är 19991201-2391, kan ni skicka ny kod till 070-174 06 72?",
+      "entities": [
+        { "label": "NAMN", "value": "patrik olsson" },
+        { "label": "PERSONNUMMER", "value": "19991201-2391" },
+        { "label": "TELEFON", "value": "070-174 06 72" }
+      ],
+      "protectedNonPii": ["Kundsupport"]
+    },
+    {
+      "id": "finance-01",
+      "domain": "finance",
+      "text": "Utbetalningsorder till konsult Maria Lindberg. Betala till IBAN SE4280000890119146168423 eller bankgiro 991-2346, alternativt plusgiro 920100-5. Organisationsnummer 202100-4748.",
+      "entities": [
+        { "label": "NAMN", "value": "Maria Lindberg" },
+        { "label": "IBAN", "value": "SE4280000890119146168423" },
+        { "label": "BANKGIRO", "value": "991-2346" },
+        { "label": "PLUSGIRO", "value": "920100-5" },
+        { "label": "ORGANISATIONSNUMMER", "value": "202100-4748" }
+      ],
+      "protectedNonPii": ["Utbetalningsorder"]
+    },
+    {
+      "id": "finance-02",
+      "domain": "finance",
+      "text": "Fakturapåminnelse för Daniel Sandberg, konto 3300-0, 032 3232 3232. Kortbetalning 4242 4242 4242 4242 nekades kl 14:30.",
+      "entities": [
+        { "label": "NAMN", "value": "Daniel Sandberg" },
+        { "label": "KONTONUMMER", "value": "konto 3300-0, 032 3232 3232" },
+        { "label": "KORTNUMMER", "value": "4242 4242 4242 4242" }
+      ],
+      "protectedNonPii": ["Fakturapåminnelse", "14:30"]
+    },
+    {
+      "id": "sw-01",
+      "domain": "software",
+      "text": "Buggrapport i produktion: användare Fredrik Holm (fredrik.holm@example.com) fick HTTP 500 från IP 198.51.100.42 när formuläret sparade 20020301-2398.",
+      "entities": [
+        { "label": "NAMN", "value": "Fredrik Holm" },
+        { "label": "EPOST", "value": "fredrik.holm@example.com" },
+        { "label": "IP", "value": "198.51.100.42" },
+        { "label": "PERSONNUMMER", "value": "20020301-2398" }
+      ],
+      "protectedNonPii": ["Buggrapport", "HTTP 500"]
+    },
+    {
+      "id": "sw-02",
+      "domain": "software",
+      "text": "Incidentlogg: kontakta jourhavande utvecklare Sofia Berggren på 040-628 04 22 eller sofia.dev@example.com vid problem i klustret.",
+      "entities": [
+        { "label": "NAMN", "value": "Sofia Berggren" },
+        { "label": "TELEFON", "value": "040-628 04 22" },
+        { "label": "EPOST", "value": "sofia.dev@example.com" }
+      ],
+      "protectedNonPii": ["Incidentlogg", "klustret"]
+    }
+  ]
+}

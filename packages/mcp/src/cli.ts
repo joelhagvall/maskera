@@ -428,10 +428,18 @@ function buildEngine(args: ParsedCli) {
   })
 }
 
-async function readStdinAll(): Promise<string> {
+const MAX_GUARD_INPUT_BYTES = 16 * 1024 * 1024 // 16 MiB ceiling
+
+async function readStdinAll(maxBytes = MAX_GUARD_INPUT_BYTES): Promise<string> {
   const chunks: Buffer[] = []
+  let total = 0
   for await (const chunk of process.stdin) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+    const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
+    total += buf.byteLength
+    if (total > maxBytes) {
+      throw new Error(`Input exceeds max allowed size (${maxBytes} bytes).`)
+    }
+    chunks.push(buf)
   }
   return Buffer.concat(chunks).toString("utf8")
 }
@@ -654,6 +662,11 @@ async function main(): Promise<void> {
     let raw: string
     if (args.file) {
       const buf = await readFile(args.file)
+      if (buf.byteLength > MAX_GUARD_INPUT_BYTES) {
+        throw new Error(
+          `"${args.file}" is ${buf.byteLength} bytes (max ${MAX_GUARD_INPUT_BYTES} bytes for guard).`,
+        )
+      }
       if (buf.includes(0)) {
         throw new Error(`"${args.file}" appears to be a binary file; only UTF-8 text is supported.`)
       }

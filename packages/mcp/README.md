@@ -165,7 +165,21 @@ pnpm test:mcp:pack
 
 # Latency & throughput benchmark (CLI startup, multi-turn ONNX cache, SSE restorer)
 pnpm bench:mcp
+
+# Permanent adversarial production-readiness audit & release gates
+pnpm audit:quick        # protocol + privacy canaries + security invariants + 4/4 mutations
+pnpm audit:privacy      # canary scanner & network egress auditor
+pnpm audit:security     # security invariants + live mutation testing
+pnpm audit:e2e          # protocol conformance + built CLI E2E
+pnpm audit:clients      # real CLI clients (claude, codex, opencode) on packed tarball
+pnpm audit:adversarial  # Unicode, formats, large payloads, streaming splits, fuzzing
+pnpm audit:package      # tarball contents/checksums + clean install smoke
+pnpm audit:offline      # active egress-blocked offline verification
+pnpm audit:benchmark    # unseen Swedish corpus production eval, latency & 500-op soak
+pnpm audit:full         # full suite + automated release gates
 ```
+
+See [AUDIT.md](./AUDIT.md), [THREAT_MODEL.md](./THREAT_MODEL.md), [TEST_MATRIX.md](./TEST_MATRIX.md), [RELEASE_GATES.md](./RELEASE_GATES.md), and [audit-results.json](./audit-results.json) for full evidence, trust boundaries, and release criteria.
 
 ## Options and environment
 

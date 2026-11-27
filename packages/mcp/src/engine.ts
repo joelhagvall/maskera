@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto"
 import {
+  canonicalize,
   clinicalPrecisionFilter,
   createNerRecognizer,
   type Detection,
@@ -102,7 +103,7 @@ function normalizeCustomTerms(rawTerms: readonly string[]): string[] {
   const unique = new Map<string, string>()
   for (const raw of rawTerms) {
     if (typeof raw !== "string") continue
-    const trimmed = raw.trim()
+    const trimmed = canonicalize(raw.trim()).text.trim()
     if (trimmed.length < 2 || trimmed.length > 160) continue
     const folded = trimmed.toLowerCase()
     if (!unique.has(folded)) unique.set(folded, trimmed)
@@ -346,11 +347,38 @@ export function createMaskeraEngine(options: EngineOptions = {}): MaskeraEngine 
 
       try {
         const ner = getRecognizer()
-        const result = await redactWithNer(text, {
-          recognizer: ner,
-          detectors,
-          profile: req.profile,
-        })
+        // Run NER on the canonicalized view when input contains invisible
+        // characters (zero-width spaces, soft hyphens, bidi controls) or
+        // non-NFKC forms so adversarial obfuscation cannot split wordpieces
+        // and bypass Swedish NER, while still mapping spans back to the exact
+        // original string coordinates for lossless round-trip restoration.
+        const canonical = canonicalize(text)
+        const result = canonical.identity
+          ? await redactWithNer(text, {
+              recognizer: ner,
+              detectors,
+              profile: req.profile,
+            })
+          : await (async () => {
+              const foldedRes = await redactWithNer(canonical.text, {
+                recognizer: ner,
+                detectors,
+                profile: req.profile,
+              })
+              const mapped: Detection[] = []
+              for (const r of foldedRes.redactions) {
+                const [start, end] = canonical.span(r.start, r.end)
+                if (end > start) {
+                  mapped.push({
+                    start,
+                    end,
+                    label: r.label,
+                    value: text.slice(start, end),
+                  })
+                }
+              }
+              return redactFromDetections(text, mapped)
+            })()
         nerLoaded = true
         nerError = null
         if (cacheKey) {
