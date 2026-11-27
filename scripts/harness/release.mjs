@@ -35,6 +35,19 @@ const PACKAGES = [
   { name: "@maskera/mcp", dir: "packages/mcp", key: "mcp" },
 ]
 const CLOUD_DEPENDENCY_FILES = ["apps/gateway/package.json", "packages/runtime/package.json"]
+const CLOUD_MODEL_FILES = [
+  "apps/gateway/model-manifest.json",
+  "apps/gateway/Dockerfile",
+  "docs/gateway/benchmark.md",
+]
+const EXTENSION_SYNC_FILES = [
+  "package.json",
+  "bun.lock",
+  "src/manifest.json",
+  "src/shared/model-config.ts",
+  "scripts/prepare-store-model.ts",
+  "docs/maskera-product-contract.json",
+]
 const REGISTRY_WAIT_MS = 30 * 60 * 1000
 const CI_WAIT_MS = 60 * 60 * 1000
 
@@ -49,6 +62,28 @@ export function bumpHagvallVersion(seoText, version) {
     /(export const maskeraVersion = ['"])[^'"]+(['"])/,
     (_match, open, close) => `${open}${version}${close}`,
   )
+}
+
+/** Rewrites `export const EXTENSION_ZIP_VERSION = "…"` in apps/demo/src/extensionBrowsers.ts. */
+export function bumpExtensionZipVersion(browsersText, version) {
+  return browsersText.replace(
+    /(export const EXTENSION_ZIP_VERSION = ["'])[^"']+(["'])/,
+    (_match, open, close) => `${open}${version}${close}`,
+  )
+}
+
+/** Parses the trailing JSON object emitted by `maskera-extension`'s `bun run sync:model --json`. */
+export function parseSyncModelResult(stdout) {
+  const lines = stdout
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if (lines[i].startsWith("{") && lines[i].endsWith("}")) {
+      return JSON.parse(lines[i])
+    }
+  }
+  throw new Error(`sync:model --json produced no JSON payload:\n${stdout}`)
 }
 
 /** The release tags changesets creates for the given package versions. */
@@ -235,16 +270,57 @@ async function main() {
   const message = `Follow Maskera ${label}`
   if (siblings.includes("maskera-extension")) {
     step("maskera-extension")
+    const cwd = join(PARENT, "maskera-extension")
+    const foreign = EXTENSION_SYNC_FILES.filter((path) =>
+      dirtyBefore["maskera-extension"].includes(path),
+    )
+    const ownContract = foreign.length === 1 && foreign[0] === "docs/maskera-product-contract.json"
+    let syncResult = { changed: false, version: null, changedFiles: [] }
+    if (foreign.length === 0 || ownContract) {
+      const syncOut = run(
+        "bun",
+        [
+          "run",
+          "sync:model",
+          "--json",
+          "--core-version",
+          released.core,
+          "--maskera-version",
+          released.maskera,
+        ],
+        cwd,
+        { capture: true },
+      )
+      syncResult = parseSyncModelResult(syncOut)
+      if (syncResult.changed) {
+        run("bun", ["install"], cwd)
+        run("bun", ["run", "check"], cwd)
+      }
+    }
     const before = dirtyBefore["maskera-extension"].filter(
       (path) => path !== "docs/maskera-product-contract.json",
     )
-    deliver("maskera-extension", ["docs/maskera-product-contract.json"], message, before)
+    const delivered = deliver("maskera-extension", EXTENSION_SYNC_FILES, message, before)
+    if (delivered && syncResult.changed && syncResult.version) {
+      step(`maskera-extension release --upload (${syncResult.version})`)
+      run("bun", ["run", "release", "--upload"], cwd)
+      const browsersFile = join(ROOT, "apps/demo/src/extensionBrowsers.ts")
+      const beforeBrowsers = readFileSync(browsersFile, "utf8")
+      const afterBrowsers = bumpExtensionZipVersion(beforeBrowsers, syncResult.version)
+      if (afterBrowsers !== beforeBrowsers) {
+        writeFileSync(browsersFile, afterBrowsers)
+        console.log(
+          `maskera: updated apps/demo/src/extensionBrowsers.ts to EXTENSION_ZIP_VERSION = "${syncResult.version}" (run \`pnpm run prova\` then commit & push)`,
+        )
+      }
+    }
   }
   if (siblings.includes("maskera-cloud")) {
     step("maskera-cloud")
     const cwd = join(PARENT, "maskera-cloud")
     const paths = [
       ...CLOUD_DEPENDENCY_FILES,
+      ...CLOUD_MODEL_FILES,
       "bun.lock",
       "docs/maskera-product-contract.json",
       "docs/maskera-benchmark-release.json",
@@ -259,6 +335,7 @@ async function main() {
       }
       run("bun", ["install"], cwd)
       run("bun", ["run", "sync:benchmarks"], cwd)
+      run("bun", ["run", "sync:model"], cwd)
       run("bun", ["run", "check:benchmarks"], cwd)
       run("bun", ["run", "check:product"], cwd)
     }

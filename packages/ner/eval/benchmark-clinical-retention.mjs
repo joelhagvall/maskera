@@ -24,7 +24,7 @@
  *   MASKERA_PROFILE     general or clinical (default: general)
  *   MASKERA_REMOTE=1    load joelhagvall/maskera-sv-ner (pinned revision) from the Hugging Face Hub
  *   MASKERA_MODEL_PATH  directory containing the model folder (default: apps/demo/public/models)
- *   MASKERA_MODEL       model folder name (default: maskera-sv-ner-v19)
+ *   MASKERA_MODEL       model folder name (default: apps/demo/src/model-meta.json directory)
  *   MASKERA_DTYPE       quantization dtype (default: q4)
  *   MASKERA_LEXICON     a clinical-lexicon.json (build-clinical-lexicon.mjs): adds the
  *                       experimental clinical-lexicon-filter.mjs as detectionFilter
@@ -50,9 +50,12 @@ const corpus = [...tuned, ...heldOut]
 import tuned, { controls, heldOut } from "./corpus-clinical-retention.mjs"
 
 const repoRoot = fileURLToPath(new URL("../../../", import.meta.url))
+const defaultModelDirectory = JSON.parse(
+  readFileSync(resolve(repoRoot, "apps/demo/src/model-meta.json"), "utf8"),
+).directory
 const profile = process.env.MASKERA_PROFILE ?? "general"
 const remote = process.env.MASKERA_REMOTE === "1"
-const model = process.env.MASKERA_MODEL ?? "maskera-sv-ner-v19"
+const model = process.env.MASKERA_MODEL ?? defaultModelDirectory
 const modelPath = resolve(repoRoot, process.env.MASKERA_MODEL_PATH ?? "apps/demo/public/models")
 const dtype = process.env.MASKERA_DTYPE ?? "q4"
 const lexiconPath = process.env.MASKERA_LEXICON

@@ -14,6 +14,7 @@ import {
   sha256File,
   sha256FileSet,
 } from "./benchmark-contract.mjs"
+import { findHardcodedModelVersions } from "./hardcoded-model-guard.mjs"
 
 const requestedContract = process.env.MASKERA_BENCHMARK_CONTRACT
 const activeContractPath = requestedContract
@@ -859,6 +860,16 @@ if (existsSync(resolve(repoRoot, localModel))) {
     drift("local q4 model size", localModel, artifact.bytes, actualBytes)
 } else if (requireModel) {
   drift("local q4 model", localModel, "checksum-pinned model to exist", "missing")
+}
+
+const hardcodedModelHits = await findHardcodedModelVersions(repoRoot)
+for (const hit of hardcodedModelHits) {
+  drift(
+    "hardcoded model version in executable code",
+    `${hit.file}:${hit.line}`,
+    "derive from apps/demo/src/model-meta.json or docs/benchmark-release.json",
+    hit.literal,
+  )
 }
 
 if (errors.length > 0) {

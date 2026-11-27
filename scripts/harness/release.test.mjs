@@ -1,7 +1,14 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import test from "node:test"
-import { bumpHagvallVersion, bumpMaskeraRange, parsePorcelain, releaseTags } from "./release.mjs"
+import {
+  bumpExtensionZipVersion,
+  bumpHagvallVersion,
+  bumpMaskeraRange,
+  parsePorcelain,
+  parseSyncModelResult,
+  releaseTags,
+} from "./release.mjs"
 
 test("bumpMaskeraRange moves every maskera range and leaves other packages alone", () => {
   const before =
@@ -37,4 +44,21 @@ test("parsePorcelain keeps the path of a first line that starts with a space", (
     "docs/",
     "bun.lock",
   ])
+})
+
+test("bumpExtensionZipVersion updates EXTENSION_ZIP_VERSION and keeps quotes", () => {
+  assert.equal(
+    bumpExtensionZipVersion('export const EXTENSION_ZIP_VERSION = "0.2.3"\n', "0.2.4"),
+    'export const EXTENSION_ZIP_VERSION = "0.2.4"\n',
+  )
+})
+
+test("parseSyncModelResult extracts trailing JSON even with bun banner lines", () => {
+  const out =
+    '$ bun run scripts/sync-model.ts --json\n{"changed":true,"version":"0.2.4","changedFiles":["package.json"]}\n'
+  assert.deepEqual(parseSyncModelResult(out), {
+    changed: true,
+    version: "0.2.4",
+    changedFiles: ["package.json"],
+  })
 })

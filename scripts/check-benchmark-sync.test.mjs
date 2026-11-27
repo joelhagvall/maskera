@@ -1,11 +1,12 @@
 import assert from "node:assert/strict"
 import { spawn } from "node:child_process"
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join, resolve } from "node:path"
 import test from "node:test"
 import YAML from "yaml"
 import { evaluationEnvironmentSha256, firstDifference } from "./benchmark-contract.mjs"
+import { findHardcodedModelVersions } from "./hardcoded-model-guard.mjs"
 
 const root = resolve(import.meta.dirname, "..")
 
@@ -239,4 +240,30 @@ test("firstDifference identifies the exact nested field", () => {
     expected: "93.08",
     actual: "92.89",
   })
+})
+
+test("findHardcodedModelVersions flags executable literals and ignores comments and tests", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "maskera-hardcoded-model-"))
+  try {
+    await mkdir(join(directory, "packages/example/src"), { recursive: true })
+    await mkdir(join(directory, "packages/example/test"), { recursive: true })
+    await writeFile(
+      join(directory, "packages/example/src/good.mjs"),
+      '// comment mentioning maskera-sv-ner-v20\n/* block maskera-sv-ner-v19 */\nexport const ok = "dynamic"\n',
+    )
+    await writeFile(
+      join(directory, "packages/example/src/bad.mjs"),
+      'export const stale = "maskera-sv-ner-v20"\n',
+    )
+    await writeFile(
+      join(directory, "packages/example/test/fixture.test.ts"),
+      'export const fixture = "maskera-sv-ner-v19"\n',
+    )
+    const hits = await findHardcodedModelVersions(directory, ["packages"])
+    assert.deepEqual(hits, [
+      { file: "packages/example/src/bad.mjs", line: 1, literal: "maskera-sv-ner-v20" },
+    ])
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
 })

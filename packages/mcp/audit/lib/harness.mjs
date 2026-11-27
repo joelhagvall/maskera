@@ -22,13 +22,15 @@ function readDemoModelDirectory() {
       return meta.directory.trim()
     }
   } catch {
-    // Fall back when running outside a full monorepo checkout.
+    // Running outside a full monorepo checkout; disable local ONNX shortcut.
   }
-  return "maskera-sv-ner-v21"
+  return null
 }
 
 export const localModelId = readDemoModelDirectory()
-export const hasLocalNerModel = existsSync(join(localModelsDir, localModelId))
+export const hasLocalNerModel = Boolean(
+  localModelId && existsSync(join(localModelsDir, localModelId)),
+)
 
 const WORKSPACE_TARBALL_PACKAGES = ["@maskera/core", "maskera", "@maskera/mcp"]
 
