@@ -56,6 +56,11 @@ export function bumpMaskeraRange(packageJsonText, version) {
   return packageJsonText.replace(/("maskera":\s*")\^?[0-9][^"]*(")/g, `$1^${version}$2`)
 }
 
+/** Rewrites `"@maskera/core": "^x.y.z"` dependency ranges to the released version. */
+export function bumpCoreRange(packageJsonText, version) {
+  return packageJsonText.replace(/("@maskera\/core":\s*")\^?[0-9][^"]*(")/g, `$1^${version}$2`)
+}
+
 /** Rewrites hagvall-labs' `export const maskeraVersion = '…'`. */
 export function bumpHagvallVersion(seoText, version) {
   return seoText.replace(
@@ -367,7 +372,11 @@ async function main() {
     if (foreign.length === 0 || ownContract) {
       for (const file of CLOUD_DEPENDENCY_FILES) {
         const path = join(cwd, file)
-        writeFileSync(path, bumpMaskeraRange(readFileSync(path, "utf8"), released.maskera))
+        const updated = bumpCoreRange(
+          bumpMaskeraRange(readFileSync(path, "utf8"), released.maskera),
+          released.core,
+        )
+        writeFileSync(path, updated)
       }
       run("bun", ["install"], cwd)
       run("bun", ["run", "sync:benchmarks"], cwd)

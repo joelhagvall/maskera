@@ -2,6 +2,7 @@ import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import test from "node:test"
 import {
+  bumpCoreRange,
   bumpExtensionZipVersion,
   bumpHagvallVersion,
   bumpMaskeraRange,
@@ -18,6 +19,10 @@ test("bumpMaskeraRange moves every maskera range and leaves other packages alone
   assert.match(after, /"maskera": "\^0\.11\.2"/)
   assert.match(after, /"maskera-extra": "\^1\.0\.0"/)
   assert.match(after, /"@maskera\/core": "\^0\.8\.4"/)
+
+  const afterCore = bumpCoreRange(after, "0.8.6")
+  assert.match(afterCore, /"@maskera\/core": "\^0\.8\.6"/)
+  assert.match(afterCore, /"maskera": "\^0\.11\.2"/)
 })
 
 test("bumpHagvallVersion keeps the quote style", () => {
