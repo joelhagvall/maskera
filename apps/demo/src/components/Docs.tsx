@@ -96,6 +96,34 @@ function DocsSubNav({ current, go }: { current: DocsView; go: (view: View) => vo
   )
 }
 
+/**
+ * The other docs pages as cards at the end of each page: title and lede, so
+ * a reader who finished one page sees where to go next without the subnav.
+ */
+function DocsNext({ current, go }: { current: DocsView; go: (view: View) => void }) {
+  const next = DOCS_NAV_VIEWS.filter((item) => item.view !== current)
+  return (
+    <nav className="docs-next" aria-labelledby="docs-next-title">
+      <h2 id="docs-next-title">{copy.docs.nextLabel}</h2>
+      <ul>
+        {next.map((item) => (
+          <li key={item.view}>
+            <a
+              href={viewPaths[item.view]}
+              onMouseEnter={() => void loadView(item.view)}
+              onFocus={() => void loadView(item.view)}
+              onClick={navClick(() => go(item.view))}
+            >
+              <span className="docs-next-title">{copy.docs.nav[item.key]} →</span>
+              <span className="docs-next-lede">{copy.docs[item.key].lede}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
 function DocsPage({
   current,
   data,
@@ -182,6 +210,8 @@ function DocsPage({
               {afterSection?.[section.id]}
             </section>
           ))}
+
+          <DocsNext current={current} go={go} />
 
           <nav className="prose-foot foot-links" aria-label={copy.docs.resourcesLabel}>
             <ul>

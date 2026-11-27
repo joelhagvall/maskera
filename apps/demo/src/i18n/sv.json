@@ -1124,6 +1124,8 @@
     "compare": {
       "title": "Priser: Gratis, Pro och Team",
       "featureColumn": "Funktion",
+      "included": "Ingår",
+      "notIncluded": "Ingår ej",
       "freeTitle": "Gratis",
       "freePrice": "0 kr",
       "proTitle": "Pro",
@@ -1302,6 +1304,7 @@
   "docs": {
     "navLabel": "Dokumentationsavsnitt",
     "resourcesLabel": "Resurser",
+    "nextLabel": "Läs vidare",
     "setupPromptCta": "Agent-prompt (setup-prompt.md)",
     "llmsCta": "Maskinläsbart index (llms.txt)",
     "nav": {

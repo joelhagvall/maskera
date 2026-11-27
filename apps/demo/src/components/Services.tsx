@@ -1,6 +1,6 @@
 import { contactMailto, GITHUB, NPM_MCP } from "../constants"
 import copy from "../i18n"
-import { ArrowUpRightIcon } from "../icons"
+import { ArrowUpRightIcon, CheckIcon } from "../icons"
 import { portalUrl } from "../portal"
 import type { View } from "../routing"
 import { navClick, viewPaths } from "../routing"
@@ -14,6 +14,25 @@ const TRACK_SECTIONS: Record<string, string> = {
   extension: SERVICES_SECTIONS.extension,
   agents: SERVICES_SECTIONS.agents,
   sdk: SERVICES_SECTIONS.code,
+}
+
+/**
+ * One plan cell in the comparison table: "included" as a check and "not
+ * included" as a dash, each with its word for screen readers and the
+ * Markdown copy; any other value (a limit, a price) as text.
+ */
+function PlanCell({ value }: { value: string }) {
+  const compare = copy.services.compare
+  if (value === compare.included || value === compare.notIncluded) {
+    const included = value === compare.included
+    return (
+      <td className={included ? "plan-yes" : "plan-no"}>
+        {included ? <CheckIcon size={16} aria-hidden="true" /> : <span aria-hidden="true">–</span>}
+        <span className="sr-only">{value}</span>
+      </td>
+    )
+  }
+  return <td>{value}</td>
 }
 
 /**
@@ -136,9 +155,9 @@ export function Services({
                     {compare.rows.map((row) => (
                       <tr key={row.feature}>
                         <th scope="row">{row.feature}</th>
-                        <td>{row.free}</td>
-                        <td>{row.pro}</td>
-                        <td>{row.team}</td>
+                        <PlanCell value={row.free} />
+                        <PlanCell value={row.pro} />
+                        <PlanCell value={row.team} />
                       </tr>
                     ))}
                   </tbody>

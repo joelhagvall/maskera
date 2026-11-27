@@ -123,4 +123,20 @@ describe("Services product scenes", () => {
       expect(img.getAttribute("fetchpriority")).toBeNull()
     }
   })
+
+  it("shows included and not included as a check and a dash with their words for screen readers", () => {
+    const compare = copy.services.compare
+    const { container } = render(<Services go={vi.fn()} goSection={vi.fn()} onCoverage={vi.fn()} />)
+    const cells = [...container.querySelectorAll(".ext-compare tbody td")]
+    const values = compare.rows.flatMap((row) => [row.free, row.pro, row.team])
+    expect(cells.map((cell) => (cell.querySelector(".sr-only") ?? cell).textContent)).toEqual(
+      values,
+    )
+    cells.forEach((cell, i) => {
+      if (values[i] === compare.included) expect(cell.querySelector("svg")).toBeTruthy()
+      if (values[i] === compare.notIncluded) expect(cell.className).toBe("plan-no")
+    })
+    expect(values.filter((value) => value === compare.included).length).toBeGreaterThan(0)
+    expect(values.filter((value) => value === compare.notIncluded).length).toBeGreaterThan(0)
+  })
 })

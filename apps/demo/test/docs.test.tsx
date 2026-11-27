@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from "@testing-library/react"
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import contract from "../../../docs/product-contract.json"
 import {
@@ -67,6 +67,22 @@ describe("Docs pages", () => {
     expect(verify?.textContent).toContain("(0 leaks, restored=ok)")
     // the printed output is shown, not copied
     expect(verify?.querySelector(".code-output")?.textContent?.split("\n")).toHaveLength(7)
+  })
+
+  it("ends every page with cards for the other docs pages", () => {
+    const go = vi.fn()
+    render(<DocsMcp go={go} />)
+    const next = screen.getByRole("navigation", { name: copy.docs.nextLabel })
+    const links = within(next).getAllByRole("link")
+    expect(links.map((link) => link.getAttribute("href"))).toEqual([
+      "/docs",
+      "/docs/klienter",
+      "/docs/sdk",
+      "/docs/felsokning",
+    ])
+    expect(links[0].textContent).toContain(copy.docs.overview.lede)
+    fireEvent.click(links[2])
+    expect(go).toHaveBeenCalledWith("docsSdk")
   })
 
   it("keeps CLI flags and query parameters on one line", () => {

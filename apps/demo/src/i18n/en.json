@@ -1124,6 +1124,8 @@
     "compare": {
       "title": "Pricing: Free, Pro and Team",
       "featureColumn": "Feature",
+      "included": "Included",
+      "notIncluded": "Not included",
       "freeTitle": "Free",
       "freePrice": "SEK 0",
       "proTitle": "Pro",
@@ -1302,6 +1304,7 @@
   "docs": {
     "navLabel": "Documentation sections",
     "resourcesLabel": "Resources",
+    "nextLabel": "Read next",
     "setupPromptCta": "Agent setup prompt (setup-prompt.md)",
     "llmsCta": "Machine-readable index (llms.txt)",
     "nav": {
