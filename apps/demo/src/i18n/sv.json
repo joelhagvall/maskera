@@ -785,7 +785,7 @@
   },
   "security": {
     "metaTitle": "Säkerhet och modellintegritet",
-    "metaDescription": "Maskeras säkerhetsgränser, nätverksanrop, pinnade modellartefakter, säker återställning och privat rapportering av sårbarheter.",
+    "metaDescription": "Maskeras säkerhetsgränser, nätverksanrop, pinnade modellartefakter, den publika granskningen av MCP-servern och privat rapportering av sårbarheter.",
     "title": "Säkerhet i maskera",
     "lede": "All maskering körs lokalt på din enhet. Här samlar vi hur data rör sig, hur modellfilerna kontrolleras och hur du rapporterar en sårbarhet.",
     "toc": [
@@ -800,6 +800,10 @@
       {
         "href": "#aterstallning",
         "label": "Säker återställning"
+      },
+      {
+        "href": "#granskning",
+        "label": "Granskning av MCP-servern"
       },
       {
         "href": "#omfattning",
@@ -830,6 +834,65 @@
       "restore() sätter tillbaka verkliga värden där platshållartokens förekommer. Återställ därför inte opålitlig utdata som sedan hämtas som en URL, renderas som HTML eller skrivs till logg. Maskering skyddar det som skickas; återställning är inte sanering av det som kommer tillbaka.",
       "En platshållare som redan finns i indatan delas aldrig ut på nytt. Att plantera exempelvis [PERSONNUMMER_1] i källtexten kan därför inte fånga ett verkligt värde."
     ],
+    "auditTitle": "Granskning av MCP-servern",
+    "auditBody": [
+      "Varje version av @maskera/mcp granskas innan den publiceras på npm. Granskningen installerar det packade npm-paketet, kör det i riktiga AI-agenter och spårar unika testvärden genom all trafik, alla loggar och alla felvägar. Den planterar också avsiktliga fel i skyddet för att visa att testerna verkligen slår larm.",
+      "Publiceringen stoppas om något av kraven nedan inte är uppfyllt. Siffrorna läses direkt från resultatfilen, inte skrivna för hand."
+    ],
+    "auditRun": "Senaste granskning {date}: @maskera/mcp {version}, modellrevision {revision}. Utlåtande: {verdict}.",
+    "auditVerdicts": {
+      "PRODUCTION READY": "redo för produktion",
+      "CONDITIONALLY READY": "redo med villkor",
+      "NOT READY": "inte redo"
+    },
+    "auditFigures": {
+      "canaryLeaks": "Läckta testvärden · {types} typer på {surfaces} ytor",
+      "mutations": "Planterade fel som upptäcktes",
+      "crossSession": "Läckor mellan sessioner",
+      "offlineEgress": "Nätverksanrop i offlineläge"
+    },
+    "auditOf": "{done} av {total}",
+    "auditTable": {
+      "caption": "Krav som måste vara uppfyllda innan en version publiceras",
+      "requirement": "Krav",
+      "result": "Resultat"
+    },
+    "auditGates": {
+      "zero-canary-leaks": "Inga råa testvärden når nätverk, loggar eller felmeddelanden, inte heller URL- eller Base64-kodade",
+      "security-invariants": "Sessioner hålls isär och skyddet stänger vid fel i stället för att släppa igenom data",
+      "mutation-detection": "Avsiktligt saboterat skydd upptäcks av testerna",
+      "protocol-conformance": "MCP-protokollet följs, och inget annat än protokollet skrivs till stdout",
+      "adversarial-regression": "Dolda tecken, kodningar, uppdelad strömning, promptinjektion och samtidiga sessioner",
+      "clean-package-install": "Det packade npm-paketet installeras rent och innehåller inga hemligheter eller träningsdata",
+      "offline-operation": "Inga nätverksanrop när modellen redan finns lokalt",
+      "real-client-e2e": "Riktiga AI-agenter mot det installerade paketet"
+    },
+    "auditStatus": {
+      "PASS": "Godkänt",
+      "FAIL": "Underkänt",
+      "BLOCKED": "Blockerat",
+      "NOT_TESTED": "Inte testat"
+    },
+    "auditClients": "Testade klienter: {clients}.",
+    "auditLocalModel": "en lokal språkmodell via Ollama",
+    "auditClientNames": {
+      "claude": "Claude Code",
+      "codex": "Codex CLI",
+      "opencode": "OpenCode"
+    },
+    "auditOpenTitle": "Inte testat i granskningen:",
+    "auditOpenChecks": {
+      "claude-desktop-gui": "Claude Desktop som app. Protokollvägen är testad, men appens gränssnitt går inte att styra automatiskt.",
+      "cursor-ide-gui": "Cursor som app. Konfigurationen och kroken är testade, men appen kräver interaktiv inloggning.",
+      "cloud-llm-live-opt-in": "Betalda molnmodeller. Granskningen gör inga betalda anrop; de körs bara när man själv väljer det."
+    },
+    "auditLimits": "Kraven gäller kodens säkerhetsgränser, inte AI-modellens träffsäkerhet. MCP-servern skyddar bara det som går genom Maskeras egna verktyg; för att skydda all trafik till modellen kör du proxyn. Ett godkänt resultat visar att inget av det vi testar läcker, inte att varje framtida personuppgift alltid maskeras. Träffsäkerheten på text vi inte skrivit själva finns på",
+    "auditAccuracyCta": "sidan om träffsäkerhet",
+    "auditReproduce": "Kör granskningen själv. Klienter som inte finns installerade redovisas som inte testade.",
+    "auditCodeLabel": "Terminal",
+    "auditCommands": "# klona och bygg\ngit clone https://github.com/joelhagvall/maskera.git\ncd maskera\npnpm install\npnpm build\n# hämta modellen och kontrollera dess SHA-256\nnode apps/demo/scripts/fetch-model.mjs\n# hela granskningen och alla krav\npnpm audit:full",
+    "auditReportCta": "Läs hela granskningen",
+    "auditJsonCta": "Resultatfilen som JSON",
     "scopeTitle": "Vad räknas som en sårbarhet?",
     "scopeIntro": "Rapportera privat om du hittar till exempel:",
     "inScope": [

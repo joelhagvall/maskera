@@ -2845,6 +2845,14 @@ html[data-theme="dark"] .stage-window .tok-c {
   margin-top: 14px;
   font-size: 14px;
 }
+.audit-figures {
+  margin: 18px 0 22px;
+}
+.audit-gates .data-table thead th:last-child,
+.audit-gates .data-table td {
+  text-align: right;
+  white-space: nowrap;
+}
 @media (max-width: 560px) {
   .security-actions {
     flex-direction: column;

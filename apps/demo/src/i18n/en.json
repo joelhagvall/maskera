@@ -785,7 +785,7 @@
   },
   "security": {
     "metaTitle": "Security and model integrity",
-    "metaDescription": "Maskera's security boundaries, network requests, pinned model artefacts, safe restoration and private vulnerability reporting.",
+    "metaDescription": "Maskera's security boundaries, network requests, pinned model artefacts, the public audit of the MCP server and private vulnerability reporting.",
     "title": "Security in maskera",
     "lede": "All masking runs locally on your device. Here is how data moves, how model files are verified and how to report a vulnerability.",
     "toc": [
@@ -800,6 +800,10 @@
       {
         "href": "#aterstallning",
         "label": "Safe restoration"
+      },
+      {
+        "href": "#granskning",
+        "label": "MCP server audit"
       },
       {
         "href": "#omfattning",
@@ -830,6 +834,65 @@
       "restore() inserts real values wherever placeholder tokens occur. Do not restore untrusted output that will then be fetched as a URL, rendered as HTML or written to logs. Masking protects what is sent; restoration does not sanitise what comes back.",
       "A placeholder already present in the input is never allocated again. Planting [PERSONNUMMER_1] in the source text therefore cannot capture a real value."
     ],
+    "auditTitle": "Audit of the MCP server",
+    "auditBody": [
+      "Every version of @maskera/mcp is audited before it is published to npm. The audit installs the packed npm package, runs it in real AI agents and traces unique test values through all traffic, every log and every error path. It also plants deliberate faults in the protection to show that the tests really raise the alarm.",
+      "Publishing stops if any requirement below is not met. The figures are read straight from the result file, not typed by hand."
+    ],
+    "auditRun": "Latest audit {date}: @maskera/mcp {version}, model revision {revision}. Verdict: {verdict}.",
+    "auditVerdicts": {
+      "PRODUCTION READY": "production ready",
+      "CONDITIONALLY READY": "conditionally ready",
+      "NOT READY": "not ready"
+    },
+    "auditFigures": {
+      "canaryLeaks": "Leaked test values · {types} types on {surfaces} surfaces",
+      "mutations": "Planted faults that were caught",
+      "crossSession": "Leaks between sessions",
+      "offlineEgress": "Network requests in offline mode"
+    },
+    "auditOf": "{done} of {total}",
+    "auditTable": {
+      "caption": "Requirements a version must meet before it is published",
+      "requirement": "Requirement",
+      "result": "Result"
+    },
+    "auditGates": {
+      "zero-canary-leaks": "No raw test value reaches the network, logs or error messages, not even URL- or Base64-encoded",
+      "security-invariants": "Sessions stay apart and the protection closes on errors instead of letting data through",
+      "mutation-detection": "Deliberately sabotaged protection is caught by the tests",
+      "protocol-conformance": "The MCP protocol is followed, and nothing but the protocol is written to stdout",
+      "adversarial-regression": "Hidden characters, encodings, split streaming, prompt injection and concurrent sessions",
+      "clean-package-install": "The packed npm package installs cleanly and contains no secrets or training data",
+      "offline-operation": "No network requests once the model is stored locally",
+      "real-client-e2e": "Real AI agents against the installed package"
+    },
+    "auditStatus": {
+      "PASS": "Passed",
+      "FAIL": "Failed",
+      "BLOCKED": "Blocked",
+      "NOT_TESTED": "Not tested"
+    },
+    "auditClients": "Clients tested: {clients}.",
+    "auditLocalModel": "a local language model through Ollama",
+    "auditClientNames": {
+      "claude": "Claude Code",
+      "codex": "Codex CLI",
+      "opencode": "OpenCode"
+    },
+    "auditOpenTitle": "Not tested in the audit:",
+    "auditOpenChecks": {
+      "claude-desktop-gui": "Claude Desktop as an app. The protocol path is tested, but the app's interface cannot be driven automatically.",
+      "cursor-ide-gui": "Cursor as an app. The configuration and hook are tested, but the app needs an interactive sign-in.",
+      "cloud-llm-live-opt-in": "Paid cloud models. The audit makes no paid calls; they run only when you choose to."
+    },
+    "auditLimits": "The requirements cover the code's security boundaries, not the AI model's accuracy. The MCP server protects only what passes through Maskera's own tools; to protect all traffic to the model, run the proxy. A pass shows that nothing we test leaks, not that every future personal detail will always be masked. Accuracy on text we did not write ourselves is on",
+    "auditAccuracyCta": "the accuracy page",
+    "auditReproduce": "Run the audit yourself. Clients that are not installed are reported as not tested.",
+    "auditCodeLabel": "Terminal",
+    "auditCommands": "# clone and build\ngit clone https://github.com/joelhagvall/maskera.git\ncd maskera\npnpm install\npnpm build\n# fetch the model and check its SHA-256\nnode apps/demo/scripts/fetch-model.mjs\n# the whole audit and every requirement\npnpm audit:full",
+    "auditReportCta": "Read the full audit",
+    "auditJsonCta": "The result file as JSON",
     "scopeTitle": "What counts as a vulnerability?",
     "scopeIntro": "Report privately if you find, for example:",
     "inScope": [

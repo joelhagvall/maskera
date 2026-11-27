@@ -1,6 +1,6 @@
 import { GITHUB } from "../constants"
 import { restoreMap } from "../heroScenes"
-import copy from "../i18n"
+import copy, { fill } from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
 import {
   COVERAGE_CELLS,
@@ -21,10 +21,6 @@ interface ContextExample {
   /** What the release model returns for `input` (checked with `maskera-mcp guard --redact`). */
   masked: string
   result: string
-}
-
-function fill(template: string, values: Record<string, string>): string {
-  return template.replace(/\{(\w+)\}/g, (_, key: string) => values[key] ?? "")
 }
 
 function ComparisonBars({
