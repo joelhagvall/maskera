@@ -112,7 +112,7 @@ export function App({ initialView }: { initialView?: View }) {
         />
       )}
       {DevView && <DevView go={go} goSection={goSection} onCoverage={goCoverage} />}
-      {DocsView && <DocsView go={go} />}
+      {DocsView && <DocsView go={go} onCoverage={goCoverage} />}
       {DocsMcpView && <DocsMcpView go={go} />}
       {DocsClientsView && <DocsClientsView go={go} />}
       {DocsSdkView && <DocsSdkView go={go} />}

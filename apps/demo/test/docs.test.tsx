@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
+import contract from "../../../docs/product-contract.json"
 import {
   DocsClients,
   DocsMcp,
@@ -9,6 +10,7 @@ import {
   DocsTroubleshooting,
   keepFlagsWhole,
 } from "../src/components/Docs"
+import { DOCTOR_COMMAND } from "../src/doctorSample"
 import copy from "../src/i18n/sv.json"
 
 afterEach(cleanup)
@@ -25,7 +27,7 @@ describe("Docs pages", () => {
   for (const [name, Component, data] of pages) {
     it(`renders ${name} with TOC anchors, verification box, subnav, and zero Gateway mentions`, () => {
       const go = vi.fn()
-      const { container } = render(<Component go={go} />)
+      const { container } = render(<Component go={go} onCoverage={vi.fn()} />)
 
       expect(screen.getByRole("heading", { level: 1, name: data.title })).toBeTruthy()
       expect(container.querySelector(".docs-verify")?.textContent).toContain(data.verifyTitle)
@@ -43,12 +45,28 @@ describe("Docs pages", () => {
 
   it("navigates between docs pages via the subnav", () => {
     const go = vi.fn()
-    render(<DocsOverview go={go} />)
+    render(<DocsOverview go={go} onCoverage={vi.fn()} />)
 
     const mcpLink = screen.getByRole("link", { name: copy.docs.nav.mcp })
     expect(mcpLink.getAttribute("href")).toBe("/docs/mcp")
     fireEvent.click(mcpLink)
     expect(go).toHaveBeenCalledWith("docsMcp")
+  })
+
+  it("shows the architecture diagram and a real doctor run on the overview", () => {
+    const onCoverage = vi.fn()
+    const { container } = render(<DocsOverview go={vi.fn()} onCoverage={onCoverage} />)
+
+    const section = container.querySelector("section:has(#valj-lage)")
+    expect(section?.querySelector("figure.layers-fig img")?.getAttribute("alt")).toBe(
+      copy.developerApi.diagramAlt,
+    )
+    const verify = container.querySelector(".docs-verify")
+    expect(verify?.textContent).toContain(DOCTOR_COMMAND)
+    expect(verify?.textContent).toContain(`maskera-mcp doctor (OK, v${contract.packages.mcp}`)
+    expect(verify?.textContent).toContain("(0 leaks, restored=ok)")
+    // the printed output is shown, not copied
+    expect(verify?.querySelector(".code-output")?.textContent?.split("\n")).toHaveLength(7)
   })
 
   it("keeps CLI flags and query parameters on one line", () => {

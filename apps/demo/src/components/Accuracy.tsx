@@ -1,4 +1,5 @@
 import { GITHUB } from "../constants"
+import { restoreMap } from "../heroScenes"
 import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
 import {
@@ -11,11 +12,14 @@ import {
   summary,
 } from "../independentBench"
 import { navClick, type View, viewPaths } from "../routing"
+import { RedactedText, RestoredText } from "../segments"
 import { PageToc } from "./PageToc"
 import { TopBar } from "./TopBar"
 
 interface ContextExample {
   input: string
+  /** What the release model returns for `input` (checked with `maskera-mcp guard --redact`). */
+  masked: string
   result: string
 }
 
@@ -211,7 +215,13 @@ export function Accuracy({
               {contextExamples.map((ex) => (
                 <div className="context-card" key={ex.input}>
                   <p className="context-input" lang="sv">
-                    {ex.input}
+                    <RestoredText text={ex.masked} map={restoreMap(ex.input, ex.masked)} />
+                  </p>
+                  <p className="context-masked" lang="sv">
+                    <span className="context-masked-label">{copy.outputCard.title}</span>
+                    <span>
+                      <RedactedText text={ex.masked} />
+                    </span>
                   </p>
                   <p className="context-result">{ex.result}</p>
                 </div>

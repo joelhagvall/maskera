@@ -755,14 +755,17 @@
     "contextExamples": [
       {
         "input": "Bo ska bo i Boden.",
+        "masked": "[NAMN_1] ska bo i [PLATS_1].",
         "result": "Masks the name Bo and town Boden, while leaving the verb bo (live) untouched."
       },
       {
         "input": "Liv har bott hela sitt liv i Uppsala.",
+        "masked": "[NAMN_1] har bott hela sitt liv i [PLATS_1].",
         "result": "Masks the name Liv and Uppsala, while leaving the noun liv (life) untouched."
       },
       {
         "input": "Patienten har Parkinsons sjukdom, men Kalle Parkinson ringde.",
+        "masked": "Patienten har Parkinsons sjukdom, men [NAMN_1] ringde.",
         "result": "Masks the person Kalle Parkinson, while leaving the diagnosis Parkinsons sjukdom untouched."
       }
     ],
@@ -1315,6 +1318,7 @@
       "lede": "All masking in Maskera runs locally on your device. Pick the mode that fits where your text lives, set it up in a minute, and verify with made-up data.",
       "verifyTitle": "You know it worked when",
       "verifyBody": "Run npx -y @maskera/mcp doctor. The report should start with OK and end with a sample redaction that shows 0 leaks.",
+      "doctorRoot": "/Users/you/project",
       "sections": [
         {
           "id": "valj-lage",

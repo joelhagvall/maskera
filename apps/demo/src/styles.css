@@ -2439,6 +2439,10 @@ html[data-theme="dark"] .stage-window .tok-c {
   padding-left: 16px;
   border-left: 1px solid var(--border);
 }
+/* An odd last figure spans the row instead of leaving an empty half. */
+.benchmark-tldr div:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
 .benchmark-tldr dt {
   color: var(--muted);
   font-size: 12px;
@@ -2491,8 +2495,24 @@ html[data-theme="dark"] .stage-window .tok-c {
   font-weight: 600;
   line-height: 1.45;
 }
+.context-masked {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  color: var(--fg);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.context-masked-label {
+  color: var(--muted);
+  font-size: 12.5px;
+}
 .context-result {
-  margin: 4px 0 0;
+  margin: 6px 0 0;
   color: var(--muted);
   font-size: 13.5px;
   line-height: 1.5;
@@ -3310,9 +3330,15 @@ html[data-theme="dark"] .stage-window .tok-c {
   font-weight: 600;
   color: var(--ink);
 }
-.docs-verify p:last-child {
+.docs-verify p:not(.docs-verify-title) {
   margin: 0;
   font-size: 14px;
+  color: var(--muted);
+}
+.docs-verify .code-block {
+  margin: 12px 0 0;
+}
+.code-output {
   color: var(--muted);
 }
 .docs-page .table-wrap {

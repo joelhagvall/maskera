@@ -9,7 +9,7 @@ export interface ViewComponents {
     goSection?: (next: View, id: string) => void
     onCoverage: () => void
   }>
-  docs: FunctionComponent<{ go: (next: View) => void }>
+  docs: FunctionComponent<{ go: (next: View) => void; onCoverage: () => void }>
   docsMcp: FunctionComponent<{ go: (next: View) => void }>
   docsClients: FunctionComponent<{ go: (next: View) => void }>
   docsSdk: FunctionComponent<{ go: (next: View) => void }>

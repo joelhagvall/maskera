@@ -1,9 +1,11 @@
 import type { ReactNode } from "react"
 import { GITHUB, HF_MODEL, NPM_MCP, NPM_NER } from "../constants"
+import { DOCTOR_COMMAND, doctorSample } from "../doctorSample"
 import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
 import { navClick, type View, viewPaths } from "../routing"
 import { loadView } from "../views"
+import { ArchitectureFigure } from "./ArchitectureFigure"
 import { Code } from "./CodeSnippet"
 import { PageToc } from "./PageToc"
 import { TopBar } from "./TopBar"
@@ -98,10 +100,16 @@ function DocsPage({
   current,
   data,
   go,
+  verifyExtra,
+  afterSection,
 }: {
   current: DocsView
   data: DocsPageData
   go: (view: View) => void
+  /** Shown inside the "you know it works when" box, under its text. */
+  verifyExtra?: ReactNode
+  /** A figure or block placed at the end of the section with that id. */
+  afterSection?: Partial<Record<string, ReactNode>>
 }) {
   const tocItems = data.sections.map((section) => ({
     href: `#${section.id}`,
@@ -128,6 +136,7 @@ function DocsPage({
               {data.verifyTitle}
             </p>
             <p>{keepFlagsWhole(data.verifyBody)}</p>
+            {verifyExtra}
           </aside>
 
           {data.sections.map((section) => (
@@ -170,6 +179,7 @@ function DocsPage({
               {section.code ? (
                 <Code languageLabel={section.codeLabel ?? "Terminal"}>{section.code}</Code>
               ) : null}
+              {afterSection?.[section.id]}
             </section>
           ))}
 
@@ -219,8 +229,27 @@ function DocsPage({
   )
 }
 
-export function DocsOverview({ go }: { go: (view: View) => void }) {
-  return <DocsPage current="docs" data={copy.docs.overview} go={go} />
+export function DocsOverview({
+  go,
+  onCoverage,
+}: {
+  go: (view: View) => void
+  onCoverage: () => void
+}) {
+  const overview = copy.docs.overview
+  return (
+    <DocsPage
+      current="docs"
+      data={overview}
+      go={go}
+      verifyExtra={
+        <Code languageLabel="Terminal" output={doctorSample(overview.doctorRoot)}>
+          {DOCTOR_COMMAND}
+        </Code>
+      }
+      afterSection={{ "valj-lage": <ArchitectureFigure onCoverage={onCoverage} /> }}
+    />
+  )
 }
 
 export function DocsMcp({ go }: { go: (view: View) => void }) {

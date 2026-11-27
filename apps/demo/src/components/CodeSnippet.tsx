@@ -2,8 +2,20 @@ import { highlight } from "../highlight"
 import copy from "../i18n"
 import { CopyButton } from "./CopyButton"
 
-/** A static, highlighted snippet with a language label and a copy button. */
-export function Code({ children, languageLabel }: { children: string; languageLabel: string }) {
+/**
+ * A static, highlighted snippet with a language label and a copy button.
+ * `output` is what the command prints: shown under it, never highlighted and
+ * never copied.
+ */
+export function Code({
+  children,
+  languageLabel,
+  output,
+}: {
+  children: string
+  languageLabel: string
+  output?: string
+}) {
   const src = children
   // One block element per source line. Long lines scroll sideways inside the
   // block (never wrap), so each source line stays on a single visual line.
@@ -40,6 +52,7 @@ export function Code({ children, languageLabel }: { children: string; languageLa
               {highlight(line)}
             </span>
           ))}
+          {output ? <span className="code-line code-output">{output}</span> : null}
         </code>
       </pre>
     </div>

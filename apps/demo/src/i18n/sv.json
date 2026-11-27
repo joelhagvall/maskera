@@ -755,14 +755,17 @@
     "contextExamples": [
       {
         "input": "Bo ska bo i Boden.",
+        "masked": "[NAMN_1] ska bo i [PLATS_1].",
         "result": "Maskerar namnet Bo och platsen Boden, men lämnar verbet bo orört."
       },
       {
         "input": "Liv har bott hela sitt liv i Uppsala.",
+        "masked": "[NAMN_1] har bott hela sitt liv i [PLATS_1].",
         "result": "Maskerar namnet Liv och Uppsala, men lämnar ordet liv orört."
       },
       {
         "input": "Patienten har Parkinsons sjukdom, men Kalle Parkinson ringde.",
+        "masked": "Patienten har Parkinsons sjukdom, men [NAMN_1] ringde.",
         "result": "Maskerar personen Kalle Parkinson, men lämnar diagnosen Parkinsons sjukdom orörd."
       }
     ],
@@ -1315,6 +1318,7 @@
       "lede": "All maskering i Maskera körs lokalt på din enhet. Välj läge efter var texten uppstår, konfigurera på en minut och verifiera med påhittade uppgifter.",
       "verifyTitle": "Du vet att det funkar när",
       "verifyBody": "Kör npx -y @maskera/mcp doctor. Svaret ska börja med OK och sluta med en provmaskering som visar 0 läckor.",
+      "doctorRoot": "/Users/du/projekt",
       "sections": [
         {
           "id": "valj-lage",

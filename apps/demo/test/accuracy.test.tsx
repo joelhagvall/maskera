@@ -2,6 +2,8 @@
 import { cleanup, render, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { Accuracy } from "../src/components/Accuracy"
+import { restoreMap } from "../src/heroScenes"
+import en from "../src/i18n/en.json"
 import copy from "../src/i18n/sv.json"
 import { COVERAGE_CELLS, formatPct, SYSTEMS, summary } from "../src/independentBench"
 
@@ -66,5 +68,20 @@ describe("Accuracy", () => {
     expect(pct("presidio", "places")).toBeGreaterThan(pct("maskera", "places"))
     const over = (system: (typeof SYSTEMS)[number]) => summary[system]?.overMasking?.pct ?? 100
     expect(over("presidio")).toBeLessThan(over("maskera"))
+  })
+  it("shows each context example as the model's real output, same in both languages", () => {
+    const sv = copy.accuracy.contextExamples
+    expect(en.accuracy.contextExamples.map(({ input, masked }) => ({ input, masked }))).toEqual(
+      sv.map(({ input, masked }) => ({ input, masked })),
+    )
+    for (const ex of sv) {
+      // restoreMap throws when the masked text does not line up with the input
+      expect(Object.keys(restoreMap(ex.input, ex.masked)).length, ex.input).toBeGreaterThan(0)
+    }
+    render(<Accuracy go={vi.fn()} />)
+    const tokens = [...document.querySelectorAll(".context-masked .token")].map(
+      (n) => n.textContent,
+    )
+    expect(tokens).toEqual(sv.flatMap((ex) => ex.masked.match(/\[[A-ZÅÄÖ_]+_\d+\]/g) ?? []))
   })
 })
