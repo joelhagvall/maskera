@@ -1,5 +1,11 @@
 # maskera
 
+## 0.12.0
+
+### Minor Changes
+
+- Upgrade default Swedish NER weights to attested privacy-clean `maskera-sv-ner` v21 (Hub revision `5bd47f3031fea64eb1ae98f77ebfc67882f792fa`, 42.7 MB q4). On the independent 23,980-text Swedish benchmark (SUC 3.0, SIC2, MultiCoNER v2, ai4privacy), v21 raises name coverage to 94.6% (+2.2 pp), place coverage to 97.3% (+3.7 pp), and address coverage to 95.3%, while cutting over-masking on entity-free sentences from 21.4% to 12.3% (-43%).
+
 ## 0.11.2
 
 ### Patch Changes

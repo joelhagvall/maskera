@@ -23,7 +23,7 @@ export * from "@maskera/core"
 export const MASKERA_SV_NER_MODEL = "joelhagvall/maskera-sv-ner"
 
 /**
- * The exact Hub commit {@link MASKERA_SV_NER_MODEL} is pinned to (v20 weights).
+ * The exact Hub commit {@link MASKERA_SV_NER_MODEL} is pinned to (v21 weights).
  *
  * Without a pin, Transformers.js resolves `main`, so whatever sits on the Hub
  * at download time is what runs. That makes a compromised Hub account enough to
@@ -35,7 +35,7 @@ export const MASKERA_SV_NER_MODEL = "joelhagvall/maskera-sv-ner"
  *
  * Pass `revision: "main"` to opt back into always-latest.
  */
-export const MASKERA_SV_NER_REVISION = "f417d65c08bcf814f639f8bf9221e30a79a53f39"
+export const MASKERA_SV_NER_REVISION = "5bd47f3031fea64eb1ae98f77ebfc67882f792fa"
 
 /**
  * The default model is maskera's own Swedish model. Pass any other

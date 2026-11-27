@@ -26,7 +26,7 @@
 \author{Joel H\"agvall\\[0.2em]
 \normalsize\href{https://maskera.dev}{\texttt{maskera.dev}} \quad
 \normalsize\href{https://github.com/joelhagvall/maskera}{\texttt{github.com/joelhagvall/maskera}}}
-\date{November 26, 2026 \quad\textperiodcentered\quad Whitepaper v1.24}
+\date{November 27, 2026 \quad\textperiodcentered\quad Whitepaper v1.25}
 
 \begin{document}
 \maketitle
@@ -45,13 +45,13 @@ masked values is held locally by the caller. In the default setup the browser
 downloads the static assets once from a public host; self-hosting those
 assets makes zero external requests. On independent Swedish text written by
 others and absent from Maskera's task training (SUC~3.0, SIC2 Swedish blogs,
-MultiCoNER~v2, and ai4privacy; 23,980 texts), the published v20 q4 pipeline
-hid 92.4\% of names (11,613/12,570), 92.8\% of lowercase names, 93.6\% of
-places, and 95.2\% of street addresses and postcodes, while triggering a
-detection in 21.4\% of entity-free sentences (vs.\ 2.5\% for Microsoft Presidio
+MultiCoNER~v2, and ai4privacy; 23,980 texts), the published v21 q4 pipeline
+hid 94.6\% of names (11,885/12,570), 91.1\% of lowercase names, 97.3\% of
+places, and 95.3\% of street addresses and postcodes, while triggering a
+detection in 12.3\% of entity-free sentences (vs.\ 2.5\% for Microsoft Presidio
 with Swedish spaCy, which is trained on SUC~3.0). In a separate, author-coupled
 comparison on 211 synthetic Swedish names, places, and organisations, the same
-q4 artifact masked all 211 both with original casing and lowercased; KBLab
+q4 artifact masked 210/211 with original casing and 211/211 lowercased; KBLab
 lowermix fp32 masked 205 and 187.
 maskera is a data-minimisation and data-protection-by-design tool, not a
 compliance guarantee; this document reports method and limitations with the
@@ -240,13 +240,14 @@ both answers are public.
         documented, openly licensed public Swedish corpora. No customer data
         was used. The dated sources remain in the v18 model card and training
         journal.
-  \item \textbf{Published privacy-clean v20:} the current release passed
-        every defined release gate using 108,400 generated training rows
-        and 6,900 disjoint validation rows (distilled from a 3-seed KB-BERT
-        teacher ensemble). Customer data, logs,
+  \item \textbf{Published privacy-clean v21:} the current release passed
+        every defined release gate using 121,200 generated training rows
+        and 7,980 disjoint validation rows (distilled from a 3-seed KB-BERT
+        teacher ensemble, including multi-sentence paragraphs up to 256 tokens
+        and Swedish precision/homograph contrasts). Customer data, logs,
         forum posts, news, scraped text, public NER corpora and pseudo-labels
         are excluded from its task-specific training.
-  \item \textbf{v20 identifier exclusion:} a fail-closed scanner rejects every
+  \item \textbf{v21 identifier exclusion:} a fail-closed scanner rejects every
         row containing an IBAN or account-shaped string, identity or
         organisation number, phone, e-mail, URL, public IP, payment
         identifier, long account/card-like number or postal code. Every ADR
@@ -256,7 +257,7 @@ both answers are public.
         deterministic-rule test suite.
   \item \textbf{No user data:} nothing from people who use maskera enters
         training; no such collection exists.
-  \item \textbf{Attested v20 provenance:} exact train/validation row counts and
+  \item \textbf{Attested v21 provenance:} exact train/validation row counts and
         SHA-256 hashes are bound to the generator code hash. The audit-code
         hashes and data hashes travel with the published weights in
         \pkg{privacy-attestation.json}. Training, trimming, distillation,
@@ -268,7 +269,7 @@ both answers are public.
         and re-create every step.
 \end{itemize}
 
-The v20 attestation covers Maskera's task-specific data. It does not assert that
+The v21 attestation covers Maskera's task-specific data. It does not assert that
 the third-party KB-BERT checkpoint was itself pretrained on synthetic-only
 text. CC0 grants copyright permissions but is not a GDPR determination; that
 base-model boundary is documented explicitly in the repository's training
@@ -280,11 +281,11 @@ not determine which obligations apply.
 
 \section{Measured quality}
 
-The first tables below are the current privacy-clean v20 release snapshot.
+The first tables below are the current privacy-clean v21 release snapshot.
 After an explicit page break, the remaining quality and public-model
 comparison tables are retained as historical v18 evidence measured on
 \textbf{2026-07-19} with \pkg{maskera} version \pkg{0.6.4}. They must not be
-attributed to v20. Those measurements use q4 quantisation from v18 and
+attributed to v21. Those measurements use q4 quantisation from v18 and
 \textbf{exact character spans}, the strict criterion under which both start
 and end offsets must match. The canonical, always-current document is
 \pkg{docs/}\allowbreak\pkg{BENCHMARKS.md} in
@@ -294,11 +295,11 @@ heavily is \textbf{leakage}: the share of entities missed entirely and thus
 left unmasked. The appendix retains category-level failure modes only; raw
 external sentences were removed from the checkout.
 
-\subsection{Independent Swedish benchmark (v20, measured 2026-11-26)}
+\subsection{Independent Swedish benchmark (v21, measured 2026-11-27)}
 
-On \textbf{2026-11-26}, four local systems were evaluated on CPU with one shared
+On \textbf{2026-11-27}, four local systems were evaluated on CPU with one shared
 scorer (\pkg{bench/}\allowbreak\pkg{independent/}\allowbreak\pkg{score.mjs}) across four independent Swedish
-corpora absent from Maskera v20's task training: the SUC~3.0 test split from the
+corpora absent from Maskera v21's task training: the SUC~3.0 test split from the
 National Library of Sweden (12,923 sentences, normal casing and lowercased),
 SIC2 Swedish blogs from Spr\aa{}kbanken Text (809 sentences), MultiCoNER~v2
 Swedish test split (2,000 lowercase sentences, persons only), and the Swedish
@@ -314,28 +315,29 @@ the 10,800 entity-free sentences of SUC~3.0 (10,161) and SIC2 (639).
 \toprule
 System & Names & Lowercase & Places & Addresses & Clean hit \\
 \midrule
-\textbf{Maskera v20 q4 (43\,MB)} & \textbf{92.4\%} & \textbf{92.8\%} & 93.6\% & \textbf{95.2\%} & 21.4\% \\
-Presidio + sv spaCy & 72.3\% & 71.4\% & \textbf{97.1\%} & 47.0\% & \textbf{2.5\%} \\
+\textbf{Maskera v21 q4 (43\,MB)} & \textbf{94.6\%} & \textbf{91.1\%} & \textbf{97.3\%} & \textbf{95.3\%} & 12.3\% \\
+Presidio + sv spaCy & 72.3\% & 71.4\% & 97.1\% & 47.0\% & \textbf{2.5\%} \\
 swedish-pii 1.2.0 & 55.3\% & 0.3\% & 82.7\% & 77.3\% & 7.0\% \\
 OpenAI Privacy Filter q4 & 52.2\% & 10.3\% & 33.5\% & 63.3\% & 3.5\% \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Two trade-offs are reported openly: Presidio hides more places overall (its
-\pkg{sv\_core\_news\_lg} model is trained on SUC~3.0, one of the corpora) and
-over-masks far less often (2.5\% vs.\ 21.4\% of entity-free sentences). On the
-informal SIC2 blog corpus, Maskera leads across all three entity types
-(74.7\% of names, 78.7\% of places, 61.9\% of organisations) while keeping a
-similar over-masking rate (20.7\%). Structured Swedish identifiers
+One main trade-off is reported openly: Presidio (whose
+\pkg{sv\_core\_news\_lg} model is trained on SUC~3.0, one of the corpora)
+over-masks less often (2.5\% vs.\ 12.3\% of entity-free sentences, down from
+21.4\% in v20), while Maskera v21 now leads on all four coverage columns
+including places (97.3\% vs.\ 97.1\%). On the informal SIC2 blog corpus,
+Maskera leads across all three entity types (67.6\% of names, 83.0\% of places,
+61.9\% of organisations) with 13.0\% over-masking. Structured Swedish identifiers
 (personnummer, organisationsnummer, bankgiro, IBAN) have no independent Swedish
 corpus and are excluded from this table. Full per-corpus scores, checksums, and
 reproduction commands live in \pkg{docs/}\allowbreak\pkg{BENCHMARKS.md} and
-\pkg{docs/}\allowbreak\pkg{benchmark-independent-v20.json}.
+\pkg{docs/}\allowbreak\pkg{benchmark-independent-v21.json}.
 
-\subsection{Published v20 release snapshot}
+\subsection{Published v21 release snapshot}
 
-On \textbf{2026-11-25}, the attested q4 release plus the current packaged
+On \textbf{2026-11-27}, the attested q4 release plus the current packaged
 runtime passed every defined release gate. The published artifact is
 42,705,681 bytes. These synthetic or author-coupled checks are a release
 battery, not an independent universal quality estimate:
@@ -346,7 +348,7 @@ battery, not an independent universal quality estimate:
 \toprule
 Set & Precision & Recall & Span $F_1$ & Labeled $F_1$ & Leaks \\
 \midrule
-Curated (205) & 99.0\% & 100.0\% & 99.5\% & 97.6\% & 0 \\
+Curated (205) & 97.6\% & 100.0\% & 98.8\% & 98.8\% & 0 \\
 Synthetic ADR (57) & 100.0\% & 100.0\% & 100.0\% & 98.2\% & 0 \\
 LinkedIn-style (53) & 96.4\% & 100.0\% & 98.1\% & 94.4\% & 0 \\
 \bottomrule
@@ -356,20 +358,20 @@ LinkedIn-style (53) & 96.4\% & 100.0\% & 98.1\% & 94.4\% & 0 \\
 All 35 explicitly marked address spans in the revised ADR set are exact and
 labeled ADDRESS (35/35 ADDRESS-only precision). One gold location is covered
 at the exact span and typed ORGANIZATION, which explains the 98.2\% labeled
-score. The rare-surname safety gate reaches 96.60\% masked recall
-(284/294), above its historical 94.9\% floor. The Hub artifact and source
+score. The rare-surname safety gate reaches 95.24\% masked recall
+(280/294), above its historical 94.9\% floor. The Hub artifact and source
 package pin target revision
-\pkg{f417d65c08bcf814f639f8bf9221e30a79a53f39}.
+\pkg{5bd47f3031fea64eb1ae98f77ebfc67882f792fa}.
 
-The broader synthetic-gold gate records 94.54\% type $F_1$, 95.34\% type
-recall, and 98.73\% masked recall. CI gates both an $F_1$ floor and a leakage
+The broader synthetic-gold gate records 96.22\% type $F_1$, 97.03\% type
+recall, and 98.31\% masked recall. CI gates both an $F_1$ floor and a leakage
 ceiling; leakage remains the primary privacy metric because it counts values
 left entirely unmasked.
 
 \newpage
-\subsection{Current v20 comparison with KBLab lowermix}
+\subsection{Current v21 comparison with KBLab lowermix}
 
-On \textbf{2026-11-25}, the published 43\,MB q4 artifact and KBLab's published
+On \textbf{2026-11-27}, the published 43\,MB q4 artifact and KBLab's published
 496\,MB fp32 \pkg{bert-base-swedish-lowermix-reallysimple-ner} were run through
 the same Transformers token-classification pipeline on 121 hand-authored
 synthetic Swedish texts containing 211 comparable PER/LOC/ORG entities. The
@@ -382,24 +384,24 @@ product post-processing and its ADDRESS class are excluded.
 \toprule
 Casing & Model & Masked at all & Typed $F_1$ \\
 \midrule
-Original & \textbf{Maskera v20 q4} & \textbf{100.0\% (211/211)} & 88.2\% \\
-Original & KBLab lowermix fp32 & 97.2\% (205/211) & \textbf{89.4\%} \\
-Lowercase & \textbf{Maskera v20 q4} & \textbf{100.0\% (211/211)} & \textbf{87.4\%} \\
+Original & \textbf{Maskera v21 q4} & \textbf{99.5\% (210/211)} & 89.6\% \\
+Original & KBLab lowermix fp32 & 97.2\% (205/211) & 89.4\% \\
+Lowercase & \textbf{Maskera v21 q4} & \textbf{100.0\% (211/211)} & \textbf{88.4\%} \\
 Lowercase & KBLab lowermix fp32 & 88.6\% (187/211) & 83.2\% \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Maskera covered all 211 entities in both runs. KBLab led typed $F_1$ on
-original casing by 1.2 percentage points; Maskera led lowercase typed $F_1$ by
-4.2 points. This is a \textbf{directional, author-coupled comparison}, not an
+Maskera covered 210/211 entities with original casing and all 211 lowercased,
+and led typed $F_1$ in both runs (89.6\% vs.\ 89.4\% original; 88.4\% vs.\
+83.2\% lowercased). This is a \textbf{directional, author-coupled comparison}, not an
 independent universal ranking: Maskera's developer wrote the corpus. Exact
 model revisions, the pinned Python environment, machine output, and the
 \pkg{pnpm eval:kblab} command are published beside the canonical benchmark.
 
-\subsection{Current v20 end-product comparison with LogosGuard}
+\subsection{Current v21 end-product comparison with LogosGuard}
 
-On \textbf{2026-11-25}, the complete local Maskera v20 pipeline and
+On \textbf{2026-11-27}, the complete local Maskera v21 pipeline and
 LogosGuard 2.4.4's Chrome file-redaction flow (Free plan,
 \pkg{Balanced (recommended)}, same captured files from 2026-08-14) were run on
 the same 258 synthetic Swedish domain texts with 952 annotated PII strings. The
@@ -416,13 +418,13 @@ leak retains some, and a clear-text miss retains all.
 \toprule
 Product & Fully masked & Partial leaks & Clear-text misses \\
 \midrule
-\textbf{Maskera v20 q4} & \textbf{98.8\% (941/952)} & 5 & 6 \\
+\textbf{Maskera v21 q4} & \textbf{98.2\% (935/952)} & 9 & 8 \\
 LogosGuard 2.4.4 & 63.7\% (606/952) & 49 & 297 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Maskera fully removed 335 more annotated values, a 35.1 percentage-point
+Maskera fully removed 329 more annotated values, a 34.5 percentage-point
 difference in full-hit rate. This remains \textbf{directional,
 author-coupled evidence}, not an independent ranking: Maskera's developer
 wrote the synthetic corpus, and the corpus is not exhaustively annotated for

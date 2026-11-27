@@ -18,7 +18,7 @@ export const START = "<!-- independent-benchmark:start -->"
 export const END = "<!-- independent-benchmark:end -->"
 
 const NAMES = {
-  maskera: "Maskera v20 (q4)",
+  maskera: "Maskera v21 (q4)",
   presidio: "Microsoft Presidio 2.2.366 + sv_core_news_lg 3.8.0",
   "swedish-pii": "swedish-pii 1.2.0",
   "openai-privacy-filter": "OpenAI Privacy Filter (q4 ONNX)",
@@ -44,8 +44,8 @@ const count = (n) => n.toLocaleString("en-US")
 export function renderSection(result) {
   const lines = [START, "", "## Independent Swedish benchmark (what maskera.dev shows)", ""]
   lines.push(
-    "Measured 2026-11-26 on CPU, on Swedish text that neither Maskera nor its",
-    "developer wrote, and that is not in Maskera's training (v20 trains only on",
+    "Measured 2026-11-27 on CPU, on Swedish text that neither Maskera nor its",
+    "developer wrote, and that is not in Maskera's training (v21 trains only on",
     "`training/generate_data.mjs` output). Every system ran on the same texts and",
     "is scored by one rule set (`bench/independent/score.mjs`). **Hidden** means the",
     "value is overlapped by any detection, whatever its label: what a masking",
@@ -113,7 +113,7 @@ export function replaceSection(markdown, section) {
 
 function main() {
   const result = JSON.parse(
-    readFileSync(resolve(repoRoot, "docs/benchmark-independent-v20.json"), "utf8"),
+    readFileSync(resolve(repoRoot, "docs/benchmark-independent-v21.json"), "utf8"),
   )
   const path = resolve(repoRoot, "docs/BENCHMARKS.md")
   const markdown = readFileSync(path, "utf8")

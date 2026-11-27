@@ -505,7 +505,8 @@
           }
         },
         "resultFile": {
-          "const": "docs/benchmark-independent-v20.json"
+          "type": "string",
+          "pattern": "^docs/benchmark-independent-v[0-9]+\\.json$"
         },
         "resultSha256": {
           "$ref": "#/$defs/sha256"

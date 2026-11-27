@@ -554,7 +554,7 @@ await expectFragments("README.md", [
   ["root historical boundary", `historical ${historical.release}`],
   [
     "root current KBLab Maskera result",
-    `**${comparison.normal.maskera.masked}/${comparison.corpus.entities}** orig & lower`,
+    `**${comparison.normal.maskera.masked}/${comparison.corpus.entities}** orig & **${comparison.lowercase.maskera.masked}/${comparison.corpus.entities}** lower`,
   ],
   [
     "root current KBLab result",
@@ -586,7 +586,7 @@ await expectFragments("packages/ner/README.md", [
   ],
   [
     "package current KBLab Maskera result",
-    `Maskera masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities} both with`,
+    `Maskera masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities} with original casing and ${comparison.lowercase.maskera.masked}/${comparison.corpus.entities} lowercased`,
   ],
   [
     "package current KBLab result",
@@ -649,7 +649,7 @@ await expectFragments("docs/TRANSPARENCY.md", [
   ],
   [
     "transparency current KBLab Maskera result",
-    `Maskera q4 masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities} both with original casing and lowercased`,
+    `Maskera q4 masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities} with original casing and ${comparison.lowercase.maskera.masked}/${comparison.corpus.entities} lowercased`,
   ],
   [
     "transparency current KBLab result",
@@ -669,7 +669,7 @@ await expectFragments("docs/PRODUCTION.md", [
   ["production LinkedIn claim", `${linkedinStyle.leaks}/${linkedinStyle.entities}\nleaks`],
   [
     "production current KBLab Maskera result",
-    `Maskera masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities} both with original casing and`,
+    `Maskera masked ${comparison.normal.maskera.masked}/${comparison.corpus.entities} with original casing and\n${comparison.lowercase.maskera.masked}/${comparison.corpus.entities} lowercased`,
   ],
   [
     "production current KBLab result",
@@ -754,7 +754,7 @@ for (const [name, corpus] of Object.entries(independentComparison.corpora)) {
     drift(
       "BENCHMARKS.md independent section",
       "docs/BENCHMARKS.md",
-      "rendered from docs/benchmark-independent-v20.json",
+      `rendered from ${independentComparison.resultFile}`,
       "stale: run node bench/independent/render-markdown.mjs",
     )
   }
@@ -768,7 +768,7 @@ if (independentNames) {
   await expectFragments("README.md", [
     [
       "README independent names",
-      `Maskera v20 hid ${independentNames.maskedPct}% of names (${formattedCount})`,
+      `Maskera ${contract.release} hid ${independentNames.maskedPct}% of names (${formattedCount})`,
     ],
   ])
   await expectFragments(whitepaper.source, [
@@ -780,7 +780,7 @@ if (independentNames) {
   await expectFragments("bench/README.md", [
     [
       "bench independent names",
-      `Maskera v20 q4 hid ${independentNames.maskedPct}% of\n> names (${formattedCount})`,
+      `Maskera ${contract.release} q4 hid ${independentNames.maskedPct}% of\n> names (${formattedCount})`,
     ],
   ])
   await expectFragments("docs/TRANSPARENCY.md", [
@@ -805,7 +805,7 @@ if (existsSync(resolve(repoRoot, optionalExplainer))) {
     ["explainer historical boundary", `De här tre talen tillhör ${historical.release}-artefakten`],
     [
       "explainer current KBLab comparison",
-      `Maskera maskerar ${comparison.normal.maskera.masked}/${comparison.corpus.entities} både med`,
+      `Maskera maskerar ${comparison.normal.maskera.masked}/${comparison.corpus.entities} med`,
     ],
     [
       "explainer LogosGuard comparison",

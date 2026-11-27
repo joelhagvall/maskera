@@ -74,8 +74,8 @@ Note: the model-hybrid `redactWithNer` in the `maskera` package enables
 `adress`, `lagenhetsnummer` and the context-labeled account/journal identifiers
 by default (its callers have free text by definition); only the synchronous
 `redact()` here keeps the structured default set. On the 258-text Swedish domain
-regression corpus (952 annotated PII strings), that complete Maskera v20 hybrid
-reaches 943/952 (99.1%) full hits (3 partial leaks, 6 clear-text misses); see
+regression corpus (952 annotated PII strings), that complete Maskera v21 hybrid
+reaches 937/952 (98.4%) full hits (7 partial leaks, 8 clear-text misses); see
 [docs/BENCHMARKS.md](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md).
 
 ## API

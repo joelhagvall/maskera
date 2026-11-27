@@ -6,17 +6,17 @@ Swedish gold sets, with the same scorer the maskera CI gates run
 **leaks** = gold entities with zero overlapping prediction, the
 safety-critical number for redaction.
 
-> **Independent Swedish benchmark (2026-11-26, what maskera.dev shows):**
+> **Independent Swedish benchmark (2026-11-27, what maskera.dev shows):**
 > four local tools scored with one rule set (`bench/independent/score.mjs`) across
 > SUC 3.0 test (cased + lowercased), SIC2 Swedish blogs (Språkbanken Text),
 > MultiCoNER v2 Swedish (persons) and ai4privacy openpii Swedish validation rows
-> (23,980 texts, none in Maskera v20's training). Maskera v20 q4 hid 92.4% of
-> names (11,613/12,570), 92.8% of lowercase names, 93.6% of places and 95.2% of
-> street addresses and postcodes, with a hit in 21.4% of entity-free SUC + SIC2
+> (23,980 texts, none in Maskera v21's training). Maskera v21 q4 hid 94.6% of
+> names (11,885/12,570), 91.1% of lowercase names, 97.3% of places and 95.3% of
+> street addresses and postcodes, with a hit in 12.3% of entity-free SUC + SIC2
 > sentences (vs. Presidio 72.3% / 71.4% / 97.1% / 47.0% and 2.5% over-masking;
 > swedish-pii 55.3% / 0.3% / 82.7% / 77.3% and 7.0%; OpenAI Privacy Filter
 > 52.2% / 10.3% / 33.5% / 63.3% and 3.5%). Machine results live in
-> [`docs/benchmark-independent-v20.json`](../docs/benchmark-independent-v20.json);
+> [`docs/benchmark-independent-v21.json`](../docs/benchmark-independent-v21.json);
 > per-corpus tables live in [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
 
 > **Historical snapshot:** the tables below describe published v18. On
@@ -26,29 +26,29 @@ safety-critical number for redaction.
 > comparable to the table below. `export-corpora.mjs` now exports only the
 > synthetic curated and ADR sets.
 
-> **Published v20 snapshot (2026-11-25):** the attested privacy-clean release
+> **Published v21 snapshot (2026-11-27):** the attested privacy-clean release
 > passed every defined gate. On the revised synthetic ADR
 > corpus its current q4 pipeline reaches 100.0% label-agnostic span precision,
 > recall and F1 with 0/57 leaks; all 35 marked addresses are exact and labeled
 > ADDRESS (35/35 ADDRESS-only precision). One gold location is typed
-> ORGANIZATION, yielding 98.2% labeled F1. Curated span F1 is 99.5% with 0/205 leaks;
+> ORGANIZATION, yielding 98.2% labeled F1. Curated span F1 is 98.8% with 0/205 leaks;
 > LinkedIn-style span F1 is 98.1% with 0/53 leaks. This is not a
 > competitor re-run; the full release snapshot and caveats are in
 > [docs/BENCHMARKS.md](../docs/BENCHMARKS.md).
 
-> **Current v20 KBLab comparison (2026-11-25):** on 121 hand-authored
+> **Current v21 KBLab comparison (2026-11-27):** on 121 hand-authored
 > synthetic Swedish texts with 211 comparable PER/LOC/ORG entities, Maskera q4
-> masked 211/211 with original casing and 211/211 lowercased. KBLab lowermix
-> fp32 masked 205/211 and 187/211. Typed F1 was 88.2% vs 89.4% original and
-> 87.4% vs 83.2% lowercased. This uses overlap matching and is author-coupled,
+> masked 210/211 with original casing and 211/211 lowercased. KBLab lowermix
+> fp32 masked 205/211 and 187/211. Typed F1 was 89.6% vs 89.4% original and
+> 88.4% vs 83.2% lowercased. This uses overlap matching and is author-coupled,
 > not an independent ranking. Reproduce with `pnpm eval:kblab`; see
-> [`docs/benchmark-kblab-v20.json`](../docs/benchmark-kblab-v20.json).
+> [`docs/benchmark-kblab-v21.json`](../docs/benchmark-kblab-v21.json).
 
-> **Current v20 LogosGuard comparison (2026-11-25):** on 258 synthetic
+> **Current v21 LogosGuard comparison (2026-11-27):** on 258 synthetic
 > Swedish domain texts with 952 annotated PII strings, the same strict scorer
-> counted 941/952 (98.8%) fully removed for Maskera q4 and 606/952 (63.7%) for
+> counted 935/952 (98.2%) fully removed for Maskera q4 and 606/952 (63.7%) for
 > LogosGuard 2.4.4 in Chrome, Free/`Balanced`. Partial/clear-text leaks were
-> 5/6 and 49/297. This is author-coupled evidence without a precision claim;
+> 9/8 and 49/297. This is author-coupled evidence without a precision claim;
 > see the per-document outcomes, capture hashes and encoding caveat in
 > [`docs/benchmark-logosguard-2.4.4.json`](../docs/benchmark-logosguard-2.4.4.json).
 

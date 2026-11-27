@@ -2,7 +2,7 @@
 // bench scripts write (bench/independent/score.mjs), so no number on the site
 // is typed by hand. docs/benchmark-release.json pins that file's checksum.
 
-import bench from "../../../docs/benchmark-independent-v20.json"
+import bench from "../../../docs/benchmark-independent-v21.json"
 import release from "../../../docs/benchmark-release.json"
 import products from "../../../docs/benchmark-swedish-products-v20.json"
 import { activeLocale } from "./i18n"

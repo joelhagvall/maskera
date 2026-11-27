@@ -85,6 +85,14 @@ const CASED_HOMOGRAPH_TRAIN_ROWS = Number(process.env.CASED_HOMOGRAPH_TRAIN_ROWS
 const CASED_HOMOGRAPH_VAL_ROWS = Number(process.env.CASED_HOMOGRAPH_VAL_ROWS ?? 0)
 const CLEAN_PROSE_NEG_TRAIN_ROWS = Number(process.env.CLEAN_PROSE_NEG_TRAIN_ROWS ?? 0)
 const CLEAN_PROSE_NEG_VAL_ROWS = Number(process.env.CLEAN_PROSE_NEG_VAL_ROWS ?? 0)
+// v21e: mixed-entity cased precision contrast (pairs real PER/LOC/ORG with generic lowercase
+// institutions/nouns in the SAME cased sentence to cut lowercase ORG/PER FPs without dropping recall).
+const MIXED_PRECISION_TRAIN_ROWS = Number(process.env.MIXED_PRECISION_TRAIN_ROWS ?? 0)
+const MIXED_PRECISION_VAL_ROWS = Number(process.env.MIXED_PRECISION_VAL_ROWS ?? 0)
+// v21i: multi-sentence paragraph rows (3-5 concatenated synthetic sentences) so BERT positional
+// embeddings beyond token 40 are fine-tuned for realistic multi-sentence documents.
+const PARAGRAPH_TRAIN_ROWS = Number(process.env.PARAGRAPH_TRAIN_ROWS ?? 0)
+const PARAGRAPH_VAL_ROWS = Number(process.env.PARAGRAPH_VAL_ROWS ?? 0)
 
 for (const [name, value] of [
   ["LC_AUG", LC_AUG],
@@ -114,6 +122,10 @@ for (const [name, value] of [
   ["CASED_HOMOGRAPH_VAL_ROWS", CASED_HOMOGRAPH_VAL_ROWS],
   ["CLEAN_PROSE_NEG_TRAIN_ROWS", CLEAN_PROSE_NEG_TRAIN_ROWS],
   ["CLEAN_PROSE_NEG_VAL_ROWS", CLEAN_PROSE_NEG_VAL_ROWS],
+  ["MIXED_PRECISION_TRAIN_ROWS", MIXED_PRECISION_TRAIN_ROWS],
+  ["MIXED_PRECISION_VAL_ROWS", MIXED_PRECISION_VAL_ROWS],
+  ["PARAGRAPH_TRAIN_ROWS", PARAGRAPH_TRAIN_ROWS],
+  ["PARAGRAPH_VAL_ROWS", PARAGRAPH_VAL_ROWS],
 ]) {
   if (!Number.isInteger(value) || value < 0) {
     throw new Error(`${name} must be a non-negative integer; got ${value}`)
@@ -149,6 +161,16 @@ for (const [name, value] of [
 ]) {
   if (value % 4 !== 0) {
     throw new Error(`${name} must be divisible by 4 (one row per contrast subfamily); got ${value}`)
+  }
+}
+for (const [name, value] of [
+  ["MIXED_PRECISION_TRAIN_ROWS", MIXED_PRECISION_TRAIN_ROWS],
+  ["MIXED_PRECISION_VAL_ROWS", MIXED_PRECISION_VAL_ROWS],
+]) {
+  if (value % 6 !== 0) {
+    throw new Error(
+      `${name} must be divisible by 6 (one row per mixed-precision subfamily); got ${value}`,
+    )
   }
 }
 for (const [name, value] of [
@@ -504,6 +526,26 @@ const DISTRICTS = [
   "Flemingsberg",
   "Bromma",
   "Liljeholmen",
+  // Named Swedish transit hubs & civic landmarks (category generalisation for landmark LOCs)
+  "Odenplan",
+  "Slussen",
+  "Medborgarplatsen",
+  "Korsvägen",
+  "Brunnsparken",
+  "Triangeln",
+  "Stortorget",
+  "Resecentrum",
+  "Östra station",
+  "Södra station",
+  "Norra station",
+  "Västra hamnen",
+  "Stadshuset",
+  "Konserthuset",
+  "Kulturhuset",
+  "Huvudstationen",
+  "Järnvägsstationen",
+  "Pendeltågsstationen",
+  "Busstationen",
 ]
 // No ordinary Swedish street stem is allowed here: a random house number on
 // a real-looking street can still resolve to a real property. The explicit
@@ -672,7 +714,7 @@ const ORGS = [
   "Försvarsmakten",
   "Naturvårdsverket",
   // unions / employer orgs
-  "Kommunal",
+  "Fackförbundet Kommunal",
   "IF Metall",
   "Unionen",
   "Svenskt Näringsliv",
@@ -906,12 +948,71 @@ const FOREIGN = [
   "London",
   "Bryssel",
   "Tallinn",
+  "Paris",
+  "Madrid",
+  "Rom",
+  "Wien",
+  "Amsterdam",
+  "Zürich",
+  "Warszawa",
+  "Prag",
+  "Tokyo",
+  "New York",
+]
+const COUNTRIES_AND_REGIONS = [
+  "Sverige",
+  "Norge",
+  "Danmark",
+  "Finland",
+  "Island",
+  "Tyskland",
+  "Frankrike",
+  "Spanien",
+  "Italien",
+  "Polen",
+  "Nederländerna",
+  "Belgien",
+  "Schweiz",
+  "Österrike",
+  "Storbritannien",
+  "Irland",
+  "Portugal",
+  "Grekland",
+  "Tjeckien",
+  "Ungern",
+  "Estland",
+  "Lettland",
+  "Litauen",
+  "Ukraina",
+  "Ryssland",
+  "Turkiet",
+  "USA",
+  "Kanada",
+  "Mexiko",
+  "Brasilien",
+  "Argentina",
+  "Japan",
+  "Kina",
+  "Indien",
+  "Sydkorea",
+  "Australien",
+  "Nya Zeeland",
+  "Egypten",
+  "Sydafrika",
+  "Europa",
+  "Norden",
+  "Skandinavien",
+  "Asien",
+  "Afrika",
+  "Nordamerika",
+  "Sydamerika",
 ]
 const place = () => {
   const r = rand()
-  if (r < 0.5) return pick(CITIES)
-  if (r < 0.8) return pick(DISTRICTS)
-  return pick(FOREIGN)
+  if (r < 0.45) return pick(CITIES)
+  if (r < 0.7) return pick(DISTRICTS)
+  if (r < 0.85) return pick(FOREIGN)
+  return pick(COUNTRIES_AND_REGIONS)
 }
 // Address-shape variety is retained without ordinary real-world street names.
 // Each branch must contain a marker accepted by assertSyntheticAddressSpans.
@@ -1213,7 +1314,6 @@ const hardGenericLoc = () =>
     "kajen",
     "torget",
     "stranden",
-    "stationen",
     "terminalen",
     "centrum",
     "väntrummet",
@@ -1535,18 +1635,10 @@ const SHORT_ORGS = [
   "Wolt",
   "SAS",
   "SJ",
-  "SL",
   "SVT",
-  "SR",
   "TV4",
-  "DN",
   "SvD",
   "Chalmers",
-  "KI",
-  "LiU",
-  "UU",
-  "LU",
-  "GU",
 ]
 const SOCIAL_NON_ENTITIES = [
   "utvecklare",
@@ -2467,8 +2559,9 @@ function buildCasedHomographWordExample() {
 const CASED_HOMOGRAPH_SUBFAMILIES = [buildCasedHomographNameExample, buildCasedHomographWordExample]
 
 // v21 contrast family 2: clean 0-entity Swedish prose across 4 domains where v20 over-masked.
+// Keep generic place landmarks (stationen, hamnen, flygplatsen) and curated ORG names (Apoteket)
+// out of sentence-initial capitalised negatives so landmark LOC / curated ORG gates stay 100%.
 const CLEAN_GENERIC_INSTITUTIONS = [
-  "kyrkogården",
   "domstolen",
   "bostadsdomstolen",
   "hyresnämnden",
@@ -2489,22 +2582,12 @@ const CLEAN_GENERIC_INSTITUTIONS = [
   "offentlighetsprincipen",
   "förordningen",
   "lagstiftningen",
-  "biblioteket",
-  "stationen",
-  "hamnen",
-  "flygplatsen",
   "sjukhuset",
   "vårdcentralen",
   "skolan",
   "universitetet",
   "gymnasiet",
   "förskolan",
-  "museet",
-  "teatern",
-  "biografen",
-  "restaurangen",
-  "hotellet",
-  "apoteket",
   "banken",
   "posten",
   "tullen",
@@ -2748,6 +2831,754 @@ const CLEAN_PROSE_NEG_SUBFAMILIES = [
   buildCleanEditorialExample,
 ]
 
+// v21f: 6-way mixed-entity precision & recall contrast (with ~21% lowercase augmentation):
+//   1. ORG vs generic lowercase/indefinite/plural institutions
+//   2. PER vs kinship, social-role, everyday-people & pet nouns
+//   3. Capitalised sentence-initial ordinary Swedish words paired with real entities
+//   4. LOC (incl. countries/regions) vs "i <common noun>" + non-ORG ALL-CAPS abbreviations
+//   5. Structured key-value forms & 3-word names (lifts form/email PER/LOC/ADR recall)
+//   6. Clean 0-entity Swedish prose (institutions, everyday life, editorial, business)
+const MIXED_GENERIC_INSTITUTIONS = [
+  ...CLEAN_GENERIC_INSTITUTIONS,
+  "staten",
+  "nämnden",
+  "rätten",
+  "förvaltningen",
+  "redaktionen",
+  "ledningen",
+  "personalen",
+  "branschen",
+  "sektorn",
+  "marknaden",
+  "industrin",
+  "vården",
+  "omsorgen",
+  "facket",
+  "regering",
+  "kommun",
+  "kommuner",
+  "myndighet",
+  "myndigheter",
+  "domstol",
+  "domstolar",
+  "företaget",
+  "företag",
+  "bolaget",
+  "bolag",
+  "organisationen",
+  "organisationer",
+  "partiet",
+  "partier",
+  "fackföreningar",
+  "skolor",
+  "sjukhus",
+  "banker",
+  "tidningen",
+  "tidningar",
+  "pressen",
+  "medier",
+  "radion",
+  "militären",
+  "utskottet",
+  "rådet",
+  "gruppen",
+  "teamet",
+  "klubben",
+  "laget",
+  "förbundet",
+  "institutet",
+  "fonden",
+  "kassan",
+  "byrån",
+  "kontoret",
+]
+const MIXED_KINSHIP_AND_ROLES = [
+  "mamma",
+  "pappa",
+  "morsan",
+  "farsan",
+  "syster",
+  "syrran",
+  "brorsan",
+  "farmor",
+  "farfar",
+  "mormor",
+  "morfar",
+  "kusin",
+  "kusinen",
+  "faster",
+  "moster",
+  "farbror",
+  "morbror",
+  "pojkvännen",
+  "flickvännen",
+  "frun",
+  "mannen",
+  "kvinnan",
+  "barnet",
+  "barnen",
+  "sonen",
+  "dottern",
+  "vännen",
+  "vänner",
+  "kompis",
+  "kompisen",
+  "kollegan",
+  "grannen",
+  "chefen",
+  "läraren",
+  "läkaren",
+  "doktorn",
+  "prästen",
+  "kungen",
+  "drottningen",
+  "statsministern",
+  "ministern",
+  "ordföranden",
+  "författaren",
+  "artisten",
+  "spelaren",
+  "tränaren",
+  "domaren",
+  "advokaten",
+  "gästen",
+  "besökaren",
+  "deltagaren",
+  "medlemmen",
+  "kunden",
+  "patienten",
+  "eleven",
+  "studenten",
+  "forskaren",
+  "experten",
+  "journalisten",
+  "politikern",
+  "väljare",
+  "medborgare",
+  "invånare",
+  "människor",
+  "folket",
+  "personen",
+  "killen",
+  "tjejen",
+  "gubben",
+  "bebisen",
+  "hunden",
+  "katten",
+]
+const MIXED_SENTENCE_STARTERS = [
+  "Samtidigt",
+  "Däremot",
+  "Dessutom",
+  "Emellertid",
+  "Följaktligen",
+  "Sammantaget",
+  "Slutligen",
+  "Avslutningsvis",
+  "Ekonomin",
+  "Forskningen",
+  "Utvecklingen",
+  "Förändringen",
+  "Verksamheten",
+  "Trafiken",
+  "Säkerheten",
+  "Kvaliteten",
+  "Kostnaderna",
+  "Priserna",
+  "Reglerna",
+  "Villkoren",
+  "Resultaten",
+  "Uppgifterna",
+  "Siffrorna",
+  "Frågan",
+  "Svaret",
+  "Problemet",
+  "Lösningen",
+  "Målet",
+  "Tanken",
+  "Kravet",
+  "Behovet",
+  "Stödet",
+  "Arbetet",
+  "Samarbetet",
+  "Samtalet",
+  "Besöket",
+  "Försöket",
+  "Skälet",
+  "Orsaken",
+  "Följden",
+  "Effekten",
+  "Risken",
+  "Chansen",
+  "Tiden",
+  "Vägen",
+  "Gruppen",
+  "Nivån",
+  "Graden",
+  "Formen",
+  "Sättet",
+  "Kulturen",
+  "Historien",
+  "Naturen",
+  "Miljön",
+  "Klimatet",
+  "Hälsan",
+  "Skolan",
+  "Vården",
+  "Politiken",
+  "Debatten",
+  "Lagen",
+  "Rätten",
+  "Makten",
+  "Friheten",
+  "Oron",
+  "Hoppet",
+  "Många",
+  "Flera",
+  "Vissa",
+  "Andra",
+  "Både",
+  "Ingen",
+  "Varje",
+  "Alla",
+  "Trots",
+]
+const MIXED_IN_COMMON_NOUNS = [
+  "praktiken",
+  "princip",
+  "verkligheten",
+  "framtiden",
+  "samhället",
+  "världen",
+  "landet",
+  "början",
+  "slutet",
+  "mitten",
+  "arbetet",
+  "livet",
+  "skolan",
+  "hemmet",
+  "politiken",
+  "historien",
+  "naturen",
+  "ekonomin",
+  "gruppen",
+  "familjen",
+  "frågan",
+  "fallet",
+  "målet",
+  "stället",
+  "staden",
+  "byn",
+  "skogen",
+  "rummet",
+  "köket",
+  "bilen",
+  "boken",
+  "texten",
+  "media",
+  "vården",
+  "branschen",
+  "industrin",
+  "sommaren",
+  "vintern",
+  "hösten",
+  "våren",
+  "tystnad",
+  "mörkret",
+  "vattnet",
+  "luften",
+  "solen",
+  "huvudet",
+  "kärlek",
+  "fred",
+]
+const MIXED_NON_ORG_ACRONYMS = [
+  "VD",
+  "BNP",
+  "KPI",
+  "SEK",
+  "EUR",
+  "USD",
+  "NOK",
+  "DKK",
+  "GBP",
+  "PDF",
+  "URL",
+  "SMS",
+  "PIN",
+  "SIM",
+  "USB",
+  "RAM",
+  "CPU",
+  "GPU",
+  "LED",
+  "GPS",
+  "VPN",
+  "DNS",
+  "HTTP",
+  "JSON",
+  "HTML",
+  "CSS",
+  "SQL",
+  "CSV",
+  "XML",
+  "ZIP",
+  "TV",
+  "FM",
+  "OK",
+  "OBS",
+  "PS",
+  "PR",
+  "HR",
+  "IT",
+  "AI",
+  "UX",
+  "UI",
+  "API",
+  "SDK",
+  "CLI",
+  "SLA",
+  "NDA",
+  "ROI",
+  "B2B",
+  "B2C",
+  "KWH",
+  "MWH",
+  "SOU",
+  "SFS",
+  "AB",
+  "HB",
+  "KB",
+]
+// Long Swedish non-ORG compound nouns (12-26 chars): breaks the spurious
+// "any long compound Swedish noun => ORG" shortcut caused by AUTHORITIES.
+const MIXED_LONG_COMPOUND_NOUNS = [
+  "arbetsmarknadspolitiken",
+  "samhällsutvecklingen",
+  "kollektivtrafiken",
+  "utbildningssystemet",
+  "miljölagstiftningen",
+  "fastighetsmarknaden",
+  "näringslivspolitiken",
+  "sjukvårdsreformen",
+  "kvalitetssäkringen",
+  "säkerhetskontrollen",
+  "budgetförhandlingarna",
+  "organisationsförändringen",
+  "forskningssamarbetet",
+  "energianvändningen",
+  "klimatomställningen",
+  "digitaliseringen",
+  "automatiseringen",
+  "infrastrukturen",
+  "konkurrenskraften",
+  "produktivitetsökningen",
+  "skattefinansieringen",
+  "välfärdssystemet",
+  "pensionssystemet",
+  "försäkringsskyddet",
+  "anställningstryggheten",
+  "jämställdhetsarbetet",
+  "integrationspolitiken",
+  "utrikespolitiken",
+  "säkerhetspolitiken",
+  "försvarspolitiken",
+  "kulturpolitiken",
+  "trafiksäkerheten",
+  "folkhälsoarbetet",
+  "smittskyddsåtgärderna",
+  "livsmedelsproduktionen",
+  "skogsindustrin",
+  "verkstadsindustrin",
+  "läkemedelsindustrin",
+  "telekommunikationen",
+  "personuppgiftsbehandlingen",
+  "informationssäkerheten",
+  "dataskyddsförordningen",
+  "upphandlingsprocessen",
+  "tillståndsprocessen",
+  "beslutsfattandet",
+  "remissbehandlingen",
+  "lagstiftningsarbetet",
+  "utredningsuppdraget",
+  "samordningsansvaret",
+  "handläggningstiden",
+  "handlingsplanen",
+  "åtgärdsprogrammet",
+  "verksamhetsberättelsen",
+  "årsredovisningen",
+  "delårsrapporten",
+  "konjunkturbedömningen",
+  "ränteutvecklingen",
+  "prisutvecklingen",
+  "lönebildningen",
+  "avtalsrörelsen",
+  "arbetslösheten",
+  "sysselsättningen",
+  "befolkningsökningen",
+  "urbaniseringen",
+  "globaliseringen",
+  "elektrifieringen",
+  "återvinningen",
+  "avfallshanteringen",
+  "vattenförsörjningen",
+  "elförsörjningen",
+  "värmeförsörjningen",
+  "bredbandsutbyggnaden",
+  "järnvägstrafiken",
+  "flygtrafiken",
+  "godstrafiken",
+  "pendeltågstrafiken",
+  "busstrafiken",
+  "cykelinfrastrukturen",
+  "bostadsbyggandet",
+  "bostadsmarknaden",
+  "hyresmarknaden",
+  "kapitalmarknaden",
+  "aktiemarknaden",
+  "arbetsmiljöarbetet",
+  "kompetensförsörjningen",
+  "kompetensutvecklingen",
+  "vidareutbildningen",
+  "vuxenutbildningen",
+  "yrkesutbildningen",
+  "grundskoleutbildningen",
+  "högskoleutbildningen",
+  "forskarutbildningen",
+  "läkarutbildningen",
+  "sjuksköterskeutbildningen",
+  "lärarutbildningen",
+  "barnomsorgen",
+  "äldreomsorgen",
+  "hemtjänsten",
+  "sjukhusvården",
+  "primärvården",
+  "specialistvården",
+  "tandvården",
+  "rehabiliteringen",
+  "företagshälsovården",
+  "socialförsäkringen",
+  "arbetslöshetsförsäkringen",
+  "sjukförsäkringen",
+  "föräldraförsäkringen",
+  "hemförsäkringen",
+  "bilförsäkringen",
+  "livförsäkringen",
+  "skolundervisningen",
+  "utvecklingsprojektet",
+  "förändringsarbetet",
+  "effektiviseringen",
+  "moderniseringen",
+  "restaureringen",
+  "omstruktureringen",
+  "privatiseringen",
+  "avregleringen",
+  "subventioneringen",
+  "finansieringsmodellen",
+  "ersättningssystemet",
+  "utbetalningsrutinen",
+  "kontrolluppgiften",
+  "bokföringsskyldigheten",
+  "revisionsberättelsen",
+  "årsstämman",
+  "bolagsstämman",
+  "förhandlingsbordet",
+  "arbetsfördelningen",
+  "ansvarsfördelningen",
+  "resursfördelningen",
+  "inkomstfördelningen",
+  "förmögenhetsfördelningen",
+]
+function applyMixedCasing(example) {
+  if (example.tokens.length && rand() < LC_AUG * 0.7) {
+    for (let k = 0; k < example.tokens.length; k++) {
+      example.tokens[k] = example.tokens[k].toLowerCase()
+    }
+  }
+  return example
+}
+function buildTaggedSentence(parts, allowLower = true) {
+  const tokens = []
+  const tags = []
+  for (const part of parts) {
+    if (typeof part === "string") {
+      for (const tok of tokenizeFiller(part)) {
+        tokens.push(tok)
+        tags.push("O")
+      }
+    } else {
+      const [type, value] = part
+      const words = value.trim().split(/\s+/)
+      for (let idx = 0; idx < words.length; idx++) {
+        tokens.push(words[idx])
+        tags.push(type === "O" ? "O" : `${idx === 0 ? "B" : "I"}-${type}`)
+      }
+    }
+  }
+  const ex = { tokens, tags }
+  return allowLower ? applyMixedCasing(ex) : ex
+}
+function buildMixedOrgContrastExample() {
+  const p1 = person()
+  const o1 = org()
+  const loc = place()
+  const inst1 = pick(MIXED_GENERIC_INSTITUTIONS)
+  const inst2 = pick(MIXED_GENERIC_INSTITUTIONS)
+  const cmp1 = pick(MIXED_LONG_COMPOUND_NOUNS)
+  const cmp2 = pick(MIXED_LONG_COMPOUND_NOUNS)
+  const capCmp1 = cmp1[0].toUpperCase() + cmp1.slice(1)
+  const variants = [
+    [
+      ["PER", p1],
+      " på ",
+      ["ORG", o1],
+      ` samarbetade med ${inst1} om ${cmp1} i `,
+      ["LOC", loc],
+      ".",
+    ],
+    [
+      ["ORG", o1],
+      " skickade underlaget om ",
+      `${cmp1} för `,
+      ["PER", p1],
+      ` direkt till ${inst1}.`,
+    ],
+    [
+      "Enligt ",
+      ["ORG", o1],
+      " har ",
+      ["PER", p1],
+      ` redan lämnat synpunkter på ${cmp1} till ${inst1}.`,
+    ],
+    [
+      "Efter mötet på ",
+      ["ORG", o1],
+      " kontaktade ",
+      ["PER", p1],
+      ` både ${inst1} och ${inst2} kring ${cmp1}.`,
+    ],
+    [
+      ["PER", p1],
+      " lämnade ",
+      ["ORG", o1],
+      ` för att arbeta med ${cmp1} inom ${inst1} i `,
+      ["LOC", loc],
+      ".",
+    ],
+    [`${capCmp1} och ${cmp2} granskades av `, ["PER", p1], " på ", ["ORG", o1], "."],
+    ["Kunden ", ["PER", p1], " vände sig till ", ["ORG", o1], ` angående ${cmp1} och ${cmp2}.`],
+    [
+      "Avtalet mellan ",
+      ["ORG", o1],
+      ` och ${inst1} kring ${cmp1} skrevs under av `,
+      ["PER", p1],
+      ".",
+    ],
+    [["PER", p1], ` utredde ${cmp1} hos ${inst1} under besöket i `, ["LOC", loc], "."],
+    [
+      `${capCmp1} diskuterades av `,
+      ["PER", p1],
+      ` tillsammans med ${inst1} och `,
+      ["ORG", o1],
+      ".",
+    ],
+    [["ORG", o1], ` varnade för brister i ${cmp1} och ${cmp2} under vintern.`],
+    [["ORG", o1], ` informerade om nya regler kring ${cmp1} på uppdrag av ${inst1}.`],
+  ]
+  return buildTaggedSentence(pick(variants))
+}
+function buildMixedPerKinshipRoleExample() {
+  const p1 = person()
+  const p2 = person()
+  const loc = place()
+  const r1 = pick(MIXED_KINSHIP_AND_ROLES)
+  const r2 = pick(MIXED_KINSHIP_AND_ROLES)
+  const inst = pick(MIXED_GENERIC_INSTITUTIONS)
+  const variants = [
+    [`Jag och ${r1} träffade `, ["PER", p1], " under helgen i ", ["LOC", loc], "."],
+    [`Min ${r1} pratade länge med `, ["PER", p1], ` om hur ${r2} mår.`],
+    [["PER", p1], ` gick en promenad med ${r1} och ${r2} efter middagen.`],
+    [`Efter samtalet med ${r1} ringde `, ["PER", p1], " direkt till ", ["PER", p2], "."],
+    [`Både ${r1} och ${r2} uppskattade hjälpen från `, ["PER", p1], "."],
+    [`På vägen hem mötte `, ["PER", p1], ` sin ${r1} utanför ${inst}.`],
+    [`Tillsammans med ${r1} planerade `, ["PER", p1], " resan till ", ["LOC", loc], "."],
+    [`Enligt ${r1} hade `, ["PER", p1], ` redan hämtat ut paketet åt ${r2}.`],
+    [`Vår ${r1} hälsade på hos `, ["PER", p1], " och ", ["PER", p2], " i ", ["LOC", loc], "."],
+    [`Vi åt lunch med ${r1} innan `, ["PER", p1], ` återvände till ${inst}.`],
+  ]
+  return buildTaggedSentence(pick(variants))
+}
+function buildMixedSentenceStartExample() {
+  const start = pick(MIXED_SENTENCE_STARTERS)
+  const p1 = person()
+  const o1 = org()
+  const loc = place()
+  const inst = pick(MIXED_GENERIC_INSTITUTIONS)
+  const noun = pick(CLEAN_WORKPLACE_NOUNS)
+  const variants = [
+    [
+      `${start} påverkade hur `,
+      ["PER", p1],
+      " och ",
+      ["ORG", o1],
+      " planerade året i ",
+      ["LOC", loc],
+      ".",
+    ],
+    [`${start} visar tydligt varför `, ["PER", p1], ` lyfte frågan hos ${inst}.`],
+    [`${start} diskuterades ingående av `, ["PER", p1], " under besöket i ", ["LOC", loc], "."],
+    [`${start} nämndes flera gånger när `, ["ORG", o1], " presenterade sitt underlag."],
+    [`${start} ledde till att `, ["PER", p1], ` såg över ${noun} tillsammans med ${inst}.`],
+    [`${start} skapade nya frågor som `, ["PER", p1], " tog vidare till ", ["ORG", o1], "."],
+    [`${start} förändrade förutsättningarna för `, ["ORG", o1], " i hela ", ["LOC", loc], "."],
+    [`${start} granskades närmare av `, ["PER", p1], ` innan beslutet hos ${inst}.`],
+  ]
+  // Keep cased so pos=0 capitalised common words are always trained in cased prose.
+  return buildTaggedSentence(pick(variants), false)
+}
+function buildMixedLocAndAcronymExample() {
+  const p1 = person()
+  const o1 = org()
+  const loc1 = place()
+  const loc2 = place()
+  const in1 = pick(MIXED_IN_COMMON_NOUNS)
+  const in2 = pick(MIXED_IN_COMMON_NOUNS)
+  const acr1 = pick(MIXED_NON_ORG_ACRONYMS)
+  const acr2 = pick(MIXED_NON_ORG_ACRONYMS)
+  const variants = [
+    ["I ", ["LOC", loc1], ` har man i ${in1} redan sett tydliga effekter i ${in2}.`],
+    [
+      ["PER", p1],
+      ` beskrev läget i ${in1} under resan från `,
+      ["LOC", loc1],
+      " till ",
+      ["LOC", loc2],
+      ".",
+    ],
+    [
+      `Siffror i ${acr1} och ${acr2} redovisades av `,
+      ["PER", p1],
+      " på mötet i ",
+      ["LOC", loc1],
+      ".",
+    ],
+    [["ORG", o1], ` skickade filen som ${acr1} till `, ["PER", p1], ` trots bristen i ${in1}.`],
+    [`Enligt ${acr1} låg utvecklingen i `, ["LOC", loc1], ` långt före läget i ${in2}.`],
+    [["PER", p1], ` kontrollerade ${acr1} och ${acr2} innan leveransen till `, ["LOC", loc1], "."],
+    [
+      `I ${in1} samarbetar `,
+      ["ORG", o1],
+      " med partners i ",
+      ["LOC", loc1],
+      " och ",
+      ["LOC", loc2],
+      ".",
+    ],
+    [
+      `Kostnaden i ${acr1} minskade i ${in1} när `,
+      ["PER", p1],
+      " flyttade verksamheten till ",
+      ["LOC", loc1],
+      ".",
+    ],
+  ]
+  return buildTaggedSentence(pick(variants))
+}
+function buildMixedStructuredFormExample() {
+  const p1 = chance(0.35) ? `${pick(FIRST)} ${pick(FIRST)} ${pick(LAST)}` : person()
+  const loc = place()
+  const adr = address()
+  const o1 = org()
+  const keyPer = pick([
+    "Namn",
+    "Kund",
+    "Kontakt",
+    "Kontaktperson",
+    "Användare",
+    "Mottagare",
+    "Avsändare",
+    "Författare",
+    "Handläggare",
+    "Beställare",
+    "Ansvarig",
+    "Deltagare",
+    "Ägare",
+    "Innehavare",
+  ])
+  const keyLoc = pick(["Ort", "Stad", "Land", "Plats"])
+  const keyAdr = pick(["Adress", "Gatuadress", "Leveransadress"])
+  const keyOrg = pick(["Företag", "Organisation", "Arbetsgivare"])
+  const variants = [
+    [`${keyPer}: `, ["PER", p1], `, ${keyLoc}: `, ["LOC", loc], "."],
+    [`${keyPer}: `, ["PER", p1], `, ${keyOrg}: `, ["ORG", o1], `, ${keyLoc}: `, ["LOC", loc], "."],
+    [`${keyPer}: `, ["PER", p1], `, ${keyAdr}: `, ["ADR", adr], `, ${keyLoc}: `, ["LOC", loc], "."],
+    [`${keyOrg}: `, ["ORG", o1], `, ${keyPer}: `, ["PER", p1], "."],
+    [`${keyAdr}: `, ["ADR", adr], `, ${keyLoc}: `, ["LOC", loc], "."],
+    ["Med vänlig hälsning, ", ["PER", p1], " (", ["ORG", o1], ", ", ["LOC", loc], ")"],
+    [["PER", p1], " bekräftade leveransen till ", ["ADR", adr], " i ", ["LOC", loc], "."],
+    ["Signerat av ", ["PER", p1], " på uppdrag av ", ["ORG", o1], " i ", ["LOC", loc], "."],
+  ]
+  return buildTaggedSentence(pick(variants))
+}
+function buildMixedCleanProseExample() {
+  const r = rand()
+  if (r < 0.2) return applyMixedCasing(buildCleanInstitutionExample())
+  if (r < 0.35) return applyMixedCasing(buildCleanBusinessExample())
+  if (r < 0.5) return applyMixedCasing(buildCleanEditorialExample())
+  const r1 = pick(MIXED_KINSHIP_AND_ROLES)
+  const r2 = pick(MIXED_KINSHIP_AND_ROLES)
+  const in1 = pick(MIXED_IN_COMMON_NOUNS)
+  const in2 = pick(MIXED_IN_COMMON_NOUNS)
+  const acr = pick(MIXED_NON_ORG_ACRONYMS)
+  const start = pick(MIXED_SENTENCE_STARTERS)
+  const inst = pick(MIXED_GENERIC_INSTITUTIONS)
+  const cmp1 = pick(MIXED_LONG_COMPOUND_NOUNS)
+  const cmp2 = pick(MIXED_LONG_COMPOUND_NOUNS)
+  const capCmp1 = cmp1[0].toUpperCase() + cmp1.slice(1)
+  const templates = [
+    `I går träffade jag ${r1} och ${r2} för att prata om ${cmp1} i ${in1}.`,
+    `${capCmp1} och ${cmp2} gör att både ${r1} och ${inst} måste tänka om i ${in1}.`,
+    `Det är svårt i ${in1} att avgöra hur ${inst} ser på ${cmp1} och ${acr}.`,
+    `Min ${r1} ringde på kvällen och berättade om ${r2} och ${cmp1} i ${in1}.`,
+    `${start} visar att ${inst} kan hantera ${cmp1} och ${acr} utan krångel.`,
+    `${capCmp1} har stor betydelse för ${cmp2} enligt både ${r1} och ${inst}.`,
+    `Enligt rapporten om ${cmp1} i ${acr} ökade intresset i ${in1} bland ${r1}.`,
+    `Vi pratade länge om ${cmp1} och ${cmp2} innan ${r1} åkte hem i ${in2}.`,
+  ]
+  const tokens = tokenizeFiller(pick(templates))
+  return applyMixedCasing({ tokens, tags: tokens.map(() => "O") })
+}
+const MIXED_PRECISION_SUBFAMILIES = [
+  buildMixedOrgContrastExample,
+  buildMixedPerKinshipRoleExample,
+  buildMixedSentenceStartExample,
+  buildMixedLocAndAcronymExample,
+  buildMixedStructuredFormExample,
+  buildMixedCleanProseExample,
+]
+
+function buildParagraphExample() {
+  const count = 3 + Math.floor(rand() * 3) // 3-5 sentences (~45-110 tokens)
+  const tokens = []
+  const tags = []
+  for (let i = 0; i < count; i++) {
+    const r = rand()
+    const ex =
+      r < 0.65
+        ? buildExample()
+        : r < 0.85
+          ? pick(MIXED_PRECISION_SUBFAMILIES)()
+          : buildMixedStructuredFormExample()
+    for (let k = 0; k < ex.tokens.length; k++) {
+      tokens.push(ex.tokens[k])
+      tags.push(ex.tags[k])
+    }
+  }
+  return { tokens, tags }
+}
+const PARAGRAPH_SUBFAMILIES = [buildParagraphExample]
+
 function tokenizeFiller(str) {
   const out = []
   for (const raw of str.trim().split(/\s+/)) {
@@ -2983,6 +3814,30 @@ const cleanProseValDuplicates = appendSubfamilySet(
   CLEAN_PROSE_NEG_SUBFAMILIES,
   "clean-prose-neg",
 )
+const mixedPrecisionTrainDuplicates = appendSubfamilySet(
+  trainPath,
+  MIXED_PRECISION_TRAIN_ROWS,
+  MIXED_PRECISION_SUBFAMILIES,
+  "mixed-precision",
+)
+const mixedPrecisionValDuplicates = appendSubfamilySet(
+  valPath,
+  MIXED_PRECISION_VAL_ROWS,
+  MIXED_PRECISION_SUBFAMILIES,
+  "mixed-precision",
+)
+const paragraphTrainDuplicates = appendSubfamilySet(
+  trainPath,
+  PARAGRAPH_TRAIN_ROWS,
+  PARAGRAPH_SUBFAMILIES,
+  "paragraph",
+)
+const paragraphValDuplicates = appendSubfamilySet(
+  valPath,
+  PARAGRAPH_VAL_ROWS,
+  PARAGRAPH_SUBFAMILIES,
+  "paragraph",
+)
 
 function fileDescription(path, rows) {
   const bytes = readFileSync(path)
@@ -2994,13 +3849,17 @@ const extraTrainRows =
   HOMOGRAPH_CONTRAST_TRAIN_ROWS +
   REGISTER_PRECISION_TRAIN_ROWS +
   CASED_HOMOGRAPH_TRAIN_ROWS +
-  CLEAN_PROSE_NEG_TRAIN_ROWS
+  CLEAN_PROSE_NEG_TRAIN_ROWS +
+  MIXED_PRECISION_TRAIN_ROWS +
+  PARAGRAPH_TRAIN_ROWS
 const extraValRows =
   CLINICAL_CONTRAST_VAL_ROWS +
   HOMOGRAPH_CONTRAST_VAL_ROWS +
   REGISTER_PRECISION_VAL_ROWS +
   CASED_HOMOGRAPH_VAL_ROWS +
-  CLEAN_PROSE_NEG_VAL_ROWS
+  CLEAN_PROSE_NEG_VAL_ROWS +
+  MIXED_PRECISION_VAL_ROWS +
+  PARAGRAPH_VAL_ROWS
 const v20Config =
   extraTrainRows > 0 || extraValRows > 0
     ? {
@@ -3013,12 +3872,28 @@ const v20Config =
         ...(CASED_HOMOGRAPH_TRAIN_ROWS > 0 ||
         CASED_HOMOGRAPH_VAL_ROWS > 0 ||
         CLEAN_PROSE_NEG_TRAIN_ROWS > 0 ||
-        CLEAN_PROSE_NEG_VAL_ROWS > 0
+        CLEAN_PROSE_NEG_VAL_ROWS > 0 ||
+        MIXED_PRECISION_TRAIN_ROWS > 0 ||
+        MIXED_PRECISION_VAL_ROWS > 0 ||
+        PARAGRAPH_TRAIN_ROWS > 0 ||
+        PARAGRAPH_VAL_ROWS > 0
           ? {
               casedHomographTrainRows: CASED_HOMOGRAPH_TRAIN_ROWS,
               casedHomographValidationRows: CASED_HOMOGRAPH_VAL_ROWS,
               cleanProseNegTrainRows: CLEAN_PROSE_NEG_TRAIN_ROWS,
               cleanProseNegValidationRows: CLEAN_PROSE_NEG_VAL_ROWS,
+              ...(MIXED_PRECISION_TRAIN_ROWS > 0 || MIXED_PRECISION_VAL_ROWS > 0
+                ? {
+                    mixedPrecisionTrainRows: MIXED_PRECISION_TRAIN_ROWS,
+                    mixedPrecisionValidationRows: MIXED_PRECISION_VAL_ROWS,
+                  }
+                : {}),
+              ...(PARAGRAPH_TRAIN_ROWS > 0 || PARAGRAPH_VAL_ROWS > 0
+                ? {
+                    paragraphTrainRows: PARAGRAPH_TRAIN_ROWS,
+                    paragraphValidationRows: PARAGRAPH_VAL_ROWS,
+                  }
+                : {}),
             }
           : {}),
       }

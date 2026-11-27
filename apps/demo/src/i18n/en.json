@@ -691,7 +691,7 @@
       }
     ],
     "currentTitle": "Short summary",
-    "currentBody": "Share of values Maskera v20 hid in independent Swedish text, measured on 2026-11-26. Hidden means the value does not appear in the text that is sent, whatever label it got.",
+    "currentBody": "Share of values Maskera v21 hid in independent Swedish text, measured on 2026-11-27. Hidden means the value does not appear in the text that is sent, whatever label it got.",
     "cells": {
       "names": "Names",
       "namesLowercase": "Names in lowercase, as in chat",
@@ -716,7 +716,7 @@
     },
     "systems": {
       "maskera": {
-        "name": "Maskera v20",
+        "name": "Maskera v21",
         "description": "Swedish model and format rules, local"
       },
       "presidio": {
@@ -732,7 +732,7 @@
         "description": "Multilingual model, q4 ONNX"
       }
     },
-    "comparisonSummary": "Maskera hides the most names, lowercase ones included, and the most addresses. Presidio hides more places and hits far fewer sentences without personal data. Its spaCy model is trained on SUC 3.0, one of the tests, which gives it an advantage there.",
+    "comparisonSummary": "Maskera hides the most names (including lowercase), the most places and the most addresses. Presidio hits fewer sentences without personal data; its spaCy model is trained on SUC 3.0, one of the tests, which gives it an advantage there.",
     "testsTitle": "The tests",
     "tests": [
       {
@@ -779,7 +779,7 @@
       "Personal identity numbers, organisation numbers, bankgiro and IBAN have no independent Swedish test text. They are found with format rules and check digits and are covered by the project's own tests on GitHub, but are not reported here.",
       "No automatic masking is error-free. Review the text yourself when a mistake could have serious consequences."
     ],
-    "provenance": "Measured on CPU on 2026-11-26: Maskera v20 (q4), Presidio 2.2.366 with sv_core_news_lg 3.8.0, swedish-pii 1.2.0 and OpenAI Privacy Filter (q4 ONNX). The test texts are fetched from Hugging Face and Språkbanken Text when the test runs. Scripts and checksums are on GitHub.",
+    "provenance": "Measured on CPU on 2026-11-27: Maskera v21 (q4), Presidio 2.2.366 with sv_core_news_lg 3.8.0, swedish-pii 1.2.0 and OpenAI Privacy Filter (q4 ONNX). The test texts are fetched from Hugging Face and Språkbanken Text when the test runs. Scripts and checksums are on GitHub.",
     "demoCta": "Try the browser demo",
     "benchmarksCta": "Full report and scripts on GitHub"
   },
@@ -902,7 +902,7 @@
     "fullDocsPrefix": "The complete technical disclosure and all source code are available on GitHub.",
     "fullDocsCta": "Read the full document",
     "training": {
-      "syntheticTitle": "Trained on 100% synthetic Swedish text (v20).",
+      "syntheticTitle": "Trained on 100% synthetic Swedish text (v21).",
       "syntheticBody": "The model is trained on 108,400 generated Swedish texts, with zero customer data or real personal information. An automated filter blocks personal identity numbers, account numbers, emails, phone numbers and real street addresses before training starts.",
       "policyCta": "Read the technical data-protection policy",
       "attestationBody": "Every release ships with verifiable SHA-256 checksums for the training data and scripts in the",
@@ -1627,7 +1627,7 @@
           "title": "Self-hosting the model and offline operation",
           "body": "By default, the model weights are fetched once from Hugging Face, checked with sha256 against a pinned commit, and cached locally. On air-gapped networks, download the model once and point to the folder.",
           "codeLabel": "TypeScript",
-          "code": "// Download the model once:\n// hf download joelhagvall/maskera-sv-ner --local-dir /opt/models/maskera-sv-ner-v20\n\n// q8 is fastest on Node CPU; use q4 in browsers\nconst recognizer = createNerRecognizer({\n  localModelPath: \"/opt/models\",\n  model: \"maskera-sv-ner-v20\",\n  allowRemoteModels: false,\n  dtype: \"q8\",\n})"
+          "code": "// Download the model once:\n// hf download joelhagvall/maskera-sv-ner --local-dir /opt/models/maskera-sv-ner-v21\n\n// q8 is fastest on Node CPU; use q4 in browsers\nconst recognizer = createNerRecognizer({\n  localModelPath: \"/opt/models\",\n  model: \"maskera-sv-ner-v21\",\n  allowRemoteModels: false,\n  dtype: \"q8\",\n})"
         },
         {
           "id": "driftchecklista",
@@ -1695,7 +1695,7 @@
           "title": "Running completely offline",
           "body": "When your workstation or server cannot reach Hugging Face, place the model directory on local disk and disable remote fetches.",
           "codeLabel": "Terminal",
-          "code": "# Download the model once\nhf download joelhagvall/maskera-sv-ner --local-dir /opt/models/maskera-sv-ner-v20\n\n# Then run with no network access\nMASKERA_MODEL_PATH=/opt/models \\\nMASKERA_MODEL_ID=maskera-sv-ner-v20 \\\nMASKERA_ALLOW_REMOTE_MODELS=0 \\\nnpx -y @maskera/mcp doctor --root ."
+          "code": "# Download the model once\nhf download joelhagvall/maskera-sv-ner --local-dir /opt/models/maskera-sv-ner-v21\n\n# Then run with no network access\nMASKERA_MODEL_PATH=/opt/models \\\nMASKERA_MODEL_ID=maskera-sv-ner-v21 \\\nMASKERA_ALLOW_REMOTE_MODELS=0 \\\nnpx -y @maskera/mcp doctor --root ."
         },
         {
           "id": "begransningar",

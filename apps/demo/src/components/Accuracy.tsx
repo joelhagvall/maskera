@@ -56,7 +56,7 @@ function ComparisonBars({
 
 /**
  * The accuracy page. Every number comes from the independent benchmark result
- * (docs/benchmark-independent-v20.json via independentBench.ts); the copy
+ * (docs/benchmark-independent-v21.json via independentBench.ts); the copy
  * only names and explains them.
  */
 export function Accuracy({

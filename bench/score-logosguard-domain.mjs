@@ -43,7 +43,7 @@ const maskeraPackage = JSON.parse(
 )
 const maskeraArtifactFile = resolve(
   repoRoot,
-  "apps/demo/public/models/maskera-sv-ner-v20/onnx/model_q4.onnx",
+  "apps/demo/public/models/maskera-sv-ner-v21/onnx/model_q4.onnx",
 )
 const maskeraArtifact = readFileSync(maskeraArtifactFile)
 
@@ -109,10 +109,10 @@ const result = {
   systems: {
     maskera: {
       name: "Maskera",
-      version: `${maskeraPackage.version} / maskera-sv-ner-v20`,
+      version: `${maskeraPackage.version} / maskera-sv-ner-v21`,
       surface: "Local JavaScript pipeline, q4 ONNX on CPU, general profile",
       artifact: {
-        model: "maskera-sv-ner-v20",
+        model: "maskera-sv-ner-v21",
         dtype: "q4",
         path: "onnx/model_q4.onnx",
         sha256: sha256(maskeraArtifact),

@@ -53,7 +53,7 @@ TEACHER_DIRS = [
     if item.strip()
 ] or [TEACHER]
 PRIMARY_TEACHER = TEACHER_DIRS[0]
-MAX_LEN = 128
+MAX_LEN = int(os.environ.get("MASKERA_MAX_LEN", "256"))
 ALPHA = float(os.environ.get("MASKERA_ALPHA", "0.5"))  # weight on hard-label CE vs soft distillation
 TEMPERATURE = float(os.environ.get("MASKERA_TEMP", "2.0"))
 HIDDEN_WEIGHT = float(os.environ.get("MASKERA_HIDDEN_WEIGHT", "0.0"))
@@ -136,6 +136,15 @@ if PER_CONSISTENCY_WEIGHT > 1 and (SUBWORD_DROPOUT <= 0 or not DROPOUT_VOCAB):
 LABELS = ["O", "B-PER", "I-PER", "B-LOC", "I-LOC", "B-ORG", "I-ORG", "B-ADR", "I-ADR"]
 label2id = {l: i for i, l in enumerate(LABELS)}
 id2label = {i: l for i, l in enumerate(LABELS)}
+
+CLASS_WEIGHTS_RAW = os.environ.get("MASKERA_CLASS_WEIGHTS", "").strip()
+CLASS_WEIGHTS = None
+if CLASS_WEIGHTS_RAW:
+    vals = [float(x.strip()) for x in CLASS_WEIGHTS_RAW.split(",") if x.strip()]
+    if len(vals) != len(LABELS) or any(not np.isfinite(v) or v <= 0 for v in vals):
+        sys.exit(f"MASKERA_CLASS_WEIGHTS must have {len(LABELS)} positive floats; got {CLASS_WEIGHTS_RAW!r}")
+    CLASS_WEIGHTS = torch.tensor(vals, dtype=torch.float32)
+    print(f"== class weights: {dict(zip(LABELS, vals))} ==")
 
 # MASKERA_DEVICE overrides (e.g. "cpu" for a smoke run beside a live MPS job).
 device = os.environ.get("MASKERA_DEVICE") or (
@@ -392,22 +401,29 @@ class DistillTrainer(Trainer):
         use_hidden = HIDDEN_WEIGHT > 0 and model.training
         outputs = model(**inputs, output_hidden_states=use_hidden)
         # CE on hard labels (ALL pieces, continuations I-). Preserve the
-        # historical loss implementation exactly unless the v15 lever is on.
-        if PER_CONSISTENCY_WEIGHT == 1:
+        # historical loss implementation exactly unless the v15 or class-weight lever is on.
+        if PER_CONSISTENCY_WEIGHT == 1 and CLASS_WEIGHTS is None:
             hard = outputs.loss
         else:
             labels = inputs["labels"]
+            ce_weight = (
+                CLASS_WEIGHTS.to(outputs.logits.device, dtype=torch.float32)
+                if CLASS_WEIGHTS is not None
+                else None
+            )
             token_loss = F.cross_entropy(
-                outputs.logits.reshape(-1, len(LABELS)),
+                outputs.logits.reshape(-1, len(LABELS)).float(),
                 labels.reshape(-1),
+                weight=ce_weight,
                 ignore_index=-100,
                 reduction="none",
             ).reshape_as(labels)
             valid = labels != -100
             weights = torch.ones_like(token_loss)
-            weights = weights.masked_fill(
-                per_consistency_mask == 1, PER_CONSISTENCY_WEIGHT
-            )
+            if PER_CONSISTENCY_WEIGHT != 1:
+                weights = weights.masked_fill(
+                    per_consistency_mask == 1, PER_CONSISTENCY_WEIGHT
+                )
             hard = (token_loss[valid] * weights[valid]).sum() / weights[valid].sum()
         # Word-aligned KL: first subtoken of each kept word on both sides, so
         # the masked positions correspond 1:1 in order even when the student's

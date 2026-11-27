@@ -26,8 +26,8 @@ are.
 
 ## How the model was trained (honestly)
 
-- **Published v20 is the privacy-clean artifact.** Its task-specific training
-  uses 108,400 generated rows and 6,900 disjoint validation rows (distilled from
+- **Published v21 is the privacy-clean artifact.** Its task-specific training
+  uses 121,200 generated rows and 7,980 disjoint validation rows (distilled from
   a 3-seed KB-BERT teacher ensemble). Historical v18
   used generated sentences plus documented, openly licensed public Swedish
   corpora; its dated comparison tables remain for transparency.
@@ -36,7 +36,7 @@ are.
   URL, public IP, payment identifier, long account/card-like number, or postal
   code. Even officially reserved detector-test values are excluded from model
   training. The scanner reports categories, not the matched value.
-- **Exact provenance is bound to published v20.** The data row
+- **Exact provenance is bound to published v21.** The data row
   counts and SHA-256 hashes are bound to the generator's code hash. Training, trimming,
   distillation, ONNX export, and publication require the resulting
   `privacy-attestation.json`; a converter append or manual edit breaks the
@@ -51,35 +51,35 @@ are.
 
 ## How good is it, really
 
-- **Independent Swedish text (measured 2026-11-26, what maskera.dev shows):**
+- **Independent Swedish text (measured 2026-11-27, what maskera.dev shows):**
   across four corpora neither Maskera nor its developer wrote and absent from
-  v20 training (SUC 3.0 test, SIC2 Swedish blogs, MultiCoNER v2 Swedish persons,
-  and ai4privacy openpii Swedish rows; 23,980 texts), Maskera v20 q4 hid 92.4%
-  of names (11,613/12,570), 92.8% of lowercase names, 93.6% of places, and 95.2%
+  v21 training (SUC 3.0 test, SIC2 Swedish blogs, MultiCoNER v2 Swedish persons,
+  and ai4privacy openpii Swedish rows; 23,980 texts), Maskera v21 q4 hid 94.6%
+  of names (11,885/12,570), 91.1% of lowercase names, 97.3% of places, and 95.3%
   of street addresses and postcodes. Presidio with Swedish spaCy
   (`sv_core_news_lg`, trained on SUC 3.0) hid 72.3% / 71.4% / 97.1% / 47.0%,
   `swedish-pii` 1.2.0 hid 55.3% / 0.3% / 82.7% / 77.3%, and OpenAI Privacy
   Filter q4 ONNX hid 52.2% / 10.3% / 33.5% / 63.3%. Maskera triggered a
-  detection in 21.4% of entity-free SUC + SIC2 sentences versus Presidio's 2.5%.
+  detection in 12.3% of entity-free SUC + SIC2 sentences versus Presidio's 2.5%.
   Machine results live in
-  [`docs/benchmark-independent-v20.json`](benchmark-independent-v20.json).
-- The public-comparison tables describe historical v18, while the current v20
+  [`docs/benchmark-independent-v21.json`](benchmark-independent-v21.json).
+- The public-comparison tables describe historical v18, while the current v21
   release snapshot records 100.0%
   label-agnostic span F1 and 0/57 leaks on the revised synthetic ADR set,
-  99.5% span F1 and 0/205 leaks on curated, and 98.1% span F1 with 0/53
+  98.8% span F1 and 0/205 leaks on curated, and 98.1% span F1 with 0/53
   leaks on the LinkedIn-style set. All defined gates pass, but these are
   synthetic or author-coupled checks, not independent universal estimates.
-  A current v20 comparison re-run on 2026-11-25 against KBLab lowermix uses
+  A current v21 comparison re-run on 2026-11-27 against KBLab lowermix uses
   121 hand-authored synthetic Swedish texts with 211 comparable PER/LOC/ORG
-  entities. Maskera q4 masked 211/211 both with original casing and lowercased;
-  KBLab fp32 masked 205/211 and 187/211. KBLab led typed F1 on original casing
-  (89.4% vs 88.2%), while Maskera led lowercase typed F1 (87.4% vs 83.2%). The
+  entities. Maskera q4 masked 210/211 with original casing and 211/211 lowercased;
+  KBLab fp32 masked 205/211 and 187/211. Maskera led typed F1 on both original
+  casing (89.6% vs 89.4%) and lowercase (88.4% vs 83.2%). The
   corpus shares Maskera's developer, so this is directional, not independent.
-  A separate end-product comparison on 2026-11-25 used 258 synthetic Swedish
+  A separate end-product comparison on 2026-11-27 used 258 synthetic Swedish
   domain texts with 952 annotated PII strings and one strict full-removal
-  scorer. Maskera v20 fully removed 941/952 (98.8%); LogosGuard 2.4.4 in
+  scorer. Maskera v21 fully removed 935/952 (98.2%); LogosGuard 2.4.4 in
   Chrome, Free/`Balanced`, removed 606/952 (63.7%). Partial/clear-text leaks
-  were 5/6 and 49/297. This corpus is also author-coupled and not exhaustively
+  were 9/8 and 49/297. This corpus is also author-coupled and not exhaustively
   annotated for precision; the canonical report records the file-encoding
   caveat, per-document outcomes and capture hashes.
   The canonical, dated numbers live in [`docs/BENCHMARKS.md`](BENCHMARKS.md);
@@ -105,7 +105,7 @@ No. Redaction is local. Only model weights and the runtime are fetched, never
 your content.
 
 **What was the model trained on?**
-Published v20 uses only generated task sentences in Maskera's task-specific
+Published v21 uses only generated task sentences in Maskera's task-specific
 training and ships exact data/audit-code hashes with its weights. The separate
 KB-BERT pretraining boundary is documented in the
 [training-data protection policy](TRAINING_DATA_PROTECTION.md).

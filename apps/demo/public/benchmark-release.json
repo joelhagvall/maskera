@@ -2,34 +2,34 @@
   "$schema": "https://maskera.dev/benchmark-release.schema.json",
   "schemaVersion": 5,
   "status": "published",
-  "release": "v20",
-  "publishedAt": "2026-11-25",
+  "release": "v21",
+  "publishedAt": "2026-11-27",
   "lastMeasuredAt": "2026-11-27",
   "scope": "Synthetic or author-coupled release gates, not an independent universal quality estimate.",
   "packages": {
-    "maskera": "0.11.2",
+    "maskera": "0.12.0",
     "core": "0.8.5"
   },
   "artifact": {
-    "model": "maskera-sv-ner-v20",
+    "model": "maskera-sv-ner-v21",
     "hubRepo": "joelhagvall/maskera-sv-ner",
-    "revision": "f417d65c08bcf814f639f8bf9221e30a79a53f39",
+    "revision": "5bd47f3031fea64eb1ae98f77ebfc67882f792fa",
     "dtype": "q4",
     "path": "onnx/model_q4.onnx",
-    "sha256": "0a4ad3c3d87b0c53c67556177a668acfb8a91726a2af78e16a857403f6bed7fa",
+    "sha256": "d9436cd6f8b710a0a38b9c8c162d6176d6c3612b75f896074061526918494e2b",
     "bytes": 42705681,
-    "modelCardSha256": "d68c7f2fe6d57246b0ac9d83ce6dfd02a549589b53a86ca20132685199dbe0ab"
+    "modelCardSha256": "4537f4b54332f47c2f1261fb436bd7ec452b09193ec83631c78cbdb4c2cc46c2"
   },
   "whitepaper": {
-    "version": "1.24",
+    "version": "1.25",
     "source": "docs/whitepaper/whitepaper.tex",
-    "sourceSha256": "7d23b4b4585cdd5d36a909b3f7bec5606344e04a52d93b909ac0330500573bb8",
+    "sourceSha256": "9e8e80b00f9c49cc8086ad5b58791265c70dec79af9e31cb8051f2a1dcb6506d",
     "pdf": "apps/demo/public/whitepaper.pdf",
-    "pdfSha256": "f0dea47a1ba39cc75ceb33a73065135bc437c376b97d60b043d0b9102aaa1576"
+    "pdfSha256": "1d2f366fdbf06b1cefe73104a20d2d630ebd272f8251010a7f1d30fa90946443"
   },
   "evaluation": {
     "command": "pnpm eval:release",
-    "suiteSha256": "261686751c6d27684b05239a23d1530056693e5ee3b2cc4cbb175246ee4f15c9",
+    "suiteSha256": "a66a3fcc31c03a4a545f0749774a585d9a09cee9c8a95e770ab55468286c0ba0",
     "files": [
       "apps/demo/scripts/evaluate-candidate-gates.mjs",
       "apps/demo/scripts/fetch-model.mjs",
@@ -86,13 +86,13 @@
     }
   },
   "comparison": {
-    "status": "current-v20-directional",
-    "measuredAt": "2026-11-25",
+    "status": "current-v21-directional",
+    "measuredAt": "2026-11-27",
     "scope": "Synthetic, author-coupled PER/LOC/ORG comparison. Address labels and Maskera product post-processing are excluded; this is not an independent universal quality estimate.",
     "command": "pnpm eval:kblab",
-    "resultFile": "docs/benchmark-kblab-v20.json",
-    "resultSha256": "5a9757cc4b5638f4b0b4881daad176c4a94f24b1bee87147576d01aa02a8132a",
-    "suiteSha256": "d7c4d29502c684423bfa47160b43c1fd53ffccbf9f618467f1947b689dc56e81",
+    "resultFile": "docs/benchmark-kblab-v21.json",
+    "resultSha256": "791878df755693156d6c33f0d36a8e06dcd27bf613670e30d53488c97167c79c",
+    "suiteSha256": "b3f33e45058948d332e8962dc83a90276f213610e10ab0a3f4cf72e4747d024b",
     "files": [
       "training/benchmark_competitors.py",
       "training/benchmark-requirements.txt",
@@ -113,10 +113,10 @@
     "models": {
       "maskera": {
         "id": "joelhagvall/maskera-sv-ner",
-        "revision": "f417d65c08bcf814f639f8bf9221e30a79a53f39",
+        "revision": "5bd47f3031fea64eb1ae98f77ebfc67882f792fa",
         "dtype": "q4",
         "path": "onnx/model_q4.onnx",
-        "sha256": "0a4ad3c3d87b0c53c67556177a668acfb8a91726a2af78e16a857403f6bed7fa",
+        "sha256": "d9436cd6f8b710a0a38b9c8c162d6176d6c3612b75f896074061526918494e2b",
         "bytes": 42705681
       },
       "kblab": {
@@ -130,9 +130,9 @@
     },
     "normal": {
       "maskera": {
-        "masked": 211,
-        "maskedRecallPct": "100.0",
-        "typedF1Pct": "88.2"
+        "masked": 210,
+        "maskedRecallPct": "99.5",
+        "typedF1Pct": "89.6"
       },
       "kblab": {
         "masked": 205,
@@ -144,7 +144,7 @@
       "maskera": {
         "masked": 211,
         "maskedRecallPct": "100.0",
-        "typedF1Pct": "87.4"
+        "typedF1Pct": "88.4"
       },
       "kblab": {
         "masked": 187,
@@ -154,7 +154,7 @@
     }
   },
   "redactionComparison": {
-    "status": "current-v20-directional",
+    "status": "current-v21-directional",
     "measuredAt": "2026-11-27",
     "scope": "Synthetic, author-coupled Swedish end-product redaction comparison. It is not an independent universal quality estimate, and precision is not reported because every defensible entity is not exhaustively annotated.",
     "commands": {
@@ -164,8 +164,8 @@
     },
     "manualStep": "Redact both exported text chunks with LogosGuard 2.4.4 in Chrome, Free plan, Balanced accuracy, and save the two returned files under tmp before scoring.",
     "resultFile": "docs/benchmark-logosguard-2.4.4.json",
-    "resultSha256": "66c1fe916cf8b368948931f8e1576b82b58da444e6381f981885851fcdfb3cac",
-    "suiteSha256": "e466e78c0e4cbb43902effa1892a51f4348660a9954779a8b4e2c4751a380ee8",
+    "resultSha256": "1a575ca723b5021ae25ef7422b41ee624d54010599ab44d302dc1791e2952498",
+    "suiteSha256": "2937ee4e4bb314aa4ceb3648428e03512679ff235af2dc6d2cad7c1e5301c19d",
     "files": [
       "apps/demo/scripts/fetch-model.mjs",
       "apps/demo/src/model-meta.json",
@@ -220,12 +220,12 @@
     "scoring": "material-character-survival",
     "systems": {
       "maskera": {
-        "version": "0.11.2 / maskera-sv-ner-v20",
-        "fullHits": 941,
-        "partialLeaks": 5,
-        "misses": 6,
-        "fullHitRatePct": "98.8",
-        "redactions": 1429
+        "version": "0.12.0 / maskera-sv-ner-v21",
+        "fullHits": 935,
+        "partialLeaks": 9,
+        "misses": 8,
+        "fullHitRatePct": "98.2",
+        "redactions": 1346
       },
       "logosguard": {
         "version": "2.4.4",
@@ -242,8 +242,8 @@
     }
   },
   "independentComparison": {
-    "status": "current-v20-independent",
-    "measuredAt": "2026-11-26",
+    "status": "current-v21-independent",
+    "measuredAt": "2026-11-27",
     "scope": "Independent Swedish end-product comparison: text neither Maskera nor its developer wrote and none of it in Maskera's training. Masked share (any label) and typed F1 for names, places, organisations, addresses, postcodes and e-mail; over-masking on entity-free SUC 3.0 and SIC2 sentences. This is the only benchmark maskera.dev shows.",
     "commands": {
       "build": "pnpm eval:independent:build",
@@ -252,9 +252,9 @@
       "python": "pnpm eval:independent:python",
       "score": "pnpm eval:independent:score"
     },
-    "resultFile": "docs/benchmark-independent-v20.json",
-    "resultSha256": "ce5ebc19d59c8324ce66a6dcc50b56df16c5238036b5240e523b2f3f789bd9bb",
-    "suiteSha256": "f21b4c2d142ccd448ee47a5590d19a4d47c9673f1d3efec023a22309af4fc6f9",
+    "resultFile": "docs/benchmark-independent-v21.json",
+    "resultSha256": "e9bcacabd5b6616c0cda42e96ed6bda804e1b2c399d8919bde95228709866483",
+    "suiteSha256": "861aa04420d642879f1c722eca7dfe0fb35933ee8ee820504e979b03fc84d39b",
     "files": [
       "bench/independent/build_corpora.py",
       "bench/independent/render-markdown.mjs",
@@ -319,10 +319,10 @@
     "curated": {
       "documents": 149,
       "entities": 205,
-      "precisionPct": "99.0",
+      "precisionPct": "97.6",
       "recallPct": "100.0",
-      "spanF1Pct": "99.5",
-      "labeledF1Pct": "97.6",
+      "spanF1Pct": "98.8",
+      "labeledF1Pct": "98.8",
       "leaks": 0
     },
     "syntheticAdr": {
@@ -344,46 +344,46 @@
       "spanF1Pct": "98.1",
       "labeledF1Pct": "94.4",
       "leaks": 0,
-      "measuredAt": "2026-11-25"
+      "measuredAt": "2026-11-27"
     },
     "syntheticGold": {
-      "typeF1Pct": "94.54",
-      "typeRecallPct": "95.34",
-      "maskedRecallPct": "98.73",
+      "typeF1Pct": "96.22",
+      "typeRecallPct": "97.03",
+      "maskedRecallPct": "98.31",
       "typeF1FloorPct": "90.0",
       "typeRecallFloorPct": "92.0",
       "maskedRecallFloorPct": "97.0"
     },
     "rareSurnames": {
       "entities": 294,
-      "masked": 284,
-      "maskedRecallPct": "96.60",
-      "personTypedRecallPct": "79.59",
-      "leaks": 10
+      "masked": 280,
+      "maskedRecallPct": "95.24",
+      "personTypedRecallPct": "64.63",
+      "leaks": 14
     },
     "structuredRegression": {
       "documents": 258,
       "entities": 952,
-      "fullHits": 943,
-      "partialLeaks": 3,
-      "misses": 6,
-      "hitRatePct": "99.1",
-      "redactions": 1429,
-      "classifiedJunk": 172
+      "fullHits": 937,
+      "partialLeaks": 7,
+      "misses": 8,
+      "hitRatePct": "98.4",
+      "redactions": 1346,
+      "classifiedJunk": 118
     },
     "clinicalCareSubset": {
       "entities": 165,
       "generalHits": 165,
       "clinicalHits": 165,
-      "generalClassifiedJunk": 44,
-      "clinicalClassifiedJunk": 35
+      "generalClassifiedJunk": 34,
+      "clinicalClassifiedJunk": 25
     }
   },
   "historical": {
     "release": "v18",
     "measuredAt": "2026-07-19",
     "packageVersion": "0.6.4",
-    "status": "historical-only-not-a-v20-result",
+    "status": "historical-only-not-a-v21-result",
     "curated": {
       "documents": 149,
       "entities": 205,
@@ -405,7 +405,7 @@
     },
     "modelComparison": {
       "status": "historical-v18-aggregate",
-      "scope": "Dated comparison on independent Swedish encyclopedic prose. It is retained for transparency and must not be attributed to v20.",
+      "scope": "Dated comparison on independent Swedish encyclopedic prose. It is retained for transparency and must not be attributed to v21.",
       "corpus": {
         "name": "gold-real",
         "documents": 22,

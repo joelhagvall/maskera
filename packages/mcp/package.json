@@ -1,6 +1,6 @@
 {
   "name": "@maskera/mcp",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Local Swedish PII redaction MCP server for AI agents (Claude, Cursor, Codex, T3 Code): mask local files and text before an LLM sees them, and restore answers locally on disk.",
   "type": "module",
   "license": "MIT",

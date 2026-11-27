@@ -58,14 +58,13 @@ describe("Accuracy", () => {
   it("states only comparisons the result supports", () => {
     const pct = (system: (typeof SYSTEMS)[number], cell: (typeof COVERAGE_CELLS)[number]) =>
       summary[system]?.[cell]?.maskedPct ?? -1
-    // "Maskera döljer flest namn, även i gemener, och flest adresser."
-    for (const cell of ["names", "namesLowercase", "addresses"] as const) {
+    // "Maskera döljer flest namn (även i gemener), flest platser och flest adresser."
+    for (const cell of ["names", "namesLowercase", "places", "addresses"] as const) {
       for (const system of SYSTEMS.filter((s) => s !== "maskera")) {
         expect(pct("maskera", cell), `${cell} vs ${system}`).toBeGreaterThan(pct(system, cell))
       }
     }
-    // "Presidio döljer fler platser och träffar betydligt färre meningar utan personuppgifter."
-    expect(pct("presidio", "places")).toBeGreaterThan(pct("maskera", "places"))
+    // "Presidio träffar färre meningar utan personuppgifter."
     const over = (system: (typeof SYSTEMS)[number]) => summary[system]?.overMasking?.pct ?? 100
     expect(over("presidio")).toBeLessThan(over("maskera"))
   })

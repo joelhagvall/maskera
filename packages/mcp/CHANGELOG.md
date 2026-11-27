@@ -1,5 +1,12 @@
 # @maskera/mcp
 
+## 0.4.3
+
+### Patch Changes
+
+- Updated dependencies
+  - maskera@0.12.0
+
 ## 0.4.2
 
 ### Patch Changes

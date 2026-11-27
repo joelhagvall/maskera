@@ -33,7 +33,7 @@ from transformers import set_seed
 BASE_MODEL = "KBLab/bert-base-swedish-cased"
 BASE_MODEL_REVISION = "ce7c3424687f042f1320e0528293d492c82918c4"
 OUT_DIR = sys.argv[1] if len(sys.argv) > 1 else "model"  # usage: train.py [out_dir]
-MAX_LEN = 128
+MAX_LEN = int(os.environ.get("MASKERA_MAX_LEN", "256"))
 # Seeded so runs are comparable: an unseeded 2026-07-04 round produced students
 # whose ORG margins collapsed under quantization while a sibling run was fine.
 SEED = int(os.environ.get("MASKERA_SEED", "1337"))
@@ -51,6 +51,15 @@ subprocess.run(
 LABELS = ["O", "B-PER", "I-PER", "B-LOC", "I-LOC", "B-ORG", "I-ORG", "B-ADR", "I-ADR"]
 label2id = {l: i for i, l in enumerate(LABELS)}
 id2label = {i: l for i, l in enumerate(LABELS)}
+
+CLASS_WEIGHTS_RAW = os.environ.get("MASKERA_CLASS_WEIGHTS", "").strip()
+CLASS_WEIGHTS = None
+if CLASS_WEIGHTS_RAW:
+    vals = [float(x.strip()) for x in CLASS_WEIGHTS_RAW.split(",") if x.strip()]
+    if len(vals) != len(LABELS) or any(not np.isfinite(v) or v <= 0 for v in vals):
+        sys.exit(f"MASKERA_CLASS_WEIGHTS must have {len(LABELS)} positive floats; got {CLASS_WEIGHTS_RAW!r}")
+    CLASS_WEIGHTS = torch.tensor(vals, dtype=torch.float32)
+    print(f"== class weights: {dict(zip(LABELS, vals))} ==")
 
 device = (
     "mps" if torch.backends.mps.is_available()
@@ -154,7 +163,25 @@ args = TrainingArguments(
     dataloader_num_workers=int(os.environ.get("MASKERA_NUM_WORKERS", "0")),
 )
 
-trainer = Trainer(
+class WeightedTokenTrainer(Trainer):
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
+        if CLASS_WEIGHTS is None:
+            return super().compute_loss(model, inputs, return_outputs=return_outputs, **kwargs)
+        labels = inputs.get("labels")
+        outputs = model(**inputs)
+        logits = outputs.logits
+        weight = CLASS_WEIGHTS.to(logits.device, dtype=torch.float32)
+        loss = torch.nn.functional.cross_entropy(
+            logits.reshape(-1, len(LABELS)).float(),
+            labels.reshape(-1),
+            weight=weight,
+            ignore_index=-100,
+            label_smoothing=float(self.args.label_smoothing_factor or 0.0),
+        )
+        return (loss, outputs) if return_outputs else loss
+
+
+trainer = WeightedTokenTrainer(
     model=model,
     args=args,
     train_dataset=tokenized["train"],
