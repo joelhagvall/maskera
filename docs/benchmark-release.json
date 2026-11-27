@@ -8,7 +8,7 @@
   "scope": "Synthetic or author-coupled release gates, not an independent universal quality estimate.",
   "packages": {
     "maskera": "0.12.0",
-    "core": "0.8.5"
+    "core": "0.8.6"
   },
   "artifact": {
     "model": "maskera-sv-ner-v21",
@@ -29,7 +29,7 @@
   },
   "evaluation": {
     "command": "pnpm eval:release",
-    "suiteSha256": "a66a3fcc31c03a4a545f0749774a585d9a09cee9c8a95e770ab55468286c0ba0",
+    "suiteSha256": "a7e6d87910ff51413a95a3a79cde416c4a8397de7f9600956a5b914f9a0c467b",
     "files": [
       "apps/demo/scripts/evaluate-candidate-gates.mjs",
       "apps/demo/scripts/fetch-model.mjs",
@@ -165,7 +165,7 @@
     "manualStep": "Redact both exported text chunks with LogosGuard 2.4.4 in Chrome, Free plan, Balanced accuracy, and save the two returned files under tmp before scoring.",
     "resultFile": "docs/benchmark-logosguard-2.4.4.json",
     "resultSha256": "1a575ca723b5021ae25ef7422b41ee624d54010599ab44d302dc1791e2952498",
-    "suiteSha256": "2937ee4e4bb314aa4ceb3648428e03512679ff235af2dc6d2cad7c1e5301c19d",
+    "suiteSha256": "94916f5f6c684aa499a6323220eed1905d0f8a911e028b4c28c0ddf8bd3627ff",
     "files": [
       "apps/demo/scripts/fetch-model.mjs",
       "apps/demo/src/model-meta.json",

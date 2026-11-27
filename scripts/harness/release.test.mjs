@@ -5,6 +5,7 @@ import {
   bumpExtensionZipVersion,
   bumpHagvallVersion,
   bumpMaskeraRange,
+  findUnbumpedReadmeChanges,
   parsePorcelain,
   parseSyncModelResult,
   releaseTags,
@@ -61,4 +62,22 @@ test("parseSyncModelResult extracts trailing JSON even with bun banner lines", (
     version: "0.2.4",
     changedFiles: ["package.json"],
   })
+})
+
+test("findUnbumpedReadmeChanges blocks releasing when a tagged package README drifted", () => {
+  const tags = releaseTags({ core: "0.8.5", maskera: "0.12.0", mcp: "0.4.3" })
+  const problems = findUnbumpedReadmeChanges(tags, {
+    tagExists: (tag) => tag === "@maskera/core@0.8.5",
+    readTagFile: () => "old v20 readme",
+    readHeadFile: () => "new v21 readme",
+  })
+  assert.equal(problems.length, 1)
+  assert.match(problems[0], /packages\/core\/README\.md changed since @maskera\/core@0\.8\.5/)
+
+  const clean = findUnbumpedReadmeChanges(tags, {
+    tagExists: (tag) => tag === "@maskera/core@0.8.5",
+    readTagFile: () => "same readme",
+    readHeadFile: () => "same readme",
+  })
+  assert.deepEqual(clean, [])
 })

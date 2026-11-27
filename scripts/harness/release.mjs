@@ -72,6 +72,28 @@ export function bumpExtensionZipVersion(browsersText, version) {
   )
 }
 
+/**
+ * Checks whether any package whose current version already has a published git
+ * tag modified its README.md without bumping package.json. Catching this before
+ * `changeset publish` prevents Vercel's `check-benchmark-live` from failing on
+ * stale npm READMEs.
+ */
+export function findUnbumpedReadmeChanges(tags, { tagExists, readTagFile, readHeadFile }) {
+  const problems = []
+  for (const { name, dir, tag } of tags) {
+    if (!tagExists(tag)) continue
+    const readmePath = `${dir}/README.md`
+    const taggedReadme = readTagFile(tag, readmePath)
+    const currentReadme = readHeadFile(readmePath)
+    if (taggedReadme !== currentReadme) {
+      problems.push(
+        `${readmePath} changed since ${tag}; bump ${name} before releasing so npm README stays synchronized`,
+      )
+    }
+  }
+  return problems
+}
+
 /** Parses the trailing JSON object emitted by `maskera-extension`'s `bun run sync:model --json`. */
 export function parseSyncModelResult(stdout) {
   const lines = stdout
@@ -242,6 +264,20 @@ async function main() {
     git(ROOT, "status", "--porcelain", "--", ...PACKAGES.map((pkg) => `${pkg.dir}/package.json`))
   ) {
     throw new Error("commit the version bump before releasing: a tag must point at it")
+  }
+
+  if (!afterPublish) {
+    const readmeDrift = findUnbumpedReadmeChanges(tags, {
+      tagExists: (tag) =>
+        run("git", ["rev-parse", "--verify", "--quiet", `refs/tags/${tag}`], ROOT, {
+          allowFail: true,
+        }) === 0,
+      readTagFile: (tag, filePath) => git(ROOT, "show", `${tag}:${filePath}`),
+      readHeadFile: (filePath) => readFileSync(join(ROOT, filePath), "utf8").trimEnd(),
+    })
+    if (readmeDrift.length > 0) {
+      throw new Error(`unbumped README drift:\n- ${readmeDrift.join("\n- ")}`)
+    }
   }
 
   const siblings = ["maskera-cloud", "maskera-extension", "hagvall-labs"].filter((name) =>
