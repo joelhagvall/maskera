@@ -7,8 +7,8 @@
   "lastMeasuredAt": "2026-11-27",
   "scope": "Synthetic or author-coupled release gates, not an independent universal quality estimate.",
   "packages": {
-    "maskera": "0.11.1",
-    "core": "0.8.4"
+    "maskera": "0.11.2",
+    "core": "0.8.5"
   },
   "artifact": {
     "model": "maskera-sv-ner-v20",
@@ -29,7 +29,7 @@
   },
   "evaluation": {
     "command": "pnpm eval:release",
-    "suiteSha256": "f0c824dce7ed79d459c0d07b287ec529c25a980405bb093b0fbfa376e41c4f2c",
+    "suiteSha256": "261686751c6d27684b05239a23d1530056693e5ee3b2cc4cbb175246ee4f15c9",
     "files": [
       "apps/demo/scripts/evaluate-candidate-gates.mjs",
       "apps/demo/scripts/fetch-model.mjs",
@@ -164,8 +164,8 @@
     },
     "manualStep": "Redact both exported text chunks with LogosGuard 2.4.4 in Chrome, Free plan, Balanced accuracy, and save the two returned files under tmp before scoring.",
     "resultFile": "docs/benchmark-logosguard-2.4.4.json",
-    "resultSha256": "2c459cd2cf774dc178d28376626bb7afedd2f5865f6efab21d5ee5f573c43d1a",
-    "suiteSha256": "c5a45b4503a2439c008df5c72ed25cf05cac5a82b2236c4010abd07afbfc975f",
+    "resultSha256": "66c1fe916cf8b368948931f8e1576b82b58da444e6381f981885851fcdfb3cac",
+    "suiteSha256": "e466e78c0e4cbb43902effa1892a51f4348660a9954779a8b4e2c4751a380ee8",
     "files": [
       "apps/demo/scripts/fetch-model.mjs",
       "apps/demo/src/model-meta.json",
@@ -220,7 +220,7 @@
     "scoring": "material-character-survival",
     "systems": {
       "maskera": {
-        "version": "0.11.1 / maskera-sv-ner-v20",
+        "version": "0.11.2 / maskera-sv-ner-v20",
         "fullHits": 941,
         "partialLeaks": 5,
         "misses": 6,

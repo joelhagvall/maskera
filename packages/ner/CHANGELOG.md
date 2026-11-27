@@ -1,5 +1,13 @@
 # maskera
 
+## 0.11.2
+
+### Patch Changes
+
+- 53c7aa7: The NER layer no longer masks the label word "clearingnummer" (also "clearing", "clearingnr") as an address. When the model tags a denylisted label word and the widening step appends a number ("clearingnummer 8327"), the detection is narrowed to the number, so the label stays readable and digits the rule layer misses stay masked.
+- Updated dependencies [53c7aa7]
+  - @maskera/core@0.8.5
+
 ## 0.11.0
 
 ### Minor Changes

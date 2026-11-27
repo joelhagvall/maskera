@@ -1,3 +1,4 @@
+import { createRequire } from "node:module"
 import type { RedactionProfile } from "maskera"
 import { type ApprovalBroker, type ApprovalMode } from "./approvals"
 import { createMaskeraEngine, type MaskeraEngine, type MaskMode } from "./engine"
@@ -12,7 +13,10 @@ import {
 import { SessionVault } from "./vault"
 
 export const SERVER_NAME = "maskera-mcp"
-export const SERVER_VERSION = "0.4.0"
+// Read from package.json so a changeset version bump can never leave the
+// advertised server version behind. src/ and the bundled dist/ both sit one
+// level below the package root, and npm always ships package.json.
+export const SERVER_VERSION: string = createRequire(import.meta.url)("../package.json").version
 const SUPPORTED_PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"] as const
 const PLACEHOLDER_QUERY_RE = /^\[[A-ZÅÄÖ][A-ZÅÄÖ0-9_]*_\d+\]$/
 

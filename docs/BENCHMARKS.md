@@ -18,7 +18,7 @@ locks the selected resolved dependency closure that executes the evaluation.
 Type-only peers and unrelated build, lint, browser-audit and test-tool updates
 are outside that closure and cannot masquerade as changed accuracy evidence.
 The frozen suite checksum is
-`f0c824dce7ed79d459c0d07b287ec529c25a980405bb093b0fbfa376e41c4f2c` and the
+`261686751c6d27684b05239a23d1530056693e5ee3b2cc4cbb175246ee4f15c9` and the
 frozen evaluation-environment checksum is
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`.
 
@@ -202,7 +202,7 @@ synthetic texts across 19 categories with 952 annotated PII strings, including
 names, street addresses, personnummer, samordningsnummer, phone numbers, email,
 banking identifiers, and government, healthcare and legal language. Maskera
 0.11.0 ran the published v20 q4 artifact through the complete local JavaScript
-pipeline on CPU; the Maskera side was re-run on 2026-11-27 with 0.11.1 after
+pipeline on CPU; the Maskera side was re-run on 2026-11-27 with 0.11.2 after
 the clearing-label and comma-separated account fixes, with identical hits and
 redaction counts. LogosGuard 2.4.4 ran through its Chrome file-redaction flow on
 the Free plan with `Balanced (recommended)` accuracy (same captured files from
@@ -239,8 +239,8 @@ exported chunks manually in the pinned LogosGuard surface, then run
 `pnpm eval:logosguard:maskera` and `pnpm eval:logosguard:score`. Privacy-clean
 per-document outcomes, masked-text hashes and capture hashes are in
 [`benchmark-logosguard-2.4.4.json`](benchmark-logosguard-2.4.4.json).
-Product-comparison result checksum: `2c459cd2cf774dc178d28376626bb7afedd2f5865f6efab21d5ee5f573c43d1a`.
-Product-comparison suite checksum: `c5a45b4503a2439c008df5c72ed25cf05cac5a82b2236c4010abd07afbfc975f`.
+Product-comparison result checksum: `66c1fe916cf8b368948931f8e1576b82b58da444e6381f981885851fcdfb3cac`.
+Product-comparison suite checksum: `e466e78c0e4cbb43902effa1892a51f4348660a9954779a8b4e2c4751a380ee8`.
 Selected runtime-environment checksum:
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`;
 corpus checksum:
