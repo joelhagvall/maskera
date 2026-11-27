@@ -58,6 +58,9 @@ jobs:
         if: matrix.node == 24
       - run: pnpm test
       - run: pnpm test:mcp:e2e
+      - name: Smoke-test packed @maskera/mcp tarball
+        if: matrix.node == 24
+        run: pnpm test:mcp:pack
       - run: pnpm smoke
 
   # The public packages declare Node >=18. Keep the minimum-version contract

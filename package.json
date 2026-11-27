@@ -11,6 +11,7 @@
     "test:mcp:e2e": "pnpm --filter @maskera/mcp test:e2e",
     "test:mcp:harnesses": "pnpm --filter @maskera/mcp test:harnesses",
     "test:mcp:pack": "pnpm --filter @maskera/mcp test:pack",
+    "test:mcp:all": "pnpm --filter @maskera/mcp build && pnpm --filter @maskera/mcp test && pnpm test:mcp:e2e && pnpm test:mcp:pack",
     "bench:mcp": "pnpm --filter @maskera/mcp bench",
     "check:benchmarks": "node scripts/check-benchmark-sync.mjs",
     "check:benchmarks:live": "node scripts/check-benchmark-live.mjs --all",

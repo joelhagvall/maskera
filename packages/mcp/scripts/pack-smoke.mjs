@@ -141,6 +141,24 @@ try {
     `unexpected restored file: ${disk}`,
   )
 
+  const receiptFile = join(dir, "setup-receipt.json")
+  const doc = spawnSync(binPath, ["doctor", "--root", dir, "--receipt", receiptFile, "--json"], {
+    cwd: dir,
+    encoding: "utf8",
+    env: mcpEnv,
+    timeout: 90_000,
+  })
+  assert.equal(doc.status, 0, `doctor failed (${doc.status}):\n${doc.stderr}\n${doc.stdout}`)
+  const receiptRaw = readFileSync(receiptFile, "utf8")
+  assert.equal(receiptRaw.includes("Anna Lindqvist"), false, "receipt leaked name")
+  assert.equal(receiptRaw.includes("19900101-2385"), false, "receipt leaked personnummer")
+  const receipt = JSON.parse(receiptRaw)
+  assert.equal(receipt.schema, "maskera-setup-receipt/v1")
+  assert.equal(receipt.ok, true)
+  assert.equal(receipt.sampleProof?.modeUsed, "hybrid")
+  assert.equal(receipt.sampleProof?.rawPiiLeaked, false)
+  assert.equal(receipt.sampleProof?.roundtripRestored, true)
+
   console.log(
     `@maskera/mcp pack-smoke PASS: v${mcpPkg.version} (install=${installMs}ms, mcp=${mcpMs}ms, model=${useLocalModel ? "local-onnx" : "cold-hf"})`,
   )

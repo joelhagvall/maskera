@@ -952,25 +952,75 @@ try {
       assert.ok(JSON.parse(instHook.stdout).hookPath?.endsWith("hooks.json"))
 
       const wrapReceiptPath = join(workDir, "wrap-receipt.json")
-      const wrapped = await runCli([
-        "wrap",
-        "--rules-only",
-        "--root",
-        root,
-        "--receipt",
-        wrapReceiptPath,
-        "--",
-        process.execPath,
-        "-e",
-        "if (!process.env.ANTHROPIC_BASE_URL || !process.env.OPENAI_BASE_URL?.endsWith('/v1')) process.exit(9); console.log('wrapped-ok')",
-      ])
-      assert.equal(wrapped.code, 0, `wrap failed: ${wrapped.stderr}`)
-      assert.ok(wrapped.stdout.includes("wrapped-ok"))
-      assert.ok(wrapped.stderr.includes("0 leaks verified"))
-      assert.ok(wrapped.stderr.includes("session done:"))
-      const wrapReceiptDisk = await readFile(wrapReceiptPath, "utf8")
-      assert.equal(wrapReceiptDisk.includes("19900101-2385"), false, "wrap receipt leaked PII")
-      assert.equal(JSON.parse(wrapReceiptDisk).schema, "maskera-wrap-receipt/v1")
+      const mockWrapUpstream = await startHttpServer(async (req, res) => {
+        const chunks = []
+        for await (const c of req) chunks.push(c)
+        const parsed = JSON.parse(Buffer.concat(chunks).toString("utf8"))
+        const userText = parsed.messages?.[0]?.content ?? ""
+        // Upstream must NEVER receive raw PII
+        assert.equal(userText.includes("19900101-2385"), false, "wrap leaked personnummer upstream")
+        assert.equal(
+          userText.includes("provnamn.maskera@example.com"),
+          false,
+          "wrap leaked email upstream",
+        )
+        assert.ok(userText.includes("[PERSONNUMMER_1]"), `expected placeholder: ${userText}`)
+        assert.ok(userText.includes("[EPOST_1]"), `expected placeholder: ${userText}`)
+        res.writeHead(200, { "content-type": "application/json" })
+        res.end(
+          JSON.stringify({
+            id: "msg_wrap",
+            type: "message",
+            role: "assistant",
+            content: [
+              {
+                type: "text",
+                text: "Bekräftat för [PERSONNUMMER_1] via [EPOST_1].",
+              },
+            ],
+          }),
+        )
+      })
+      try {
+        const wrapped = await runCli([
+          "wrap",
+          "--rules-only",
+          "--root",
+          root,
+          "--upstream",
+          mockWrapUpstream.url,
+          "--receipt",
+          wrapReceiptPath,
+          "--",
+          process.execPath,
+          "-e",
+          `const r = await fetch(process.env.ANTHROPIC_BASE_URL + "/v1/messages", {
+            method: "POST",
+            headers: { "content-type": "application/json", "x-api-key": "sk-test", "anthropic-version": "2023-06-01" },
+            body: JSON.stringify({ model: "claude-test", messages: [{ role: "user", content: "Skicka till provnamn.maskera@example.com om 19900101-2385." }] }),
+          });
+          const data = await r.json();
+          const reply = data.content?.[0]?.text ?? "";
+          if (reply !== "Bekräftat för 19900101-2385 via provnamn.maskera@example.com.") {
+            console.error("unexpected reply:", reply);
+            process.exit(9);
+          }
+          console.log("wrapped-roundtrip-ok");`,
+        ])
+        assert.equal(wrapped.code, 0, `wrap roundtrip failed: ${wrapped.stderr}`)
+        assert.ok(wrapped.stdout.includes("wrapped-roundtrip-ok"))
+        assert.ok(wrapped.stderr.includes("0 leaks verified"))
+        assert.ok(wrapped.stderr.includes("1 request(s)"))
+        assert.ok(wrapped.stderr.includes("2 masked item(s)"))
+        const wrapReceiptDisk = await readFile(wrapReceiptPath, "utf8")
+        assert.equal(wrapReceiptDisk.includes("19900101-2385"), false, "wrap receipt leaked PII")
+        const wrapReceiptObj = JSON.parse(wrapReceiptDisk)
+        assert.equal(wrapReceiptObj.schema, "maskera-wrap-receipt/v1")
+        assert.equal(wrapReceiptObj.session.requests, 1)
+        assert.equal(wrapReceiptObj.session.redactions, 2)
+      } finally {
+        await mockWrapUpstream.close()
+      }
 
       const svcDry = await runCli([
         "service",
@@ -1039,12 +1089,41 @@ try {
       assert.equal(redacted.includes("500 mg"), true, `clinical profile dropped dose: ${redacted}`)
 
       const guardNer = await runCli(
-        ["guard"],
+        ["guard", "--no-proxy"],
         JSON.stringify({ prompt: "Skicka avtalet till Erik Svensson i Malmö" }),
         nerEnv,
       )
       assert.equal(guardNer.code, 2)
       assert.equal(guardNer.stderr.includes("Erik Svensson"), false)
+
+      // Live ONNX proxy: verify POST /_maskera/self-test + warm POST /_maskera/guard fast path
+      const nerProxy = await startProxyCli(["--root", workDir], nerEnv)
+      try {
+        const selfTestRes = await fetch(`${nerProxy.url}/_maskera/self-test`, {
+          method: "POST",
+          headers: { "x-maskera-action": "self-test" },
+        })
+        assert.equal(selfTestRes.status, 200)
+        const selfTestRaw = await selfTestRes.text()
+        assert.equal(selfTestRaw.includes("Anna Lindqvist"), false, "ONNX self-test leaked name")
+        assert.equal(selfTestRaw.includes("19900101-2385"), false, "ONNX self-test leaked pnr")
+        const selfTest = JSON.parse(selfTestRaw)
+        assert.equal(selfTest.ok, true)
+        assert.equal(selfTest.sampleProof?.modeUsed, "hybrid")
+        assert.ok(selfTest.sampleProof?.redactedPreview?.includes("[NAMN_1]"))
+        assert.equal(selfTest.checks.find((c) => c.name === "mcp-http")?.status, "ok")
+
+        const warmGuardNer = await runCli(
+          ["guard", "--proxy-url", nerProxy.url],
+          JSON.stringify({ prompt: "Skicka avtalet till Anna Lindqvist i Uppsala" }),
+          nerEnv,
+        )
+        assert.equal(warmGuardNer.code, 2, `warm ONNX guard failed: ${warmGuardNer.stderr}`)
+        assert.equal(warmGuardNer.stderr.includes("Anna Lindqvist"), false)
+        assert.ok(warmGuardNer.stderr.includes("NAMN=1"))
+      } finally {
+        await nerProxy.stop()
+      }
     })
   } else {
     console.log(
