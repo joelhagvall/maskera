@@ -89,7 +89,9 @@ export function HeroStage() {
           {playing ? <PauseIcon size={14} /> : <PlayIcon size={14} />}
         </button>
       </figcaption>
-      <div className="hero-stage">
+      {/* data-playing slows the crossfade for the timer's switches; a scene
+          the visitor picks stops rotation and so swaps quickly. */}
+      <div className="hero-stage" data-playing={playing || undefined}>
         {HERO_STAGES.map((id, i) => (
           <div
             key={id}

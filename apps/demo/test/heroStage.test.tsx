@@ -41,6 +41,15 @@ describe("HeroStage rotation", () => {
     expect(activeTab()).toBe(stage.tabs.browser)
   })
 
+  it("fades slowly while rotating and swaps quickly once the visitor picks", () => {
+    mockMedia([])
+    const { container } = render(<HeroStage />)
+    const scenes = container.querySelector(".hero-stage") as HTMLElement
+    expect(scenes.hasAttribute("data-playing")).toBe(true)
+    fireEvent.click(screen.getByRole("button", { name: stage.tabs.code }))
+    expect(scenes.hasAttribute("data-playing")).toBe(false)
+  })
+
   it("stops for good when the visitor picks a scene", () => {
     mockMedia([])
     render(<HeroStage />)

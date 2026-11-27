@@ -368,10 +368,17 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
   }
 }
 /* The three scenes share one grid cell, so the stage keeps the tallest
-   scene's height and the active one fades in over the others. */
+   scene's height and the active one fades in on top of the others. The
+   outgoing scene stays opaque underneath until the fade ends, so the stage
+   never shows through half-faded windows. The timer's switches fade slowly;
+   a scene the visitor picks swaps quickly. */
 .hero-stage {
+  --stage-fade: 0.2s;
   display: grid;
   text-align: left;
+}
+.hero-stage[data-playing] {
+  --stage-fade: 0.9s;
 }
 .hero-stage-scene {
   grid-area: 1 / 1;
@@ -380,13 +387,14 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
   opacity: 0;
   visibility: hidden;
   transition:
-    opacity 0.15s ease,
-    visibility 0s linear 0.15s;
+    opacity 0s linear var(--stage-fade),
+    visibility 0s linear var(--stage-fade);
 }
 .hero-stage-scene.is-active {
+  z-index: 1;
   opacity: 1;
   visibility: visible;
-  transition: opacity 0.15s ease;
+  transition: opacity var(--stage-fade) ease-in-out;
 }
 .hero-stage-scene > .hero-window {
   flex: 1;
