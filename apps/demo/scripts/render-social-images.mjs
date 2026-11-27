@@ -2,9 +2,15 @@
 /**
  * Render the link-preview images and the web app manifest icons into public/.
  *
- * - og.png / og-en.png (1200x630): the Swedish and English Open Graph cards.
- *   The headline is the hero title from src/i18n, so the card cannot drift
- *   from the page it previews. Rerun after changing header.title.
+ * - og.png / og-en.png (1200x630): the home page's Swedish and English Open
+ *   Graph cards. The headline is the hero title, under it the start of the
+ *   hero scene as the user writes it and as the AI sees it.
+ * - og/<locale>/<view>.png (1200x630): one card per other page with its own
+ *   title and description, so a shared link previews the page it points to.
+ *   Titles, descriptions, paths and placeholder colours are loaded from
+ *   src/meta.ts, src/heroScenes.ts and src/labels.ts through Vite, so a card
+ *   cannot drift from the page. Rerun after changing a title or description;
+ *   test/meta.test.ts fails while a card is missing.
  * - icon-192.png / icon-512.png: the favicon glyph, for the manifest.
  * - icon-maskable-512.png: full-bleed background with the glyph inside the
  *   maskable safe zone, so Android launchers can crop it to any shape.
@@ -15,70 +21,31 @@
  * Run:
  *   pnpm --filter @maskera/demo render:social
  */
-import { readFileSync } from "node:fs"
-import { join, resolve } from "node:path"
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { chromium } from "playwright"
+import { createServer } from "vite"
+import { CARDS_LOCK, cardHash, PUBLIC, socialCards } from "./social-cards.mjs"
 
 const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)))
-const PUBLIC = join(ROOT, "public")
 
-const font = (file) =>
-  `data:font/woff2;base64,${readFileSync(join(PUBLIC, "fonts", file)).toString("base64")}`
 const favicon = readFileSync(join(PUBLIC, "favicon.svg"), "utf8")
 const faviconUri = `data:image/svg+xml;base64,${Buffer.from(favicon).toString("base64")}`
-const copy = (locale) =>
-  JSON.parse(readFileSync(join(ROOT, "src", "i18n", `${locale}.json`), "utf8"))
 
-// The masked line matches the README and the developer page example. Maskera
-// only reads Swedish, so the sample stays Swedish on the English card too.
-const CARDS = [
-  {
-    file: "og.png",
-    locale: "sv",
-    footerStrong: "Endast maskerad text går vidare.",
-    footer: "I webbläsaren eller i er egen miljö.",
-  },
-  {
-    file: "og-en.png",
-    locale: "en",
-    footerStrong: "Only masked text is forwarded.",
-    footer: "In the browser or in your own environment.",
-  },
-]
-
-const fontFaces = `
-  @font-face { font-family: "Geist"; font-weight: 100 900; src: url(${font("geist-latin.woff2")}) format("woff2"); }
-  @font-face { font-family: "Geist"; font-weight: 100 900; src: url(${font("geist-latin-ext.woff2")}) format("woff2"); unicode-range: U+0100-024F, U+1E00-1EFF; }
-  @font-face { font-family: "Geist Mono"; font-weight: 100 900; src: url(${font("geist-mono-latin.woff2")}) format("woff2"); }
-`
-
-function escapeHtml(value) {
-  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-}
-
-function cardHtml({ locale, footerStrong, footer }) {
-  const title = escapeHtml(copy(locale).header.title)
-  const token = (label) => `<span class="token">[${label}]</span>`
-  return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><style>
-  ${fontFaces}
-  * { box-sizing: border-box; margin: 0; }
-  body { width: 1200px; height: 630px; padding: 72px 80px; background: #fff; color: #000;
-    font-family: "Geist", sans-serif; display: flex; flex-direction: column; }
-  .brand { display: flex; align-items: center; gap: 20px; font-size: 34px; font-weight: 600; letter-spacing: -0.02em; }
-  .brand img { width: 56px; height: 56px; }
-  h1 { margin-top: 56px; font-size: 68px; line-height: 1.05; font-weight: 700; letter-spacing: -0.035em; max-width: 1000px; }
-  .sample { margin-top: 40px; font-family: "Geist Mono", monospace; font-size: 26px; line-height: 1.6; color: #525252; }
-  .token { color: #000; font-weight: 600; background: #f4f4f5; border: 1px solid #e4e4e7; border-radius: 6px; padding: 1px 8px; white-space: nowrap; }
-  footer { margin-top: auto; display: flex; justify-content: space-between; font-size: 24px; color: #525252; }
-  footer strong { color: #000; font-weight: 600; }
-  </style></head><body>
-  <div class="brand"><img src="${faviconUri}" alt="">maskera</div>
-  <h1>${title}</h1>
-  <p class="sample">hej jag heter ${token("NAMN_1")}, personnummer ${token("PERSONNUMMER_1")}, och bor i ${token("PLATS_1")}</p>
-  <footer><span><strong>${escapeHtml(footerStrong)}</strong> ${escapeHtml(footer)}</span><span>maskera.dev</span></footer>
-  </body></html>`
-}
+const vite = await createServer({
+  root: ROOT,
+  logLevel: "error",
+  server: { middlewareMode: true },
+  appType: "custom",
+})
+const [meta, scenes, labels, i18n] = await Promise.all([
+  vite.ssrLoadModule("/src/meta.ts"),
+  vite.ssrLoadModule("/src/heroScenes.ts"),
+  vite.ssrLoadModule("/src/labels.ts"),
+  vite.ssrLoadModule("/src/i18n/index.ts"),
+])
+await vite.close()
 
 // The favicon is already a dark rounded tile. The plain icons show it as is;
 // the maskable icon fills the canvas with its colour and keeps the glyph
@@ -95,14 +62,19 @@ function iconHtml(size, maskable) {
 
 const browser = await chromium.launch()
 try {
-  for (const card of CARDS) {
+  const cards = socialCards({ meta, scenes, labels, i18n })
+  for (const card of cards) {
     const page = await browser.newPage({ viewport: { width: 1200, height: 630 } })
-    await page.setContent(cardHtml(card))
+    await page.setContent(card.html)
     await page.evaluate(() => document.fonts.ready)
+    mkdirSync(dirname(join(PUBLIC, card.file)), { recursive: true })
     await page.screenshot({ path: join(PUBLIC, card.file) })
     await page.close()
     console.log(`wrote public/${card.file}`)
   }
+  const manifest = Object.fromEntries(cards.map((card) => [card.file, cardHash(card.html)]))
+  writeFileSync(CARDS_LOCK, `${JSON.stringify(manifest, null, 2)}\n`)
+  console.log("wrote scripts/social-cards.lock.json")
   const icons = [
     { file: "icon-192.png", size: 192, maskable: false },
     { file: "icon-512.png", size: 512, maskable: false },

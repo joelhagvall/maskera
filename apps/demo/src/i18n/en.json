@@ -1248,7 +1248,7 @@
     "servicesDescription": "Choose how you use Maskera locally: browser extension for AI chats such as ChatGPT and Claude, local proxy and MCP for AI agents, or npm packages in your own code.",
     "siteName": "maskera",
     "servicesSchemaName": "Maskera browser extension, AI agent proxy/MCP and open source",
-    "ogImageAlt": "maskera: Use AI without sharing personal data. A sample sentence where a name, a personal identity number and a town are replaced with placeholders."
+    "ogImageAlt": "Maskera: Use AI without sharing personal data. A sentence where a name, a personal identity number and a town are replaced with placeholders before the AI sees it."
   },
   "about": {
     "metaTitle": "About and contact",

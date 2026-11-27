@@ -1,7 +1,10 @@
+import { readdirSync, readFileSync } from "node:fs"
+import { resolve } from "node:path"
 import { describe, expect, it } from "vitest"
 import {
   getViewMeta,
   MAX_TITLE_LENGTH,
+  ogImagePath,
   renderRouteHtml,
   routeHtmlViews,
   TITLE_SUFFIX,
@@ -9,6 +12,7 @@ import {
   viewPaths,
   viewUrl,
 } from "../src/meta"
+import type { View } from "../src/paths"
 
 /**
  * The static sub-page shells are generated from viewMeta, the same data
@@ -48,6 +52,45 @@ describe("renderRouteHtml", () => {
         expect(meta.title, where).toMatch(/^[@A-ZÅÄÖ]/)
       }
     }
+  })
+
+  it("gives every page its own committed 1200x630 preview card and nothing stale", () => {
+    const publicDir = resolve(__dirname, "..", "public")
+    const expected = new Set<string>()
+    for (const locale of ["sv", "en"] as const) {
+      for (const [view, meta] of Object.entries(getViewMeta(locale))) {
+        const path = ogImagePath(view as View, locale)
+        expect(meta.ogImage).toBe(`https://maskera.dev${path}`)
+        const png = readFileSync(resolve(publicDir, path.slice(1)))
+        // PNG IHDR: width and height as big-endian uint32 at bytes 16 and 20
+        expect([png.readUInt32BE(16), png.readUInt32BE(20)], path).toEqual([1200, 630])
+        expected.add(path)
+      }
+    }
+    const committed = readdirSync(resolve(publicDir, "og"), { recursive: true })
+      .map(String)
+      .filter((file) => file.endsWith(".png"))
+      .map((file) => `/og/${file}`)
+    const stale = committed.filter((path) => !expected.has(path))
+    expect(stale, "run pnpm --filter @maskera/demo render:social").toEqual([])
+  })
+
+  it("has rendered every preview card from the current titles, descriptions and sample", async () => {
+    const { CARDS_LOCK, cardHash, socialCards } = await import("../scripts/social-cards.mjs")
+    const modules = {
+      meta: await import("../src/meta"),
+      scenes: await import("../src/heroScenes"),
+      labels: await import("../src/labels"),
+      i18n: await import("../src/i18n"),
+    }
+    const lock = JSON.parse(readFileSync(CARDS_LOCK, "utf8"))
+    const current = Object.fromEntries(
+      socialCards(modules).map((card: { file: string; html: string }) => [
+        card.file,
+        cardHash(card.html),
+      ]),
+    )
+    expect(current, "run pnpm --filter @maskera/demo render:social").toEqual(lock)
   })
 
   it("embeds valid JSON-LD", () => {

@@ -28,6 +28,17 @@ export const HERO_SCENE = {
     "Beslut: [NAMN_1] ([PERSONNUMMER_1]) i [PLATS_1] beviljas bostadsanpassning så att han kan bo kvar. Ersättningen betalas till bankgiro [BANKGIRO_1].",
 } as const
 
+/**
+ * The home page's link-preview sample: the start of HERO_SCENE, short enough
+ * for one line on a 1200 px card. `masked` is what `maskera-mcp guard
+ * --redact` returns for `prompt`; test/heroScenes.test.ts keeps both in step
+ * with HERO_SCENE.
+ */
+export const OG_SAMPLE = {
+  prompt: "Bo Ek (781101-2397) i Boden har sökt bostadsanpassning.",
+  masked: "[NAMN_1] ([PERSONNUMMER_1]) i [PLATS_1] har sökt bostadsanpassning.",
+} as const
+
 /** The files the agent scene reads and writes through Maskera's MCP tools. */
 export const AGENT_FILES = { read: "ärende.txt", write: "beslut.md" } as const
 

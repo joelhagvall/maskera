@@ -1248,7 +1248,7 @@
     "servicesDescription": "Välj hur du använder Maskera lokalt: webbläsartillägg för AI-chattar som ChatGPT och Claude, lokal proxy och MCP för AI-agenter, eller npm-paket i egen kod.",
     "siteName": "maskera",
     "servicesSchemaName": "Maskera webbläsartillägg, AI-agent-proxy/MCP och öppen källkod",
-    "ogImageAlt": "maskera: Använd AI utan att dela personuppgifter. En exempelmening där namn, personnummer och ort har ersatts med platshållare."
+    "ogImageAlt": "Maskera: Använd AI utan att dela personuppgifter. En mening där namn, personnummer och ort byts mot platshållare innan AI:n ser den."
   },
   "about": {
     "metaTitle": "Om och kontakt",

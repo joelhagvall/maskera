@@ -5,6 +5,7 @@ import {
   HERO_SCENE,
   HERO_SCENE_WIDTH,
   heroScenePath,
+  OG_SAMPLE,
   placeholderCount,
   restoreMap,
 } from "../src/heroScenes"
@@ -84,6 +85,15 @@ describe("hero scene", () => {
     const used = HERO_SCENE.reply.match(/\[[A-ZÅÄÖ_]+_\d+\]/g) ?? []
     expect(used.length).toBeGreaterThan(0)
     for (const token of used) expect(map).toHaveProperty([token])
+  })
+
+  it("keeps the link-preview sample a prefix of the hero scene with the same placeholders", () => {
+    expect(HERO_SCENE.prompt.startsWith(OG_SAMPLE.prompt.replace(/\.$/, ""))).toBe(true)
+    expect(HERO_SCENE.masked.startsWith(OG_SAMPLE.masked.replace(/\.$/, ""))).toBe(true)
+    const hero = restoreMap(HERO_SCENE.prompt, HERO_SCENE.masked)
+    for (const [token, value] of Object.entries(restoreMap(OG_SAMPLE.prompt, OG_SAMPLE.masked))) {
+      expect(hero[token], token).toBe(value)
+    }
   })
 
   it("refuses a masked text that does not match its prompt", () => {

@@ -30,11 +30,14 @@ export function viewUrl(view: View, locale: Locale = activeLocale): string {
 }
 
 /**
- * The link-preview card per locale, rendered by scripts/render-social-images.mjs
- * from the hero title so a shared link shows the language of the page.
+ * The link-preview card per page and locale, rendered by
+ * scripts/render-social-images.mjs: the home page shows the hero title with a
+ * masked sample, every other page its own title and description, so a shared
+ * link shows the page and the language it points to.
  */
-export function ogImageUrl(locale: Locale): string {
-  return `${SITE_ORIGIN}/${locale === "sv" ? "og.png" : "og-en.png"}`
+export function ogImagePath(view: View, locale: Locale): string {
+  if (view === "demo") return locale === "sv" ? "/og.png" : "/og-en.png"
+  return `/og/${locale}/${view}.png`
 }
 
 /** The web app manifest per locale: same app, localized name and start page. */
@@ -44,22 +47,32 @@ export function manifestPath(locale: Locale): string {
 
 export type ViewMeta = { title: string; description: string }
 
+/** A page's metadata as the head carries it: brand-suffixed title and its preview card. */
+export type PageHead = ViewMeta & { ogImage: string; ogImageAlt: string }
+
 /** The brand suffix every page title carries; the i18n files hold only the page part. */
 export const TITLE_SUFFIX = " · Maskera"
 
 /** Page titles stay short enough to read in a browser tab and in search results. */
 export const MAX_TITLE_LENGTH = 50
 
-export function getViewMeta(locale: Locale): Record<View, ViewMeta> {
+export function getViewMeta(locale: Locale): Record<View, PageHead> {
   const pages = pageMeta(locale)
-  const result = {} as Record<View, ViewMeta>
+  const result = {} as Record<View, PageHead>
   for (const view of Object.keys(pages) as View[]) {
-    result[view] = { ...pages[view], title: pages[view].title + TITLE_SUFFIX }
+    const title = pages[view].title + TITLE_SUFFIX
+    result[view] = {
+      ...pages[view],
+      title,
+      ogImage: `${SITE_ORIGIN}${ogImagePath(view, locale)}`,
+      ogImageAlt: view === "demo" ? copies[locale].meta.ogImageAlt : title,
+    }
   }
   return result
 }
 
-function pageMeta(locale: Locale): Record<View, ViewMeta> {
+/** The page part of every title and description, before the brand suffix. */
+export function pageMeta(locale: Locale): Record<View, ViewMeta> {
   const strings = copies[locale]
   return {
     demo: {
@@ -440,12 +453,11 @@ function escapeHtml(value: string): string {
 
 /** Renders a localized static HTML shell (see vite.config.ts). */
 export function renderRouteHtml(view: View, locale: Locale = activeLocale): string {
-  const strings = copies[locale]
   const meta = getViewMeta(locale)[view]
   const title = escapeHtml(meta.title)
   const description = escapeHtml(meta.description)
-  const ogImage = ogImageUrl(locale)
-  const ogImageAlt = escapeHtml(strings.meta.ogImageAlt)
+  const ogImage = meta.ogImage
+  const ogImageAlt = escapeHtml(meta.ogImageAlt)
   const url = viewUrl(view, locale)
   const alternateSv = viewUrl(view, "sv")
   const alternateEn = viewUrl(view, "en")

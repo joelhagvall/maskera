@@ -1,14 +1,6 @@
 import { type MouseEvent, useEffect, useLayoutEffect, useRef, useState } from "react"
-import { activeLocale, copies, localeFromPath, setActiveLocale, useLocale } from "./i18n"
-import {
-  getViewMeta,
-  getViewPaths,
-  manifestPath,
-  ogImageUrl,
-  type View,
-  viewPaths,
-  viewUrl,
-} from "./meta"
+import { activeLocale, localeFromPath, setActiveLocale, useLocale } from "./i18n"
+import { getViewMeta, getViewPaths, manifestPath, type View, viewPaths, viewUrl } from "./meta"
 
 // Titles/descriptions live in meta.ts, shared with the generated static HTML
 // shells for the sub-pages (see vite.config.ts).
@@ -43,10 +35,10 @@ export function applyViewMeta(view: View, locale = activeLocale) {
   setMetaContent('meta[name="twitter:description"]', meta.description)
   setMetaContent('meta[property="og:locale"]', locale === "sv" ? "sv_SE" : "en_GB")
   setMetaContent('meta[property="og:locale:alternate"]', locale === "sv" ? "en_GB" : "sv_SE")
-  setMetaContent('meta[property="og:image"]', ogImageUrl(locale))
-  setMetaContent('meta[name="twitter:image"]', ogImageUrl(locale))
-  setMetaContent('meta[property="og:image:alt"]', copies[locale].meta.ogImageAlt)
-  setMetaContent('meta[name="twitter:image:alt"]', copies[locale].meta.ogImageAlt)
+  setMetaContent('meta[property="og:image"]', meta.ogImage)
+  setMetaContent('meta[name="twitter:image"]', meta.ogImage)
+  setMetaContent('meta[property="og:image:alt"]', meta.ogImageAlt)
+  setMetaContent('meta[name="twitter:image:alt"]', meta.ogImageAlt)
   document
     .querySelector<HTMLLinkElement>('link[rel="manifest"]')
     ?.setAttribute("href", manifestPath(locale))
