@@ -52,3 +52,6 @@ CLAUDE.md
 docs/LINKEDIN_POST*.md
 __pycache__/
 *.pyc
+
+# Local harness receipts and scratch
+.tmp/

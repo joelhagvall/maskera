@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "activeCommercialProduct": "browser-extension",
+  "dormantProducts": ["gateway"],
+  "plans": {
+    "free": {
+      "priceSek": 0,
+      "monthlyAiLimit": 20
+    },
+    "pro": {
+      "priceSekMonthly": 149,
+      "vatIncluded": true,
+      "trialDays": 7
+    },
+    "team": {
+      "priceSekMonthly": 249,
+      "vatIncluded": false,
+      "minSeats": 5
+    }
+  },
+  "packages": {
+    "core": "0.8.4",
+    "maskera": "0.11.1",
+    "mcp": "0.4.0"
+  },
+  "sites": {
+    "public": "https://maskera.dev",
+    "portal": "https://app.maskera.dev"
+  }
+}

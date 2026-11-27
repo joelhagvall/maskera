@@ -1,0 +1,39 @@
+{
+  "apps/demo/public/theme-init.js": {
+    "lint/correctness/noInnerDeclarations": 2
+  },
+  "apps/demo/scripts/evaluate-candidate-gates.mjs": {
+    "lint/suspicious/noAssignInExpressions": 1
+  },
+  "apps/demo/src/components/AgentSetupCard.tsx": {
+    "lint/suspicious/noArrayIndexKey": 1
+  },
+  "apps/demo/src/components/CodeSnippet.tsx": {
+    "lint/suspicious/noArrayIndexKey": 1
+  },
+  "apps/demo/src/components/Controls.tsx": {
+    "lint/a11y/useSemanticElements": 1
+  },
+  "apps/demo/src/components/Docs.tsx": {
+    "lint/suspicious/noArrayIndexKey": 1
+  },
+  "apps/demo/src/components/Header.tsx": {
+    "lint/suspicious/noArrayIndexKey": 2
+  },
+  "apps/demo/src/components/HeroStage.tsx": {
+    "lint/a11y/useSemanticElements": 1,
+    "lint/suspicious/noArrayIndexKey": 1
+  },
+  "apps/demo/src/components/RestoreDemo.tsx": {
+    "lint/a11y/useSemanticElements": 1
+  },
+  "apps/demo/test/useSwedishNer.test.tsx": {
+    "lint/correctness/noUnsafeOptionalChaining": 1
+  },
+  "packages/mcp/src/files.ts": {
+    "lint/suspicious/noImplicitAnyLet": 1
+  },
+  "packages/mcp/test/mcp.test.ts": {
+    "lint/correctness/noUnsafeOptionalChaining": 21
+  }
+}

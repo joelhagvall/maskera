@@ -5,8 +5,11 @@
     "includes": [
       "**",
       "!**/dist",
+      "!**/dist-ssr",
       "!**/node_modules",
       "!**/coverage",
+      "!**/.tmp",
+      "!**/reports",
       "!**/training/.venv",
       "!**/bench/.venv-*",
       "!**/bench/out",
@@ -27,7 +30,15 @@
   },
   "linter": {
     "enabled": true,
-    "rules": { "preset": "none" }
+    "rules": {
+      "preset": "recommended",
+      "a11y": {
+        "noNoninteractiveTabindex": "off"
+      },
+      "suspicious": {
+        "noExplicitAny": "error"
+      }
+    }
   },
   "javascript": {
     "formatter": { "quoteStyle": "double", "semicolons": "asNeeded" }
@@ -36,6 +47,44 @@
     {
       "includes": ["**/package.json"],
       "formatter": { "enabled": false }
+    },
+    {
+      "includes": ["apps/demo/public/theme-init.js"],
+      "linter": { "rules": { "correctness": { "noInnerDeclarations": "off" } } }
+    },
+    {
+      "includes": ["apps/demo/scripts/evaluate-candidate-gates.mjs"],
+      "linter": { "rules": { "suspicious": { "noAssignInExpressions": "off" } } }
+    },
+    {
+      "includes": [
+        "apps/demo/src/components/Controls.tsx",
+        "apps/demo/src/components/HeroStage.tsx",
+        "apps/demo/src/components/RestoreDemo.tsx"
+      ],
+      "linter": { "rules": { "a11y": { "useSemanticElements": "off" } } }
+    },
+    {
+      "includes": ["apps/demo/test/useSwedishNer.test.tsx", "packages/mcp/test/mcp.test.ts"],
+      "linter": { "rules": { "correctness": { "noUnsafeOptionalChaining": "off" } } }
+    },
+    {
+      "includes": ["**/public/*.svg"],
+      "linter": { "rules": { "a11y": { "noSvgWithoutTitle": "off" } } }
+    },
+    {
+      "includes": [
+        "apps/demo/src/components/AgentSetupCard.tsx",
+        "apps/demo/src/components/CodeSnippet.tsx",
+        "apps/demo/src/components/Docs.tsx",
+        "apps/demo/src/components/Header.tsx",
+        "apps/demo/src/components/HeroStage.tsx"
+      ],
+      "linter": { "rules": { "suspicious": { "noArrayIndexKey": "off" } } }
+    },
+    {
+      "includes": ["packages/mcp/src/files.ts"],
+      "linter": { "rules": { "suspicious": { "noImplicitAnyLet": "off" } } }
     }
   ]
 }

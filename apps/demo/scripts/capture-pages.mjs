@@ -91,8 +91,14 @@ async function main() {
         reducedMotion: "reduce",
       })
       const page = await context.newPage()
+      const pageErrors = []
+      page.on("pageerror", (err) => pageErrors.push(`pageerror: ${err.message}`))
+      page.on("console", (msg) => {
+        if (msg.type() === "error") pageErrors.push(`console.error: ${msg.text()}`)
+      })
       const shots = []
       for (const path of paths) {
+        const beforeCount = pageErrors.length
         await page.goto(`${base}${path}`, { waitUntil: "networkidle" })
         await page.evaluate((t) => {
           document.documentElement.dataset.theme = t
@@ -115,7 +121,8 @@ async function main() {
             overflowX: document.documentElement.scrollWidth - innerWidth,
           }
         })
-        metrics.push({ viewport: vp.id, path, ...metric })
+        const routeErrors = pageErrors.slice(beforeCount)
+        metrics.push({ viewport: vp.id, theme, path, ...metric, consoleErrors: routeErrors })
         const file = `${vp.id}-${slug(path)}.png`
         await page.screenshot({ path: join(OUT, file), fullPage: true })
         shots.push({ path, file })
@@ -148,6 +155,15 @@ ${cells}`,
   if (overflowing.length > 0) {
     for (const m of overflowing)
       process.stderr.write(`${m.viewport} ${m.path} scrolls sideways by ${m.overflowX}px\n`)
+    process.exitCode = 1
+  }
+  const withErrors = metrics.filter((m) => (m.consoleErrors?.length ?? 0) > 0)
+  if (withErrors.length > 0) {
+    for (const m of withErrors) {
+      for (const err of m.consoleErrors) {
+        process.stderr.write(`${m.viewport} (${m.theme}) ${m.path} ${err}\n`)
+      }
+    }
     process.exitCode = 1
   }
 }

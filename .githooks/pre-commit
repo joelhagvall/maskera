@@ -1,0 +1,21 @@
+#!/bin/sh
+set -eu
+cd "$(git rev-parse --show-toplevel)"
+
+node scripts/check-fresh-main.mjs
+node scripts/harness/biome-ratchet.mjs
+node scripts/check-benchmark-sync.mjs
+node scripts/harness/check-product-sync.mjs
+
+staged_lint=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx|js|jsx|mjs|cjs|json|css)$' || true)
+if [ -n "$staged_lint" ]; then
+  # Lint only staged files so an unrelated session's unstaged edits never block this commit.
+  echo "$staged_lint" | xargs ./node_modules/.bin/biome check --no-errors-on-unmatched
+fi
+
+staged_demo=$(git diff --cached --name-only --diff-filter=ACMR | grep '^apps/demo/' || true)
+if [ -n "$staged_demo" ]; then
+  node --test scripts/demo-i18n.test.mjs
+  pnpm --filter @maskera/demo exec vitest run test/designSystem.test.ts test/i18n.test.ts test/docs.test.tsx
+  node scripts/harness/prova-receipt.mjs --check --staged
+fi
