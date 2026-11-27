@@ -9,21 +9,32 @@ export {
   type DoctorCheck,
   type DoctorCheckStatus,
   type DoctorReport,
+  type DoctorSampleProof,
   formatDoctorReport,
   runDoctor,
+  writeDoctorReceipt,
 } from "./doctor"
 export {
   buildCustomTermsDetector,
   createMaskeraEngine,
+  createModelProgressLogger,
   type EngineOptions,
   type MaskeraEngine,
   type MaskMode,
+  type ModelLoadEvent,
   type RedactInputOptions,
 } from "./engine"
 export { createFileGuard, type FileGuard, type ListedFile, type SearchMatch } from "./files"
-export { extractGuardText, type GuardResult, runGuard } from "./guard"
+export {
+  extractGuardText,
+  type GuardResult,
+  runGuard,
+  runGuardViaWarmProxy,
+} from "./guard"
 export { type InspectedRequest, ProxyInspector, renderInspectorHtml } from "./inspector"
 export {
+  type CommandRunner,
+  detectInstalledClients,
   type InstallClient,
   type InstallOptions,
   type InstallResult,
@@ -35,6 +46,7 @@ export {
 export {
   createSseRestorer,
   type ProxyOptions,
+  type ProxyStats,
   type RedactFieldKind,
   type RunningMaskeraProxy,
   redactLlmRequestBody,
@@ -55,6 +67,16 @@ export {
   type ToolCallTelemetry,
 } from "./server"
 export {
+  LAUNCHD_LABEL,
+  renderLaunchdPlist,
+  renderSystemdUnit,
+  runService,
+  type ServiceAction,
+  type ServiceOptions,
+  type ServiceResult,
+  SYSTEMD_UNIT,
+} from "./service"
+export {
   MASKERA_PROMPTS,
   MASKERA_SKILL_MARKDOWN,
   MASKERA_SKILL_URI,
@@ -63,3 +85,10 @@ export {
   renderMaskeraPrompt,
 } from "./skill-content"
 export { type SessionSummary, SessionVault } from "./vault"
+export {
+  openUrlInBrowser,
+  runWrap,
+  type WrapOptions,
+  type WrapReceipt,
+  type WrapResult,
+} from "./wrap"

@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process"
 import { existsSync } from "node:fs"
-import { mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises"
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -12,14 +12,19 @@ import {
   createFileGuard,
   createMaskeraEngine,
   createMaskeraMcpServer,
+  createModelProgressLogger,
+  detectInstalledClients,
   MASKERA_SKILL_MARKDOWN,
   MASKERA_SKILL_URI,
   MASKERA_STATUS_URI,
   runDoctor,
   runInstall,
+  runService,
+  runWrap,
   SERVER_VERSION,
   SessionVault,
   startMaskeraProxy,
+  writeDoctorReceipt,
 } from "../src/index"
 
 const pkgRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..")
@@ -906,9 +911,225 @@ describe("MaskeraMcpServer JSON-RPC protocol and tools", () => {
       engine: createMaskeraEngine({ defaultMode: "rules" }),
       roots: [dir],
       proxyUrl: "http://127.0.0.1:1",
+      client: "cursor",
+      transport: "stdio",
+      configPath: cursorCfg,
     })
+    expect(report.schema).toBe("maskera-setup-receipt/v1")
     expect(report.ok).toBe(true)
+    expect(report.client).toBe("cursor")
     expect(report.checks.find((c) => c.name === "redaction")?.status).toBe("ok")
+    expect(report.sampleProof).toBeTruthy()
+    expect(report.sampleProof?.rawPiiLeaked).toBe(false)
+    expect(report.sampleProof?.roundtripRestored).toBe(true)
+    expect(report.sampleProof?.maskedCount).toBeGreaterThanOrEqual(3)
+    expect(report.sampleProof?.redactedPreview).toContain("[PERSONNUMMER_1]")
+    expect(report.sampleProof?.redactedPreview).toContain("[EPOST_1]")
+    expect(report.sampleProof?.redactedPreview).not.toContain("19900101-2385")
+
+    const receiptPath = join(dir, "receipts", "setup-receipt.json")
+    const writtenPath = await writeDoctorReceipt(receiptPath, report)
+    const savedRaw = await readFile(writtenPath, "utf8")
+    expect(savedRaw).not.toContain("19900101-2385")
+    expect(savedRaw).not.toContain("provnamn.maskera@example.com")
+    expect(JSON.parse(savedRaw).schema).toBe("maskera-setup-receipt/v1")
+
+    const liveProxy = await startMaskeraProxy({
+      port: 0,
+      defaultMode: "rules",
+      mcpRoots: [dir],
+    })
+    try {
+      const liveReport = await runDoctor({
+        engine: createMaskeraEngine({ defaultMode: "rules" }),
+        roots: [dir],
+        proxyUrl: liveProxy.url,
+      })
+      expect(liveReport.ok).toBe(true)
+      expect(liveReport.checks.find((c) => c.name === "proxy")?.status).toBe("ok")
+      expect(liveReport.checks.find((c) => c.name === "mcp-http")?.status).toBe("ok")
+    } finally {
+      await liveProxy.close()
+    }
+  })
+
+  it("auto-detects clients, applies CLI installs, installs guard hooks idempotently, and manages launchd/systemd services", async () => {
+    const dir = await makeTempDir()
+    const fakeHome = await makeTempDir()
+    await mkdir(join(dir, ".cursor"), { recursive: true })
+    await mkdir(join(dir, ".claude"), { recursive: true })
+
+    const detected = await detectInstalledClients({
+      cwd: dir,
+      homeDir: fakeHome,
+      platform: "darwin",
+      pathEnv: "",
+    })
+    expect(detected).toEqual(["claude-code", "cursor"])
+
+    // Claude Code --project + --with-hook writes .mcp.json and .claude/settings.json idempotently
+    const ccProject = await runInstall({
+      client: "claude-code",
+      cwd: dir,
+      roots: [dir],
+      noRawRestore: true,
+      project: true,
+      withHook: true,
+    })
+    expect(ccProject.written).toBe(true)
+    expect(ccProject.configPath).toBe(join(dir, ".mcp.json"))
+    expect(ccProject.hookWritten).toBe(true)
+    expect(ccProject.hookPath).toBe(join(dir, ".claude", "settings.json"))
+
+    // Second run must not duplicate the hook entry
+    await runInstall({
+      client: "claude-code",
+      cwd: dir,
+      roots: [dir],
+      project: true,
+      withHook: true,
+    })
+    const settingsJson = JSON.parse(
+      await readFile(join(dir, ".claude", "settings.json"), "utf8"),
+    ) as { hooks: { UserPromptSubmit: unknown[] } }
+    expect(settingsJson.hooks.UserPromptSubmit).toHaveLength(1)
+
+    // Claude Code --apply runs `claude mcp add` via injectable runner
+    const ranCommands: Array<{ cmd: string; args: readonly string[] }> = []
+    const ccApplied = await runInstall({
+      client: "claude-code",
+      cwd: dir,
+      roots: [dir],
+      transport: "http",
+      noRawRestore: true,
+      apply: true,
+      execCommand: (cmd, args) => {
+        ranCommands.push({ cmd, args })
+        return { status: 0, stdout: "Added maskera", stderr: "" }
+      },
+    })
+    expect(ccApplied.applied).toBe(true)
+    expect(ranCommands[0]?.cmd).toBe("claude")
+    expect(ranCommands[0]?.args).toContain("--transport")
+
+    // Cursor --with-hook writes .cursor/hooks.json
+    const cursorHook = await runInstall({
+      client: "cursor",
+      cwd: dir,
+      roots: [dir],
+      withHook: true,
+    })
+    expect(cursorHook.hookWritten).toBe(true)
+    const cursorHooks = JSON.parse(await readFile(join(dir, ".cursor", "hooks.json"), "utf8")) as {
+      version: number
+      hooks: { beforeSubmitPrompt: Array<{ command: string }> }
+    }
+    expect(cursorHooks.version).toBe(1)
+    expect(cursorHooks.hooks.beforeSubmitPrompt[0]?.command).toContain("@maskera/mcp guard")
+
+    // Service dry-run on macOS and Linux
+    const macDry = await runService({
+      action: "install",
+      platform: "darwin",
+      homeDir: fakeHome,
+      roots: [dir],
+      noRawRestore: true,
+      nodePath: "/usr/local/bin/node",
+      cliPath: "/opt/maskera/cli.js",
+      dryRun: true,
+    })
+    expect(macDry.manager).toBe("launchd")
+    expect(macDry.snippet).toContain("dev.maskera.proxy")
+    expect(macDry.snippet).toContain("--no-raw-restore")
+
+    const linuxDry = await runService({
+      action: "install",
+      platform: "linux",
+      homeDir: fakeHome,
+      roots: [dir],
+      rulesOnly: true,
+      nodePath: "/usr/bin/node",
+      cliPath: "/opt/maskera/cli.js",
+      dryRun: true,
+    })
+    expect(linuxDry.manager).toBe("systemd")
+    expect(linuxDry.snippet).toContain("ExecStart=")
+    expect(linuxDry.snippet).toContain("--rules-only")
+
+    // Service install + uninstall with mocked launchctl (touches only fakeHome)
+    const svcCalls: string[] = []
+    const macInst = await runService({
+      action: "install",
+      platform: "darwin",
+      homeDir: fakeHome,
+      port: 1,
+      roots: [dir],
+      nodePath: "/usr/local/bin/node",
+      cliPath: "/opt/maskera/cli.js",
+      execCommand: (cmd, args) => {
+        svcCalls.push(`${cmd} ${args[0]}`)
+        return { status: 0, stdout: "", stderr: "" }
+      },
+    })
+    expect(macInst.installed).toBe(true)
+    expect(macInst.serviceFile).toBeTruthy()
+    expect(existsSync(macInst.serviceFile ?? "")).toBe(true)
+    expect(svcCalls).toContain("launchctl bootstrap")
+
+    const macUninst = await runService({
+      action: "uninstall",
+      platform: "darwin",
+      homeDir: fakeHome,
+      port: 1,
+      execCommand: (cmd, args) => {
+        svcCalls.push(`${cmd} ${args[0]}`)
+        return { status: 0, stdout: "", stderr: "" }
+      },
+    })
+    expect(macUninst.installed).toBe(false)
+    expect(existsSync(macInst.serviceFile ?? "")).toBe(false)
+  })
+
+  it("runWrap injects proxy env vars, verifies startup, preserves exit code, and writes zero-PII receipt", async () => {
+    const dir = await makeTempDir()
+    const receiptPath = join(dir, "wrap-receipt.json")
+    const logs: string[] = []
+    const res = await runWrap({
+      command: process.execPath,
+      args: [
+        "-e",
+        "if (!process.env.ANTHROPIC_BASE_URL || !process.env.OPENAI_BASE_URL?.endsWith('/v1') || !process.env.MASKERA_MCP_URL?.endsWith('/mcp')) process.exit(42);",
+      ],
+      engine: createMaskeraEngine({ defaultMode: "rules" }),
+      roots: [dir],
+      receiptPath,
+      onStderr: (line) => logs.push(line),
+    })
+    expect(res.exitCode).toBe(0)
+    expect(res.startupReceipt?.ok).toBe(true)
+    expect(res.session.requests).toBe(0)
+    expect(logs.some((l) => l.includes("0 leaks verified"))).toBe(true)
+    expect(logs.some((l) => l.includes("session done:"))).toBe(true)
+    const receiptRaw = await readFile(receiptPath, "utf8")
+    expect(receiptRaw).not.toContain("19900101-2385")
+    expect(JSON.parse(receiptRaw).schema).toBe("maskera-wrap-receipt/v1")
+  })
+
+  it("createModelProgressLogger stays silent for fast loads and reports slow first-run loads", async () => {
+    const fastLines: string[] = []
+    const fastLogger = createModelProgressLogger((l) => fastLines.push(l), 200)
+    fastLogger({ phase: "loading", model: "maskera-sv-ner" })
+    fastLogger({ phase: "ready", model: "maskera-sv-ner", elapsedMs: 12 })
+    expect(fastLines).toHaveLength(0)
+
+    const slowLines: string[] = []
+    const slowLogger = createModelProgressLogger((l) => slowLines.push(l), 15)
+    slowLogger({ phase: "loading", model: "maskera-sv-ner" })
+    await new Promise((r) => setTimeout(r, 40))
+    slowLogger({ phase: "ready", model: "maskera-sv-ner", elapsedMs: 42 })
+    expect(slowLines.length).toBe(2)
+    expect(slowLines[0]).toContain("Loading Swedish ONNX model")
+    expect(slowLines[1]).toContain("ready (42ms)")
   })
 })
 

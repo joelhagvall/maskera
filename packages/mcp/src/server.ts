@@ -12,7 +12,7 @@ import {
 import { SessionVault } from "./vault"
 
 export const SERVER_NAME = "maskera-mcp"
-export const SERVER_VERSION = "0.3.0"
+export const SERVER_VERSION = "0.4.0"
 const SUPPORTED_PROTOCOLS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"] as const
 const PLACEHOLDER_QUERY_RE = /^\[[A-ZÅÄÖ][A-ZÅÄÖ0-9_]*_\d+\]$/
 

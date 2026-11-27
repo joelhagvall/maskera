@@ -1358,9 +1358,9 @@
         {
           "id": "snabbstart",
           "title": "Snabbstart på 60 sekunder",
-          "body": "Starta den lokala proxyn (som även ger Streamable HTTP MCP och live-inspektör på samma port), eller konfigurera din MCP-klient direkt och kör den inbyggda kontrollen.",
+          "body": "Kör ett enda kommando med wrap (startar lokal proxy, verifierar 0 läckor och skriver ett sessionskvitto vid avslut), installera en permanent bakgrundstjänst med service install, eller konfigurera din MCP-klient med install och få kvitto direkt i terminalen.",
           "codeLabel": "Terminal",
-          "code": "# 1. Starta proxy + Streamable HTTP /mcp + inspektör på 127.0.0.1:8787\nnpx -y @maskera/mcp proxy --root .\n\n# 2. Skriv eller visa MCP-konfiguration för din klient\nnpx -y @maskera/mcp install cursor --root . --no-raw-restore\n\n# 3. Verifiera modell, mappar och rundresa med påhittad svensk PII\nnpx -y @maskera/mcp doctor --root ."
+          "code": "# 1. Enkel start i en terminal (sätter ANTHROPIC_BASE_URL och OPENAI_BASE_URL själv)\nnpx -y @maskera/mcp wrap -- claude\n\n# 2. Eller håll proxyn + Streamable HTTP /mcp igång i bakgrunden (macOS/Linux)\nnpx -y @maskera/mcp service install --root . --no-raw-restore\n\n# 3. Auto-detektera och konfigurera din klient + prompt-hook + kvitto\nnpx -y @maskera/mcp install cursor --root . --no-raw-restore --with-hook"
         },
         {
           "id": "for-agenter",
@@ -1377,7 +1377,7 @@
       "metaTitle": "@maskera/mcp: proxy, Streamable HTTP, verktyg och policyer · maskera",
       "metaDescription": "Komplett referens för @maskera/mcp: alla MCP-verktyg, Streamable HTTP /mcp, scoped policyflaggor, webbläsargodkännanden, prompts, resources, guard, install och doctor.",
       "title": "@maskera/mcp-referens",
-      "lede": "Ett enda npm-paket med fem kommandon: lokal LLM-proxy med Streamable HTTP /mcp, MCP stdio-server, hook-guard, klientinstallerare och diagnostik.",
+      "lede": "Ett enda npm-paket med sju kommandon: enkommandoläge (wrap), lokal LLM-proxy med Streamable HTTP /mcp, bakgrundstjänst (service), MCP stdio-server, hook-guard, klientinstallerare och diagnostik.",
       "verifyTitle": "Du vet att det funkar när",
       "verifyBody": "Klienten listar maskera_list_files, maskera_search_files, maskera_read_file och maskera_status, och maskera_status visar mode, active_sessions och aktiv policy.",
       "sections": [
@@ -1491,10 +1491,10 @@
         },
         {
           "id": "guard-install-doctor",
-          "title": "Guard, install, doctor och miljövariabler",
-          "body": "Utöver proxy och MCP finns guard för hooks och pipes, install för klientkonfiguration och doctor för snabb lokal felsökning.",
+          "title": "Wrap, service, guard, install och doctor",
+          "body": "Utöver proxy och MCP finns wrap för en terminal, service för bakgrundstjänst på macOS (launchd) och Linux (systemd --user), guard för hooks och pipes, install med auto-detektering (--apply, --project, --with-hook) och inbyggt verifieringskvitto, samt doctor för lokal felsökning och live-test mot /mcp.",
           "codeLabel": "Terminal",
-          "code": "# Blockera PII i agent-hooks (exit 2 vid träff, loggar bara antal)\necho '{\"prompt\":\"Ring 070-174 06 58\"}' | npx -y @maskera/mcp guard\n\n# Maskera en ström lokalt\ncat underlag.txt | npx -y @maskera/mcp guard --redact\n\n# Skriv eller förhandsgranska klientkonfiguration\nnpx -y @maskera/mcp install cursor --root . --no-raw-restore --dry-run\n\n# Självtesta lokal motor, rötter och pågående proxy\nnpx -y @maskera/mcp doctor --root . --json",
+          "code": "# Starta lokal proxy + verifiera + kör agent i samma terminal\nnpx -y @maskera/mcp wrap --open -- claude\n\n# Installera eller kontrollera lokal bakgrundstjänst (127.0.0.1:8787)\nnpx -y @maskera/mcp service install --root . --no-raw-restore\nnpx -y @maskera/mcp service status\n\n# Konfigurera klient + prompt-hook + spara kvitto (maskera-setup-receipt/v1)\nnpx -y @maskera/mcp install claude-code --root . --no-raw-restore --apply --with-hook --receipt ./maskera-receipt.json\n\n# Blockera PII i hooks (exit 2 vid träff, loggar bara antal)\necho '{\"prompt\":\"Ring 070-174 06 58\"}' | npx -y @maskera/mcp guard\n\n# Självtesta lokal motor, rötter, proxy och live /mcp\nnpx -y @maskera/mcp doctor --root . --json",
           "table": {
             "headers": ["Miljövariabel", "Standard", "Funktion"],
             "rows": [

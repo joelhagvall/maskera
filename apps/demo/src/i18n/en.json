@@ -1358,9 +1358,9 @@
         {
           "id": "snabbstart",
           "title": "60-second quickstart",
-          "body": "Start the local proxy (which also serves Streamable HTTP MCP and the live inspector on the same port), or configure your MCP client directly and run the built-in self-check.",
+          "body": "Use wrap for a single-terminal launch (starts a local proxy, verifies 0 leaks, and prints a session receipt on exit), install a persistent local background service with service install, or configure your MCP client with install for an instant setup receipt.",
           "codeLabel": "Terminal",
-          "code": "# 1. Start proxy + Streamable HTTP /mcp + inspector on 127.0.0.1:8787\nnpx -y @maskera/mcp proxy --root .\n\n# 2. Write or print MCP configuration for your client\nnpx -y @maskera/mcp install cursor --root . --no-raw-restore\n\n# 3. Verify model, roots, and roundtrip with made-up Swedish PII\nnpx -y @maskera/mcp doctor --root ."
+          "code": "# 1. Single-terminal launch (injects ANTHROPIC_BASE_URL and OPENAI_BASE_URL)\nnpx -y @maskera/mcp wrap -- claude\n\n# 2. Or keep the proxy + Streamable HTTP /mcp running in the background (macOS/Linux)\nnpx -y @maskera/mcp service install --root . --no-raw-restore\n\n# 3. Auto-detect or configure your client + guard hook + setup receipt\nnpx -y @maskera/mcp install cursor --root . --no-raw-restore --with-hook"
         },
         {
           "id": "for-agenter",
@@ -1377,7 +1377,7 @@
       "metaTitle": "@maskera/mcp: proxy, Streamable HTTP, tools and policies · maskera",
       "metaDescription": "Complete reference for @maskera/mcp: all MCP tools, Streamable HTTP /mcp, scoped policy flags, browser approvals, prompts, resources, guard, install, and doctor.",
       "title": "@maskera/mcp reference",
-      "lede": "One npm package with five subcommands: local LLM proxy with Streamable HTTP /mcp, MCP stdio server, hook guard, client installer, and diagnostics.",
+      "lede": "One npm package with seven subcommands: single-command wrap launcher, local LLM proxy with Streamable HTTP /mcp, background service manager, MCP stdio server, hook guard, client installer, and diagnostics.",
       "verifyTitle": "You know it worked when",
       "verifyBody": "Your client lists maskera_list_files, maskera_search_files, maskera_read_file, and maskera_status, and maskera_status reports the active engine mode, roots, and policy.",
       "sections": [
@@ -1491,10 +1491,10 @@
         },
         {
           "id": "guard-install-doctor",
-          "title": "Guard, install, doctor, and environment variables",
-          "body": "Alongside proxy and MCP, the CLI includes guard for hooks and pipes, install for client config setup, and doctor for local verification.",
+          "title": "Wrap, service, guard, install, and doctor",
+          "body": "Alongside proxy and MCP, the CLI includes wrap for a single-terminal launch, service for a local background daemon on macOS (launchd) and Linux (systemd --user), guard for hooks and pipes, install with client auto-detection (--apply, --project, --with-hook) and automatic setup receipts, and doctor for local verification plus a live /mcp probe.",
           "codeLabel": "Terminal",
-          "code": "# Block PII in agent hooks (exits 2 on match, prints counts only)\necho '{\"prompt\":\"Ring 070-174 06 58\"}' | npx -y @maskera/mcp guard\n\n# Redact a stream locally\ncat input.txt | npx -y @maskera/mcp guard --redact\n\n# Write or preview client MCP config\nnpx -y @maskera/mcp install cursor --root . --no-raw-restore --dry-run\n\n# Self-test local engine, roots, and running proxy\nnpx -y @maskera/mcp doctor --root . --json",
+          "code": "# Start local proxy + verify + launch agent in one terminal\nnpx -y @maskera/mcp wrap --open -- claude\n\n# Install or check a persistent local background service (127.0.0.1:8787)\nnpx -y @maskera/mcp service install --root . --no-raw-restore\nnpx -y @maskera/mcp service status\n\n# Configure client + guard hook + save zero-PII receipt (maskera-setup-receipt/v1)\nnpx -y @maskera/mcp install claude-code --root . --no-raw-restore --apply --with-hook --receipt ./maskera-receipt.json\n\n# Block PII in hooks (exits 2 on match, prints counts only)\necho '{\"prompt\":\"Ring 070-174 06 58\"}' | npx -y @maskera/mcp guard\n\n# Self-test local engine, roots, proxy, and live /mcp\nnpx -y @maskera/mcp doctor --root . --json",
           "table": {
             "headers": ["Environment variable", "Default", "Purpose"],
             "rows": [

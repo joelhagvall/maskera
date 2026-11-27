@@ -1,5 +1,11 @@
 # @maskera/mcp
 
+## 0.4.0
+
+### Minor Changes
+
+- Add automatic zero-PII setup receipts (`maskera-setup-receipt/v1`) to `install` and `doctor` (including a live Streamable HTTP `/mcp` probe and `--receipt <file.json>`), a single-command `wrap` launcher (`maskera-mcp wrap -- <cmd>`), client auto-detection plus `--apply`, `--project`, and `--with-hook` in `install`, a one-click self-test and copyable test prompt in `/_maskera` (`POST /_maskera/self-test`, `--open`), a local background `service` manager (`launchd` on macOS, `systemd --user` on Linux), clear first-run ONNX model loading status, and a warm loopback fast path (`POST /_maskera/guard`) for `maskera-mcp guard`.
+
 ## 0.3.0
 
 ### Minor Changes

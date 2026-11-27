@@ -2,10 +2,11 @@
 
 Local Swedish PII redaction for any AI agent or LLM client:
 
-1. **Local LLM proxy + Streamable HTTP MCP (`maskera-mcp proxy`)**: sits between any client that accepts a custom API URL (Claude Code, Codex with an API key, Cursor, OpenCode, Claude Desktop via third-party inference, Python/JS SDKs) and Anthropic/OpenAI, redacts outgoing prompts and tool results locally on-device, and transparently restores placeholders in both JSON and SSE streaming responses. The same warm process also exposes Streamable HTTP MCP at `http://127.0.0.1:8787/mcp`, sharing the loaded ONNX model, session vault, browser approval broker, and live inspector.
-2. **MCP stdio server (`maskera-mcp`)**: exposes `maskera_read_file`, `maskera_write_file`, `maskera_list_files`, `maskera_search_files`, `maskera_redact`, `maskera_restore`, `maskera_list_sessions`, `maskera_clear_session`, `maskera_status` (plus `maskera_resume` in browser approval mode), along with built-in MCP `prompts` and `resources` (`maskera://skills/maskera/SKILL.md`) over JSON-RPC 2.0 stdio or Streamable HTTP.
-3. **Hook / pipe guard (`maskera-mcp guard`)**: blocks PII in Claude Code / Cursor hooks or Unix pipelines (`exit 2`, never echoes raw PII) or redacts streams via `--redact`.
-4. **Client installer and diagnostics (`maskera-mcp install` / `maskera-mcp doctor`)**: writes or prints MCP config per client and verifies the local Swedish redaction roundtrip with made-up PII.
+1. **One-command proxy wrapper (`maskera-mcp wrap -- <cmd>`)**: starts a local loopback proxy on a free port, verifies zero leaks automatically, injects `ANTHROPIC_BASE_URL`, `OPENAI_BASE_URL`, `MASKERA_PROXY_URL`, and `MASKERA_MCP_URL` into your CLI (`claude`, `codex`, `opencode`, scripts), and prints a session receipt when the command exits.
+2. **Local LLM proxy + Streamable HTTP MCP (`maskera-mcp proxy` / `maskera-mcp service install`)**: sits between any client that accepts a custom API URL (Claude Code, Codex with an API key, Cursor, OpenCode, Claude Desktop via third-party inference, Python/JS SDKs) and Anthropic/OpenAI, redacts outgoing prompts and tool results locally on-device, and transparently restores placeholders in both JSON and SSE streaming responses. The same warm process also exposes Streamable HTTP MCP at `http://127.0.0.1:8787/mcp` and a live inspector with a built-in self-test button at `/_maskera`. Install it as a persistent local background service (`launchd` on macOS, `systemd --user` on Linux) with `maskera-mcp service install`.
+3. **MCP stdio server (`maskera-mcp`)**: exposes `maskera_read_file`, `maskera_write_file`, `maskera_list_files`, `maskera_search_files`, `maskera_redact`, `maskera_restore`, `maskera_list_sessions`, `maskera_clear_session`, `maskera_status` (plus `maskera_resume` in browser approval mode), along with built-in MCP `prompts` and `resources` (`maskera://skills/maskera/SKILL.md`) over JSON-RPC 2.0 stdio or Streamable HTTP.
+4. **Hook / pipe guard (`maskera-mcp guard`)**: blocks PII in Claude Code / Cursor hooks or Unix pipelines (`exit 2`, never echoes raw PII) or redacts streams via `--redact`.
+5. **Client installer and diagnostics (`maskera-mcp install` / `maskera-mcp doctor`)**: auto-detects or configures clients (`--apply`, `--project`, `--with-hook`), runs an automatic Swedish PII self-test + live `/mcp` probe, and prints (or saves via `--receipt <file.json>`) a zero-PII setup receipt (`maskera-setup-receipt/v1`).
 
 All redaction runs 100% locally using `maskera` (deterministic Swedish rules + the 43 MB open Swedish ONNX NER model `joelhagvall/maskera-sv-ner`).
 
@@ -14,7 +15,17 @@ All redaction runs 100% locally using `maskera` (deterministic Swedish rules + t
 Start the proxy on loopback (`127.0.0.1:8787`):
 
 ```bash
-npx -y @maskera/mcp proxy --root /path/to/workspace
+# Fastest single-terminal launch (starts proxy, verifies 0 leaks, sets env vars, prints session summary on exit)
+npx -y @maskera/mcp wrap -- claude
+npx -y @maskera/mcp wrap --open -- codex
+
+# Or keep one persistent local proxy + warm /mcp running in the foreground (or open /_maskera automatically)
+npx -y @maskera/mcp proxy --root /path/to/workspace --open
+
+# Or install as a background service (launchd on macOS, systemd --user on Linux)
+npx -y @maskera/mcp service install --root /path/to/workspace --no-raw-restore
+npx -y @maskera/mcp service status
+npx -y @maskera/mcp service uninstall
 ```
 
 Point any client that accepts a custom API URL at it, or connect an MCP client to `/mcp` on the same warm process:
@@ -75,11 +86,15 @@ To go back to your Claude account, choose the Anthropic sign-in option on the si
 Generate or write the configuration for your client directly:
 
 ```bash
-# Supported clients: claude-code, claude-desktop, codex, cursor, opencode, t3-code
-npx -y @maskera/mcp install cursor --root /path/to/workspace --no-raw-restore
-npx -y @maskera/mcp install claude-code --transport http --no-raw-restore
-npx -y @maskera/mcp doctor
+# Auto-detect installed clients, or target one (claude-code, claude-desktop, codex, cursor, opencode, t3-code, or all)
+# install runs a synthetic Swedish PII roundtrip automatically and prints a setup receipt
+npx -y @maskera/mcp install
+npx -y @maskera/mcp install cursor --root /path/to/workspace --no-raw-restore --with-hook
+npx -y @maskera/mcp install claude-code --transport http --no-raw-restore --apply --with-hook --receipt ./maskera-receipt.json
+npx -y @maskera/mcp doctor --receipt ./maskera-receipt.json
 ```
+
+Pass `--apply` to execute `claude mcp add` / `codex mcp add` directly, `--project` to write project-local `.mcp.json` for Claude Code, `--with-hook` to add a `maskera-mcp guard` prompt hook, or `--no-verify` to skip the verification receipt. When a local proxy is running, both `install` and `doctor` also execute a live JSON-RPC `maskera_redact` probe against `/mcp` and verify zero leaked PII.
 
 Or configure stdio manually:
 
@@ -116,10 +131,11 @@ Scoped policies (CLI flags or `/mcp` query parameters):
 ## 3. Harness-agnostic guard / hook
 
 ```bash
-# Block prompts or hook JSON containing PII (exits 2 on match, 0 if clean)
+# Block prompts or hook JSON containing PII (exits 2 on match, 0 if clean).
+# Automatically reuses a running local proxy's warm ONNX model on 127.0.0.1:8787 when available.
 echo '{"prompt":"Ring 070-174 06 58"}' | npx -y @maskera/mcp guard
 
-# Redact any pipe locally
+# Redact any pipe locally (pass --no-proxy to force in-process execution)
 cat klient.txt | npx -y @maskera/mcp guard --redact
 ```
 

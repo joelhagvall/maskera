@@ -161,3 +161,99 @@ export async function runGuard(
     modeUsed,
   }
 }
+
+function isLoopbackUrl(rawUrl: string): string | null {
+  try {
+    const parsed = new URL(rawUrl)
+    if (parsed.protocol !== "http:") return null
+    const host = parsed.hostname.toLowerCase()
+    if (host !== "127.0.0.1" && host !== "localhost" && host !== "::1" && host !== "[::1]") {
+      return null
+    }
+    return parsed.origin
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Sends a `guard` check to an already-running local loopback Maskera proxy
+ * (`POST /_maskera/guard`) to reuse its warm ONNX NER model (~5-15ms instead of
+ * cold-loading the 43 MB model per hook call).
+ *
+ * Returns `null` when no compatible local proxy is listening (so callers fall
+ * back transparently to local in-process redaction). Rejects non-loopback URLs
+ * and rethrows explicit proxy `502` fail-closed errors.
+ */
+export async function runGuardViaWarmProxy(
+  rawInput: string,
+  options: {
+    proxyUrl?: string
+    mode?: MaskMode
+    profile?: RedactionProfile
+    customTerms?: readonly string[]
+    preserveJsonStructure?: boolean
+    includeRedacted?: boolean
+    timeoutMs?: number
+  } = {},
+): Promise<GuardResult | null> {
+  const origin = isLoopbackUrl(options.proxyUrl ?? "http://127.0.0.1:8787")
+  if (!origin) return null
+
+  let res: Response
+  try {
+    res = await fetch(`${origin}/_maskera/guard`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-maskera-action": "guard",
+      },
+      body: JSON.stringify({
+        raw: rawInput,
+        mode: options.mode,
+        profile: options.profile,
+        customTerms: options.customTerms,
+        preserveJsonStructure: options.preserveJsonStructure,
+        includeRedacted: options.includeRedacted,
+      }),
+      signal: AbortSignal.timeout(options.timeoutMs ?? 4_000),
+    })
+  } catch {
+    // Proxy not listening (ECONNREFUSED) or timed out; fall back to local engine.
+    return null
+  }
+
+  if (res.status === 404 || res.status === 405) {
+    // Older proxy or another local service on that port; fall back to local engine.
+    return null
+  }
+
+  if (!res.ok) {
+    let message = `Warm proxy guard returned HTTP ${res.status}`
+    try {
+      const errBody = (await res.json()) as { error?: { message?: string } | string }
+      if (typeof errBody.error === "string") message = errBody.error
+      else if (errBody.error?.message) message = errBody.error.message
+    } catch {
+      // Keep status message
+    }
+    throw new Error(message)
+  }
+
+  const data = (await res.json()) as Partial<GuardResult>
+  if (
+    typeof data.blocked !== "boolean" ||
+    typeof data.totalRedactions !== "number" ||
+    !data.counts ||
+    typeof data.counts !== "object"
+  ) {
+    return null
+  }
+  return {
+    blocked: data.blocked,
+    totalRedactions: data.totalRedactions,
+    counts: data.counts,
+    redacted: typeof data.redacted === "string" ? data.redacted : "",
+    modeUsed: data.modeUsed === "rules" ? "rules" : "hybrid",
+  }
+}

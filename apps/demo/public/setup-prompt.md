@@ -6,9 +6,9 @@ Help me set up Maskera (`@maskera/mcp` or the `maskera` npm SDK) so Swedish pers
 
 Ask me (or inspect my current client) which setup fits best:
 
-1. **Local LLM proxy + warm Streamable HTTP MCP (`npx -y @maskera/mcp proxy --root .`)**: Best when text typed straight into the chat and tool results must be masked automatically, or when several clients should share one warm ONNX model and session vault.
-   - Anthropic / Claude Code: `ANTHROPIC_BASE_URL=http://127.0.0.1:8787`
-   - OpenAI / Codex (API key) / Cursor: `OPENAI_BASE_URL=http://127.0.0.1:8787/v1`
+1. **One-command proxy wrapper (`npx -y @maskera/mcp wrap -- claude`) or persistent proxy (`npx -y @maskera/mcp proxy --root . --open`)**: Best when text typed straight into the chat and tool results must be masked automatically, or when several clients should share one warm ONNX model and session vault.
+   - Single terminal: `npx -y @maskera/mcp wrap -- claude` (or `-- codex`, automatically starts a local proxy, verifies 0 leaks, sets `ANTHROPIC_BASE_URL` and `OPENAI_BASE_URL`, and prints a session receipt on exit).
+   - Background service (macOS launchd / Linux systemd --user): `npx -y @maskera/mcp service install --root . --no-raw-restore`.
    - Streamable HTTP MCP on the same process: `http://127.0.0.1:8787/mcp` (add `?no_raw_restore=1` to block raw PII export into chat, `?read_only=1` for read-only access, or `?approval_mode=browser` for browser approvals in `http://127.0.0.1:8787/_maskera`).
 2. **MCP stdio server (`npx -y @maskera/mcp --root . --no-raw-restore`)**: Best when the client cannot change its API base URL (for example Codex signed in with a ChatGPT account) and the agent reads/writes local Swedish files via Maskera tools.
 3. **Hook / shell guard (`npx -y @maskera/mcp guard`)**: Exits `2` on PII (printing label counts only) in hooks or redacts streams with `--redact`.
@@ -16,16 +16,16 @@ Ask me (or inspect my current client) which setup fits best:
 
 ## Step 2: Configure and verify with made-up data
 
-Run the built-in installer or show me the exact command for my client (`claude-code`, `claude-desktop`, `codex`, `cursor`, `opencode`, `t3-code`):
+Run the built-in installer or show me the exact command for my client (`claude-code`, `claude-desktop`, `codex`, `cursor`, `opencode`, `t3-code`). It automatically runs a synthetic Swedish PII roundtrip, probes any running local `/mcp` server, and prints a zero-PII setup receipt (`maskera-setup-receipt/v1`):
 
 ```bash
 npx -y @maskera/mcp install <client> --root . --no-raw-restore
 ```
 
-Then run the local diagnostic self-test before touching any real personal data:
+You can also run `doctor` standalone or save the receipt as JSON with `--receipt <file.json>` (or skip verification during install with `--no-verify`):
 
 ```bash
-npx -y @maskera/mcp doctor --root .
+npx -y @maskera/mcp doctor --root . --receipt ./maskera-receipt.json
 ```
 
 If using the proxy, open `http://127.0.0.1:8787/_maskera` and send a fictional Swedish test prompt (`Skriv ett kort mejl till provnamn.maskera@example.com och bekräfta mötet.`). Confirm `[EPOST_1]` appears in the inspector going upstream and the reply restores the address locally.

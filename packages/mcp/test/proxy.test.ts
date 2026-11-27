@@ -670,4 +670,77 @@ describe("guard (harness-agnostic pre-prompt / pre-tool / pipe check)", () => {
       expect(redacted.stdout).toBe("Pnr [PERSONNUMMER_1]")
     },
   )
+
+  it("serves POST /_maskera/self-test with same-origin guard, zero PII leak, and clean user stats", async () => {
+    const proxy = await startMaskeraProxy({
+      port: 0,
+      defaultMode: "rules",
+    })
+    try {
+      const uiHtml = await (await fetch(proxy.inspectorUrl)).text()
+      expect(uiHtml).toContain("Maskera lokal proxy-inspektör")
+      expect(uiHtml).toContain("Kör självtest")
+      expect(uiHtml).toContain("Kopiera testmening")
+
+      const rejected = await fetch(`${proxy.url}/_maskera/self-test`, { method: "POST" })
+      expect(rejected.status).toBe(403)
+
+      const res = await fetch(`${proxy.url}/_maskera/self-test`, {
+        method: "POST",
+        headers: { "x-maskera-action": "self-test" },
+      })
+      expect(res.status).toBe(200)
+      const bodyText = await res.text()
+      expect(bodyText).not.toContain("19900101-2385")
+      expect(bodyText).not.toContain("provnamn.maskera@example.com")
+      const report = JSON.parse(bodyText) as {
+        schema: string
+        ok: boolean
+        sampleProof: { rawPiiLeaked: boolean; roundtripRestored: boolean }
+        checks: Array<{ name: string; status: string }>
+      }
+      expect(report.schema).toBe("maskera-setup-receipt/v1")
+      expect(report.ok).toBe(true)
+      expect(report.sampleProof.rawPiiLeaked).toBe(false)
+      expect(report.sampleProof.roundtripRestored).toBe(true)
+      expect(report.checks.find((c) => c.name === "mcp-http")?.status).toBe("ok")
+      // Self-test probe must not inflate real client request stats or pollute vault
+      expect(proxy.stats().requests).toBe(0)
+      expect(proxy.vault.list()).toHaveLength(0)
+
+      // POST /_maskera/guard enforces same-origin action header and runs on warm engine
+      const guardRejected = await fetch(`${proxy.url}/_maskera/guard`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ raw: "Pnr 19900101-2385" }),
+      })
+      expect(guardRejected.status).toBe(403)
+
+      const { runGuardViaWarmProxy } = await import("../src/index")
+      // Non-loopback URLs must be rejected safely (return null without sending data)
+      const remoteSkip = await runGuardViaWarmProxy("Pnr 19900101-2385", {
+        proxyUrl: "https://example.com",
+      })
+      expect(remoteSkip).toBeNull()
+
+      const warmBlock = await runGuardViaWarmProxy('{"prompt":"Ring 070-174 06 58"}', {
+        proxyUrl: proxy.url,
+        mode: "rules",
+      })
+      expect(warmBlock).toBeTruthy()
+      expect(warmBlock?.blocked).toBe(true)
+      expect(warmBlock?.counts.TELEFON).toBe(1)
+      expect(warmBlock?.redacted).toBe("")
+
+      const warmRedact = await runGuardViaWarmProxy("Ring 070-174 06 58", {
+        proxyUrl: proxy.url,
+        mode: "rules",
+        includeRedacted: true,
+      })
+      expect(warmRedact?.redacted).toBe("Ring [TELEFON_1]")
+      expect(proxy.vault.list()).toHaveLength(0)
+    } finally {
+      await proxy.close()
+    }
+  })
 })

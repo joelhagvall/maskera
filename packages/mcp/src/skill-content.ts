@@ -19,10 +19,15 @@ Maskera runs 100% locally on-device using deterministic Swedish rules plus the 4
 
 Pick by where the text comes from: **proxy for text typed straight into the chat**, **MCP for files the agent reads with the Maskera tools**. Before the user sends real personal data, verify the setup with made-up data (a fictional address) and confirm a placeholder in the local inspector at \`http://127.0.0.1:8787/_maskera\`, or run \`npx -y @maskera/mcp doctor\`.
 
-1. **Local LLM proxy + warm Streamable HTTP MCP (\`maskera-mcp proxy\`):**
+1. **Local LLM proxy + warm Streamable HTTP MCP (\`maskera-mcp wrap\` / \`proxy\` / \`service\`):**
    Use when no prompt, history or tool output may leave the machine unredacted, or when multiple clients should share one warm ONNX model and session vault.
    \`\`\`bash
-   npx -y @maskera/mcp proxy --root /path/to/workspace
+   # Single-command launch (starts local proxy, verifies 0 leaks, injects env vars, prints session receipt on exit):
+   npx -y @maskera/mcp wrap -- claude
+   # Or run a persistent local proxy (+ Streamable HTTP /mcp + live inspector with self-test button):
+   npx -y @maskera/mcp proxy --root /path/to/workspace --open
+   # Or install as a background service (launchd on macOS, systemd --user on Linux):
+   npx -y @maskera/mcp service install --root /path/to/workspace --no-raw-restore
    # Point any harness or SDK at the loopback proxy:
    ANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude
    OPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex   # API key mode; ChatGPT-login Codex requires HTTPS so use MCP below
@@ -35,7 +40,7 @@ Pick by where the text comes from: **proxy for text typed straight into the chat
    - Fails closed (\`502\`) if local redaction fails. Inspect counts only at \`http://127.0.0.1:8787/_maskera/status\`.
 
 2. **Working with sensitive local Swedish files (MCP stdio or Streamable HTTP):**
-   Install automatically with \`npx -y @maskera/mcp install <client>\` (\`claude-code\`, \`claude-desktop\`, \`codex\`, \`cursor\`, \`opencode\`, \`t3-code\`), or configure manually:
+   Auto-detect or install automatically with \`npx -y @maskera/mcp install [client|all]\` (\`claude-code\`, \`claude-desktop\`, \`codex\`, \`cursor\`, \`opencode\`, \`t3-code\`; pass \`--apply\` to run \`claude\`/\`codex mcp add\`, \`--with-hook\` to install a \`guard\` hook). It verifies local Swedish PII masking (and any running \`/mcp\` server) automatically and prints a zero-PII setup receipt (\`--receipt <file.json>\` to save it, \`--no-verify\` to skip). Or configure manually:
    - Claude Code / Cursor (\`mcpServers\`):
      \`\`\`json
      {

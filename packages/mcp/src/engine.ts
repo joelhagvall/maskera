@@ -20,6 +20,13 @@ import {
 
 export type MaskMode = "auto" | "rules"
 
+export interface ModelLoadEvent {
+  phase: "loading" | "ready" | "error"
+  model: string
+  elapsedMs?: number
+  error?: string
+}
+
 export interface EngineOptions {
   /** Default mode when a tool call omits `mode`. Default: `"auto"` (hybrid NER + rules). */
   defaultMode?: MaskMode
@@ -27,6 +34,8 @@ export interface EngineOptions {
   recognizer?: NerRecognizer
   /** Forwarded to `createNerRecognizer` when no custom recognizer is passed. */
   nerOptions?: NerOptions
+  /** Optional lifecycle hook fired when the local ONNX model starts/finishes loading. */
+  onModelStatus?: (event: ModelLoadEvent) => void
   /**
    * Max entries in the in-memory span cache (stores only SHA-256 digest keys
    * and `{ start, end, label }` offsets, never raw PII text). Default: `512`.
@@ -172,12 +181,35 @@ export function createMaskeraEngine(options: EngineOptions = {}): MaskeraEngine 
       // Preserve q4 default when a caller supplies a custom localModelPath that
       // may only bundle model_q4.onnx unless dtype is specified explicitly.
       const dtype = options.nerOptions?.dtype ?? (options.nerOptions?.localModelPath ? "q4" : "q8")
+      const loadStartedAt = Date.now()
+      options.onModelStatus?.({ phase: "loading", model })
       recognizer = createNerRecognizer({
         ...options.nerOptions,
         model,
         revision,
         dtype,
       })
+      void recognizer.ready.then(
+        () => {
+          nerLoaded = true
+          nerError = null
+          options.onModelStatus?.({
+            phase: "ready",
+            model,
+            elapsedMs: Date.now() - loadStartedAt,
+          })
+        },
+        (err) => {
+          const message = err instanceof Error ? err.message : String(err)
+          nerError = message
+          options.onModelStatus?.({
+            phase: "error",
+            model,
+            elapsedMs: Date.now() - loadStartedAt,
+            error: message,
+          })
+        },
+      )
     }
     return recognizer
   }
@@ -359,5 +391,45 @@ export function createMaskeraEngine(options: EngineOptions = {}): MaskeraEngine 
         cacheMisses,
       }
     },
+  }
+}
+
+/**
+ * Returns an `onModelStatus` handler that prints a concise progress line on
+ * stderr only when model loading takes longer than `delayMs` (default 350ms),
+ * keeping warm/cached runs quiet while reassuring users during the initial
+ * 43 MB ONNX download.
+ */
+export function createModelProgressLogger(
+  write: (line: string) => void = (line) => process.stderr.write(`${line}\n`),
+  delayMs = 350,
+): (event: ModelLoadEvent) => void {
+  let timer: ReturnType<typeof setTimeout> | null = null
+  let announcedLoading = false
+
+  return (event) => {
+    if (event.phase === "loading") {
+      if (timer) clearTimeout(timer)
+      announcedLoading = false
+      timer = setTimeout(() => {
+        announcedLoading = true
+        write(
+          `[maskera] Loading Swedish ONNX model (${event.model}, ~43 MB on first run, cached locally)...`,
+        )
+      }, delayMs)
+      timer.unref?.()
+      return
+    }
+    if (timer) {
+      clearTimeout(timer)
+      timer = null
+    }
+    if (event.phase === "ready" && announcedLoading) {
+      write(`[maskera] Swedish ONNX model ready (${event.elapsedMs ?? 0}ms).`)
+      announcedLoading = false
+    } else if (event.phase === "error" && announcedLoading) {
+      write(`[maskera] Swedish ONNX model load failed: ${event.error ?? "unknown error"}`)
+      announcedLoading = false
+    }
   }
 }

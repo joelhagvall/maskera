@@ -868,6 +868,7 @@ try {
       assert.equal(searchText.includes("070-174 06 58"), false, "Phone leaked from HTTP MCP search")
       assert.ok(searchText.includes("[PERSONNUMMER_1]"))
 
+      const doctorReceiptPath = join(workDir, "doctor-receipt.json")
       const doc = await runCli([
         "doctor",
         "--rules-only",
@@ -875,19 +876,34 @@ try {
         root,
         "--proxy-url",
         proxy.url,
+        "--receipt",
+        doctorReceiptPath,
         "--json",
       ])
       assert.equal(doc.code, 0, `doctor failed: ${doc.stderr}`)
       const report = JSON.parse(doc.stdout)
+      assert.equal(report.schema, "maskera-setup-receipt/v1")
       assert.equal(report.ok, true)
+      assert.equal(report.sampleProof?.rawPiiLeaked, false)
+      assert.equal(report.sampleProof?.roundtripRestored, true)
       assert.equal(report.checks.find((c) => c.name === "proxy")?.status, "ok")
+      assert.equal(report.checks.find((c) => c.name === "mcp-http")?.status, "ok")
+      const doctorReceiptDisk = await readFile(doctorReceiptPath, "utf8")
+      assert.equal(doctorReceiptDisk.includes("19900101-2385"), false, "receipt leaked raw PII")
+      assert.equal(JSON.parse(doctorReceiptDisk).schema, "maskera-setup-receipt/v1")
 
+      const installReceiptPath = join(workDir, "install-receipt.json")
       const inst = await runCli([
         "install",
         "cursor",
+        "--rules-only",
         "--root",
         root,
         "--no-raw-restore",
+        "--proxy-url",
+        proxy.url,
+        "--receipt",
+        installReceiptPath,
         "--dry-run",
         "--json",
       ])
@@ -895,6 +911,96 @@ try {
       const instData = JSON.parse(inst.stdout)
       assert.equal(instData.written, false)
       assert.ok(instData.snippet.includes("--no-raw-restore"))
+      assert.equal(instData.receipt?.schema, "maskera-setup-receipt/v1")
+      assert.equal(instData.receipt?.ok, true)
+      assert.equal(instData.receipt?.sampleProof?.rawPiiLeaked, false)
+      assert.equal(instData.receipt?.checks.find((c) => c.name === "mcp-http")?.status, "ok")
+      const installReceiptDisk = await readFile(installReceiptPath, "utf8")
+      assert.equal(
+        installReceiptDisk.includes("19900101-2385"),
+        false,
+        "install receipt leaked PII",
+      )
+
+      const instNoVerify = await runCli([
+        "install",
+        "cursor",
+        "--root",
+        root,
+        "--dry-run",
+        "--no-verify",
+        "--json",
+      ])
+      assert.equal(instNoVerify.code, 0, `install --no-verify failed: ${instNoVerify.stderr}`)
+      assert.equal(JSON.parse(instNoVerify.stdout).receipt, undefined)
+
+      const hookCfg = join(workDir, "hook-cursor-mcp.json")
+      const instHook = await runCli([
+        "install",
+        "cursor",
+        "--rules-only",
+        "--root",
+        root,
+        "--config",
+        hookCfg,
+        "--with-hook",
+        "--no-verify",
+        "--dry-run",
+        "--json",
+      ])
+      assert.equal(instHook.code, 0, `install --with-hook failed: ${instHook.stderr}`)
+      assert.ok(JSON.parse(instHook.stdout).hookPath?.endsWith("hooks.json"))
+
+      const wrapReceiptPath = join(workDir, "wrap-receipt.json")
+      const wrapped = await runCli([
+        "wrap",
+        "--rules-only",
+        "--root",
+        root,
+        "--receipt",
+        wrapReceiptPath,
+        "--",
+        process.execPath,
+        "-e",
+        "if (!process.env.ANTHROPIC_BASE_URL || !process.env.OPENAI_BASE_URL?.endsWith('/v1')) process.exit(9); console.log('wrapped-ok')",
+      ])
+      assert.equal(wrapped.code, 0, `wrap failed: ${wrapped.stderr}`)
+      assert.ok(wrapped.stdout.includes("wrapped-ok"))
+      assert.ok(wrapped.stderr.includes("0 leaks verified"))
+      assert.ok(wrapped.stderr.includes("session done:"))
+      const wrapReceiptDisk = await readFile(wrapReceiptPath, "utf8")
+      assert.equal(wrapReceiptDisk.includes("19900101-2385"), false, "wrap receipt leaked PII")
+      assert.equal(JSON.parse(wrapReceiptDisk).schema, "maskera-wrap-receipt/v1")
+
+      const svcDry = await runCli([
+        "service",
+        "install",
+        "--rules-only",
+        "--root",
+        root,
+        "--dry-run",
+        "--json",
+      ])
+      assert.equal(svcDry.code, 0, `service dry-run failed: ${svcDry.stderr}`)
+      const svcData = JSON.parse(svcDry.stdout)
+      assert.equal(svcData.action, "install")
+      assert.ok(svcData.manager === "launchd" || svcData.manager === "systemd")
+
+      // Warm guard through running proxy (verifies loopback POST /_maskera/guard fast path)
+      const warmGuardBlock = await runCli(
+        ["guard", "--rules-only", "--proxy-url", proxy.url],
+        JSON.stringify({ prompt: "Pnr 19900101-2385" }),
+      )
+      assert.equal(warmGuardBlock.code, 2, `warm guard should block: ${warmGuardBlock.stderr}`)
+      assert.equal(warmGuardBlock.stderr.includes("19900101-2385"), false)
+      assert.ok(warmGuardBlock.stderr.includes("PERSONNUMMER=1"))
+
+      const warmGuardRedact = await runCli(
+        ["guard", "--rules-only", "--redact", "--proxy-url", proxy.url],
+        "Ring 070-174 06 58",
+      )
+      assert.equal(warmGuardRedact.code, 0, `warm guard --redact failed: ${warmGuardRedact.stderr}`)
+      assert.equal(warmGuardRedact.stdout, "Ring [TELEFON_1]")
     } finally {
       await proxy.stop()
     }

@@ -224,10 +224,54 @@ export function renderInspectorHtml(info: {
     font-size: 13.5px;
   }
   .empty code {
-    display: block; margin: 10px auto 0; max-width: 600px; padding: 10px 12px;
+    display: block; margin: 10px auto 0; max-width: 640px; padding: 10px 12px;
     background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 6px;
     font: 12px/1.6 var(--mono); color: var(--fg); text-align: left; white-space: pre-wrap;
   }
+  .empty-title { margin: 0 0 6px; font-size: 14px; font-weight: 600; color: var(--fg); }
+  .sample-row {
+    margin: 12px auto 0;
+    max-width: 640px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-subtle);
+    text-align: left;
+  }
+  .sample-text { font-size: 12.5px; color: var(--fg); flex: 1 1 320px; }
+  .receipt-box {
+    margin: 0 0 22px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    background: var(--bg-subtle);
+  }
+  .receipt-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .receipt-head h2 { margin: 0; font-size: 14px; }
+  .receipt-checks {
+    list-style: none;
+    margin: 0 0 10px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12.5px;
+  }
+  .receipt-checks li { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .receipt-tag { font-family: var(--mono); font-size: 11px; color: var(--muted); min-width: 48px; }
+  .receipt-tag.fail { color: var(--err); font-weight: 600; }
   .list { display: flex; flex-direction: column; gap: 8px; }
   details.item {
     border: 1px solid var(--border);
@@ -316,6 +360,7 @@ export function renderInspectorHtml(info: {
       <p class="sub">Proxy: ${safeUrl} · MCP: ${safeMcpUrl} · läge: ${info.defaultMode} · återställning: ${info.restoreResponses ? "på" : "av"} · enbart i lokalt RAM</p>
     </div>
     <div class="actions">
+      <button id="selftest-btn" type="button" class="primary">Kör självtest</button>
       <button id="reveal-btn" type="button">Visa originalvärden lokalt</button>
       <button id="clear-btn" type="button">Rensa minne</button>
     </div>
@@ -328,6 +373,7 @@ export function renderInspectorHtml(info: {
     <div class="stat"><div class="stat-k">AI-modell</div><div class="stat-v" id="st-model">Redo</div></div>
   </section>
 
+  <div id="receipt-root"></div>
   <div id="approvals-root"></div>
   <div id="feed"></div>
   <div id="vault-root"></div>
@@ -335,16 +381,20 @@ export function renderInspectorHtml(info: {
 <script>
 (() => {
   const feedEl = document.getElementById("feed");
+  const receiptRoot = document.getElementById("receipt-root");
   const approvalsRoot = document.getElementById("approvals-root");
   const vaultRoot = document.getElementById("vault-root");
+  const selftestBtn = document.getElementById("selftest-btn");
   const revealBtn = document.getElementById("reveal-btn");
   const clearBtn = document.getElementById("clear-btn");
   const stReq = document.getElementById("st-req");
   const stRed = document.getElementById("st-red");
   const stUniq = document.getElementById("st-uniq");
   const stModel = document.getElementById("st-model");
+  const SAMPLE_PROMPT = "Skriv ett kort mejl till Anna Lindqvist (provnamn.maskera@example.com, 19900101-2385) och bekräfta mötet.";
   let items = [];
   let approvals = [];
+  let lastReceipt = null;
   let reveal = false;
   let userToggled = false;
   const openIds = new Set();
@@ -352,6 +402,63 @@ export function renderInspectorHtml(info: {
 
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
   const highlightTokens = (s) => esc(s).replace(/\\[[A-ZÅÄÖ][A-ZÅÄÖ0-9_]*_\\d+\\]/g, (m) => '<span class="tok">' + m + "</span>");
+
+  function renderReceipt() {
+    if (!lastReceipt) {
+      receiptRoot.innerHTML = "";
+      return;
+    }
+    const r = lastReceipt;
+    const checksHtml = (r.checks || []).map((c) => {
+      const cls = c.status === "fail" ? " fail" : "";
+      return '<li><span class="receipt-tag' + cls + '">[' + esc(c.status) + ']</span><span><strong>' + esc(c.name) + ':</strong> ' + esc(c.detail) + '</span></li>';
+    }).join("");
+    const proofHtml = r.sampleProof && !r.sampleProof.rawPiiLeaked
+      ? '<p class="body-label">Verifierat maskerat utdata (0 läckor, återställning klar):</p><pre class="preview">' + highlightTokens(r.sampleProof.redactedPreview) + '</pre>'
+      : "";
+    receiptRoot.innerHTML =
+      '<section class="receipt-box"><div class="receipt-head"><h2>Setup-kvitto (' + (r.ok ? "OK" : "FEL") + ' · v' + esc(r.version) + ' · ' + esc(r.sampleProof?.modeUsed || r.mode) + ')</h2>' +
+      '<div class="actions"><button id="download-receipt-btn" type="button">Ladda ner kvitto (.json)</button><button id="close-receipt-btn" type="button">Stäng</button></div></div>' +
+      '<ul class="receipt-checks">' + checksHtml + '</ul>' + proofHtml + '</section>';
+    const dlBtn = document.getElementById("download-receipt-btn");
+    if (dlBtn) {
+      dlBtn.addEventListener("click", () => {
+        const blob = new Blob([JSON.stringify(r, null, 2) + "\\n"], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "maskera-setup-receipt.json";
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      });
+    }
+    const closeBtn = document.getElementById("close-receipt-btn");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => {
+        lastReceipt = null;
+        renderReceipt();
+      });
+    }
+  }
+
+  selftestBtn.addEventListener("click", async () => {
+    selftestBtn.disabled = true;
+    const prevText = selftestBtn.textContent;
+    selftestBtn.textContent = "Kör självtest...";
+    try {
+      const r = await fetch("/_maskera/self-test", {
+        method: "POST",
+        headers: { "x-maskera-action": "self-test" },
+      });
+      lastReceipt = await r.json();
+      renderReceipt();
+      await refreshStatus();
+    } catch (err) {
+      receiptRoot.innerHTML = '<section class="receipt-box"><h2>Självtest misslyckades</h2><p>' + esc(err) + '</p></section>';
+    } finally {
+      selftestBtn.disabled = false;
+      selftestBtn.textContent = prevText;
+    }
+  });
 
   async function refreshStatus() {
     try {
@@ -412,7 +519,21 @@ export function renderInspectorHtml(info: {
 
   function render() {
     if (!items.length) {
-      feedEl.innerHTML = '<div class="empty">Inga anrop ännu. Peka din agent mot proxyn eller Streamable HTTP MCP för att se maskeringen i realtid:<code>ANTHROPIC_BASE_URL=${safeUrl} claude\\nOPENAI_BASE_URL=${safeUrl}/v1 codex\\nclaude mcp add --transport http maskera ${safeMcpUrl}</code></div>';
+      feedEl.innerHTML =
+        '<div class="empty"><p class="empty-title">Väntar på första riktiga anropet från din AI-klient.</p>' +
+        'Klicka på <strong>Kör självtest</strong> ovan för ett omedelbart kvitto, eller klistra in testmeningen i din klient och se platshållarna dyka upp här:' +
+        '<div class="sample-row"><span class="sample-text">' + esc(SAMPLE_PROMPT) + '</span><button id="copy-sample-btn" type="button">Kopiera testmening</button></div>' +
+        '<code>npx -y @maskera/mcp wrap -- claude\\nANTHROPIC_BASE_URL=${safeUrl} claude\\nOPENAI_BASE_URL=${safeUrl}/v1 codex\\nclaude mcp add --transport http maskera ${safeMcpUrl}</code></div>';
+      const copyBtn = document.getElementById("copy-sample-btn");
+      if (copyBtn) {
+        copyBtn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(SAMPLE_PROMPT);
+            copyBtn.textContent = "Kopierad";
+            setTimeout(() => { copyBtn.textContent = "Kopiera testmening"; }, 1800);
+          } catch {}
+        });
+      }
       return;
     }
     if (seenIds.size === 0 && items[0]?.id) {

@@ -4,11 +4,13 @@ import { createInterface } from "node:readline"
 import { format } from "node:util"
 import type { RedactionProfile } from "maskera"
 import type { ApprovalMode } from "./approvals"
-import { formatDoctorReport, runDoctor } from "./doctor"
-import { createMaskeraEngine, type MaskMode } from "./engine"
-import { runGuard } from "./guard"
+import { formatDoctorReport, runDoctor, writeDoctorReceipt } from "./doctor"
+import { createMaskeraEngine, createModelProgressLogger, type MaskMode } from "./engine"
+import { runGuard, runGuardViaWarmProxy } from "./guard"
 import {
+  detectInstalledClients,
   type InstallClient,
+  type InstallResult,
   type InstallTransport,
   isInstallClient,
   runInstall,
@@ -22,8 +24,10 @@ import {
   SERVER_NAME,
   SERVER_VERSION,
 } from "./server"
+import { runService, type ServiceAction } from "./service"
+import { openUrlInBrowser, runWrap } from "./wrap"
 
-type Subcommand = "mcp" | "proxy" | "guard" | "install" | "doctor"
+type Subcommand = "mcp" | "proxy" | "wrap" | "guard" | "install" | "doctor" | "service"
 
 interface ParsedCli {
   command: Subcommand
@@ -36,25 +40,38 @@ interface ParsedCli {
   approvalMode: ApprovalMode
   help: boolean
   version: boolean
-  // proxy flags
+  // proxy & wrap flags
   host: string
   port: number
+  portExplicit: boolean
   upstream?: string
   anthropicUpstream?: string
   openaiUpstream?: string
   restoreResponses: boolean
   auditLogPath?: string
+  openInspector: boolean
+  // wrap child command
+  wrapCommand?: string
+  wrapArgs: string[]
   // guard flags
   redact: boolean
+  noProxy: boolean
   file?: string
   // install flags
-  client?: InstallClient
+  client?: InstallClient | "all"
   transport: InstallTransport
   mcpUrl?: string
   configPath?: string
+  apply: boolean
+  project: boolean
+  withHook: boolean
   dryRun: boolean
-  // doctor flags
+  verify: boolean
+  // service flags
+  serviceAction?: ServiceAction
+  // doctor / receipt flags
   proxyUrl?: string
+  receiptPath?: string
   json: boolean
 }
 
@@ -64,15 +81,21 @@ function parseApprovalMode(raw: string): ApprovalMode {
   throw new Error(`Invalid --approval-mode "${raw}": expected "automatic", "browser", or "native".`)
 }
 
+function isServiceAction(value: string): value is ServiceAction {
+  return value === "install" || value === "status" || value === "uninstall"
+}
+
 function parseArgs(argv: readonly string[]): ParsedCli {
   let startIndex = 0
   let command: Subcommand = "mcp"
   if (
     argv[0] === "proxy" ||
+    argv[0] === "wrap" ||
     argv[0] === "guard" ||
     argv[0] === "mcp" ||
     argv[0] === "install" ||
-    argv[0] === "doctor"
+    argv[0] === "doctor" ||
+    argv[0] === "service"
   ) {
     command = argv[0]
     startIndex = 1
@@ -91,19 +114,30 @@ function parseArgs(argv: readonly string[]): ParsedCli {
   let version = false
   let host = process.env.MASKERA_PROXY_HOST || "127.0.0.1"
   let port = Number(process.env.MASKERA_PROXY_PORT || "8787")
+  let portExplicit = Boolean(process.env.MASKERA_PROXY_PORT)
   let upstream = process.env.MASKERA_PROXY_UPSTREAM || undefined
   let anthropicUpstream = process.env.MASKERA_ANTHROPIC_UPSTREAM || undefined
   let openaiUpstream = process.env.MASKERA_OPENAI_UPSTREAM || undefined
   let restoreResponses = true
   let auditLogPath = process.env.MASKERA_AUDIT_LOG || undefined
+  let openInspector = false
+  let wrapCommand: string | undefined
+  const wrapArgs: string[] = []
   let redact = false
+  let noProxy = process.env.MASKERA_GUARD_NO_PROXY === "1"
   let file: string | undefined
-  let client: InstallClient | undefined
+  let client: InstallClient | "all" | undefined
   let transport: InstallTransport = "stdio"
   let mcpUrl: string | undefined
   let configPath: string | undefined
+  let apply = false
+  let project = false
+  let withHook = false
   let dryRun = false
+  let verify = true
+  let serviceAction: ServiceAction | undefined
   let proxyUrl: string | undefined
+  let receiptPath: string | undefined
   let json = false
 
   const envRoots = process.env.MASKERA_MCP_ROOTS
@@ -135,6 +169,20 @@ function parseArgs(argv: readonly string[]): ParsedCli {
 
   for (let i = startIndex; i < argv.length; i++) {
     const arg = argv[i] ?? ""
+
+    if (command === "wrap") {
+      if (arg === "--") {
+        wrapCommand = argv[i + 1]
+        wrapArgs.push(...argv.slice(i + 2))
+        break
+      }
+      if (!arg.startsWith("-")) {
+        wrapCommand = arg
+        wrapArgs.push(...argv.slice(i + 1))
+        break
+      }
+    }
+
     const eq = arg.indexOf("=")
     const flag = eq >= 0 ? arg.slice(0, eq) : arg
 
@@ -154,10 +202,22 @@ function parseArgs(argv: readonly string[]): ParsedCli {
       approvalMode = parseApprovalMode(value)
     } else if (flag === "--no-restore") {
       restoreResponses = false
+    } else if (flag === "--open") {
+      openInspector = true
     } else if (flag === "--redact") {
       redact = true
+    } else if (flag === "--no-proxy") {
+      noProxy = true
+    } else if (flag === "--apply") {
+      apply = true
+    } else if (flag === "--project") {
+      project = true
+    } else if (flag === "--with-hook") {
+      withHook = true
     } else if (flag === "--dry-run") {
       dryRun = true
+    } else if (flag === "--no-verify") {
+      verify = false
     } else if (flag === "--json") {
       json = true
     } else if (flag === "--root") {
@@ -176,6 +236,7 @@ function parseArgs(argv: readonly string[]): ParsedCli {
         throw new Error(`Invalid --port "${value}": expected integer 0..65535.`)
       }
       port = parsedPort
+      portExplicit = true
     } else if (flag === "--upstream") {
       const { value, nextIndex } = takeValue(flag, arg, i)
       i = nextIndex
@@ -226,13 +287,25 @@ function parseArgs(argv: readonly string[]): ParsedCli {
       const { value, nextIndex } = takeValue(flag, arg, i)
       i = nextIndex
       proxyUrl = value.trim()
+    } else if (flag === "--receipt") {
+      const { value, nextIndex } = takeValue(flag, arg, i, true)
+      i = nextIndex
+      receiptPath = value
     } else if (command === "install" && !arg.startsWith("-") && !client) {
-      if (!isInstallClient(arg)) {
+      if (arg === "all") {
+        client = "all"
+      } else if (isInstallClient(arg)) {
+        client = arg
+      } else {
         throw new Error(
-          `Unknown client "${arg}". Expected one of: ${SUPPORTED_CLIENTS.join(", ")}.`,
+          `Unknown client "${arg}". Expected one of: ${SUPPORTED_CLIENTS.join(", ")}, or all.`,
         )
       }
-      client = arg
+    } else if (command === "service" && !arg.startsWith("-") && !serviceAction) {
+      if (!isServiceAction(arg)) {
+        throw new Error(`Unknown service action "${arg}". Expected: install, status, or uninstall.`)
+      }
+      serviceAction = arg
     } else {
       throw new Error(`Unknown option "${arg}". Run with --help for usage.`)
     }
@@ -256,19 +329,30 @@ function parseArgs(argv: readonly string[]): ParsedCli {
     version,
     host,
     port,
+    portExplicit,
     upstream,
     anthropicUpstream,
     openaiUpstream,
     restoreResponses,
     auditLogPath,
+    openInspector,
+    wrapCommand,
+    wrapArgs,
     redact,
+    noProxy,
     file,
     client,
     transport,
     mcpUrl,
     configPath,
+    apply,
+    project,
+    withHook,
     dryRun,
+    verify,
+    serviceAction,
     proxyUrl,
+    receiptPath,
     json,
   }
 }
@@ -277,21 +361,25 @@ function printHelp(): void {
   process.stdout.write(
     [
       `${SERVER_NAME} ${SERVER_VERSION}`,
-      "Local Swedish PII redaction for any AI agent: MCP server (stdio + Streamable HTTP), LLM proxy, hook guard, installer, and doctor.",
+      "Local Swedish PII redaction for any AI agent: MCP server (stdio + Streamable HTTP), LLM proxy, wrap launcher, hook guard, installer, doctor, and background service.",
       "",
       "Usage:",
-      "  maskera-mcp [mcp]            [--root <dir>] [--no-raw-restore] [--read-only] [--approval-mode automatic|native] [--rules-only]",
-      "  maskera-mcp proxy            [--port 8787] [--host 127.0.0.1] [--root <dir>] [--upstream <url>] [--audit-log <file.jsonl>] [--no-raw-restore] [--read-only] [--approval-mode automatic|browser] [--rules-only] [--no-restore]",
-      "  maskera-mcp guard            [--redact] [--file <path>] [--rules-only]",
-      `  maskera-mcp install <client> [--transport stdio|http] [--url <http://127.0.0.1:8787/mcp>] [--root <dir>] [--no-raw-restore] [--read-only] [--config <path>] [--dry-run]`,
-      "  maskera-mcp doctor           [--root <dir>] [--proxy-url <url>] [--rules-only] [--json]",
+      "  maskera-mcp [mcp]              [--root <dir>] [--no-raw-restore] [--read-only] [--approval-mode automatic|native] [--rules-only]",
+      "  maskera-mcp proxy              [--port 8787] [--host 127.0.0.1] [--root <dir>] [--open] [--upstream <url>] [--audit-log <file.jsonl>] [--no-raw-restore] [--read-only] [--approval-mode automatic|browser] [--rules-only] [--no-restore]",
+      "  maskera-mcp wrap [flags] -- <cmd> [args...]   Start local proxy, verify, inject ANTHROPIC_BASE_URL/OPENAI_BASE_URL, and run <cmd>",
+      "  maskera-mcp guard              [--redact] [--file <path>] [--proxy-url <url>] [--no-proxy] [--rules-only]",
+      `  maskera-mcp install [client|all] [--transport stdio|http] [--url <http://127.0.0.1:8787/mcp>] [--root <dir>] [--apply] [--project] [--with-hook] [--no-raw-restore] [--read-only] [--config <path>] [--receipt <file.json>] [--no-verify] [--dry-run]`,
+      "  maskera-mcp doctor             [--root <dir>] [--proxy-url <url>] [--receipt <file.json>] [--rules-only] [--json]",
+      "  maskera-mcp service <install|status|uninstall> [--port 8787] [--root <dir>] [--no-raw-restore] [--rules-only] [--dry-run] [--json]",
       "",
       "Subcommands:",
       "  mcp       (default) Start MCP stdio server (read/write/list/search files, redact, restore, prompts, resources)",
       "  proxy     Start local Anthropic/OpenAI HTTP reverse proxy + Streamable HTTP /mcp + live inspector",
+      "  wrap      One-command launcher: starts ephemeral local proxy, verifies 0 leaks, runs any CLI with proxy env vars, prints session receipt on exit",
       "  guard     Check stdin/file/hook JSON for PII (exits 2 if PII found, or outputs redacted text with --redact)",
-      `  install   Configure an MCP client (${SUPPORTED_CLIENTS.join(", ")})`,
-      "  doctor    Verify Node runtime, workspace roots, local Swedish PII roundtrip, and running proxy",
+      `  install   Auto-detect or configure an MCP client (${SUPPORTED_CLIENTS.join(", ")}, or all) + optional guard hook (--with-hook) + setup receipt`,
+      "  doctor    Verify Node runtime, workspace roots, local Swedish PII roundtrip, and running proxy + /mcp",
+      "  service   Install, inspect, or remove a local launchd (macOS) or systemd --user (Linux) background proxy service",
       "",
       "Common options:",
       "  --rules-only            Deterministic Swedish rules only (no ONNX model load)",
@@ -300,6 +388,7 @@ function printHelp(): void {
       "  --no-raw-restore        Block maskera_restore and include_map=true (allow maskera_write_file only)",
       "  --read-only             Hide and block maskera_write_file and maskera_clear_session",
       "  --approval-mode <m>     Raw PII export gate: 'automatic' (default), 'browser', or 'native'",
+      "  --open                  Open local live inspector (/_maskera) in the browser (proxy/wrap)",
       "  -v, --version           Print version",
       "  -h, --help              Print this help",
       "",
@@ -320,8 +409,10 @@ function printHelp(): void {
 }
 
 function buildEngine(args: ParsedCli) {
+  const showProgress = args.command !== "mcp" && !args.json
   return createMaskeraEngine({
     defaultMode: args.defaultMode,
+    onModelStatus: showProgress ? createModelProgressLogger() : undefined,
     nerOptions: {
       localModelPath: process.env.MASKERA_MODEL_PATH || undefined,
       model: process.env.MASKERA_MODEL_ID || undefined,
@@ -345,6 +436,39 @@ async function readStdinAll(): Promise<string> {
   return Buffer.concat(chunks).toString("utf8")
 }
 
+function formatSingleInstallHuman(installed: InstallResult): string {
+  const lines: string[] = []
+  if (installed.applied && installed.command) {
+    lines.push(`Registered Maskera in ${installed.client} (${installed.transport}):`)
+    lines.push(`  ${installed.command}`)
+    if (installed.applyOutput) lines.push(`  ${installed.applyOutput}`)
+  } else if (installed.written && installed.configPath) {
+    lines.push(`Updated ${installed.configPath} for ${installed.client} (${installed.transport}).`)
+  } else if (installed.command) {
+    lines.push(
+      `Run this command for ${installed.client} (or pass --apply to run it automatically):`,
+    )
+    lines.push("")
+    lines.push(`  ${installed.command}`)
+  } else if (installed.configPath) {
+    lines.push(`Dry run for ${installed.client} (${installed.configPath}):`)
+    lines.push("")
+    lines.push(installed.snippet.trimEnd())
+  } else {
+    lines.push(`Add this to ${installed.client}:`)
+    lines.push("")
+    lines.push(installed.snippet.trimEnd())
+  }
+  if (installed.hookPath) {
+    lines.push(
+      installed.hookWritten
+        ? `Installed PII guard hook in ${installed.hookPath}.`
+        : `Dry run: would install PII guard hook in ${installed.hookPath}.`,
+    )
+  }
+  return `${lines.join("\n")}\n`
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2))
 
@@ -358,49 +482,8 @@ async function main(): Promise<void> {
     return
   }
 
-  if (args.command === "install") {
-    if (!args.client) {
-      throw new Error(
-        `Missing client name. Usage: maskera-mcp install <${SUPPORTED_CLIENTS.join("|")}>`,
-      )
-    }
-    const installed = await runInstall({
-      client: args.client,
-      transport: args.transport,
-      mcpUrl: args.mcpUrl,
-      roots: args.roots,
-      noRawRestore: !args.allowRawRestore,
-      readOnly: args.readOnly,
-      approvalMode: args.approvalMode,
-      rulesOnly: args.defaultMode === "rules",
-      profile: args.profile,
-      customTerms: args.customTerms,
-      configPath: args.configPath,
-      dryRun: args.dryRun,
-    })
-    if (args.json) {
-      process.stdout.write(`${JSON.stringify(installed, null, 2)}\n`)
-      return
-    }
-    if (installed.written && installed.configPath) {
-      process.stdout.write(
-        `Updated ${installed.configPath} for ${installed.client} (${installed.transport}).\n`,
-      )
-    } else if (installed.command) {
-      process.stdout.write(`Run this command for ${installed.client}:\n\n  ${installed.command}\n`)
-    } else if (installed.configPath) {
-      process.stdout.write(
-        `Dry run for ${installed.client} (${installed.configPath}):\n\n${installed.snippet}`,
-      )
-    } else {
-      process.stdout.write(`Add this to ${installed.client}:\n\n${installed.snippet}`)
-    }
-    process.stdout.write(`\nVerify: ${installed.verifyStep}\n`)
-    return
-  }
-
   // Route third-party console output (Transformers.js / ONNX warnings) to
-  // stderr so stdout stays clean for MCP JSON-RPC, doctor --json, and guard --redact.
+  // stderr so stdout stays clean for MCP JSON-RPC, install/doctor --json, and guard --redact.
   const writeStderr = (...items: unknown[]) => {
     process.stderr.write(`${format(...items)}\n`)
   }
@@ -409,7 +492,253 @@ async function main(): Promise<void> {
   console.debug = writeStderr
   console.warn = writeStderr
 
+  if (args.command === "service") {
+    const action: ServiceAction = args.serviceAction ?? "status"
+    const res = await runService({
+      action,
+      host: args.host,
+      port: args.port,
+      roots: args.roots,
+      rulesOnly: args.defaultMode === "rules",
+      noRawRestore: !args.allowRawRestore,
+      readOnly: args.readOnly,
+      approvalMode: args.approvalMode,
+      profile: args.profile,
+      customTerms: args.customTerms,
+      auditLogPath: args.auditLogPath,
+      dryRun: args.dryRun,
+    })
+    if (args.json) {
+      process.stdout.write(`${JSON.stringify(res, null, 2)}\n`)
+    } else {
+      process.stdout.write(`${res.detail}\n`)
+      if (args.dryRun && res.snippet) {
+        process.stdout.write(`\n${res.snippet}`)
+      } else if (res.action === "install" && res.installed) {
+        process.stdout.write(
+          `  Inspector:           ${res.inspectorUrl}\n  Streamable HTTP MCP: ${res.mcpUrl}\n`,
+        )
+      }
+    }
+    if (res.manager === "unsupported" && action !== "status") process.exit(1)
+    return
+  }
+
+  if (args.command === "install") {
+    let targets: InstallClient[] = []
+    if (!args.client) {
+      const detected = await detectInstalledClients()
+      if (detected.length === 1 && detected[0]) {
+        targets = [detected[0]]
+      } else if (detected.length > 1) {
+        if (args.json) {
+          process.stdout.write(`${JSON.stringify({ detected }, null, 2)}\n`)
+          return
+        }
+        process.stdout.write(
+          [
+            `Detected clients: ${detected.join(", ")}`,
+            "",
+            "Run install for one client, or pass 'all' to configure all detected clients:",
+            ...detected.map(
+              (c) =>
+                `  npx -y @maskera/mcp install ${c} --root . --no-raw-restore${c === "claude-code" || c === "codex" ? " --apply" : ""}${c === "claude-code" || c === "cursor" ? " --with-hook" : ""}`,
+            ),
+            "  npx -y @maskera/mcp install all --root . --no-raw-restore",
+            "",
+          ].join("\n"),
+        )
+        return
+      } else {
+        throw new Error(
+          `No supported AI client detected automatically. Specify one explicitly: maskera-mcp install <${SUPPORTED_CLIENTS.join("|")}>`,
+        )
+      }
+    } else if (args.client === "all") {
+      const detected = await detectInstalledClients()
+      if (detected.length === 0) {
+        throw new Error(
+          `No supported AI client detected for "install all". Specify one explicitly: maskera-mcp install <${SUPPORTED_CLIENTS.join("|")}>`,
+        )
+      }
+      targets = detected
+    } else {
+      targets = [args.client]
+    }
+
+    const results: InstallResult[] = []
+    for (const targetClient of targets) {
+      results.push(
+        await runInstall({
+          client: targetClient,
+          transport: args.transport,
+          mcpUrl: args.mcpUrl,
+          roots: args.roots,
+          noRawRestore: !args.allowRawRestore,
+          readOnly: args.readOnly,
+          approvalMode: args.approvalMode,
+          rulesOnly: args.defaultMode === "rules",
+          profile: args.profile,
+          customTerms: args.customTerms,
+          configPath: targets.length === 1 ? args.configPath : undefined,
+          apply: args.apply,
+          project: args.project,
+          withHook: args.withHook,
+          dryRun: args.dryRun,
+        }),
+      )
+    }
+
+    const primary = results[0]
+    if (!primary) return
+
+    let receipt: Awaited<ReturnType<typeof runDoctor>> | undefined
+    let receiptSavedPath: string | undefined
+    if (args.verify) {
+      const verifyEngine = buildEngine(args)
+      receipt = await runDoctor({
+        engine: verifyEngine,
+        roots: args.roots,
+        mode: args.defaultMode,
+        profile: args.profile,
+        customTerms: args.customTerms.length > 0 ? args.customTerms : undefined,
+        proxyUrl: args.proxyUrl,
+        mcpUrl: args.transport === "http" ? args.mcpUrl : undefined,
+        client: targets.length === 1 ? primary.client : targets.join(","),
+        transport: primary.transport,
+        configPath: targets.length === 1 ? primary.configPath : null,
+      })
+      if (args.receiptPath) {
+        receiptSavedPath = await writeDoctorReceipt(args.receiptPath, receipt)
+      }
+    }
+
+    if (args.json) {
+      const payload =
+        results.length === 1
+          ? {
+              ...primary,
+              ...(receipt ? { receipt } : {}),
+              ...(receiptSavedPath ? { receiptPath: receiptSavedPath } : {}),
+            }
+          : {
+              clients: results,
+              ...(receipt ? { receipt } : {}),
+              ...(receiptSavedPath ? { receiptPath: receiptSavedPath } : {}),
+            }
+      process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`)
+      if (receipt && !receipt.ok) process.exit(1)
+      return
+    }
+
+    for (const installed of results) {
+      process.stdout.write(formatSingleInstallHuman(installed))
+    }
+    if (receipt) {
+      process.stdout.write(
+        `\n${formatDoctorReport(
+          receipt,
+          `Setup receipt (${receipt.ok ? "OK" : "FAILED"}, @maskera/mcp ${receipt.version}, mode=${receipt.mode}):`,
+        )}`,
+      )
+      if (receiptSavedPath) {
+        process.stdout.write(`Saved receipt: ${receiptSavedPath}\n`)
+      }
+    }
+    process.stdout.write(`\nVerify: ${primary.verifyStep}\n`)
+    if (receipt && !receipt.ok) process.exit(1)
+    return
+  }
+
+  if (args.command === "guard") {
+    let raw: string
+    if (args.file) {
+      const buf = await readFile(args.file)
+      if (buf.includes(0)) {
+        throw new Error(`"${args.file}" appears to be a binary file; only UTF-8 text is supported.`)
+      }
+      try {
+        raw = new TextDecoder("utf-8", { fatal: true }).decode(buf)
+      } catch {
+        throw new Error(`"${args.file}" is not valid UTF-8 text; convert it to UTF-8 first.`)
+      }
+    } else {
+      raw = await readStdinAll()
+    }
+
+    // Reuse a warm local proxy's already-loaded ONNX model when running in hybrid
+    // mode (or when --proxy-url was explicitly passed) so hooks finish in ~10ms
+    // instead of cold-loading 43 MB per invocation. Falls back locally if offline.
+    const shouldTryWarmProxy =
+      !args.noProxy && (args.defaultMode !== "rules" || Boolean(args.proxyUrl))
+    const warmProxyUrl = args.proxyUrl ?? process.env.MASKERA_PROXY_URL ?? "http://127.0.0.1:8787"
+
+    const warmResult = shouldTryWarmProxy
+      ? await runGuardViaWarmProxy(raw, {
+          proxyUrl: warmProxyUrl,
+          mode: args.defaultMode,
+          profile: args.profile,
+          customTerms: args.customTerms.length > 0 ? args.customTerms : undefined,
+          preserveJsonStructure: args.redact,
+          includeRedacted: args.redact,
+        })
+      : null
+
+    const result =
+      warmResult ??
+      (await runGuard(raw, buildEngine(args), {
+        mode: args.defaultMode,
+        profile: args.profile,
+        customTerms: args.customTerms.length > 0 ? args.customTerms : undefined,
+        preserveJsonStructure: args.redact,
+      }))
+    if (args.redact) {
+      process.stdout.write(result.redacted)
+      return
+    }
+    if (result.blocked) {
+      const summary = Object.entries(result.counts)
+        .map(([label, n]) => `${label}=${n}`)
+        .join(", ")
+      process.stderr.write(
+        `[maskera-guard] Blocked: detected ${result.totalRedactions} PII item(s) (${summary}). Redact with maskera before sending.\n`,
+      )
+      process.exit(2)
+    }
+    return
+  }
+
   const engine = buildEngine(args)
+
+  if (args.command === "wrap") {
+    if (!args.wrapCommand) {
+      throw new Error(
+        "Missing command to wrap. Usage: maskera-mcp wrap [flags] -- <command> [args...]",
+      )
+    }
+    const wrapRes = await runWrap({
+      command: args.wrapCommand,
+      args: args.wrapArgs,
+      engine,
+      roots: args.roots,
+      host: args.host,
+      port: args.portExplicit ? args.port : 0,
+      upstream: args.upstream,
+      anthropicUpstream: args.anthropicUpstream,
+      openaiUpstream: args.openaiUpstream,
+      allowRawRestore: args.allowRawRestore,
+      readOnly: args.readOnly,
+      approvalMode: args.approvalMode,
+      profile: args.profile,
+      customTerms: args.customTerms.length > 0 ? args.customTerms : undefined,
+      restoreResponses: args.restoreResponses,
+      auditLogPath: args.auditLogPath,
+      verify: args.verify,
+      receiptPath: args.receiptPath,
+      openInspector: args.openInspector,
+    })
+    process.exit(wrapRes.exitCode)
+  }
 
   if (args.command === "doctor") {
     const report = await runDoctor({
@@ -419,11 +748,18 @@ async function main(): Promise<void> {
       profile: args.profile,
       customTerms: args.customTerms.length > 0 ? args.customTerms : undefined,
       proxyUrl: args.proxyUrl,
+      mcpUrl: args.mcpUrl,
     })
+    const savedPath = args.receiptPath
+      ? await writeDoctorReceipt(args.receiptPath, report)
+      : undefined
     if (args.json) {
-      process.stdout.write(`${JSON.stringify(report, null, 2)}\n`)
+      process.stdout.write(
+        `${JSON.stringify(savedPath ? { ...report, receiptPath: savedPath } : report, null, 2)}\n`,
+      )
     } else {
       process.stdout.write(formatDoctorReport(report))
+      if (savedPath) process.stdout.write(`Saved receipt: ${savedPath}\n`)
     }
     if (!report.ok) process.exit(1)
     return
@@ -455,52 +791,19 @@ async function main(): Promise<void> {
         `  Streamable HTTP MCP:     ${running.mcpUrl}`,
         `  Claude Code / Anthropic: ANTHROPIC_BASE_URL=${running.url}`,
         `  Codex / Cursor / OpenAI: OPENAI_BASE_URL=${running.url}/v1`,
+        `  Or one-command launch:   npx -y @maskera/mcp wrap -- claude`,
         ...(args.auditLogPath ? [`  Local audit log (JSONL): ${args.auditLogPath}`] : []),
         "",
       ].join("\n"),
     )
+    if (args.openInspector) {
+      openUrlInBrowser(running.inspectorUrl)
+    }
     const shutdown = () => {
       void running.close().finally(() => process.exit(0))
     }
     process.on("SIGINT", shutdown)
     process.on("SIGTERM", shutdown)
-    return
-  }
-
-  if (args.command === "guard") {
-    let raw: string
-    if (args.file) {
-      const buf = await readFile(args.file)
-      if (buf.includes(0)) {
-        throw new Error(`"${args.file}" appears to be a binary file; only UTF-8 text is supported.`)
-      }
-      try {
-        raw = new TextDecoder("utf-8", { fatal: true }).decode(buf)
-      } catch {
-        throw new Error(`"${args.file}" is not valid UTF-8 text; convert it to UTF-8 first.`)
-      }
-    } else {
-      raw = await readStdinAll()
-    }
-    const result = await runGuard(raw, engine, {
-      mode: args.defaultMode,
-      profile: args.profile,
-      customTerms: args.customTerms.length > 0 ? args.customTerms : undefined,
-      preserveJsonStructure: args.redact,
-    })
-    if (args.redact) {
-      process.stdout.write(result.redacted)
-      return
-    }
-    if (result.blocked) {
-      const summary = Object.entries(result.counts)
-        .map(([label, n]) => `${label}=${n}`)
-        .join(", ")
-      process.stderr.write(
-        `[maskera-guard] Blocked: detected ${result.totalRedactions} PII item(s) (${summary}). Redact with maskera before sending.\n`,
-      )
-      process.exit(2)
-    }
     return
   }
 

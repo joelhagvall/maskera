@@ -5,7 +5,9 @@ import { dirname } from "node:path"
 import * as zlib from "node:zlib"
 import type { RedactionProfile } from "maskera"
 import { ApprovalBroker, type ApprovalMode } from "./approvals"
+import { runDoctor } from "./doctor"
 import { createMaskeraEngine, type MaskeraEngine, type MaskMode } from "./engine"
+import { runGuard } from "./guard"
 import { type InspectedRequest, ProxyInspector, renderInspectorHtml } from "./inspector"
 import { createMaskeraMcpServer, type MaskeraMcpPolicy } from "./server"
 import { SessionVault } from "./vault"
@@ -49,6 +51,13 @@ export interface ProxyOptions {
   onLog?: (message: string) => void
 }
 
+export interface ProxyStats {
+  requests: number
+  redactions: number
+  counts: Record<string, number>
+  sessions: number
+}
+
 export interface RunningMaskeraProxy {
   readonly url: string
   readonly mcpUrl: string
@@ -59,6 +68,7 @@ export interface RunningMaskeraProxy {
   readonly vault: SessionVault
   readonly inspector: ProxyInspector
   readonly approvals: ApprovalBroker
+  stats(): ProxyStats
   close(): Promise<void>
 }
 
@@ -1358,6 +1368,7 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
 
   let totalRequests = 0
   let totalRedactions = 0
+  let totalCounts: Record<string, number> = {}
   let boundPort = requestedPort
   let boundUrl = `http://${host}:${requestedPort}`
   let auditChain = Promise.resolve()
@@ -1377,6 +1388,10 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
         approvals,
         approvalBaseUrl: boundUrl,
         onToolCall: (event) => {
+          if (event.sessionId === "doctor-http-probe") {
+            vault.clear("doctor-http-probe")
+            return
+          }
           recordAuditAndInspector({
             timestamp: new Date().toISOString(),
             method: "MCP",
@@ -1399,6 +1414,7 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
   function recordAuditAndInspector(entry: Omit<InspectedRequest, "id">): void {
     totalRequests += 1
     totalRedactions += entry.redactions
+    mergeCounts(totalCounts, entry.counts)
     inspector.record(entry)
     if (auditLogPath) {
       // Strictly metadata and entity counts on disk (never raw text or previews).
@@ -1550,11 +1566,110 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
       inspector.clear()
       totalRequests = 0
       totalRedactions = 0
+      totalCounts = {}
       res.writeHead(200, {
         ...INSPECTOR_SECURITY_HEADERS,
         "content-type": "application/json; charset=utf-8",
       })
       res.end(JSON.stringify({ cleared: true }))
+      return
+    }
+
+    if (method === "POST" && pathname === "/_maskera/self-test") {
+      if (
+        req.headers["x-maskera-action"] !== "self-test" ||
+        !isSameOriginLoopbackRequest(req, host, boundPort)
+      ) {
+        res.writeHead(403, {
+          ...INSPECTOR_SECURITY_HEADERS,
+          "content-type": "application/json; charset=utf-8",
+        })
+        res.end(
+          JSON.stringify({ error: "Pass x-maskera-action: self-test from same-origin loopback." }),
+        )
+        return
+      }
+      const report = await runDoctor({
+        engine,
+        roots: options.mcpRoots ?? [process.cwd()],
+        mode: engine.status().defaultMode,
+        profile: options.profile,
+        customTerms: options.customTerms,
+        proxyUrl: boundUrl,
+        mcpUrl: `${boundUrl}/mcp`,
+      })
+      res.writeHead(report.ok ? 200 : 500, {
+        ...INSPECTOR_SECURITY_HEADERS,
+        "content-type": "application/json; charset=utf-8",
+      })
+      res.end(JSON.stringify(report, null, 2))
+      return
+    }
+
+    if (method === "POST" && pathname === "/_maskera/guard") {
+      if (
+        req.headers["x-maskera-action"] !== "guard" ||
+        !isSameOriginLoopbackRequest(req, host, boundPort)
+      ) {
+        res.writeHead(403, {
+          ...INSPECTOR_SECURITY_HEADERS,
+          "content-type": "application/json; charset=utf-8",
+        })
+        res.end(
+          JSON.stringify({ error: "Pass x-maskera-action: guard from same-origin loopback." }),
+        )
+        return
+      }
+      const guardBodyBuf = await readRequestBody(req)
+      let parsedGuard: unknown
+      try {
+        parsedGuard = JSON.parse(guardBodyBuf.toString("utf8"))
+      } catch {
+        res.writeHead(400, {
+          ...INSPECTOR_SECURITY_HEADERS,
+          "content-type": "application/json; charset=utf-8",
+        })
+        res.end(JSON.stringify({ error: "Invalid JSON body for /_maskera/guard." }))
+        return
+      }
+      if (!isPlainObject(parsedGuard) || typeof parsedGuard.raw !== "string") {
+        res.writeHead(400, {
+          ...INSPECTOR_SECURITY_HEADERS,
+          "content-type": "application/json; charset=utf-8",
+        })
+        res.end(JSON.stringify({ error: 'Expected JSON object with string field "raw".' }))
+        return
+      }
+      const guardMode: MaskMode | undefined =
+        parsedGuard.mode === "rules" || parsedGuard.mode === "auto" ? parsedGuard.mode : undefined
+      const guardProfile: RedactionProfile | undefined =
+        parsedGuard.profile === "clinical" || parsedGuard.profile === "general"
+          ? parsedGuard.profile
+          : options.profile
+      const guardTerms = Array.isArray(parsedGuard.customTerms)
+        ? parsedGuard.customTerms.filter((t): t is string => typeof t === "string")
+        : options.customTerms
+      const guardRes = await runGuard(parsedGuard.raw, engine, {
+        mode: guardMode,
+        profile: guardProfile,
+        customTerms: guardTerms,
+        preserveJsonStructure: parsedGuard.preserveJsonStructure === true,
+      })
+      const includeRedacted =
+        parsedGuard.includeRedacted === true || parsedGuard.preserveJsonStructure === true
+      res.writeHead(200, {
+        ...INSPECTOR_SECURITY_HEADERS,
+        "content-type": "application/json; charset=utf-8",
+      })
+      res.end(
+        JSON.stringify({
+          blocked: guardRes.blocked,
+          totalRedactions: guardRes.totalRedactions,
+          counts: guardRes.counts,
+          modeUsed: guardRes.modeUsed,
+          ...(includeRedacted ? { redacted: guardRes.redacted } : {}),
+        }),
+      )
       return
     }
 
@@ -2065,6 +2180,12 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
     vault,
     inspector,
     approvals,
+    stats: () => ({
+      requests: totalRequests,
+      redactions: totalRedactions,
+      counts: { ...totalCounts },
+      sessions: vault.list().length,
+    }),
     close: async () => {
       unsubscribeApprovals()
       inspector.closeAll()
