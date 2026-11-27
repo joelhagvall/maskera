@@ -31,6 +31,13 @@ export const HERO_SCENE = {
 /** The files the agent scene reads and writes through Maskera's MCP tools. */
 export const AGENT_FILES = { read: "ärende.txt", write: "beslut.md" } as const
 
+/**
+ * Identifiers the agent scene shows verbatim, as an agent prints them: the
+ * MCP connector's name and the argument name of maskera_read_file. Code, not
+ * copy, so they stay the same in every language.
+ */
+export const AGENT_CONNECTOR = { name: "maskera", readArg: "path" } as const
+
 export const HERO_SCENE_WIDTH = 1368
 
 /** The three places the stage shows, in tab order. */

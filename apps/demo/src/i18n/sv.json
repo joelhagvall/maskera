@@ -1313,12 +1313,12 @@
       "title": "Dokumentation",
       "lede": "All maskering i Maskera körs lokalt på din enhet. Välj läge efter var texten uppstår, konfigurera på en minut och verifiera med påhittade uppgifter.",
       "verifyTitle": "Du vet att det funkar när",
-      "verifyBody": "npx -y @maskera/mcp doctor skriver [ok] för redaction, eller den lokala inspektören på http://127.0.0.1:8787/_maskera visar platshållare som [EPOST_1] på väg ut medan svaret återställer adressen.",
+      "verifyBody": "Kör npx -y @maskera/mcp doctor. Svaret ska börja med OK och sluta med en provmaskering som visar 0 läckor.",
       "sections": [
         {
           "id": "valj-lage",
           "title": "Välj rätt läge",
-          "body": "Maskera har fem ingångar på samma svenska regel- och AI-motor. Välj den som sitter närmast där texten skapas.",
+          "body": "Alla ingångar använder samma svenska regel- och AI-motor. Välj den som sitter närmast där texten skapas.",
           "table": {
             "headers": ["Läge", "Passar när", "Kommando / ingång"],
             "rows": [
@@ -1328,22 +1328,17 @@
                 "maskera.dev/tjanster"
               ],
               [
-                "Lokal LLM-proxy",
-                "Allt du skriver i AI-agenten och verktygens svar ska maskeras automatiskt.",
+                "Lokal proxy med MCP",
+                "Allt agenten skickar och alla verktygssvar ska maskeras, och flera klienter ska dela samma modell och sessioner.",
                 "npx -y @maskera/mcp proxy --root ."
               ],
               [
-                "Streamable HTTP MCP",
-                "Flera klienter ska dela en varm 43 MB AI-modell, sessionsvalv och webbläsargodkännanden.",
-                "http://127.0.0.1:8787/mcp"
-              ],
-              [
-                "MCP stdio-server",
+                "MCP via stdio",
                 "Klienten saknar egen API-adress och agenten läser och skriver lokala filer.",
                 "npx -y @maskera/mcp --root . --no-raw-restore"
               ],
               [
-                "Guard (hooks / pipe)",
+                "Guard (hooks och pipes)",
                 "Du vill stoppa PII i agent-hooks (exit 2) eller maskera Unix-pipes.",
                 "npx -y @maskera/mcp guard"
               ],
@@ -1357,10 +1352,10 @@
         },
         {
           "id": "snabbstart",
-          "title": "Snabbstart på 60 sekunder",
-          "body": "Kör ett enda kommando med wrap (startar lokal proxy, verifierar 0 läckor och skriver ett sessionskvitto vid avslut), installera en permanent bakgrundstjänst med service install, eller konfigurera din MCP-klient med install och få kvitto direkt i terminalen.",
+          "title": "Snabbstart",
+          "body": "Ett kommando startar en lokal proxy, kontrollerar att inget läcker och kör din agent genom den. Bakgrundstjänst och klientinstallation finns i referensen för @maskera/mcp.",
           "codeLabel": "Terminal",
-          "code": "# 1. Enkel start i en terminal (sätter ANTHROPIC_BASE_URL och OPENAI_BASE_URL själv)\nnpx -y @maskera/mcp wrap -- claude\n\n# 2. Eller håll proxyn + Streamable HTTP /mcp igång i bakgrunden (macOS/Linux)\nnpx -y @maskera/mcp service install --root . --no-raw-restore\n\n# 3. Auto-detektera och konfigurera din klient + prompt-hook + kvitto\nnpx -y @maskera/mcp install cursor --root . --no-raw-restore --with-hook"
+          "code": "# Startar proxyn, kontrollerar 0 läckor och kör Claude Code genom den\nnpx -y @maskera/mcp wrap -- claude"
         },
         {
           "id": "for-agenter",
@@ -1376,10 +1371,10 @@
     "mcp": {
       "metaTitle": "@maskera/mcp: proxy, Streamable HTTP, verktyg och policyer · maskera",
       "metaDescription": "Komplett referens för @maskera/mcp: alla MCP-verktyg, Streamable HTTP /mcp, scoped policyflaggor, webbläsargodkännanden, prompts, resources, guard, install och doctor.",
-      "title": "@maskera/mcp-referens",
-      "lede": "Ett enda npm-paket med sju kommandon: enkommandoläge (wrap), lokal LLM-proxy med Streamable HTTP /mcp, bakgrundstjänst (service), MCP stdio-server, hook-guard, klientinstallerare och diagnostik.",
+      "title": "Referens för @maskera/mcp",
+      "lede": "Ett npm-paket som maskerar det din AI-agent skickar och läser, lokalt på din dator. Det körs som proxy, MCP-server eller hook.",
       "verifyTitle": "Du vet att det funkar när",
-      "verifyBody": "Klienten listar maskera_list_files, maskera_search_files, maskera_read_file och maskera_status, och maskera_status visar mode, active_sessions och aktiv policy.",
+      "verifyBody": "Be agenten anropa maskera_status. Svaret visar dina tillåtna mappar och vilken policy som gäller.",
       "sections": [
         {
           "id": "transport",
@@ -1423,7 +1418,7 @@
               [
                 "maskera_restore",
                 "Återställer platshållare i text från session_id eller explicit karta.",
-                "Döljs av --no-raw-restore; pausas i browser/native approval-mode."
+                "Döljs av --no-raw-restore; pausas i godkännandeläget browser eller native."
               ],
               [
                 "maskera_list_sessions",
@@ -1458,7 +1453,7 @@
               [
                 "--no-raw-restore / ?no_raw_restore=1",
                 "Döljer och spärrar maskera_restore och include_map: true. Agenten kan fortfarande skriva återställda filer via maskera_write_file.",
-                "Standard för agenter som jobbar med känsliga filer."
+                "Standard för agenter som arbetar med känsliga filer."
               ],
               [
                 "--read-only / ?read_only=1",
@@ -1472,7 +1467,7 @@
               ],
               [
                 "--approval-mode native",
-                "Skickar MCP form-elicitation (elicitation/create) till klienten; nekar om klienten saknar stöd.",
+                "Frågar användaren i klienten via MCP-elicitation. Nekar om klienten saknar stöd.",
                 "Klienter med inbyggd MCP-elicitation."
               ]
             ]
@@ -1492,7 +1487,7 @@
         {
           "id": "guard-install-doctor",
           "title": "Wrap, service, guard, install och doctor",
-          "body": "Utöver proxy och MCP finns wrap för en terminal, service för bakgrundstjänst på macOS (launchd) och Linux (systemd --user), guard för hooks och pipes, install med auto-detektering (--apply, --project, --with-hook) och inbyggt verifieringskvitto, samt doctor för lokal felsökning och live-test mot /mcp.",
+          "body": "Kommandot wrap kör allt i en terminal, och service håller proxyn igång i bakgrunden (launchd på macOS, systemd på Linux). Med install konfigurerar du klienten, guard stoppar PII i hooks och pipes, och doctor testar hela kedjan.",
           "codeLabel": "Terminal",
           "code": "# Starta lokal proxy + verifiera + kör agent i samma terminal\nnpx -y @maskera/mcp wrap --open -- claude\n\n# Installera eller kontrollera lokal bakgrundstjänst (127.0.0.1:8787)\nnpx -y @maskera/mcp service install --root . --no-raw-restore\nnpx -y @maskera/mcp service status\n\n# Konfigurera klient + prompt-hook + spara kvitto (maskera-setup-receipt/v1)\nnpx -y @maskera/mcp install claude-code --root . --no-raw-restore --apply --with-hook --receipt ./maskera-receipt.json\n\n# Blockera PII i hooks (exit 2 vid träff, loggar bara antal)\necho '{\"prompt\":\"Ring 070-174 06 58\"}' | npx -y @maskera/mcp guard\n\n# Självtesta lokal motor, rötter, proxy och live /mcp\nnpx -y @maskera/mcp doctor --root . --json",
           "table": {
@@ -1527,12 +1522,12 @@
       "title": "Klientguider",
       "lede": "Exakta steg och färdiga kommandon per klient. Alla konfigurationer kan också skrivas eller förhandsgranskas med npx -y @maskera/mcp install <klient>.",
       "verifyTitle": "Du vet att det funkar när",
-      "verifyBody": "Du skickar en påhittad e-postadress (provnamn.maskera@example.com) och ser [EPOST_1] i inspektören på http://127.0.0.1:8787/_maskera, eller när agenten svarar på maskera_status med dina tillåtna rötter.",
+      "verifyBody": "Skriv en påhittad adress som provnamn.maskera@example.com. Inspektören på http://127.0.0.1:8787/_maskera ska visa [EPOST_1] i det som skickades.",
       "sections": [
         {
           "id": "claude-desktop",
           "title": "Claude Desktop (lokal proxy)",
-          "body": "Starta proxyn först och låt den vara igång. Öppna sedan Help -> Troubleshooting -> Enable Developer Mode och därefter Developer -> Configure Third-Party Inference. Välj tredje-partsinferens med Static API key, ange bas-URL http://127.0.0.1:8787 (utan /v1), klistra in din Anthropic API-nyckel och ändra auth-schemat till x-api-key (standardläget Bearer avvisas av Anthropic). Klicka Apply Changes och sedan Save & Restart.",
+          "body": "Starta proxyn först och låt den vara igång. Öppna sedan Help -> Troubleshooting -> Enable Developer Mode och därefter Developer -> Configure Third-Party Inference. Välj tredjepartsinferens med Static API key, ange bas-URL http://127.0.0.1:8787 (utan /v1), klistra in din Anthropic API-nyckel och ändra auth-schemat till x-api-key (standardläget Bearer avvisas av Anthropic). Klicka Apply Changes och sedan Save & Restart.",
           "bullets": [
             "Trafiken faktureras på din Anthropic API-nyckel i stället för ett Claude-abonnemang.",
             "Stannar du proxyn stoppas chatten i stället för att skicka omaskerad text.",
@@ -1584,7 +1579,7 @@
       "title": "SDK och drift",
       "lede": "Använd maskera (regler + 43 MB svensk AI-modell) eller @maskera/core (endast regler, noll beroenden) direkt i egen TypeScript- eller JavaScript-kod.",
       "verifyTitle": "Du vet att det funkar när",
-      "verifyBody": "redactWithNer ersätter namn, personnummer och ort med platshållare lokalt i din process och restore(svar) återskapar exakt originaltext utan att nyckeln lämnat enheten.",
+      "verifyBody": "Exemplet nedan skickar text utan namn och personnummer till modellen, och restore(answer) ger tillbaka exakt originalet.",
       "sections": [
         {
           "id": "paket",
@@ -1615,10 +1610,10 @@
         },
         {
           "id": "self-hosting",
-          "title": "Self-hosting av modell och offline-drift",
-          "body": "I standardläget laddas modellvikterna (sha256-verifierade mot pinnad commit) en gång från Hugging Face och cachas lokalt. För slutna nät eller egna servrar laddar du hem katalogen en gång och pekar ut den lokalt.",
+          "title": "Modellen på egen server och offline",
+          "body": "I standardläget hämtas modellvikterna en gång från Hugging Face, kontrolleras med sha256 mot en låst commit och cachas lokalt. I slutna nät laddar du hem modellen en gång och pekar ut mappen.",
           "codeLabel": "TypeScript",
-          "code": "// q8 är snabbast på Node CPU; använd q4 i webbläsare\nconst recognizer = createNerRecognizer({\n  localModelPath: \"/opt/models\",\n  model: \"maskera-sv-ner-v20\",\n  allowRemoteModels: false,\n  dtype: \"q8\",\n})"
+          "code": "// Hämta modellen en gång:\n// hf download joelhagvall/maskera-sv-ner --local-dir /opt/models/maskera-sv-ner-v20\n\n// q8 är snabbast på Node CPU; använd q4 i webbläsare\nconst recognizer = createNerRecognizer({\n  localModelPath: \"/opt/models\",\n  model: \"maskera-sv-ner-v20\",\n  allowRemoteModels: false,\n  dtype: \"q8\",\n})"
         },
         {
           "id": "driftchecklista",
@@ -1628,7 +1623,7 @@
             "Återanvänd en enda createNerRecognizer()-instans per process så modellen inte laddas om vid varje anrop.",
             "Spara aldrig återställningskartan i samma logg, databas eller trace som den maskerade texten.",
             "Fail-closed vid modellfel: låt inte ett undantag från NER leda till att omaskerad text skickas vidare.",
-            "Kör en syntetisk röktest vid deploy med påhittade svenska uppgifter innan verklig trafik släpps på."
+            "Kör ett syntetiskt röktest vid deploy med påhittade svenska uppgifter innan verklig trafik släpps på."
           ]
         }
       ]
@@ -1686,12 +1681,12 @@
           "title": "Köra helt utan internetåtkomst",
           "body": "Om din arbetsstation eller server blockerar Hugging Face kan du förladda modellfilerna i en lokal mapp och stänga av fjärrhämtning helt.",
           "codeLabel": "Terminal",
-          "code": "MASKERA_MODEL_PATH=/opt/models \\\nMASKERA_MODEL_ID=maskera-sv-ner-v20 \\\nMASKERA_ALLOW_REMOTE_MODELS=0 \\\nnpx -y @maskera/mcp doctor --root ."
+          "code": "# Hämta modellen en gång\nhf download joelhagvall/maskera-sv-ner --local-dir /opt/models/maskera-sv-ner-v20\n\n# Kör sedan helt utan nätverk\nMASKERA_MODEL_PATH=/opt/models \\\nMASKERA_MODEL_ID=maskera-sv-ner-v20 \\\nMASKERA_ALLOW_REMOTE_MODELS=0 \\\nnpx -y @maskera/mcp doctor --root ."
         },
         {
           "id": "begransningar",
           "title": "Säkerhetsgränser",
-          "body": "Var tydlig internt med vad lokal maskering täcker och vad den inte ersätter:",
+          "body": "Lokal maskering har de här gränserna:",
           "bullets": [
             "Maskera är byggt för svensk (och blandad svensk/engelsk) text. Ren text på andra språk täcks bara delvis.",
             "Bilder och skannade PDF-filer måste OCR-tolkas till text innan de skickas genom Maskera.",

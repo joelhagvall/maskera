@@ -1,5 +1,6 @@
 import { type ReactNode, useState } from "react"
 import {
+  AGENT_CONNECTOR,
   AGENT_FILES,
   HERO_SCENE,
   HERO_SCENE_WIDTH,
@@ -176,7 +177,7 @@ function AgentScene() {
           >
             <p className="agent-connector-label">{agent.request}</p>
             <dl className="agent-connector-args">
-              <dt>path</dt>
+              <dt>{AGENT_CONNECTOR.readArg}</dt>
               <dd>{AGENT_FILES.read}</dd>
             </dl>
             <p className="agent-connector-label">{agent.modelSees}</p>
@@ -203,7 +204,7 @@ function AgentScene() {
             <span className="agent-composer-bar">
               <span className="agent-connector-chip">
                 <ConnectorLogo />
-                maskera
+                {AGENT_CONNECTOR.name}
               </span>
               <span className="agent-composer-send">↑</span>
             </span>
@@ -246,7 +247,7 @@ function ConnectorCall({
       <p className="agent-connector-head">
         <ConnectorLogo />
         <span className="agent-connector-title">
-          <strong>maskera</strong> <span className="agent-call-name">{tool}</span>
+          <strong>{AGENT_CONNECTOR.name}</strong> <span className="agent-call-name">{tool}</span>
         </span>
         <span className="agent-connector-status">{status}</span>
         <ChevronRightIcon size={13} className={children ? "is-open" : undefined} />

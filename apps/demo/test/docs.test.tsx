@@ -7,6 +7,7 @@ import {
   DocsOverview,
   DocsSdk,
   DocsTroubleshooting,
+  keepFlagsWhole,
 } from "../src/components/Docs"
 import copy from "../src/i18n/sv.json"
 
@@ -48,5 +49,41 @@ describe("Docs pages", () => {
     expect(mcpLink.getAttribute("href")).toBe("/docs/mcp")
     fireEvent.click(mcpLink)
     expect(go).toHaveBeenCalledWith("docsMcp")
+  })
+
+  it("keeps CLI flags and query parameters on one line", () => {
+    const { container } = render(
+      <p>{keepFlagsWhole("Kör med --no-raw-restore / ?no_raw_restore=1.")}</p>,
+    )
+    const whole = [...container.querySelectorAll(".no-break")].map((el) => el.textContent)
+    expect(whole).toEqual(["--no-raw-restore", "?no_raw_restore=1"])
+    expect(container.textContent).toBe("Kör med --no-raw-restore / ?no_raw_restore=1.")
+  })
+
+  it("labels every table cell with its column name for the stacked phone layout", () => {
+    for (const [name, Component, data] of pages) {
+      const { container } = render(<Component go={vi.fn()} />)
+      const tables = data.sections.flatMap((s) => ("table" in s && s.table ? [s.table] : []))
+      const rendered = container.querySelectorAll(".data-table")
+      expect(rendered.length, name).toBe(tables.length)
+      rendered.forEach((table, i) => {
+        for (const row of table.querySelectorAll("tbody tr")) {
+          const labels = [...row.querySelectorAll("td")].map((td) => td.getAttribute("data-label"))
+          expect(labels, name).toEqual(tables[i].headers)
+        }
+      })
+      cleanup()
+    }
+  })
+
+  it("lets keyboard users reach every code block, since long lines scroll sideways", () => {
+    // axe scrollable-region-focusable failed the CI a11y audit on /docs/mcp.
+    for (const [name, Component] of pages) {
+      const { container } = render(<Component go={vi.fn()} />)
+      for (const pre of container.querySelectorAll("pre")) {
+        expect(pre.getAttribute("tabindex"), name).toBe("0")
+      }
+      cleanup()
+    }
   })
 })

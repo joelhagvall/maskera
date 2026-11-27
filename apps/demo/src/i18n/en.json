@@ -1313,12 +1313,12 @@
       "title": "Documentation",
       "lede": "All masking in Maskera runs locally on your device. Pick the mode that fits where your text lives, set it up in a minute, and verify with made-up data.",
       "verifyTitle": "You know it worked when",
-      "verifyBody": "npx -y @maskera/mcp doctor reports [ok] for redaction, or the local inspector at http://127.0.0.1:8787/_maskera shows placeholders such as [EPOST_1] going upstream while the reply restores the address.",
+      "verifyBody": "Run npx -y @maskera/mcp doctor. The report should start with OK and end with a sample redaction that shows 0 leaks.",
       "sections": [
         {
           "id": "valj-lage",
           "title": "Choose the right mode",
-          "body": "Maskera offers five entry points backed by the same Swedish rules and local AI model. Pick the one closest to where text is created.",
+          "body": "Every entry point runs the same Swedish rules and local AI model. Pick the one closest to where text is created.",
           "table": {
             "headers": ["Mode", "Best when", "Command / entry point"],
             "rows": [
@@ -1328,22 +1328,17 @@
                 "maskera.dev/en/services"
               ],
               [
-                "Local LLM proxy",
-                "Every chat prompt and tool output from your AI agent must be masked automatically.",
+                "Local proxy with MCP",
+                "Every prompt and tool output from your agent must be masked, and several clients should share one model and one session vault.",
                 "npx -y @maskera/mcp proxy --root ."
               ],
               [
-                "Streamable HTTP MCP",
-                "Several clients should share one warm 43 MB AI model, one session vault, and browser approvals.",
-                "http://127.0.0.1:8787/mcp"
-              ],
-              [
-                "MCP stdio server",
+                "MCP over stdio",
                 "Your client has no custom API URL and the agent reads and writes local files.",
                 "npx -y @maskera/mcp --root . --no-raw-restore"
               ],
               [
-                "Guard (hooks / pipe)",
+                "Guard (hooks and pipes)",
                 "You want to block PII in agent hooks (exit 2) or redact Unix pipes.",
                 "npx -y @maskera/mcp guard"
               ],
@@ -1357,10 +1352,10 @@
         },
         {
           "id": "snabbstart",
-          "title": "60-second quickstart",
-          "body": "Use wrap for a single-terminal launch (starts a local proxy, verifies 0 leaks, and prints a session receipt on exit), install a persistent local background service with service install, or configure your MCP client with install for an instant setup receipt.",
+          "title": "Quickstart",
+          "body": "One command starts a local proxy, checks that nothing leaks, and runs your agent through it. The background service and client installer are in the @maskera/mcp reference.",
           "codeLabel": "Terminal",
-          "code": "# 1. Single-terminal launch (injects ANTHROPIC_BASE_URL and OPENAI_BASE_URL)\nnpx -y @maskera/mcp wrap -- claude\n\n# 2. Or keep the proxy + Streamable HTTP /mcp running in the background (macOS/Linux)\nnpx -y @maskera/mcp service install --root . --no-raw-restore\n\n# 3. Auto-detect or configure your client + guard hook + setup receipt\nnpx -y @maskera/mcp install cursor --root . --no-raw-restore --with-hook"
+          "code": "# Starts the proxy, checks 0 leaks, and runs Claude Code through it\nnpx -y @maskera/mcp wrap -- claude"
         },
         {
           "id": "for-agenter",
@@ -1377,9 +1372,9 @@
       "metaTitle": "@maskera/mcp: proxy, Streamable HTTP, tools and policies · maskera",
       "metaDescription": "Complete reference for @maskera/mcp: all MCP tools, Streamable HTTP /mcp, scoped policy flags, browser approvals, prompts, resources, guard, install, and doctor.",
       "title": "@maskera/mcp reference",
-      "lede": "One npm package with seven subcommands: single-command wrap launcher, local LLM proxy with Streamable HTTP /mcp, background service manager, MCP stdio server, hook guard, client installer, and diagnostics.",
+      "lede": "One npm package that masks what your AI agent sends and reads, locally on your machine. It runs as a proxy, an MCP server, or a hook.",
       "verifyTitle": "You know it worked when",
-      "verifyBody": "Your client lists maskera_list_files, maskera_search_files, maskera_read_file, and maskera_status, and maskera_status reports the active engine mode, roots, and policy.",
+      "verifyBody": "Ask your agent to call maskera_status. The reply lists your allowed folders and the active policy.",
       "sections": [
         {
           "id": "transport",
@@ -1472,7 +1467,7 @@
               ],
               [
                 "--approval-mode native",
-                "Sends MCP form elicitation (elicitation/create) to the client; fails closed if unsupported.",
+                "Asks the user in the client through MCP elicitation. Fails closed if the client does not support it.",
                 "Clients with native MCP elicitation support."
               ]
             ]
@@ -1492,7 +1487,7 @@
         {
           "id": "guard-install-doctor",
           "title": "Wrap, service, guard, install, and doctor",
-          "body": "Alongside proxy and MCP, the CLI includes wrap for a single-terminal launch, service for a local background daemon on macOS (launchd) and Linux (systemd --user), guard for hooks and pipes, install with client auto-detection (--apply, --project, --with-hook) and automatic setup receipts, and doctor for local verification plus a live /mcp probe.",
+          "body": "The wrap command runs everything in one terminal, and service keeps the proxy running in the background (launchd on macOS, systemd on Linux). Use install to configure your client; guard blocks PII in hooks and pipes, and doctor tests the whole chain.",
           "codeLabel": "Terminal",
           "code": "# Start local proxy + verify + launch agent in one terminal\nnpx -y @maskera/mcp wrap --open -- claude\n\n# Install or check a persistent local background service (127.0.0.1:8787)\nnpx -y @maskera/mcp service install --root . --no-raw-restore\nnpx -y @maskera/mcp service status\n\n# Configure client + guard hook + save zero-PII receipt (maskera-setup-receipt/v1)\nnpx -y @maskera/mcp install claude-code --root . --no-raw-restore --apply --with-hook --receipt ./maskera-receipt.json\n\n# Block PII in hooks (exits 2 on match, prints counts only)\necho '{\"prompt\":\"Ring 070-174 06 58\"}' | npx -y @maskera/mcp guard\n\n# Self-test local engine, roots, proxy, and live /mcp\nnpx -y @maskera/mcp doctor --root . --json",
           "table": {
@@ -1531,7 +1526,7 @@
       "title": "Client guides",
       "lede": "Exact steps and commands per client. Every configuration can also be written or previewed with npx -y @maskera/mcp install <client>.",
       "verifyTitle": "You know it worked when",
-      "verifyBody": "You send a made-up address (provnamn.maskera@example.com) and see [EPOST_1] in the inspector at http://127.0.0.1:8787/_maskera, or your agent calls maskera_status and returns your allowed roots.",
+      "verifyBody": "Type a made-up address such as provnamn.maskera@example.com. The inspector at http://127.0.0.1:8787/_maskera should show [EPOST_1] in what was sent.",
       "sections": [
         {
           "id": "claude-desktop",
@@ -1588,7 +1583,7 @@
       "title": "SDK and operations",
       "lede": "Use maskera (rules + 43 MB Swedish AI model) or @maskera/core (rules only, zero dependencies) directly in your own TypeScript or JavaScript code.",
       "verifyTitle": "You know it worked when",
-      "verifyBody": "redactWithNer replaces names, personnummer, and places with placeholders locally in your process and restore(answer) brings back the exact originals without the key leaving your device.",
+      "verifyBody": "The example below sends text without names or personnummer to the model, and restore(answer) brings back the exact original.",
       "sections": [
         {
           "id": "paket",
@@ -1620,9 +1615,9 @@
         {
           "id": "self-hosting",
           "title": "Self-hosting the model and offline operation",
-          "body": "By default, model weights (sha256-verified against a pinned commit) are fetched once from Hugging Face and cached locally. For air-gapped networks or internal servers, host the folder locally and disable remote fetches.",
+          "body": "By default, the model weights are fetched once from Hugging Face, checked with sha256 against a pinned commit, and cached locally. On air-gapped networks, download the model once and point to the folder.",
           "codeLabel": "TypeScript",
-          "code": "// q8 is fastest on Node CPU; use q4 in browsers\nconst recognizer = createNerRecognizer({\n  localModelPath: \"/opt/models\",\n  model: \"maskera-sv-ner-v20\",\n  allowRemoteModels: false,\n  dtype: \"q8\",\n})"
+          "code": "// Download the model once:\n// hf download joelhagvall/maskera-sv-ner --local-dir /opt/models/maskera-sv-ner-v20\n\n// q8 is fastest on Node CPU; use q4 in browsers\nconst recognizer = createNerRecognizer({\n  localModelPath: \"/opt/models\",\n  model: \"maskera-sv-ner-v20\",\n  allowRemoteModels: false,\n  dtype: \"q8\",\n})"
         },
         {
           "id": "driftchecklista",
@@ -1690,12 +1685,12 @@
           "title": "Running completely offline",
           "body": "When your workstation or server cannot reach Hugging Face, place the model directory on local disk and disable remote fetches.",
           "codeLabel": "Terminal",
-          "code": "MASKERA_MODEL_PATH=/opt/models \\\nMASKERA_MODEL_ID=maskera-sv-ner-v20 \\\nMASKERA_ALLOW_REMOTE_MODELS=0 \\\nnpx -y @maskera/mcp doctor --root ."
+          "code": "# Download the model once\nhf download joelhagvall/maskera-sv-ner --local-dir /opt/models/maskera-sv-ner-v20\n\n# Then run with no network access\nMASKERA_MODEL_PATH=/opt/models \\\nMASKERA_MODEL_ID=maskera-sv-ner-v20 \\\nMASKERA_ALLOW_REMOTE_MODELS=0 \\\nnpx -y @maskera/mcp doctor --root ."
         },
         {
           "id": "begransningar",
           "title": "Security boundaries",
-          "body": "Be clear internally about what local masking covers and what it does not replace:",
+          "body": "Local masking has these limits:",
           "bullets": [
             "Maskera is built for Swedish (and mixed Swedish/English) text. Other languages are only partially covered.",
             "Images and scanned PDFs must be converted to text via OCR before passing through Maskera.",

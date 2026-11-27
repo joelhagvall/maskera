@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { GITHUB, HF_MODEL, NPM_MCP, NPM_NER } from "../constants"
 import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
@@ -40,6 +41,38 @@ const DOCS_NAV_VIEWS: readonly { view: DocsView; key: keyof typeof copy.docs.nav
   { view: "docsTroubleshooting", key: "troubleshooting" },
 ]
 
+// CLI flags and URL query parameters (--no-raw-restore, ?read_only=1) must not
+// break at their inner hyphen or after the "?", or a reader copies half a flag.
+const FLAG = /(?:--|\?)[\w-]+(?:=\w+)?/g
+
+/** Docs prose with every flag and query parameter kept on one line. */
+export function keepFlagsWhole(text: string): ReactNode[] {
+  const nodes: ReactNode[] = []
+  let last = 0
+  for (const m of text.matchAll(FLAG)) {
+    if (m.index > last) nodes.push(text.slice(last, m.index))
+    nodes.push(
+      <span key={m.index} className="no-break">
+        {m[0]}
+      </span>,
+    )
+    last = m.index + m[0].length
+  }
+  if (last < text.length) nodes.push(text.slice(last))
+  return nodes
+}
+
+/**
+ * On a phone the subnav is one sideways-scrolling row; scroll it so the
+ * current page's tab is in view instead of cut off at the right edge.
+ */
+function scrollCurrentIntoNav(link: HTMLAnchorElement | null) {
+  const nav = link?.parentElement
+  if (!link || !nav || nav.scrollWidth <= nav.clientWidth) return
+  const overflow = link.getBoundingClientRect().right - nav.getBoundingClientRect().right
+  if (overflow > 0) nav.scrollLeft += overflow
+}
+
 function DocsSubNav({ current, go }: { current: DocsView; go: (view: View) => void }) {
   return (
     <nav className="docs-subnav" aria-label={copy.docs.navLabel}>
@@ -47,6 +80,7 @@ function DocsSubNav({ current, go }: { current: DocsView; go: (view: View) => vo
         <a
           key={item.view}
           href={viewPaths[item.view]}
+          ref={item.view === current ? scrollCurrentIntoNav : undefined}
           aria-current={item.view === current ? "page" : undefined}
           className={item.view === current ? "on" : undefined}
           onMouseEnter={() => void loadView(item.view)}
@@ -83,7 +117,7 @@ function DocsPage({
       <main id="main-content">
         <article className="prose prose-with-toc docs-page">
           <h1>{data.title}</h1>
-          <p className="prose-lede">{data.lede}</p>
+          <p className="prose-lede">{keepFlagsWhole(data.lede)}</p>
 
           <DocsSubNav current={current} go={go} />
 
@@ -93,17 +127,17 @@ function DocsPage({
             <p id="docs-verify-title" className="docs-verify-title">
               {data.verifyTitle}
             </p>
-            <p>{data.verifyBody}</p>
+            <p>{keepFlagsWhole(data.verifyBody)}</p>
           </aside>
 
           {data.sections.map((section) => (
             <section key={section.id} aria-labelledby={section.id}>
               <h2 id={section.id}>{section.title}</h2>
-              <p className="prose-body">{section.body}</p>
+              <p className="prose-body">{keepFlagsWhole(section.body)}</p>
               {section.bullets && section.bullets.length > 0 ? (
                 <ul>
                   {section.bullets.map((bullet) => (
-                    <li key={bullet}>{bullet}</li>
+                    <li key={bullet}>{keepFlagsWhole(bullet)}</li>
                   ))}
                 </ul>
               ) : null}
@@ -123,7 +157,9 @@ function DocsPage({
                       {section.table.rows.map((row) => (
                         <tr key={row[0]}>
                           {row.map((cell, idx) => (
-                            <td key={`${row[0]}-${idx}`}>{cell}</td>
+                            <td key={`${row[0]}-${idx}`} data-label={section.table?.headers[idx]}>
+                              {keepFlagsWhole(cell)}
+                            </td>
                           ))}
                         </tr>
                       ))}

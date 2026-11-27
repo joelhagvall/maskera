@@ -102,7 +102,7 @@ textarea {
   touch-action: manipulation;
 }
 
-:where(a, button):focus-visible {
+:where(a, button, pre[tabindex]):focus-visible {
   outline: 2px solid var(--fg);
   outline-offset: 3px;
 }
@@ -3305,6 +3305,62 @@ html[data-theme="dark"] .stage-window .tok-c {
 .docs-page .table-wrap {
   overflow-x: auto;
   margin: 16px 0 20px;
+}
+.docs-page .no-break {
+  white-space: nowrap;
+}
+@media (max-width: 560px) {
+  /* One sideways-scrolling row instead of five tabs wrapping onto two lines;
+     the tab cut off at the edge shows there is more. */
+  .docs-subnav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .docs-subnav a {
+    flex: none;
+  }
+  /* Stack each docs table row: the first cell as its title, every other cell
+     full-width under its column name. Three columns on a phone pushed the
+     command column off-screen behind a sideways scroll. */
+  .docs-page .data-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .docs-page .data-table,
+  .docs-page .data-table tbody,
+  .docs-page .data-table tr,
+  .docs-page .data-table td {
+    display: block;
+  }
+  .docs-page .data-table {
+    border-top: 1px solid var(--fg);
+  }
+  .docs-page .data-table tr {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .docs-page .data-table td {
+    padding: 0;
+    border: 0;
+  }
+  .docs-page .data-table td:first-child {
+    color: var(--fg);
+    font-weight: 500;
+  }
+  .docs-page .data-table td + td {
+    margin-top: 8px;
+  }
+  .docs-page .data-table td + td::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--muted);
+    font-size: 12.5px;
+  }
 }
 
 @media (max-width: 560px) {

@@ -1,8 +1,10 @@
 import type { ReactNode } from "react"
 
 // Order matters: comments win over strings win over keywords/function names.
+// A comment starts only at line start or after whitespace, so the `//` in
+// `http://127.0.0.1:8787` and a `#` inside a token stay plain text.
 const TOKEN =
-  /(\/\/[^\n]*|#[^\n]*)|("(?:[^"\\]|\\.)*")|\b(import|from|type|const|await)\b|([A-Za-z_$][\w$]*)(?=\()/g
+  /((?<![^\s])(?:\/\/|#)[^\n]*)|("(?:[^"\\]|\\.)*")|\b(import|from|type|const|await)\b|([A-Za-z_$][\w$]*)(?=\()/g
 
 /**
  * Tiny syntax highlighter for the site's static snippets (Developers page and

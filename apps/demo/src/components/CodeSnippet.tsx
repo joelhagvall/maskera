@@ -31,7 +31,9 @@ export function Code({ children, languageLabel }: { children: string; languageLa
           title={copy.copyButton.copy}
         />
       </div>
-      <pre>
+      {/* Focusable so a keyboard user can scroll a long line sideways (axe
+          scrollable-region-focusable) */}
+      <pre tabIndex={0}>
         <code>
           {lines.map((line, i) => (
             <span key={i} className="code-line">
