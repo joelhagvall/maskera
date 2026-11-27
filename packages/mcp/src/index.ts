@@ -22,6 +22,7 @@ export {
   type MaskeraEngine,
   type MaskMode,
   type ModelLoadEvent,
+  normalizeMixedScriptHomoglyphs,
   type RedactInputOptions,
 } from "./engine"
 export { createFileGuard, type FileGuard, type ListedFile, type SearchMatch } from "./files"
@@ -45,6 +46,8 @@ export {
 } from "./install"
 export {
   createSseRestorer,
+  deriveProxySessionId,
+  isLikelyEnglishSystemPrompt,
   type ProxyOptions,
   type ProxyStats,
   type RedactFieldKind,

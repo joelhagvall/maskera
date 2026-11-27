@@ -97,19 +97,17 @@ export async function runAdversarialAudit() {
           )
           assert.equal(zwRes.result.restore(zwRes.result.text), zwName)
 
-          // Cyrillic homoglyphs ('а' U+0430, 'е' U+0435, 'о' U+043E): measure honestly
+          // Cyrillic homoglyphs ('а' U+0430, 'е' U+0435, 'о' U+043E): folded cleanly with lossless restore
           const homoglyph = "P\u0430tient Ann\u0430 Lindqvist"
           const homoRes = await engine.redact(homoglyph, { mode: "auto" })
-          if (
-            homoRes.result.text.includes("Lindqvist") ||
-            homoRes.result.text.includes("Ann\u0430")
-          ) {
-            knownModelLimitations.push(
-              `Cyrillic homoglyph substitution in names is a known canonicalizer/NER limitation (output: "${homoRes.result.text}")`,
-            )
-          }
+          assert.equal(
+            homoRes.result.text.includes("Lindqvist") || homoRes.result.text.includes("Ann\u0430"),
+            false,
+            `Cyrillic homoglyph bypassed NER: ${homoRes.result.text}`,
+          )
+          assert.equal(homoRes.result.restore(homoRes.result.text), homoglyph)
         }
-        return "All invisible/NFKC/NFD obfuscation cases caught with lossless round-trip"
+        return "All invisible/NFKC/NFD/mixed-script Cyrillic obfuscation cases caught with lossless round-trip"
       },
     )
 
@@ -165,11 +163,15 @@ export async function runAdversarialAudit() {
             mode: "auto",
           })
           assert.equal(compound.result.text.includes("19900101-2385"), false)
-          if (compound.result.text.includes("Lindqvist")) {
-            knownModelLimitations.push(
-              "Hyphenated Swedish compound ('Lindqvist-ärendet') partially retained by NER",
-            )
-          }
+          assert.equal(
+            compound.result.text.includes("Lindqvist"),
+            false,
+            `Hyphenated Swedish compound bypassed NER: ${compound.result.text}`,
+          )
+          assert.equal(
+            compound.result.restore(compound.result.text),
+            "Vi hanterar Lindqvist-ärendet om 19900101-2385.",
+          )
         }
         return "JSON, Markdown, XML, CSV structured formats all masked & restored cleanly"
       },

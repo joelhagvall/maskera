@@ -12,7 +12,9 @@ import { afterEach, describe, expect, it } from "vitest"
 import {
   createMaskeraEngine,
   createSseRestorer,
+  deriveProxySessionId,
   extractGuardText,
+  isLikelyEnglishSystemPrompt,
   type RunningMaskeraProxy,
   runGuard,
   StreamingRestorer,
@@ -866,5 +868,171 @@ describe("guard (harness-agnostic pre-prompt / pre-tool / pipe check)", () => {
       })
     ).text()
     expect(stealProxy).not.toContain("19900101-2385")
+  })
+
+  it("avoids Swedish NER over-masking on long English system prompts while keeping rules, customTerms, and Swedish prompts protected", async () => {
+    const englishSystem =
+      "You are a helpful coding assistant. Always read the files before editing code, use the available tools carefully, and return concise output when responding to user instructions. Never modify unrelated files or skip verification commands when checking your response. Keep tool arguments valid and follow repository conventions at all times. Contact support at provnamn.maskera@example.com for ProjectOrion issues."
+    expect(isLikelyEnglishSystemPrompt(englishSystem)).toBe(true)
+    expect(isLikelyEnglishSystemPrompt("Summarize patient Anna Lindqvist.")).toBe(false)
+    expect(
+      isLikelyEnglishSystemPrompt(
+        `${englishSystem}\n\nPå svenska: sammanfatta ärendet för Anna Lindqvist.`,
+      ),
+    ).toBe(false)
+
+    const upstream = await startMockUpstream(() => ({
+      body: JSON.stringify({ id: "msg_1", content: [{ type: "text", text: "ok" }] }),
+    }))
+    const engine = createMaskeraEngine({
+      defaultMode: "auto",
+      recognizer: stubRecognizer([
+        { value: "Always", label: "NAMN" },
+        { value: "Anna Lindqvist", label: "NAMN" },
+      ]),
+    })
+    const proxy = await startMaskeraProxy({
+      port: 0,
+      upstream: upstream.url,
+      engine,
+      customTerms: ["ProjectOrion"],
+    })
+    cleanups.push(() => proxy.close())
+
+    await fetch(`${proxy.url}/v1/messages`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        system: englishSystem,
+        messages: [{ role: "user", content: "Hej Anna Lindqvist" }],
+      }),
+    })
+    const seenBody = upstream.seen[0]?.body ?? ""
+    expect(seenBody).toContain("Always read the files")
+    expect(seenBody).not.toContain("provnamn.maskera@example.com")
+    expect(seenBody).not.toContain("ProjectOrion")
+    expect(seenBody).not.toContain("Anna Lindqvist")
+  })
+
+  it("isolates proxy sessions per client auth/cache key when x-maskera-session is omitted", async () => {
+    expect(deriveProxySessionId({ authorization: "Bearer key-a", "user-agent": "cli/1" })).not.toBe(
+      deriveProxySessionId({ authorization: "Bearer key-b", "user-agent": "cli/1" }),
+    )
+    expect(deriveProxySessionId({}, { prompt_cache_key: "thread-1" })).not.toBe(
+      deriveProxySessionId({}, { prompt_cache_key: "thread-2" }),
+    )
+
+    const upstream = await startMockUpstream(() => ({
+      body: JSON.stringify({
+        id: "chatcmpl_1",
+        choices: [
+          {
+            message: {
+              role: "assistant",
+              content: "Ref: [PERSONNUMMER_1]",
+              reasoning: "Checking [PERSONNUMMER_1]",
+            },
+          },
+        ],
+      }),
+    }))
+    const proxy = await startMaskeraProxy({
+      port: 0,
+      upstream: upstream.url,
+      defaultMode: "rules",
+    })
+    cleanups.push(() => proxy.close())
+
+    // Client A populates [PERSONNUMMER_1] = 19900101-2385
+    const resA = await (
+      await fetch(`${proxy.url}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: "Bearer client-a-key",
+        },
+        body: JSON.stringify({
+          model: "gpt-5",
+          messages: [{ role: "user", content: "Pnr 19900101-2385" }],
+        }),
+      })
+    ).text()
+    expect(resA).toContain("19900101-2385")
+    expect(resA).not.toContain("[PERSONNUMMER_1]")
+
+    // Client B with a different key must NOT restore Client A's [PERSONNUMMER_1]
+    const resB = await (
+      await fetch(`${proxy.url}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: "Bearer client-b-key",
+        },
+        body: JSON.stringify({
+          model: "gpt-5",
+          messages: [{ role: "user", content: "No PII here" }],
+        }),
+      })
+    ).text()
+    expect(resB).not.toContain("19900101-2385")
+  })
+
+  it("warns on binary attachments by default and rejects them with 415 when blockBinary is enabled", async () => {
+    const upstream = await startMockUpstream(() => ({
+      body: JSON.stringify({ id: "msg_bin", content: [{ type: "text", text: "ok" }] }),
+    }))
+    const payload = JSON.stringify({
+      model: "claude-sonnet-4-6",
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", content: "Kolla bilden" },
+            {
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: "image/png",
+                data: Buffer.from([137, 80, 78, 71, 0, 1]).toString("base64"),
+              },
+            },
+          ],
+        },
+      ],
+    })
+
+    const warnProxy = await startMaskeraProxy({
+      port: 0,
+      upstream: upstream.url,
+      defaultMode: "rules",
+    })
+    cleanups.push(() => warnProxy.close())
+
+    const warnRes = await fetch(`${warnProxy.url}/v1/messages`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: payload,
+    })
+    expect(warnRes.status).toBe(200)
+    expect(warnRes.headers.get("x-maskera-warning")).toBe("uninspectable-binary-attachment")
+    expect(warnProxy.inspector.list()[0]?.warnings?.[0]).toContain("image/png")
+    expect(upstream.seen).toHaveLength(1)
+
+    const strictProxy = await startMaskeraProxy({
+      port: 0,
+      upstream: upstream.url,
+      defaultMode: "rules",
+      blockBinary: true,
+    })
+    cleanups.push(() => strictProxy.close())
+
+    const blockedRes = await fetch(`${strictProxy.url}/v1/messages`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: payload,
+    })
+    expect(blockedRes.status).toBe(415)
+    expect(upstream.seen).toHaveLength(1)
   })
 })

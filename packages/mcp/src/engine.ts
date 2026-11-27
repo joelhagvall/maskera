@@ -84,6 +84,158 @@ const WORD_CHAR = /[\p{L}\p{N}_]/u
 const DEFAULT_MAX_CACHE_ENTRIES = 512
 const MAX_CUSTOM_DETECTOR_CACHE = 64
 
+/**
+ * 1-to-1 Cyrillic confusable characters that look visually identical to Latin
+ * letters. Replacing each with its single Latin counterpart preserves exact
+ * UTF-16 string offsets for lossless round-trip restoration.
+ */
+const CYRILLIC_CONFUSABLES: Readonly<Record<string, string>> = {
+  "\u0410": "A",
+  "\u0412": "B",
+  "\u0421": "C",
+  "\u0415": "E",
+  "\u041d": "H",
+  "\u0406": "I",
+  "\u0408": "J",
+  "\u041a": "K",
+  "\u041c": "M",
+  "\u041e": "O",
+  "\u0420": "P",
+  "\u0405": "S",
+  "\u0422": "T",
+  "\u0423": "Y",
+  "\u0425": "X",
+  "\u0430": "a",
+  "\u0432": "b",
+  "\u0441": "c",
+  "\u0435": "e",
+  "\u043d": "h",
+  "\u0456": "i",
+  "\u0458": "j",
+  "\u043a": "k",
+  "\u043c": "m",
+  "\u043e": "o",
+  "\u0440": "p",
+  "\u0455": "s",
+  "\u0442": "t",
+  "\u0443": "y",
+  "\u0445": "x",
+}
+
+const HAS_CYRILLIC_RE = /[\u0400-\u04ff]/
+const LATIN_LETTER_RE = /[A-Za-z\u00c0-\u024f]/
+const WORD_TOKEN_RE = /\p{L}+/gu
+const SWEDISH_HYPHEN_COMPOUND_RE = /\b([A-ZÅÄÖÉ][a-zåäöé]{2,})-([a-zåäöé]{3,})\b/g
+const COMPOUND_NER_LABELS = new Set<PiiLabel>(["NAMN", "ORG", "PLATS"])
+
+/**
+ * Folds Cyrillic homoglyphs back to their 1-to-1 Latin equivalents inside
+ * mixed-script words (e.g. `Ann\u0430`) or all-confusable tokens embedded in
+ * majority-Latin text, while leaving genuine Cyrillic prose untouched.
+ */
+export function normalizeMixedScriptHomoglyphs(text: string): {
+  text: string
+  changed: boolean
+} {
+  if (!HAS_CYRILLIC_RE.test(text)) return { text, changed: false }
+
+  let latinCount = 0
+  let cyrillicCount = 0
+  for (const ch of text) {
+    if (LATIN_LETTER_RE.test(ch)) latinCount += 1
+    else if (HAS_CYRILLIC_RE.test(ch)) cyrillicCount += 1
+  }
+  const majorityLatin = latinCount > 0 && latinCount >= cyrillicCount * 2
+
+  let changed = false
+  const normalized = text.replace(WORD_TOKEN_RE, (word) => {
+    if (!HAS_CYRILLIC_RE.test(word)) return word
+    const hasLatin = LATIN_LETTER_RE.test(word)
+    if (!hasLatin && !majorityLatin) return word
+    // Only fold an all-Cyrillic word if every Cyrillic letter in it is a
+    // confusable (so genuine Russian loanwords with non-confusables stay intact).
+    if (!hasLatin) {
+      for (const ch of word) {
+        if (HAS_CYRILLIC_RE.test(ch) && !(ch in CYRILLIC_CONFUSABLES)) return word
+      }
+    }
+    let out = ""
+    let wordChanged = false
+    for (const ch of word) {
+      const mapped = CYRILLIC_CONFUSABLES[ch]
+      if (mapped !== undefined) {
+        out += mapped
+        wordChanged = true
+      } else {
+        out += ch
+      }
+    }
+    if (wordChanged) changed = true
+    return out
+  })
+  return { text: normalized, changed }
+}
+
+/**
+ * Detects proper-noun prefixes in Swedish hyphenated compounds such as
+ * `Eriksson-ärendet` or `Lindqvist-kontot` when the base pass missed them.
+ * Replaces only the candidate `-` with a space (strictly 1-to-1 offset
+ * preserving) and keeps only NAMN/ORG/PLATS spans overlapping the prefix.
+ */
+async function detectHyphenatedCompoundPrefixes(
+  text: string,
+  ner: NerRecognizer,
+  detectors: readonly Detector[],
+  profile: RedactionProfile | undefined,
+  existing: readonly Detection[],
+): Promise<Detection[]> {
+  const candidates: Array<{ prefixStart: number; prefixEnd: number; hyphenIndex: number }> = []
+  SWEDISH_HYPHEN_COMPOUND_RE.lastIndex = 0
+  for (
+    let m = SWEDISH_HYPHEN_COMPOUND_RE.exec(text);
+    m !== null;
+    m = SWEDISH_HYPHEN_COMPOUND_RE.exec(text)
+  ) {
+    const prefix = m[1]
+    if (!prefix) continue
+    const prefixStart = m.index
+    const prefixEnd = prefixStart + prefix.length
+    const alreadyCovered = existing.some((d) => d.start < prefixEnd && d.end > prefixStart)
+    if (!alreadyCovered) {
+      candidates.push({ prefixStart, prefixEnd, hyphenIndex: prefixEnd })
+    }
+  }
+  if (candidates.length === 0) return []
+
+  const chars = text.split("")
+  for (const c of candidates) {
+    chars[c.hyphenIndex] = " "
+  }
+  const probeText = chars.join("")
+  const probeRes = await redactWithNer(probeText, {
+    recognizer: ner,
+    detectors: [...detectors],
+    profile,
+  })
+
+  const extra: Detection[] = []
+  for (const r of probeRes.redactions) {
+    if (!COMPOUND_NER_LABELS.has(r.label)) continue
+    for (const c of candidates) {
+      if (r.start <= c.prefixStart && r.end >= c.prefixEnd && r.end <= c.hyphenIndex) {
+        extra.push({
+          start: c.prefixStart,
+          end: c.prefixEnd,
+          label: r.label,
+          value: text.slice(c.prefixStart, c.prefixEnd),
+        })
+        break
+      }
+    }
+  }
+  return extra
+}
+
 interface CachedSpan {
   readonly start: number
   readonly end: number
@@ -316,15 +468,34 @@ export function createMaskeraEngine(options: EngineOptions = {}): MaskeraEngine 
         : hybridDefaultDetectors
 
       if (requestedMode === "rules") {
-        const result =
-          req.profile === "clinical"
-            ? redactFromDetections(
-                text,
-                runDetectors(text, detectors).filter((d) =>
-                  clinicalPrecisionFilter(d, text, "rule"),
-                ),
-              )
-            : redact(text, { detectors })
+        const canonical = canonicalize(text)
+        const homoglyph = normalizeMixedScriptHomoglyphs(canonical.text)
+        let result: RedactResult
+        if (canonical.identity && !homoglyph.changed) {
+          result =
+            req.profile === "clinical"
+              ? redactFromDetections(
+                  text,
+                  runDetectors(text, detectors).filter((d) =>
+                    clinicalPrecisionFilter(d, text, "rule"),
+                  ),
+                )
+              : redact(text, { detectors })
+        } else {
+          const detected = runDetectors(homoglyph.text, detectors)
+          const filtered =
+            req.profile === "clinical"
+              ? detected.filter((d) => clinicalPrecisionFilter(d, homoglyph.text, "rule"))
+              : detected
+          const mapped: Detection[] = []
+          for (const d of filtered) {
+            const [start, end] = canonical.span(d.start, d.end)
+            if (end > start) {
+              mapped.push({ start, end, label: d.label, value: text.slice(start, end) })
+            }
+          }
+          result = redactFromDetections(text, mapped)
+        }
         if (cacheKey) {
           if (spanCache.size >= maxCacheEntries) {
             const oldest = spanCache.keys().next().value
@@ -347,38 +518,48 @@ export function createMaskeraEngine(options: EngineOptions = {}): MaskeraEngine 
 
       try {
         const ner = getRecognizer()
-        // Run NER on the canonicalized view when input contains invisible
-        // characters (zero-width spaces, soft hyphens, bidi controls) or
-        // non-NFKC forms so adversarial obfuscation cannot split wordpieces
-        // and bypass Swedish NER, while still mapping spans back to the exact
-        // original string coordinates for lossless round-trip restoration.
+        // Run NER on the canonicalized + mixed-script homoglyph-folded view so
+        // invisible characters (ZWSP, soft hyphens, bidi controls), non-NFKC
+        // forms, and Cyrillic confusables cannot split wordpieces and bypass
+        // Swedish NER, while mapping spans back to exact original UTF-16
+        // coordinates for lossless round-trip restoration.
         const canonical = canonicalize(text)
-        const result = canonical.identity
-          ? await redactWithNer(text, {
-              recognizer: ner,
-              detectors,
-              profile: req.profile,
-            })
-          : await (async () => {
-              const foldedRes = await redactWithNer(canonical.text, {
-                recognizer: ner,
-                detectors,
-                profile: req.profile,
-              })
-              const mapped: Detection[] = []
-              for (const r of foldedRes.redactions) {
-                const [start, end] = canonical.span(r.start, r.end)
-                if (end > start) {
-                  mapped.push({
-                    start,
-                    end,
-                    label: r.label,
-                    value: text.slice(start, end),
-                  })
-                }
-              }
-              return redactFromDetections(text, mapped)
-            })()
+        const homoglyph = normalizeMixedScriptHomoglyphs(canonical.text)
+        const isIdentity = canonical.identity && !homoglyph.changed
+        const nerInput = isIdentity ? text : homoglyph.text
+        const baseRes = await redactWithNer(nerInput, {
+          recognizer: ner,
+          detectors,
+          profile: req.profile,
+        })
+        const baseDetections: Detection[] = baseRes.redactions.map((r) => ({
+          start: r.start,
+          end: r.end,
+          label: r.label,
+          value: nerInput.slice(r.start, r.end),
+        }))
+        const compoundExtras = await detectHyphenatedCompoundPrefixes(
+          nerInput,
+          ner,
+          detectors,
+          req.profile,
+          baseDetections,
+        )
+        const combined =
+          compoundExtras.length > 0 ? [...baseDetections, ...compoundExtras] : baseDetections
+
+        const result =
+          isIdentity && compoundExtras.length === 0
+            ? baseRes
+            : redactFromDetections(
+                text,
+                combined.flatMap((d) => {
+                  const [start, end] = canonical.span(d.start, d.end)
+                  return end > start
+                    ? [{ start, end, label: d.label, value: text.slice(start, end) }]
+                    : []
+                }),
+              )
         nerLoaded = true
         nerError = null
         if (cacheKey) {

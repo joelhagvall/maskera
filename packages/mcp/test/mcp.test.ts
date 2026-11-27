@@ -17,6 +17,7 @@ import {
   MASKERA_SKILL_MARKDOWN,
   MASKERA_SKILL_URI,
   MASKERA_STATUS_URI,
+  normalizeMixedScriptHomoglyphs,
   runDoctor,
   runInstall,
   runService,
@@ -1348,5 +1349,141 @@ describe("Security audit regression guards", () => {
     const zwRes = await engine.redact(zwText, { mode: "auto" })
     expect(zwRes.result.text).toBe("Patient [NAMN_1] ringde.")
     expect(zwRes.result.restore(zwRes.result.text)).toBe(zwText)
+  })
+
+  it("normalizes mixed-script Cyrillic homoglyphs and Swedish hyphenated compounds losslessly", async () => {
+    const pureRussian = "Привет мир Москва"
+    expect(normalizeMixedScriptHomoglyphs(pureRussian)).toEqual({
+      text: pureRussian,
+      changed: false,
+    })
+
+    const engine = createMaskeraEngine({
+      defaultMode: "auto",
+      recognizer: stubRecognizer([
+        { value: "Anna Lindqvist", label: "NAMN" },
+        { value: "Lindqvist", label: "NAMN" },
+      ]),
+    })
+    const homoText = "P\u0430tient Ann\u0430 Lindqvist ringde."
+    const homoRes = await engine.redact(homoText, { mode: "auto" })
+    expect(homoRes.result.text).toBe("P\u0430tient [NAMN_1] ringde.")
+    expect(homoRes.result.restore(homoRes.result.text)).toBe(homoText)
+
+    const compoundText = "Vi hanterar Lindqvist-ärendet idag."
+    const compoundRes = await engine.redact(compoundText, { mode: "auto" })
+    expect(compoundRes.result.text).toBe("Vi hanterar [NAMN_1]-ärendet idag.")
+    expect(compoundRes.result.restore(compoundRes.result.text)).toBe(compoundText)
+  })
+
+  it("redacts PII in filenames across list/search/read/write while preserving code paths and owner isolation", async () => {
+    const dir = await makeTempDir()
+    await mkdir(join(dir, "patients"), { recursive: true })
+    await mkdir(join(dir, "src"), { recursive: true })
+    await writeFile(
+      join(dir, "patients", "anna-lindqvist-19900101-2385.txt"),
+      "Journal för Anna Lindqvist, pnr 19900101-2385.\n",
+      "utf8",
+    )
+    await writeFile(join(dir, "src", "index.ts"), "export const ok = true\n", "utf8")
+
+    const engine = createMaskeraEngine({
+      defaultMode: "auto",
+      recognizer: stubRecognizer([{ value: "Anna Lindqvist", label: "NAMN" }]),
+    })
+    const server = createMaskeraMcpServer({ engine, allowedRoots: [dir] })
+
+    const listRes = await server.handleMessage(
+      {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "tools/call",
+        params: { name: "maskera_list_files", arguments: {} },
+      },
+      { sessionOwner: "owner-a" },
+    )
+    const listText = JSON.stringify(listRes)
+    expect(listText).not.toContain("19900101-2385")
+    expect(listText).not.toContain("anna-lindqvist")
+    expect(listText).toContain("src/index.ts")
+    const listResult = listRes?.result as
+      | { structuredContent?: { files: Array<{ path: string }>; session_id?: string } }
+      | undefined
+    const listedFiles = listResult?.structuredContent
+    expect(listedFiles).toBeDefined()
+    const aliasedPath = listedFiles?.files.find((f) => f.path.startsWith("patients/"))?.path ?? ""
+    expect(aliasedPath).toContain("[PERSONNUMMER_")
+    expect(aliasedPath.endsWith(".txt")).toBe(true)
+
+    // Owner A can read via the aliased path and never receives raw filename back
+    const readRes = await server.handleMessage(
+      {
+        jsonrpc: "2.0",
+        id: 2,
+        method: "tools/call",
+        params: {
+          name: "maskera_read_file",
+          arguments: { path: aliasedPath, session_id: listedFiles?.session_id },
+        },
+      },
+      { sessionOwner: "owner-a" },
+    )
+    expect((readRes?.result as { isError?: boolean } | undefined)?.isError).not.toBe(true)
+    const readJson = JSON.stringify(readRes)
+    expect(readJson).not.toContain("19900101-2385")
+    expect(readJson).not.toContain("anna-lindqvist")
+    expect(readJson).not.toContain("Anna Lindqvist")
+
+    // Owner B cannot resolve Owner A's path alias
+    const stealRes = await server.handleMessage(
+      {
+        jsonrpc: "2.0",
+        id: 3,
+        method: "tools/call",
+        params: { name: "maskera_read_file", arguments: { path: aliasedPath } },
+      },
+      { sessionOwner: "owner-b" },
+    )
+    expect((stealRes?.result as { isError?: boolean } | undefined)?.isError).toBe(true)
+
+    // maskera_search_files redacts match.path too
+    const searchRes = await server.handleMessage(
+      {
+        jsonrpc: "2.0",
+        id: 4,
+        method: "tools/call",
+        params: { name: "maskera_search_files", arguments: { query: "Journal" } },
+      },
+      { sessionOwner: "owner-a" },
+    )
+    expect(JSON.stringify(searchRes)).not.toContain("19900101-2385")
+    expect(JSON.stringify(searchRes)).not.toContain("anna-lindqvist")
+
+    // maskera_write_file resolves placeholders in destination filename and keeps output path redacted
+    const writeTarget = aliasedPath.replace(/\.txt$/, ".summary.txt")
+    const writeRes = await server.handleMessage(
+      {
+        jsonrpc: "2.0",
+        id: 5,
+        method: "tools/call",
+        params: {
+          name: "maskera_write_file",
+          arguments: {
+            path: writeTarget,
+            text: "Sammanfattning för [NAMN_1] ([PERSONNUMMER_1]).",
+            session_id: listedFiles?.session_id,
+          },
+        },
+      },
+      { sessionOwner: "owner-a" },
+    )
+    expect((writeRes?.result as { isError?: boolean } | undefined)?.isError).not.toBe(true)
+    expect(JSON.stringify(writeRes)).not.toContain("19900101-2385")
+    expect(JSON.stringify(writeRes)).not.toContain("anna-lindqvist")
+    const writtenDisk = await readFile(
+      join(dir, "patients", "anna-lindqvist-19900101-2385.summary.txt"),
+      "utf8",
+    )
+    expect(writtenDisk).toContain("19900101-2385")
   })
 })

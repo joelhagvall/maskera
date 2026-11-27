@@ -22,6 +22,7 @@ export interface WrapOptions {
   profile?: RedactionProfile
   customTerms?: readonly string[]
   restoreResponses?: boolean
+  blockBinary?: boolean
   auditLogPath?: string
   verify?: boolean
   receiptPath?: string
@@ -116,6 +117,7 @@ export async function runWrap(options: WrapOptions): Promise<WrapResult> {
     profile: options.profile,
     customTerms: options.customTerms,
     restoreResponses: options.restoreResponses,
+    blockBinary: options.blockBinary,
     auditLogPath: options.auditLogPath,
   })
 

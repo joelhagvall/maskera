@@ -235,12 +235,10 @@ async function main() {
   const message = `Follow Maskera ${label}`
   if (siblings.includes("maskera-extension")) {
     step("maskera-extension")
-    deliver(
-      "maskera-extension",
-      ["docs/maskera-product-contract.json"],
-      message,
-      dirtyBefore["maskera-extension"],
+    const before = dirtyBefore["maskera-extension"].filter(
+      (path) => path !== "docs/maskera-product-contract.json",
     )
+    deliver("maskera-extension", ["docs/maskera-product-contract.json"], message, before)
   }
   if (siblings.includes("maskera-cloud")) {
     step("maskera-cloud")

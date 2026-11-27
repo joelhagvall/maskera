@@ -15,6 +15,8 @@ export interface InspectedRequest {
   counts: Record<string, number>
   /** Redacted snippets sent upstream (never raw PII). */
   redactedPreview: string[]
+  /** Optional non-PII security warnings (e.g. uninspectable binary attachments). */
+  warnings?: string[]
 }
 
 const MAX_EVENTS = 100

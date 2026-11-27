@@ -48,6 +48,7 @@ interface ParsedCli {
   anthropicUpstream?: string
   openaiUpstream?: string
   restoreResponses: boolean
+  blockBinary: boolean
   auditLogPath?: string
   openInspector: boolean
   // wrap child command
@@ -119,6 +120,7 @@ function parseArgs(argv: readonly string[]): ParsedCli {
   let anthropicUpstream = process.env.MASKERA_ANTHROPIC_UPSTREAM || undefined
   let openaiUpstream = process.env.MASKERA_OPENAI_UPSTREAM || undefined
   let restoreResponses = true
+  let blockBinary = process.env.MASKERA_PROXY_BLOCK_BINARY === "1"
   let auditLogPath = process.env.MASKERA_AUDIT_LOG || undefined
   let openInspector = false
   let wrapCommand: string | undefined
@@ -202,6 +204,8 @@ function parseArgs(argv: readonly string[]): ParsedCli {
       approvalMode = parseApprovalMode(value)
     } else if (flag === "--no-restore") {
       restoreResponses = false
+    } else if (flag === "--block-binary") {
+      blockBinary = true
     } else if (flag === "--open") {
       openInspector = true
     } else if (flag === "--redact") {
@@ -334,6 +338,7 @@ function parseArgs(argv: readonly string[]): ParsedCli {
     anthropicUpstream,
     openaiUpstream,
     restoreResponses,
+    blockBinary,
     auditLogPath,
     openInspector,
     wrapCommand,
@@ -365,7 +370,7 @@ function printHelp(): void {
       "",
       "Usage:",
       "  maskera-mcp [mcp]              [--root <dir>] [--no-raw-restore] [--read-only] [--approval-mode automatic|native] [--rules-only]",
-      "  maskera-mcp proxy              [--port 8787] [--host 127.0.0.1] [--root <dir>] [--open] [--upstream <url>] [--audit-log <file.jsonl>] [--no-raw-restore] [--read-only] [--approval-mode automatic|browser] [--rules-only] [--no-restore]",
+      "  maskera-mcp proxy              [--port 8787] [--host 127.0.0.1] [--root <dir>] [--open] [--upstream <url>] [--audit-log <file.jsonl>] [--no-raw-restore] [--read-only] [--approval-mode automatic|browser] [--rules-only] [--no-restore] [--block-binary]",
       "  maskera-mcp wrap [flags] -- <cmd> [args...]   Start local proxy, verify, inject ANTHROPIC_BASE_URL/OPENAI_BASE_URL, and run <cmd>",
       "  maskera-mcp guard              [--redact] [--file <path>] [--proxy-url <url>] [--no-proxy] [--rules-only]",
       `  maskera-mcp install [client|all] [--transport stdio|http] [--url <http://127.0.0.1:8787/mcp>] [--root <dir>] [--apply] [--project] [--with-hook] [--no-raw-restore] [--read-only] [--config <path>] [--receipt <file.json>] [--no-verify] [--dry-run]`,
@@ -388,6 +393,7 @@ function printHelp(): void {
       "  --no-raw-restore        Block maskera_restore and include_map=true (allow maskera_write_file only)",
       "  --read-only             Hide and block maskera_write_file and maskera_clear_session",
       "  --approval-mode <m>     Raw PII export gate: 'automatic' (default), 'browser', or 'native'",
+      "  --block-binary          Block uninspectable binary attachments (images/PDFs) in proxy with HTTP 415",
       "  --open                  Open local live inspector (/_maskera) in the browser (proxy/wrap)",
       "  -v, --version           Print version",
       "  -h, --help              Print this help",
@@ -745,6 +751,7 @@ async function main(): Promise<void> {
       profile: args.profile,
       customTerms: args.customTerms.length > 0 ? args.customTerms : undefined,
       restoreResponses: args.restoreResponses,
+      blockBinary: args.blockBinary,
       auditLogPath: args.auditLogPath,
       verify: args.verify,
       receiptPath: args.receiptPath,
@@ -793,6 +800,7 @@ async function main(): Promise<void> {
       profile: args.profile,
       customTerms: args.customTerms.length > 0 ? args.customTerms : undefined,
       restoreResponses: args.restoreResponses,
+      blockBinary: args.blockBinary,
       auditLogPath: args.auditLogPath,
       onLog: (line) => process.stderr.write(`${line}\n`),
     })

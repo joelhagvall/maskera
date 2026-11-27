@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto"
+import { createHash, randomUUID } from "node:crypto"
 import { appendFile, mkdir } from "node:fs/promises"
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http"
 import { dirname, posix } from "node:path"
@@ -47,6 +47,8 @@ export interface ProxyOptions {
   customTerms?: readonly string[]
   /** Restore placeholders in upstream responses. Default `true`. */
   restoreResponses?: boolean
+  /** Reject uninspectable binary attachments (images, PDFs, audio) with HTTP 415. Default `false` (warns in audit log/inspector). */
+  blockBinary?: boolean
   /** Optional local JSONL file for metadata-only audit logs (counts only, never raw PII). */
   auditLogPath?: string
   /** Optional safe metadata logger (never receives raw PII). */
@@ -268,10 +270,131 @@ function shouldSkipToolArgRestore(toolName: unknown, argsText: string): boolean 
 
 export type RedactFieldKind = "message" | "system" | "tool_description"
 
+const SWEDISH_DIACRITIC_RE = /[åäöÅÄÖ]/
+const SWEDISH_SIGNAL_WORD_RE =
+  /\b(?:och|inte|ska|eller|enligt|kund|personnummer|svenska|sekretess|arbetsgivare|utbetalning|sammanfatta|skriv|svara|nedan|uppgifter)\b/i
+const ENGLISH_BOILERPLATE_WORDS = new Set([
+  "the",
+  "and",
+  "you",
+  "your",
+  "with",
+  "that",
+  "this",
+  "from",
+  "are",
+  "not",
+  "when",
+  "use",
+  "must",
+  "should",
+  "never",
+  "always",
+  "tools",
+  "files",
+  "code",
+  "return",
+  "output",
+  "response",
+  "assistant",
+  "instructions",
+  "command",
+  "user",
+])
+const ASCII_WORD_RE = /\b[a-z]{2,}\b/g
+
+/**
+ * Returns `true` when a `system` prompt block is clearly long English agent
+ * boilerplate (e.g. Claude Code / Codex / OpenCode system instructions) with
+ * zero Swedish characters or domain words. Those blocks still run deterministic
+ * structured PII rules + `customTerms`, avoiding hundreds of false Swedish NER
+ * hits on English keywords while keeping full NER on Swedish or short prompts.
+ */
+export function isLikelyEnglishSystemPrompt(text: string): boolean {
+  if (text.length < 240) return false
+  if (SWEDISH_DIACRITIC_RE.test(text)) return false
+  if (SWEDISH_SIGNAL_WORD_RE.test(text)) return false
+  const found = new Set<string>()
+  const lower = text.toLowerCase()
+  ASCII_WORD_RE.lastIndex = 0
+  for (let m = ASCII_WORD_RE.exec(lower); m !== null; m = ASCII_WORD_RE.exec(lower)) {
+    const word = m[0]
+    if (word && ENGLISH_BOILERPLATE_WORDS.has(word)) {
+      found.add(word)
+      if (found.size >= 6) return true
+    }
+  }
+  return false
+}
+
+function headerFirst(headers: IncomingMessage["headers"], name: string): string {
+  const value = headers[name]
+  if (typeof value === "string") return value.trim()
+  if (Array.isArray(value)) return (value[0] ?? "").trim()
+  return ""
+}
+
+function shortSessionHash(seed: string): string {
+  return `proxy-${createHash("sha256").update(seed).digest("hex").slice(0, 12)}`
+}
+
+/**
+ * Derives an isolated proxy vault session key per client/conversation when the
+ * caller omits `x-maskera-session`, preventing unrelated clients sharing a
+ * local proxy from sharing placeholder mappings while preserving multi-turn
+ * consistency within the same client thread.
+ */
+export function deriveProxySessionId(
+  headers: IncomingMessage["headers"],
+  body?: Record<string, unknown>,
+): string {
+  const explicit = headerFirst(headers, "x-maskera-session")
+  if (explicit) return explicit
+
+  const threadHeader =
+    headerFirst(headers, "x-session-id") ||
+    headerFirst(headers, "x-conversation-id") ||
+    headerFirst(headers, "openai-conversation-id")
+  if (threadHeader) return shortSessionHash(`hdr:${threadHeader}`)
+
+  if (body) {
+    if (typeof body.prompt_cache_key === "string" && body.prompt_cache_key.trim()) {
+      return shortSessionHash(`cache:${body.prompt_cache_key.trim()}`)
+    }
+    if (typeof body.conversation === "string" && body.conversation.trim()) {
+      return shortSessionHash(`conv:${body.conversation.trim()}`)
+    }
+    if (
+      isPlainObject(body.conversation) &&
+      typeof body.conversation.id === "string" &&
+      body.conversation.id.trim()
+    ) {
+      return shortSessionHash(`conv:${body.conversation.id.trim()}`)
+    }
+    if (isPlainObject(body.metadata)) {
+      const metaId =
+        (typeof body.metadata.session_id === "string" && body.metadata.session_id.trim()) ||
+        (typeof body.metadata.conversation_id === "string" &&
+          body.metadata.conversation_id.trim()) ||
+        (typeof body.metadata.user_id === "string" && body.metadata.user_id.trim())
+      if (metaId) return shortSessionHash(`meta:${metaId}`)
+    }
+  }
+
+  const auth = headerFirst(headers, "authorization") || headerFirst(headers, "x-api-key")
+  if (auth) {
+    const ua = headerFirst(headers, "user-agent")
+    return shortSessionHash(`auth:${auth}\0${ua}`)
+  }
+
+  return "proxy"
+}
+
 const TEXT_BASE64_MEDIA_RE =
   /^(?:text\/|application\/(?:json|xml|csv|x-ndjson|javascript|yaml|x-yaml))/i
 const DATA_URI_TEXT_BASE64_RE =
   /^data:((?:text\/[a-z0-9.+-]+|application\/(?:json|xml|csv|x-ndjson|javascript))[^;,]*);base64,([A-Za-z0-9+/=\s]+)$/i
+const DATA_URI_ANY_RE = /^data:([^;,]+);base64,/i
 
 async function redactBase64Utf8(
   encoded: string,
@@ -298,13 +421,28 @@ async function redactBase64Utf8(
 export async function redactLlmRequestBody(
   body: Record<string, unknown>,
   redactString: (text: string, kind: RedactFieldKind) => Promise<string>,
-  options: { mutate?: boolean } = {},
+  options: { mutate?: boolean; onBinaryAttachment?: (kind: string) => void } = {},
 ): Promise<Record<string, unknown>> {
   const clone = options.mutate ? body : structuredClone(body)
+  const noteBinary = (kind: string) => {
+    options.onBinaryAttachment?.(kind)
+  }
 
   async function redactContentBlocks(blocks: unknown[], kind: RedactFieldKind): Promise<void> {
     for (const block of blocks) {
       if (!isPlainObject(block)) continue
+      const blockType = typeof block.type === "string" ? block.type : ""
+      if (blockType === "image" || blockType === "input_image") {
+        const mediaType =
+          isPlainObject(block.source) && typeof block.source.media_type === "string"
+            ? block.source.media_type
+            : blockType
+        noteBinary(mediaType)
+      } else if (blockType === "image_url" || isPlainObject(block.image_url)) {
+        noteBinary("image_url")
+      } else if (blockType === "input_audio" || isPlainObject(block.input_audio)) {
+        noteBinary("input_audio")
+      }
       if (typeof block.text === "string") {
         block.text = await redactString(block.text, kind)
       }
@@ -341,8 +479,16 @@ export async function redactLlmRequestBody(
         if (match?.[1] && match[2]) {
           const nextB64 = await redactBase64Utf8(match[2], redactString, kind)
           block.file_data = `data:${match[1]};base64,${nextB64}`
-        } else if (!block.file_data.startsWith("data:")) {
-          block.file_data = await redactBase64Utf8(block.file_data, redactString, kind)
+        } else if (block.file_data.startsWith("data:")) {
+          const anyMime = DATA_URI_ANY_RE.exec(block.file_data)?.[1] ?? "application/octet-stream"
+          noteBinary(anyMime)
+        } else {
+          const rawBuf = Buffer.from(block.file_data, "base64")
+          if (rawBuf.includes(0)) {
+            noteBinary("application/octet-stream")
+          } else {
+            block.file_data = await redactBase64Utf8(block.file_data, redactString, kind)
+          }
         }
       }
       if (isPlainObject(block.source)) {
@@ -355,6 +501,14 @@ export async function redactLlmRequestBody(
           TEXT_BASE64_MEDIA_RE.test(block.source.media_type)
         ) {
           block.source.data = await redactBase64Utf8(block.source.data, redactString, kind)
+        } else if (block.source.type === "base64") {
+          const mediaType =
+            typeof block.source.media_type === "string"
+              ? block.source.media_type
+              : "application/octet-stream"
+          if (blockType !== "image" && blockType !== "input_image") {
+            noteBinary(mediaType)
+          }
         }
         if (typeof block.source.content === "string") {
           block.source.content = await redactString(block.source.content, kind)
@@ -491,6 +645,9 @@ export async function redactLlmRequestBody(
       if (typeof msg.reasoning_content === "string") {
         msg.reasoning_content = await redactString(msg.reasoning_content, msgKind)
       }
+      if (typeof msg.reasoning === "string") {
+        msg.reasoning = await redactString(msg.reasoning, msgKind)
+      }
       if (typeof msg.refusal === "string") {
         msg.refusal = await redactString(msg.refusal, msgKind)
       }
@@ -544,6 +701,9 @@ export async function redactLlmRequestBody(
         }
         if (typeof item.reasoning_content === "string") {
           item.reasoning_content = await redactString(item.reasoning_content, itemKind)
+        }
+        if (typeof item.reasoning === "string") {
+          item.reasoning = await redactString(item.reasoning, itemKind)
         }
         if (typeof item.refusal === "string") {
           item.refusal = await redactString(item.refusal, itemKind)
@@ -607,6 +767,9 @@ export function restoreLlmResponseBody(
         }
         if (typeof msg.reasoning_content === "string") {
           msg.reasoning_content = restorePlainText(msg.reasoning_content, map)
+        }
+        if (typeof msg.reasoning === "string") {
+          msg.reasoning = restorePlainText(msg.reasoning, map)
         }
         if (Array.isArray(msg.tool_calls)) {
           for (const call of msg.tool_calls) {
@@ -805,6 +968,11 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
         events.push(
           `data: ${JSON.stringify({ choices: [{ index: idx, delta: { reasoning_content: tail } }] })}`,
         )
+      } else if (key.startsWith("openai_chat_reasoning_plain:")) {
+        const idx = Number(key.split(":")[1] ?? 0)
+        events.push(
+          `data: ${JSON.stringify({ choices: [{ index: idx, delta: { reasoning: tail } }] })}`,
+        )
       } else if (key.startsWith("resp_reasoning:")) {
         const [, outputIdx, summaryIdx] = key.split(":")
         events.push(
@@ -956,6 +1124,11 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
                 delta.reasoning_content,
               )
             }
+            if (typeof delta.reasoning === "string") {
+              delta.reasoning = getStream(`openai_chat_reasoning_plain:${cIdx}`).push(
+                delta.reasoning,
+              )
+            }
             if (Array.isArray(delta.tool_calls)) {
               for (const call of delta.tool_calls) {
                 if (!isPlainObject(call)) continue
@@ -996,6 +1169,13 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
               const d = choice.delta as Record<string, unknown>
               d.reasoning_content =
                 (typeof d.reasoning_content === "string" ? d.reasoning_content : "") + reasoningTail
+            }
+            const reasoningPlainTail = flushStream(`openai_chat_reasoning_plain:${cIdx}`)
+            if (reasoningPlainTail) {
+              if (!isPlainObject(choice.delta)) choice.delta = {}
+              const d = choice.delta as Record<string, unknown>
+              d.reasoning =
+                (typeof d.reasoning === "string" ? d.reasoning : "") + reasoningPlainTail
             }
             const toolPrefix = `openai_chat_tool:${cIdx}:`
             for (const key of [...bufferedToolArgs.keys()]) {
@@ -2071,13 +2251,14 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
 
     const rawBody = method === "GET" || method === "HEAD" ? undefined : await readRequestBody(req)
 
-    const sessionHeader = req.headers["x-maskera-session"]
-    const sessionId =
-      typeof sessionHeader === "string" && sessionHeader.trim() ? sessionHeader.trim() : "proxy"
+    let sessionId = deriveProxySessionId(req.headers)
     const proxyVaultOwner = "proxy"
+    const blockBinary = options.blockBinary === true
 
     const stats: RedactStats = { redactions: 0, counts: {} }
     const redactedPreview: string[] = []
+    const binaryAttachments = new Set<string>()
+    let requestWarnings: string[] | undefined
     let outgoingBody: Buffer | undefined = rawBody
     let rewroteRequestBody = false
     const contentType = String(req.headers["content-type"] ?? "")
@@ -2128,33 +2309,60 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
         res.end(JSON.stringify({ error: { message: "Expected JSON object request body." } }))
         return
       }
+      sessionId = deriveProxySessionId(req.headers, parsed)
       let redactedObj: Record<string, unknown>
       try {
+        const redactChunk = async (chunk: string, forceRules: boolean): Promise<string> => {
+          if (!chunk.trim()) return chunk
+          const { result } = await engine.redact(chunk, {
+            mode: forceRules ? "rules" : undefined,
+            profile: options.profile,
+            customTerms: options.customTerms,
+          })
+          const applied = vault.apply(chunk, result, sessionId, proxyVaultOwner)
+          stats.redactions += applied.totalRedactions
+          mergeCounts(stats.counts, applied.counts)
+          if (redactedPreview.length < 6) {
+            const snippet =
+              applied.redacted.length > 1200
+                ? `${applied.redacted.slice(0, 1200)}...`
+                : applied.redacted
+            redactedPreview.push(snippet)
+          }
+          return applied.redacted
+        }
         redactedObj = await redactLlmRequestBody(
           parsed,
           async (text, kind) => {
             if (!text.trim()) return text
-            // Tool descriptions are API schema docs (typically English);
-            // run fast deterministic rules + customTerms so Swedish NER
-            // never hallucinates names inside tool docs or burns Turn-1 CPU.
-            const { result } = await engine.redact(text, {
-              mode: kind === "tool_description" ? "rules" : undefined,
-              profile: options.profile,
-              customTerms: options.customTerms,
-            })
-            const applied = vault.apply(text, result, sessionId, proxyVaultOwner)
-            stats.redactions += applied.totalRedactions
-            mergeCounts(stats.counts, applied.counts)
-            if (redactedPreview.length < 6) {
-              const snippet =
-                applied.redacted.length > 1200
-                  ? `${applied.redacted.slice(0, 1200)}...`
-                  : applied.redacted
-              redactedPreview.push(snippet)
+            if (kind === "tool_description") {
+              return redactChunk(text, true)
             }
-            return applied.redacted
+            // Long coding-agent system prompts often mix English boilerplate
+            // sections with user-supplied Swedish sections (e.g. AGENTS.md).
+            // Evaluate per paragraph so English boilerplate runs fast rules +
+            // customTerms without Swedish NER false positives while Swedish
+            // paragraphs keep full hybrid NER protection.
+            if (kind === "system") {
+              if (text.length >= 600 && text.includes("\n\n")) {
+                const parts = text.split(/(\n{2,})/)
+                for (let i = 0; i < parts.length; i += 2) {
+                  const para = parts[i] ?? ""
+                  if (!para.trim()) continue
+                  parts[i] = await redactChunk(para, isLikelyEnglishSystemPrompt(para))
+                }
+                return parts.join("")
+              }
+              return redactChunk(text, isLikelyEnglishSystemPrompt(text))
+            }
+            return redactChunk(text, false)
           },
-          { mutate: true },
+          {
+            mutate: true,
+            onBinaryAttachment: (kind) => {
+              binaryAttachments.add(kind)
+            },
+          },
         )
       } catch (err) {
         recordAuditAndInspector({
@@ -2171,6 +2379,40 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
           redactedPreview,
         })
         throw err
+      }
+      if (binaryAttachments.size > 0) {
+        const kinds = [...binaryAttachments]
+        const warning = `Uninspectable binary attachment(s) without OCR: ${kinds.join(", ")}`
+        requestWarnings = [warning]
+        log(`[maskera-proxy] warning: ${warning}`)
+        if (blockBinary) {
+          recordAuditAndInspector({
+            timestamp: new Date().toISOString(),
+            method,
+            path: forwardPath,
+            upstream: baseUrl,
+            sessionId,
+            status: 415,
+            streamed: false,
+            durationMs: Date.now() - startedAt,
+            redactions: stats.redactions,
+            counts: stats.counts,
+            redactedPreview,
+            warnings: requestWarnings,
+          })
+          res.writeHead(415, {
+            "content-type": "application/json; charset=utf-8",
+            "x-maskera-warning": "uninspectable-binary-attachment",
+          })
+          res.end(
+            JSON.stringify({
+              error: {
+                message: `Refusing to forward uninspectable binary attachment(s) (${kinds.join(", ")}) when --block-binary is enabled.`,
+              },
+            }),
+          )
+          return
+        }
       }
       outgoingBody = Buffer.from(JSON.stringify(redactedObj), "utf8")
       rewroteRequestBody = true
@@ -2238,6 +2480,9 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
       }
     })
     outHeaders["x-maskera-redacted"] = String(stats.redactions)
+    if (requestWarnings) {
+      outHeaders["x-maskera-warning"] = "uninspectable-binary-attachment"
+    }
 
     const sessionMap = restoreResponses ? vault.getMap(sessionId, proxyVaultOwner) : {}
     const hasMap = Object.keys(sessionMap).length > 0
@@ -2291,6 +2536,7 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
         redactions: stats.redactions,
         counts: stats.counts,
         redactedPreview,
+        ...(requestWarnings ? { warnings: requestWarnings } : {}),
       })
       log(
         `[maskera-proxy] ${method} ${forwardPath} ${upstreamRes.status} sse redacted=${stats.redactions} ${durationMs}ms`,
@@ -2324,6 +2570,7 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
           redactions: stats.redactions,
           counts: stats.counts,
           redactedPreview,
+          ...(requestWarnings ? { warnings: requestWarnings } : {}),
         })
         log(
           `[maskera-proxy] ${method} ${forwardPath} ${upstreamRes.status} json redacted=${stats.redactions} ${durationMs}ms`,
@@ -2349,6 +2596,7 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
       redactions: stats.redactions,
       counts: stats.counts,
       redactedPreview,
+      ...(requestWarnings ? { warnings: requestWarnings } : {}),
     })
     log(
       `[maskera-proxy] ${method} ${forwardPath} ${upstreamRes.status} redacted=${stats.redactions} ${durationMs}ms`,

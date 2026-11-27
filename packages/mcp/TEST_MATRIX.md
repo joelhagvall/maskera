@@ -6,14 +6,14 @@ Every surface, client, transport, and security invariant is tracked with explici
 
 | Client / Target | Artifact Tested | Transport / Mode | Status | Evidence / Notes |
 | --- | --- | --- | --- | --- |
-| **Claude Code** (`2.1.332`) | Cleanly packed & installed `@maskera/mcp@0.4.1` tarball | MCP stdio + HTTP Proxy + `UserPromptSubmit` guard hook (`rules` & `auto` ONNX) | **PASS** | `audit:clients` (`claude/rules: 3062ms`, `claude/auto: 1123ms`, 0 upstream leaks) |
-| **Codex CLI** (`0.172.0`) | Cleanly packed & installed `@maskera/mcp@0.4.1` tarball | MCP stdio + HTTP Proxy Responses API (`426` WS->SSE fallback, 0 reconnects, `rules` & `auto`) | **PASS** | `audit:clients` (`codex/rules: 361ms`, `codex/auto: 2394ms`, 0 upstream leaks) |
-| **OpenCode** (`v2.4.2`) | Cleanly packed & installed `@maskera/mcp@0.4.1` tarball | MCP stdio + HTTP Proxy Chat Completions + Code Mode `execute` shield (`rules` & `auto`) | **PASS** | `audit:clients` (`opencode/rules: 1451ms`, `opencode/auto: 9505ms`, 0 upstream leaks) |
+| **Claude Code** (`2.1.332`) | Cleanly packed & installed `@maskera/mcp@0.4.2` tarball | MCP stdio + HTTP Proxy + `UserPromptSubmit` guard hook (`rules` & `auto` ONNX) | **PASS** | `audit:clients` (`claude/rules`, `claude/auto`, 0 upstream leaks) |
+| **Codex CLI** (`0.172.0`) | Cleanly packed & installed `@maskera/mcp@0.4.2` tarball | MCP stdio + HTTP Proxy Responses API (`426` WS->SSE fallback, 0 reconnects, `rules` & `auto`) | **PASS** | `audit:clients` (`codex/rules: 477ms`, `codex/auto: 917ms`, 0 upstream leaks) |
+| **OpenCode** (`v2.4.2`) | Cleanly packed & installed `@maskera/mcp@0.4.2` tarball | MCP stdio + HTTP Proxy Chat Completions + Code Mode `execute` shield (`rules` & `auto`) | **PASS** | `audit:clients` (`opencode/rules: 1634ms`, `opencode/auto: 11214ms`, 0 upstream leaks) |
+| **Local LLM (Ollama `gpt-oss:20b`)** | Real local `ollama serve` + built proxy | OpenAI-compatible `/v1/chat/completions` through `maskera-mcp proxy` (`auto` ONNX) | **PASS** | `audit:clients` (`HTTP 200, 0 raw canaries leaked, redacted=3`, `message.reasoning` restored) |
 | **Claude Desktop (protocol)** | Built CLI (`dist/cli.js`) | Gateway third-party inference (`x-api-key` routing to Anthropic, SSE split restore) | **PASS** | `e2e-agent-test.mjs` suite 3b |
 | **Claude Desktop (GUI app)** | `/Applications/Claude.app` | Electron GUI manual configuration | **NOT_TESTED** | GUI app not headless-automatable; protocol path covered above |
 | **Cursor IDE (config & hook)** | Built CLI + installed binary | `.cursor/mcp.json` + `.cursor/hooks.json` (`beforeSubmitPrompt`) | **PASS** | `mcp.test.ts` + `e2e-agent-test.mjs` |
 | **Cursor IDE (GUI app)** | `/Applications/Cursor.app` | Full IDE GUI interactive session | **NOT_TESTED** | GUI app requires interactive sign-in |
-| **Local LLM (Ollama)** | `ollama` CLI | OpenAI-compatible local proxy upstream | **NOT_TESTED** | Ollama daemon not running in audit environment |
 | **Live Cloud LLMs (Anthropic/OpenAI/OpenCode Go)** | Installed / built CLI | Real paid/subscription upstream APIs | **NOT_TESTED** | Strictly opt-in (`pnpm test:mcp:harnesses -- --live`); disabled by default to enforce zero paid API calls |
 
 ## 2. Protocol, Transport & Feature Coverage

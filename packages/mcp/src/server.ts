@@ -1,5 +1,6 @@
 import { createRequire } from "node:module"
-import type { RedactionProfile } from "maskera"
+import { extname, isAbsolute, join, relative, sep } from "node:path"
+import { type Detection, type PiiLabel, type RedactionProfile, redactFromDetections } from "maskera"
 import type { ApprovalBroker, ApprovalMode } from "./approvals"
 import { createMaskeraEngine, type MaskeraEngine, type MaskMode } from "./engine"
 import { createFileGuard, type FileGuard } from "./files"
@@ -530,6 +531,35 @@ const TOOLS: readonly ToolDefinition[] = [
 ]
 
 const WRITE_TOOLS = new Set(["maskera_write_file", "maskera_clear_session"])
+const CODE_FILE_EXTENSIONS = new Set([
+  ".ts",
+  ".tsx",
+  ".js",
+  ".jsx",
+  ".mjs",
+  ".cjs",
+  ".json",
+  ".yaml",
+  ".yml",
+  ".toml",
+  ".lock",
+  ".css",
+  ".scss",
+  ".html",
+  ".svg",
+  ".map",
+  ".py",
+  ".rs",
+  ".go",
+  ".java",
+  ".rb",
+  ".sh",
+  ".sql",
+  ".env",
+])
+const PATH_NER_LABELS = new Set<PiiLabel>(["NAMN", "ORG", "PLATS"])
+const PATH_NER_PREFIX = "Dokument om "
+const MAX_PATH_ALIASES_PER_OWNER = 5_000
 
 function asObject(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -659,6 +689,198 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
   const onToolCall = options.onToolCall
 
   let clientSupportsElicitation = false
+  const ownerPathAliases = new Map<
+    string,
+    { toAlias: Map<string, string>; toReal: Map<string, string> }
+  >()
+
+  function getPathAliasBucket(owner: string) {
+    let bucket = ownerPathAliases.get(owner)
+    if (!bucket) {
+      bucket = { toAlias: new Map(), toReal: new Map() }
+      ownerPathAliases.set(owner, bucket)
+    }
+    return bucket
+  }
+
+  function registerPathAlias(owner: string, realPath: string, aliasPath: string): void {
+    if (realPath === aliasPath) return
+    const bucket = getPathAliasBucket(owner)
+    if (bucket.toAlias.size >= MAX_PATH_ALIASES_PER_OWNER && !bucket.toAlias.has(realPath)) {
+      const oldestReal = bucket.toAlias.keys().next().value
+      if (oldestReal !== undefined) {
+        const oldestAlias = bucket.toAlias.get(oldestReal)
+        bucket.toAlias.delete(oldestReal)
+        if (oldestAlias !== undefined) bucket.toReal.delete(oldestAlias)
+      }
+    }
+    bucket.toAlias.set(realPath, aliasPath)
+    bucket.toReal.set(aliasPath, realPath)
+  }
+
+  async function redactPathSegment(
+    segment: string,
+    isFinalSegment: boolean,
+    opts: {
+      owner: string
+      sessionId?: string
+      mode?: MaskMode
+      profile?: RedactionProfile
+      customTerms?: readonly string[]
+    },
+  ): Promise<{ segment: string; sessionId?: string; changed: boolean }> {
+    const ext = isFinalSegment ? extname(segment) : ""
+    const stem = ext ? segment.slice(0, -ext.length) : segment
+    if (!stem.trim()) return { segment, sessionId: opts.sessionId, changed: false }
+
+    // 1. Always run fast deterministic rules + customTerms with `_` turned into
+    // spaces (preserving `-` so personnummer/phone/orgnr match cleanly).
+    const rulesProbe = stem.replace(/_/g, " ")
+    const { result: rulesRes } = await engine.redact(rulesProbe, {
+      mode: "rules",
+      profile: opts.profile,
+      customTerms: opts.customTerms,
+    })
+    const detections: Detection[] = rulesRes.redactions.map((r) => ({
+      start: r.start,
+      end: r.end,
+      label: r.label,
+      value: stem.slice(r.start, r.end),
+    }))
+
+    // 2. For non-code document filenames in hybrid auto mode, also probe with
+    // ONNX NER using a 1-to-1 title-cased copy so names like `anna-lindqvist.txt`
+    // are masked while code filenames (`index.ts`, `package.json`) stay untouched.
+    const effectiveMode = opts.mode ?? engine.status().defaultMode
+    const isCodeFile = ext !== "" && CODE_FILE_EXTENSIONS.has(ext.toLowerCase())
+    if (effectiveMode === "auto" && !isCodeFile) {
+      const alphaWords = stem.match(/[A-Za-zÅÄÖåäöÉé]{2,}/g) ?? []
+      if (alphaWords.length >= 2) {
+        const titleProbe = stem
+          .replace(/[_-]/g, " ")
+          .replace(
+            /(^| )([a-zåäöé])/g,
+            (_m, lead: string, ch: string) => `${lead}${ch.toUpperCase()}`,
+          )
+        const framed = `${PATH_NER_PREFIX}${titleProbe}`
+        const { result: nerRes } = await engine.redact(framed, {
+          mode: "auto",
+          profile: opts.profile,
+          customTerms: opts.customTerms,
+        })
+        const offset = PATH_NER_PREFIX.length
+        for (const r of nerRes.redactions) {
+          if (!PATH_NER_LABELS.has(r.label)) continue
+          const start = r.start - offset
+          const end = r.end - offset
+          if (start < 0 || end <= start || end > stem.length) continue
+          const overlaps = detections.some((d) => d.start < end && d.end > start)
+          if (!overlaps) {
+            detections.push({ start, end, label: r.label, value: stem.slice(start, end) })
+          }
+        }
+      }
+    }
+
+    if (detections.length === 0) {
+      return { segment, sessionId: opts.sessionId, changed: false }
+    }
+    const redactedStem = redactFromDetections(stem, detections)
+    const applied = vault.apply(stem, redactedStem, opts.sessionId, opts.owner)
+    return {
+      segment: `${applied.redacted}${ext}`,
+      sessionId: applied.sessionId,
+      changed: applied.redacted !== stem,
+    }
+  }
+
+  async function redactRelativePath(
+    relPath: string,
+    opts: {
+      owner: string
+      sessionId?: string
+      mode?: MaskMode
+      profile?: RedactionProfile
+      customTerms?: readonly string[]
+      rootBase?: string
+    },
+  ): Promise<{ path: string; sessionId?: string; changed: boolean }> {
+    const parts = relPath.split("/")
+    const outParts: string[] = []
+    let activeSession = opts.sessionId
+    let anyChanged = false
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i] ?? ""
+      const res = await redactPathSegment(part, i === parts.length - 1, {
+        owner: opts.owner,
+        sessionId: activeSession,
+        mode: opts.mode,
+        profile: opts.profile,
+        customTerms: opts.customTerms,
+      })
+      activeSession = res.sessionId
+      if (res.changed) anyChanged = true
+      outParts.push(res.segment)
+    }
+    const aliasedRel = outParts.join("/")
+    if (anyChanged) {
+      registerPathAlias(opts.owner, relPath, aliasedRel)
+      if (opts.rootBase) {
+        registerPathAlias(opts.owner, join(opts.rootBase, relPath), join(opts.rootBase, aliasedRel))
+      }
+    }
+    return { path: aliasedRel, sessionId: activeSession, changed: anyChanged }
+  }
+
+  async function redactResolvedPath(
+    resolvedPath: string,
+    opts: {
+      owner: string
+      sessionId?: string
+      mode?: MaskMode
+      profile?: RedactionProfile
+      customTerms?: readonly string[]
+    },
+  ): Promise<string> {
+    const candidates = files.allowedRoots.flatMap((root) =>
+      root.startsWith("/private/") ? [root] : [root, `/private${root}`],
+    )
+    let bestRoot: string | null = null
+    let bestRel: string | null = null
+    for (const root of candidates) {
+      const rel = relative(root, resolvedPath)
+      if (rel && !rel.startsWith("..") && !isAbsolute(rel)) {
+        if (!bestRoot || root.length > bestRoot.length) {
+          bestRoot = root
+          bestRel = rel.split(sep).join("/")
+        }
+      }
+    }
+    if (!bestRoot || !bestRel) return resolvedPath
+    const res = await redactRelativePath(bestRel, { ...opts, rootBase: bestRoot })
+    if (!res.changed) return resolvedPath
+    return join(bestRoot, res.path)
+  }
+
+  function resolveInputPath(rawPath: string, owner: string, sessionId?: string): string {
+    const trimmed = rawPath.trim()
+    const bucket = ownerPathAliases.get(owner)
+    const direct = bucket?.toReal.get(trimmed)
+    if (direct) return direct
+    const normalized = trimmed.split(sep).join("/")
+    const directNorm = bucket?.toReal.get(normalized)
+    if (directNorm) return directNorm
+    if (trimmed.includes("[") && trimmed.includes("]")) {
+      try {
+        const sid = sessionId?.trim() || vault.resolveSessionFor(trimmed, owner)
+        const { restored } = vault.restore(trimmed, { sessionId: sid, owner })
+        return restored
+      } catch {
+        // Fall through to FileGuard with original path if no vault session matches.
+      }
+    }
+    return rawPath
+  }
 
   function resolvePolicy(override?: MaskeraMcpPolicy): ResolvedPolicy {
     return {
@@ -929,24 +1151,30 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
             ),
           )
         }
-        const file = await files.readText(args.path)
+        const requestedSession = typeof args.session_id === "string" ? args.session_id : undefined
+        const resolvedInputPath = resolveInputPath(args.path, owner, requestedSession)
+        const file = await files.readText(resolvedInputPath)
+        const profile = asProfile(args.profile) ?? defaultProfile
+        const customTerms = mergeCustomTerms(asStringArray(args.custom_terms))
         const { result, modeUsed } = await engine.redact(file.content, {
           mode: requestedMode,
-          profile: asProfile(args.profile) ?? defaultProfile,
-          customTerms: mergeCustomTerms(asStringArray(args.custom_terms)),
+          profile,
+          customTerms,
         })
-        const applied = vault.apply(
-          file.content,
-          result,
-          typeof args.session_id === "string" ? args.session_id : undefined,
+        const applied = vault.apply(file.content, result, requestedSession, owner)
+        const safePath = await redactResolvedPath(file.resolvedPath, {
           owner,
-        )
+          sessionId: applied.sessionId,
+          mode: requestedMode,
+          profile,
+          customTerms,
+        })
         telemetrySessionId = applied.sessionId
         telemetryRedactions = applied.totalRedactions
         telemetryCounts = applied.counts
         return finish(
           toolOk({
-            path: file.resolvedPath,
+            path: safePath,
             bytes: file.bytes,
             redacted: applied.redacted,
             session_id: applied.sessionId,
@@ -969,12 +1197,19 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
           sessionId: normalizedSessionId,
           owner,
         })
-        const written = await files.writeText(args.path, restored, {
+        const resolvedTargetPath = resolveInputPath(args.path, owner, normalizedSessionId)
+        const written = await files.writeText(resolvedTargetPath, restored, {
           overwrite: args.overwrite === true,
+        })
+        const safePath = await redactResolvedPath(written.resolvedPath, {
+          owner,
+          sessionId: normalizedSessionId,
+          profile: defaultProfile,
+          customTerms: defaultCustomTerms,
         })
         return finish(
           toolOk({
-            path: written.resolvedPath,
+            path: safePath,
             bytes: written.bytes,
             session_id: normalizedSessionId,
             known_placeholders: knownPlaceholders,
@@ -990,11 +1225,25 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
             maxDepth: asOptionalInt(args.max_depth),
           },
         )
+        let pathSessionId: string | undefined
+        const safeFiles = []
+        for (const entry of listed.files) {
+          const safe = await redactRelativePath(entry.path, {
+            owner,
+            sessionId: pathSessionId,
+            profile: defaultProfile,
+            customTerms: defaultCustomTerms,
+            rootBase: listed.root,
+          })
+          pathSessionId = safe.sessionId
+          safeFiles.push({ path: safe.path, bytes: entry.bytes })
+        }
         return finish(
           toolOk({
             root: listed.root,
-            files: listed.files,
+            files: safeFiles,
             truncated: listed.truncated,
+            ...(pathSessionId ? { session_id: pathSessionId } : {}),
           }),
         )
       }
@@ -1056,8 +1305,17 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
           const currentMap = vault.getMap(activeSessionId, owner)
           const safeguarded = enforceSessionSecretsRedacted(applied.redacted, currentMap)
           totalRedactions += safeguarded.extraRedactions
+          const safeMatchPath = await redactRelativePath(match.path, {
+            owner,
+            sessionId: activeSessionId,
+            mode,
+            profile,
+            customTerms,
+            rootBase: search.root,
+          })
+          activeSessionId = safeMatchPath.sessionId ?? activeSessionId
           redactedMatches.push({
-            path: match.path,
+            path: safeMatchPath.path,
             line: match.line,
             redacted_line: truncatePreservingPlaceholders(safeguarded.text, 500),
           })

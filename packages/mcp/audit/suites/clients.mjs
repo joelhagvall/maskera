@@ -9,18 +9,46 @@
  * 3. Explicitly reports unavailable GUI/daemon/paid-cloud clients as NOT_TESTED.
  */
 import assert from "node:assert/strict"
-import { execFileSync, spawnSync } from "node:child_process"
+import { execFileSync, spawn, spawnSync } from "node:child_process"
 import { existsSync } from "node:fs"
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
-import { tmpdir } from "node:os"
+import { createServer } from "node:http"
+import { createServer as createNetServer } from "node:net"
+import { homedir, tmpdir } from "node:os"
 import { join, resolve } from "node:path"
+import { createMaskeraEngine, startMaskeraProxy } from "../../dist/index.js"
 import {
   createSuiteCollector,
+  getLocalNerOptions,
   hasLocalNerModel,
   pkgRoot,
   repoRoot,
   runProcess,
 } from "../lib/harness.mjs"
+
+function pickFreePort() {
+  return new Promise((resolvePort, reject) => {
+    const srv = createNetServer()
+    srv.listen(0, "127.0.0.1", () => {
+      const addr = srv.address()
+      const port = typeof addr === "object" && addr ? addr.port : 0
+      srv.close((err) => (err ? reject(err) : resolvePort(port)))
+    })
+    srv.on("error", reject)
+  })
+}
+
+async function listOllamaModels(baseUrl) {
+  try {
+    const r = await fetch(`${baseUrl}/api/tags`, { signal: AbortSignal.timeout(1_500) })
+    if (!r.ok) return null
+    const data = await r.json()
+    const models = Array.isArray(data?.models) ? data.models.map((m) => m.name).filter(Boolean) : []
+    return models
+  } catch {
+    return null
+  }
+}
 
 function detectBinary(name) {
   const res = spawnSync("which", [name], { encoding: "utf8" })
@@ -156,24 +184,137 @@ export async function runClientsAudit(options = {}) {
       : "Cursor IDE not installed in this environment",
   )
 
-  // Check if local Ollama daemon is running
-  let ollamaRunning = false
-  if (ollamaBin) {
-    try {
-      const r = await fetch("http://127.0.0.1:11434/api/tags", { signal: AbortSignal.timeout(500) })
-      ollamaRunning = r.ok
-    } catch {
-      ollamaRunning = false
-    }
+  // Local model inference via Ollama OpenAI-compatible proxy
+  const hasOllamaModelsDir = existsSync(join(homedir(), ".ollama", "models", "manifests"))
+  const existingOllamaModels = ollamaBin ? await listOllamaModels("http://127.0.0.1:11434") : null
+  if (ollamaBin && (existingOllamaModels?.length || hasOllamaModelsDir)) {
+    await suite.check(
+      "local-llm-ollama",
+      "Real local Ollama model inference through maskera-mcp proxy with egress inspection and response restoration",
+      async () => {
+        let ollamaBaseUrl = "http://127.0.0.1:11434"
+        let spawnedOllama = null
+        let models = existingOllamaModels
+        try {
+          if (!models) {
+            const ollamaPort = await pickFreePort()
+            ollamaBaseUrl = `http://127.0.0.1:${ollamaPort}`
+            spawnedOllama = spawn("ollama", ["serve"], {
+              env: { ...process.env, OLLAMA_HOST: `127.0.0.1:${ollamaPort}` },
+              stdio: "ignore",
+            })
+            const deadline = Date.now() + 15_000
+            while (Date.now() < deadline) {
+              models = await listOllamaModels(ollamaBaseUrl)
+              if (models) break
+              await new Promise((r) => setTimeout(r, 250))
+            }
+          }
+          if (!models || models.length === 0) {
+            throw new Error("Ollama daemon started but no local models are installed.")
+          }
+          const modelName = models[0]
+
+          // Intercept the exact body reaching Ollama to prove 0 raw canaries cross the boundary
+          let capturedUpstreamBody = ""
+          const tapServer = createServer(async (req, res) => {
+            const chunks = []
+            for await (const c of req) chunks.push(c)
+            const bodyBuf = Buffer.concat(chunks)
+            capturedUpstreamBody = bodyBuf.toString("utf8")
+            const upstreamRes = await fetch(`${ollamaBaseUrl}${req.url ?? ""}`, {
+              method: req.method,
+              headers: { "content-type": req.headers["content-type"] ?? "application/json" },
+              body: bodyBuf.byteLength > 0 ? new Uint8Array(bodyBuf) : undefined,
+              signal: AbortSignal.timeout(90_000),
+            })
+            const outBuf = Buffer.from(await upstreamRes.arrayBuffer())
+            res.writeHead(upstreamRes.status, {
+              "content-type": upstreamRes.headers.get("content-type") ?? "application/json",
+            })
+            res.end(outBuf)
+          })
+          await new Promise((resolveListen) => tapServer.listen(0, "127.0.0.1", resolveListen))
+          const tapAddr = tapServer.address()
+          const tapUrl = `http://127.0.0.1:${typeof tapAddr === "object" && tapAddr ? tapAddr.port : 0}`
+
+          const engine = createMaskeraEngine({
+            defaultMode: hasLocalNerModel ? "auto" : "rules",
+            nerOptions: getLocalNerOptions(),
+          })
+          const proxy = await startMaskeraProxy({
+            port: 0,
+            upstream: tapUrl,
+            engine,
+          })
+          try {
+            const canaries = ["Anna Lindqvist", "19900101-2385", "070-174 06 58"]
+            const res = await fetch(`${proxy.url}/v1/chat/completions`, {
+              method: "POST",
+              headers: {
+                "content-type": "application/json",
+                "x-maskera-session": "ollama-audit",
+              },
+              body: JSON.stringify({
+                model: modelName,
+                stream: false,
+                temperature: 0,
+                max_tokens: 200,
+                keep_alive: 0,
+                messages: [
+                  {
+                    role: "user",
+                    content:
+                      "Upprepa patientens namn, personnummer och telefonnummer exakt som de står i texten och behåll eventuella hakparenteser oförändrade: Patient Anna Lindqvist, personnummer 19900101-2385, tel 070-174 06 58.",
+                  },
+                ],
+              }),
+              signal: AbortSignal.timeout(90_000),
+            })
+            assert.equal(res.status, 200, `Ollama via proxy returned HTTP ${res.status}`)
+            const redactedHeader = Number(res.headers.get("x-maskera-redacted") ?? "0")
+            assert.ok(redactedHeader >= 2, `Expected >=2 redactions, got ${redactedHeader}`)
+            for (const c of canaries) {
+              assert.equal(
+                capturedUpstreamBody.includes(c),
+                false,
+                `Raw canary "${c}" leaked to local Ollama model!`,
+              )
+            }
+            assert.equal(
+              capturedUpstreamBody.includes("[PERSONNUMMER_1]"),
+              true,
+              "Expected [PERSONNUMMER_1] placeholder in Ollama request",
+            )
+            const body = await res.json()
+            assert.ok(Array.isArray(body.choices) && body.choices.length > 0)
+            const msg = body.choices[0]?.message
+            const replyText = `${msg?.content ?? ""} ${msg?.reasoning ?? ""}`
+            assert.ok(replyText.trim().length > 0, "Empty completion from local Ollama model")
+            // Any placeholder echoed by the local model must have been restored
+            assert.equal(replyText.includes("[PERSONNUMMER_1]"), false)
+            return `Ollama ${modelName}: HTTP 200, 0 raw canaries leaked, redacted=${redactedHeader}`
+          } finally {
+            await proxy.close()
+            await new Promise((r) => tapServer.close(r))
+          }
+        } finally {
+          if (spawnedOllama && !spawnedOllama.killed) {
+            spawnedOllama.kill("SIGTERM")
+          }
+        }
+      },
+    )
+  } else {
+    suite.record(
+      "local-llm-ollama",
+      "Local model inference via Ollama OpenAI-compatible proxy",
+      "NOT_TESTED",
+      ollamaBin
+        ? "Ollama binary found, but no local models are installed"
+        : "Ollama not installed in this environment",
+    )
   }
-  suite.record(
-    "local-llm-ollama",
-    "Local model inference via Ollama OpenAI-compatible proxy",
-    "NOT_TESTED",
-    ollamaRunning
-      ? "Ollama daemon running (opt-in local model run not invoked by default)"
-      : "Ollama daemon not running in this environment",
-  )
 
   if (!live) {
     suite.record(

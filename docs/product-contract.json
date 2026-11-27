@@ -21,7 +21,7 @@
   "packages": {
     "core": "0.8.5",
     "maskera": "0.11.2",
-    "mcp": "0.4.1"
+    "mcp": "0.4.2"
   },
   "sites": {
     "public": "https://maskera.dev",

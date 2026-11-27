@@ -60,10 +60,11 @@ Do NOT conflate the security guarantees of the two modes:
 1. **Direct client-to-API calls without proxy:** If `ANTHROPIC_BASE_URL` / `OPENAI_BASE_URL` is unset or overridden, traffic bypasses the proxy.
 2. **Non-proxy transports (e.g., Codex ChatGPT-login WebSocket/HTTPS):** Proxy returns `426` on WebSocket upgrades so HTTP SSE is used, but clients that pin their own HTTPS base URL bypass local HTTP proxies.
 3. **Built-in raw tools in MCP-only mode:** Without disabling raw file/shell tools or running through the proxy, an agent can read local files directly with `cat`/`Read` and send their contents to the LLM.
-4. **Binary attachments:** Images (screenshots of PII), binary PDFs, and audio payloads sent to multimodal LLM endpoints are not OCR'd or parsed by the proxy.
-5. **Filenames & directory names:** `maskera_list_files`, `maskera_read_file`, and `maskera_search_files` return workspace file paths verbatim.
-6. **External third-party MCP servers:** Another MCP server running locally can make its own outbound network calls completely outside Maskera's proxy.
-7. **OS-level crash dumps / swap / memory inspection:** Raw PII exists in process RAM inside `SessionVault` while active; any local process running as the same OS user can inspect loopback endpoints or process memory.
+4. **Binary attachments:** Images (screenshots of PII), binary PDFs, and audio payloads sent to multimodal LLM endpoints are not OCR'd or parsed by the proxy. By default the proxy emits `x-maskera-warning: uninspectable-binary-attachment` and logs a warning in the inspector and audit log; pass `--block-binary` (or `MASKERA_PROXY_BLOCK_BINARY=1`) to reject them fail-closed with HTTP `415`.
+5. **External third-party MCP servers:** Another MCP server running locally can make its own outbound network calls completely outside Maskera's proxy.
+6. **OS-level crash dumps / swap / memory inspection:** Raw PII exists in process RAM inside `SessionVault` while active; any local process running as the same OS user can inspect loopback endpoints or process memory.
+
+*(Note: Filenames containing Swedish PII are automatically redacted in `maskera_list_files`, `maskera_search_files`, `maskera_read_file`, and `maskera_write_file` using owner-scoped bidirectional aliases, while regular source-code filenames remain untouched.)*
 
 ## 5. Adversary Capabilities & Mitigations
 

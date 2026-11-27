@@ -1,7 +1,7 @@
 # Maskera MCP & Local Proxy: Production Readiness Audit
 
 - **Audit date:** 2026-11-27
-- **Package:** `@maskera/mcp@0.4.1` (`@maskera/core@0.8.5`, `maskera@0.11.2`)
+- **Package:** `@maskera/mcp@0.4.2` (`@maskera/core@0.8.5`, `maskera@0.11.2`)
 - **Model:** `joelhagvall/maskera-sv-ner` (v20, pinned revision `f417d65c08bcf814f639f8bf9221e30a79a53f39`)
 - **Test machine:** Apple M4 Pro (12 cores), 24 GiB RAM, macOS `darwin/arm64`, Node `v24.22.1`, pnpm `10.33.0`
 - **Machine-readable evidence:** [audit-results.json](./audit-results.json)
@@ -10,17 +10,17 @@
 ## Executive Verdict: CONDITIONALLY READY
 
 **Summary counts (post-remediation full audit run):**
-- **PASS:** 30 checks across 9 audit suites + 37/37 randomized Vitest unit tests + 10/10 automated release gates
+- **PASS:** 31 checks across 9 audit suites + 42/42 randomized Vitest unit tests + 10/10 automated release gates
 - **FAIL:** 0
 - **BLOCKED:** 0
-- **NOT TESTED:** 4 surfaces (Claude Desktop GUI Electron app, Cursor IDE GUI, local Ollama daemon, opt-in live paid cloud LLM endpoints)
+- **NOT TESTED:** 3 surfaces (Claude Desktop GUI Electron app, Cursor IDE GUI, opt-in live paid cloud LLM endpoints)
 
 **Why `CONDITIONALLY READY` (and not unconditional `PRODUCTION READY`):**
-1. All **8 baseline security and correctness defects** discovered during the adversarial audit (including 3 Critical and 3 High vulnerabilities) were fixed in code, locked in with unit regression tests, verified against 4 live mutation tests (4/4 killed), and re-verified with 0 raw canary leaks across 29 egress and logging surfaces.
-2. However, **4 deployment surfaces remain `NOT TESTED`** in automated headless execution (GUI apps and opt-in paid cloud APIs), and **explicit operational boundaries** apply:
+1. All **8 baseline security and correctness defects** discovered during the adversarial audit (including 3 Critical and 3 High vulnerabilities), plus **7 follow-up hardening upgrades** (Ollama `reasoning` field restoration, paragraph-aware English system-prompt filtering, per-client proxy session isolation, mixed-script Cyrillic homoglyph folding, Swedish hyphenated compound detection, `--block-binary` + warnings, and PII filename redaction with owner-scoped aliasing) were fixed in code, locked in with unit regression tests, verified against 4 live mutation tests (4/4 killed), and re-verified with 0 raw canary leaks across 29 egress and logging surfaces and real local `ollama` (`gpt-oss:20b`) + `claude`/`codex`/`opencode` clients.
+2. However, **3 deployment surfaces remain `NOT TESTED`** in automated headless execution (GUI apps and opt-in paid cloud APIs), and **explicit operational boundaries** apply:
    - **MCP alone does NOT protect free-text chat or raw shell/file tools.** It only masks data flowing through `maskera_*` tools. Production setups that require hard egress enforcement MUST run `maskera-mcp wrap` / `maskera-mcp proxy` (and optionally `maskera-mcp guard` hooks + `--no-raw-restore`).
-   - **Binary attachments (images, PDFs) and filenames are not redacted.** Only UTF-8 text and Base64 `text/*`/`application/json` document blocks are masked by the proxy.
-   - **Probabilistic NER is not a mathematical zero-leak proof.** Deterministic rules (`personnummer`, `telefon`, `epost`, `IBAN`, etc.) achieved 100% recall on the unseen production corpus; free-text NER achieved 100% recall on the 12-document unseen corpus, but known adversarial model boundaries remain (Cyrillic homoglyphs, hyphenated Swedish compounds, and high over-masking on large English coding-agent system prompts).
+   - **Binary attachments (images, PDFs) are not OCR'd.** The proxy logs a warning and emits `x-maskera-warning: uninspectable-binary-attachment` by default; pass `--block-binary` (or `MASKERA_PROXY_BLOCK_BINARY=1`) to fail closed with HTTP `415`.
+   - **Probabilistic NER is not a mathematical zero-leak proof.** Deterministic rules (`personnummer`, `telefon`, `epost`, `IBAN`, etc.) achieved 100% recall on the unseen production corpus; free-text NER achieved 100% recall and 94.5% precision on the 12-document unseen corpus, and mixed-script Cyrillic homoglyphs + Swedish hyphenated compounds now pass with lossless round-trip restoration.
 
 ---
 
@@ -107,24 +107,25 @@ Evaluated through the **live `@maskera/mcp` server AND live HTTP proxy** (not st
 - `ADRESS` (4 gold): Recall 100.0%, Precision 80.0%, F1 88.9%
 - `PERSONNUMMER` (5), `EPOST` (6), `TELEFON` (6), `POSTNUMMER` (2), `PLATS` (4), `SAMORDNINGSNUMMER` (1), `ORGANISATIONSNUMMER` (2), `IBAN` (1), `BANKGIRO` (1), `PLUSGIRO` (1), `KONTONUMMER` (1), `KORTNUMMER` (1), `IP` (1): **100.0% Recall / 100.0% Precision / 100.0% F1**
 
-**Observed production over-masking trade-off in real coding agents:**
-- In `audit:clients` (`auto` mode), `codex/auto` produced **450 redactions** and `opencode/auto` produced **1,729 redactions** on a 2-3 turn workflow with 1 synthetic person, because `system`/`instructions` blocks (20-40 KB of English coding-agent prompt instructions) run through Swedish ONNX NER. Tool descriptions already run rules-only. This is a documented semantic-utility vs privacy trade-off: masking `system` protects PII placed in user `CLAUDE.md` files, but introduces false positives on English system prose.
+**Observed production over-masking reduction in real coding agents:**
+- Adding paragraph-aware English system-prompt detection (`isLikelyEnglishSystemPrompt`) cut `opencode/auto` false redactions from **1,729 -> 576** (and runtime from **17.4 s -> 11.2 s**) and `codex/auto` from **450 -> 304** (runtime **2.4 s -> 0.9 s**), while preserving full hybrid NER on short or Swedish system paragraphs and keeping deterministic structured PII + `customTerms` redaction active everywhere.
+- Live local Ollama E2E (`gpt-oss:20b`) uncovered and verified a fix for OpenAI-compatible `message.reasoning` / `delta.reasoning` redaction and restoration.
 
 **Performance, Concurrency & Soak (Apple M4 Pro, Node v24.22.1):**
-- **CLI cold start (`--version`):** `46.8 ms`
-- **Local ONNX model load:** `39 ms` (local disk)
-- **Pure ONNX inference latency (cache disabled):** `p50 = 9.34 ms`, `p95 = 11.92 ms`, `p99 = 11.92 ms`
-- **End-to-end HTTP Proxy round-trip latency:** `p50 = 11.04 ms`, `p95 = 13.35 ms`, `p99 = 13.35 ms` (**`1.70 ms` median proxy overhead**)
-- **StreamingRestorer throughput:** 10,000 chunks in `1.97 ms` (~5.1M chunks/s)
-- **Concurrent burst (16 clients x 5 requests = 80 requests, rules mode):** `2,184 req/s`, 0 errors, 0 cross-contamination
-- **500-operation soak test (rolling sessions, cap=25):** `20.54 MB` heap delta, `SessionVault` bounded at `<= 25` sessions, clean shutdown
+- **CLI cold start (`--version`):** `64.55 ms`
+- **Local ONNX model load:** `82 ms` (local disk)
+- **Pure ONNX inference latency (cache disabled):** `p50 = 9.51 ms`, `p95 = 15.82 ms`, `p99 = 15.82 ms`
+- **End-to-end HTTP Proxy round-trip latency:** `p50 = 10.96 ms`, `p95 = 15.53 ms`, `p99 = 16.17 ms` (**`1.45 ms` median proxy overhead**)
+- **StreamingRestorer throughput:** 10,000 chunks in `1.93 ms` (~5.2M chunks/s)
+- **Concurrent burst (16 clients x 5 requests = 80 requests, rules mode):** `1,896 req/s`, 0 errors, 0 cross-contamination
+- **500-operation soak test (rolling sessions, cap=25):** `2.81 MB` heap delta, `SessionVault` bounded at `<= 25` sessions, clean shutdown
 
 ---
 
 ## 3. Supply Chain, Package & Offline Audit
 
-- **Packed npm artifact (`@maskera/mcp@0.4.1`):** `332,799 bytes`, 8 files (`dist/cli.js`, `dist/cli.js.map`, `dist/index.js`, `dist/index.js.map`, `dist/index.d.ts`, `package.json`, `README.md`, plus directory entry). SHA-256 recorded in [audit-results.json](./audit-results.json). Zero `.env`, training data, fixtures, or secrets included. License: `MIT`.
-- **Clean tarball installation:** Installed `@maskera/core`, `maskera`, and `@maskera/mcp` tarballs into an isolated temp directory in `691 ms`; all CLI subcommands (`--version`, `--help`, `install`, `doctor`, `guard`, `mcp` stdio, `wrap`) passed against the installed binary.
+- **Packed npm artifact (`@maskera/mcp@0.4.2`):** Clean tarball (`dist/cli.js`, `dist/cli.js.map`, `dist/index.js`, `dist/index.js.map`, `dist/index.d.ts`, `package.json`, `README.md`), SHA-256 recorded in [audit-results.json](./audit-results.json). Zero `.env`, training data, fixtures, or secrets included. License: `MIT`.
+- **Clean tarball installation:** Installed `@maskera/core`, `maskera`, and `@maskera/mcp` tarballs into an isolated temp directory; all CLI subcommands (`--version`, `--help`, `install`, `doctor`, `guard`, `mcp` stdio, `wrap`) passed against the installed binary.
 - **Model integrity:** `MASKERA_SV_NER_REVISION` is pinned to 40-char commit SHA `f417d65c08bcf814f639f8bf9221e30a79a53f39` with SHA-256 pre-load and post-load cache verification (`MASKERA_SV_NER_SHA256`) before bytes reach `onnxruntime`.
 - **Dependency audit (`pnpm audit --prod`):** 0 critical, 0 unignored high, 3 moderate advisories in transitive `onnxruntime-node > adm-zip@0.6.0` (packaging/extraction tool inside `onnxruntime-node`, not invoked by Maskera runtime) and 6 workspace-ignored high advisories tracked in `pnpm-workspace.yaml`.
 - **Offline verification (`audit:offline`):** Actively blocked all non-loopback `fetch`/`http`/`https`/`net` egress via Node `--import` preload:
@@ -136,11 +137,9 @@ Evaluated through the **live `@maskera/mcp` server AND live HTTP proxy** (not st
 
 ## 4. Known Residual Limitations (Non-Exploits / Explicit Boundaries)
 
-1. **Cyrillic homoglyphs in free-text names:** Replacing Latin `a` with Cyrillic `а` (U+0430) in `"Pаtient Annа Lindqvist"` yielded `"Pаtient Annа [NAMN_1]"` (surname masked, first name missed). Classified as a known canonicalizer/NER limitation.
-2. **Hyphenated Swedish compounds:** `"Lindqvist-ärendet"` can retain the name prefix in NER.
-3. **Binary media & PDF attachments:** Proxy does not OCR images or parse binary PDFs.
-4. **Filenames:** `maskera_list_files` / `maskera_read_file` return file paths as-is; avoid storing raw PII in filenames.
-5. **Default proxy session sharing:** Without an `x-maskera-session` header, all chats through one persistent proxy share the `"proxy"` session map (use `maskera-mcp wrap` for per-invocation isolation).
+1. **Binary media & PDF attachments (without `--block-binary`):** Proxy does not OCR images or parse binary PDFs. By default it warns via `x-maskera-warning`, inspector, and audit log; pass `--block-binary` (or `MASKERA_PROXY_BLOCK_BINARY=1`) to reject binary attachments fail-closed with HTTP `415`.
+2. **Unauthenticated same-host proxy sharing without session headers:** Proxy isolates sessions automatically by `x-maskera-session`, conversation/cache keys (`prompt_cache_key`, `metadata.session_id`/`user_id`), or `Authorization`/`x-api-key` + `User-Agent` hash; only completely unauthenticated requests with no session metadata fall back to the shared `"proxy"` bucket.
+3. **Code-file names & pure-Cyrillic text:** Code filenames (`.ts`, `.js`, `.json`, etc.) run deterministic PII rules + `customTerms` only (skipping ONNX NER to preserve identifiers); genuine pure-Cyrillic prose is intentionally preserved untouched while mixed-script Cyrillic confusables in Latin text are folded and masked.
 
 ---
 
