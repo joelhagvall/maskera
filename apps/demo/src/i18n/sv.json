@@ -31,8 +31,7 @@
         "writeRestored": "återställt lokalt",
         "done": "Klart. Beslutet ligger i beslut.md.",
         "composer": "Fråga agenten",
-        "worksWith": "Via Maskeras MCP-server i Claude Code, Codex och andra agenter",
-        "restoredNote": "Svaret återställs lokalt"
+        "worksWith": "Via Maskeras MCP-server i Claude Code, Codex och andra agenter"
       },
       "code": {
         "fileLabel": "app.ts",
@@ -43,10 +42,10 @@
     }
   },
   "demo": {
-    "testDataNote": "Påhittade personer och officiella testvärden. Allt körs i din webbläsare.",
+    "testDataNote": "Påhittade personer och officiella testvärden.",
     "testDataCta": "Om testdatan",
     "tryTitle": "Testa själv",
-    "languageNote": "Gränssnittet kan visas på engelska, men exempeltexten och de simulerade AI-svaren förblir på svenska. Maskera stöder för närvarande endast svenskspråkig text; det översätter inte andra språk.",
+    "languageNote": "Maskera stöder endast svensk text och översätter inte andra språk, så exemplen är på svenska.",
     "skipLink": "Hoppa till huvudinnehållet"
   },
   "controls": {
@@ -62,9 +61,9 @@
   "inputCard": {
     "title": "Du skriver",
     "clear": "Rensa",
-    "placeholder": "Skriv eller klistra in egen svensk text här… Allt körs lokalt.",
+    "placeholder": "Skriv eller klistra in egen svensk text här…",
     "examplePrefix": "Exempel:",
-    "limitNote": "Texten klipptes vid 100 000 tecken – demon tar inte längre texter."
+    "limitNote": "Texten klipptes vid 100 000 tecken."
   },
   "outputCard": {
     "invalidPersonnummerSingular": "har en personnummerlik form men inget giltigt födelse- eller samordningsdatum. Därför maskeras det inte.",
@@ -74,7 +73,7 @@
     "pluralCount": "uppgifter maskerade",
     "title": "AI:n ser",
     "analyzing": "analyserar…",
-    "restoreMapNote": "Nyckeln stannar på din enhet. AI:n ser bara platshållare, och du sätter tillbaka originalen i svaret efteråt.",
+    "restoreMapNote": "Nyckeln stannar på din enhet.",
     "showKey": "Visa återställningsnyckeln",
     "hideKey": "Dölj återställningsnyckeln",
     "coverageLink": "Vad maskeras?"
@@ -89,7 +88,6 @@
   },
   "homeTrust": {
     "title": "För IT och dataskydd",
-    "lede": "Det här brukar IT, säkerhet och dataskyddsombud fråga om först.",
     "items": [
       {
         "title": "Texten lämnar aldrig enheten",
@@ -112,14 +110,12 @@
     "faqCta": "Frågor och svar"
   },
   "homeClosing": {
-    "title": "Börja med det du redan använder",
-    "body": "Installera tillägget för AI-chattar eller koppla in Maskera framför din agent. Det är gratis att börja."
+    "title": "Börja med det du redan använder"
   },
   "faq": {
     "metaTitle": "Frågor och svar",
     "metaDescription": "Svar på vanliga frågor om Maskera: skickas texten någonstans, behövs avtal, vad kostar det, vilka AI-tjänster och webbläsare fungerar och hur rullar man ut det.",
     "title": "Frågor och svar",
-    "lede": "Korta svar på det vi oftast får frågor om. Hittar du inte ditt svar, mejla hej@maskera.dev.",
     "groups": [
       {
         "id": "data",
@@ -222,7 +218,7 @@
     "metaTitle": "Guider: Claude, Codex och Cursor",
     "metaDescription": "Steg för steg: koppla in Maskeras lokala proxy eller MCP-server i Claude Desktop, Claude Code, Codex och Cursor, och testa med påhittade uppgifter.",
     "title": "Guider",
-    "lede": "Steg för steg för de vanligaste AI-verktygen. Proxyn maskerar det du skriver i chatten. MCP-servern maskerar filer som agenten läser.",
+    "lede": "Proxyn maskerar det du skriver i chatten. MCP-servern maskerar filer som agenten läser.",
     "sections": [
       {
         "id": "claude-desktop",
@@ -277,13 +273,12 @@
     "metaTitle": "Branscher: HR, vård, juridik, kommun",
     "metaDescription": "Så används Maskera i HR, vård, juridik, kommun och kundsupport: vilka personuppgifter som byts ut och vad som står kvar för AI:n.",
     "title": "Branscher",
-    "lede": "Samma motor, olika texter. Så används Maskera där personuppgifterna är många.",
     "sections": [
       {
         "id": "hr",
         "scenario": "hr",
         "title": "HR och rekrytering",
-        "body": "CV, löneunderlag och referenser innehåller namn, personnummer och kontaktuppgifter. Maskera byter ut dem, så att AI:n kan bedöma kandidaten utan att se vem det är.",
+        "body": "CV, löneunderlag och referenser kan granskas av AI utan att avslöja vem kandidaten är.",
         "masked": "Namn, personnummer, e-post och telefon"
       },
       {
@@ -297,21 +292,21 @@
         "id": "juridik",
         "scenario": "juridik",
         "title": "Juridik",
-        "body": "Klientärenden, motparter och betalningsuppgifter. Namn, organisationsnummer och bankgiro byts ut innan AI:n sammanfattar ärendet.",
+        "body": "Klientärenden, motparter och betalningsuppgifter sammanfattas utan att klient eller konto följer med till AI:n.",
         "masked": "Namn, organisationsnummer och bankgiro"
       },
       {
         "id": "kommun",
         "scenario": "kommun",
         "title": "Kommun och myndighet",
-        "body": "Ansökningar och handläggning med personnummer, adresser och anhöriga. Egna format, som diarienummer, kan läggas till som egna regler.",
+        "body": "Ansökningar och handläggning. Egna format, som diarienummer, kan läggas till som egna regler.",
         "masked": "Namn, personnummer, adresser och e-post"
       },
       {
         "id": "kundsupport",
         "scenario": "support",
         "title": "Kundsupport",
-        "body": "Ärenden och klagomål med kortnummer, IBAN och telefonnummer, även när kunden skriver med versaler.",
+        "body": "Ärenden och klagomål maskeras även när kunden skriver med versaler.",
         "masked": "Namn, kortnummer, IBAN och telefon"
       }
     ],
@@ -497,7 +492,6 @@
     "sharedLanguageLabel": "JS / TS",
     "diagramTitle": "Så fungerar det",
     "diagramAlt": "Diagram över maskeras två lager: din text delas upp mellan regler för uppgifter med bestämt format och en svensk AI-modell för fri text, och slås samman till maskerad text.",
-    "diagramCaption": "Regler tar uppgifter med fast format, som personnummer. AI-modellen tar fri text, som namn och adresser. Vid överlapp vinner reglerna.",
     "diagramOpen": "Öppna i full storlek",
     "resourcesLabel": "Utvecklarresurser",
     "npmCta": "maskera på npm",
@@ -507,9 +501,8 @@
   },
   "coverage": {
     "heading": "Vad maskeras?",
-    "linkCta": "Se exakt vad som maskeras.",
-    "servicesLink": "Alla tre använder samma svenska modell och regler.",
-    "lede": "Det fullständiga npm-paketet maskera och webbläsartillägget kombinerar fasta regler med den svenska AI-modellen. Skillnaderna i standardval framgår nedan.",
+    "linkCta": "Se exakt vad som maskeras",
+    "lede": "Det fullständiga npm-paketet maskera och webbläsartillägget kombinerar fasta regler med den svenska AI-modellen.",
     "groups": [
       {
         "id": "model",
@@ -537,7 +530,6 @@
       {
         "id": "optional",
         "title": "Utöver npm-standarden",
-        "description": "Tillägg utöver npm-paketets standardval, förklarade i noterna nedan.",
         "items": [
           {
             "label": "REGNUMMER",
@@ -552,7 +544,7 @@
       {
         "id": "rules",
         "title": "Regler: bestämda format",
-        "description": "Hittas med fasta formatregler. Personnummer maskeras även om kontrollsiffran är felskriven, så länge datumformen stämmer. Webblänkar fångas när de börjar med http, https eller www.",
+        "description": "Personnummer maskeras även om kontrollsiffran är felskriven, så länge datumformen stämmer. Webblänkar fångas när de börjar med http, https eller www.",
         "items": [
           {
             "label": "PERSONNUMMER",
@@ -665,7 +657,7 @@
     "metaTitle": "Träffsäkerhet på svensk text",
     "metaDescription": "Hur stor andel av namn, platser och adresser Maskera döljer i svensk text som varken Maskera eller vi har skrivit, jämfört med Presidio, swedish-pii och OpenAI Privacy Filter.",
     "title": "Hur bra hittar Maskera personuppgifter?",
-    "lede": "Mätt på svensk text som varken Maskera eller vi har skrivit: SUC 3.0 från Kungliga biblioteket, SIC2 från Språkbanken, MultiCoNER v2 och ai4privacy. Alla verktyg kördes på samma texter med samma regler, och siffrorna visar även där Maskera är sämre.",
+    "lede": "Mätt på svensk text som varken Maskera eller vi har skrivit: SUC 3.0 från Kungliga biblioteket, SIC2 från Språkbanken, MultiCoNER v2 och ai4privacy.",
     "inlineCta": "sidan om träffsäkerhet",
     "servicesCta": "Se testresultat och begränsningar",
     "toc": [
@@ -775,8 +767,8 @@
     "limitsTitle": "Viktigt att veta",
     "limits": [
       "Ingen av testtexterna finns i Maskeras träning, som bara använder genererad text. Grundmodellen KB-BERT är förtränad av Kungliga biblioteket på bred svensk text och kan ha sett samma källtexter, men aldrig etiketterna.",
-      "Maskera träffar ord i ungefär var femte mening utan personuppgifter. Det är priset för att hitta namn i gemener och ovanliga namn, och det betyder att en del vanliga ord byts ut i onödan.",
-      "Personnummer, organisationsnummer, bankgiro och IBAN saknar oberoende svensk testtext. De hittas med formatregler och kontrollsiffror och testas i projektets egna tester på GitHub, men redovisas inte här.",
+      "Maskera träffar ord i ungefär var femte mening utan personuppgifter. Det är priset för att hitta namn i gemener och ovanliga namn.",
+      "Personnummer, organisationsnummer, bankgiro och IBAN saknar oberoende svensk testtext. De hittas med formatregler och kontrollsiffror och testas i projektets egna tester på GitHub.",
       "Ingen automatisk maskering är felfri. Granska själv när ett misstag kan få stora konsekvenser."
     ],
     "provenance": "Mätt på CPU 2026-11-27: Maskera v21 (q4), Presidio 2.2.366 med sv_core_news_lg 3.8.0, swedish-pii 1.2.0 och OpenAI Privacy Filter (q4 ONNX). Testtexterna hämtas från Hugging Face och Språkbanken Text när testet körs. Skript och checksummor ligger på GitHub.",
@@ -787,7 +779,7 @@
     "metaTitle": "Säkerhet och modellintegritet",
     "metaDescription": "Maskeras säkerhetsgränser, nätverksanrop, pinnade modellartefakter, den publika granskningen av MCP-servern och privat rapportering av sårbarheter.",
     "title": "Säkerhet i maskera",
-    "lede": "All maskering körs lokalt på din enhet. Här samlar vi hur data rör sig, hur modellfilerna kontrolleras och hur du rapporterar en sårbarhet.",
+    "lede": "All maskering körs lokalt på din enhet.",
     "toc": [
       {
         "href": "#dataflode",
@@ -837,7 +829,7 @@
     "auditTitle": "Granskning av MCP-servern",
     "auditBody": [
       "Varje version av @maskera/mcp granskas innan den publiceras på npm. Granskningen installerar det packade npm-paketet, kör det i riktiga AI-agenter och spårar unika testvärden genom all trafik, alla loggar och alla felvägar. Den planterar också avsiktliga fel i skyddet för att visa att testerna verkligen slår larm.",
-      "Publiceringen stoppas om något av kraven nedan inte är uppfyllt. Siffrorna läses direkt från resultatfilen, inte skrivna för hand."
+      "Publiceringen stoppas om något av kraven nedan inte är uppfyllt."
     ],
     "auditRun": "Senaste granskning {date}: @maskera/mcp {version}, modellrevision {revision}. Utlåtande: {verdict}.",
     "auditVerdicts": {
@@ -886,7 +878,7 @@
       "cursor-ide-gui": "Cursor som app. Konfigurationen och kroken är testade, men appen kräver interaktiv inloggning.",
       "cloud-llm-live-opt-in": "Betalda molnmodeller. Granskningen gör inga betalda anrop; de körs bara när man själv väljer det."
     },
-    "auditLimits": "Kraven gäller kodens säkerhetsgränser, inte AI-modellens träffsäkerhet. MCP-servern skyddar bara det som går genom Maskeras egna verktyg; för att skydda all trafik till modellen kör du proxyn. Ett godkänt resultat visar att inget av det vi testar läcker, inte att varje framtida personuppgift alltid maskeras. Träffsäkerheten på text vi inte skrivit själva finns på",
+    "auditLimits": "Kraven gäller kodens säkerhetsgränser, inte AI-modellens träffsäkerhet. MCP-servern skyddar bara det som går genom Maskeras egna verktyg; för att skydda all trafik till modellen kör du proxyn. Uppmätt träffsäkerhet finns på",
     "auditAccuracyCta": "sidan om träffsäkerhet",
     "auditReproduce": "Kör granskningen själv. Klienter som inte finns installerade redovisas som inte testade.",
     "auditCodeLabel": "Terminal",
@@ -917,7 +909,6 @@
     "metaTitle": "Integritet & transparens",
     "metaDescription": "Se vad Maskera gör, vad som lämnar enheten, hur den svenska AI-modellen har tränats och vilka personuppgifter den kan missa.",
     "title": "Integritet & transparens",
-    "lede": "Här ser du vad Maskera gör, vad som lämnar enheten, hur modellen tränats och vad den kan missa.",
     "toc": [
       {
         "href": "#hur-fungerar",
@@ -956,7 +947,7 @@
     "trainingTitle": "Hur modellen tränats",
     "limitsTitle": "Begränsningar",
     "limits": [
-      "Maskera är öppet utvärderad. Siffror, metod och förbehåll finns på sidan om träffsäkerhet.",
+      "Maskera är öppet utvärderad.",
       "Kända svaga punkter är tabellartade dumpar, OCR-brus och uppgifter skrivna med bokstäver, som ‘noll sju noll’. Versaler, felstavningar och slarviga nummerformat ingår däremot i testerna.",
       "Maskering är ett extra skyddslager, inte en garanti. Namn och platser hittas sannolikhetsbaserat och kan missas. Behåll övriga kontroller när fel kan få stora konsekvenser.",
       "Maskera stödjer dataminimering men garanterar inte regelefterlevnad. Den som använder verktyget är fortsatt personuppgiftsansvarig."
@@ -971,9 +962,8 @@
       "attestationBody": "Varje version skeppas med en verifierbar checksumma (SHA-256) för träningsdatan och skripten i",
       "modelCardCta": "modellkortet",
       "baseTitle": "Basmodell:",
-      "baseBody": "KB-BERT från Kungliga biblioteket, publicerad under CC0.",
+      "baseBody": "KB-BERT från Kungliga biblioteket (CC0), förtränad på öppna svenska texter.",
       "baseCta": "Se KB-BERT",
-      "baseBoundary": "Detta gäller vår egen träning. Basmodellen KB-BERT förtränades ursprungligen av Kungliga biblioteket på öppna svenska texter.",
       "reproTitle": "Hela kedjan går att granska och köra om.",
       "reproBody": "Alla skript för datagenerering, träning och test ligger öppet på GitHub. Ändras en enda rad i träningsdatan stoppar kontrollen bygget."
     }
@@ -982,8 +972,7 @@
     "metaTitle": "Testdata",
     "metaDescription": "Kontrollera ursprunget för personnummer, telefonnummer, konton och andra testvärden i Maskeras webbläsardemo. Inga verkliga personers uppgifter används.",
     "title": "Testdata i demon",
-    "lede": "Alla personer är påhittade. Uppgifter med verkliga format kommer från officiellt reserverade testvärden och kan kontrolleras här.",
-    "intro": "Några värden är avsiktligt slarvigt skrivna, med tolv siffror, mellanslag eller versaler, eftersom riktig text ser ut så.",
+    "lede": "Alla personer är påhittade. Uppgifter med verkliga format kommer från officiellt reserverade testvärden.",
     "items": [
       {
         "title": "Personnummer",
@@ -1166,7 +1155,7 @@
       }
     ],
     "agents": {
-      "body": "Maskera kopplas in framför AI-agenter som Claude Code och Codex. Öppen källkod (MIT) som körs på din dator.",
+      "body": "Maskera kopplas in framför AI-agenter som Claude Code och Codex.",
       "points": [
         "Proxy: maskerar allt du skriver i chatten, i klienter där du kan ange egen API-adress.",
         "MCP-server: agenten läser filer med personuppgifterna redan utbytta.",
@@ -1179,10 +1168,7 @@
       "body": "Ett npm-paket med reglerna och den svenska AI-modellen. Körs i webbläsaren eller i Node 18+.",
       "packageManagerLabel": "npm",
       "installCommand": "npm install maskera @huggingface/transformers",
-      "points": [
-        "MIT-licens, utan avgift eller inlåsning",
-        "Valfri vårdprofil som behåller diagnoser och doser"
-      ],
+      "points": ["Valfri vårdprofil som behåller diagnoser och doser"],
       "cta": "Öppna utvecklardokumentationen",
       "githubCta": "Källkod på GitHub"
     },
@@ -1247,7 +1233,7 @@
       "privacyCta": "Integritet för tillägget",
       "startTrialCta": "Testa Pro gratis i 7 dagar",
       "teamHeading": "Team: 249 kr/användare/mån exkl. moms",
-      "teamDetails": "Minst 5 användare. Central MDM-utrullning, krypterad delad ordlista och hjälp att rulla ut både tillägg och AI-agenter.",
+      "teamDetails": "Minst 5 användare. Betala med kort eller årsfaktura.",
       "teamCta": "Starta Team (min. 5 platser)",
       "teamMailSubject": "Maskera Team",
       "teamInvoiceCta": "Be om årsfaktura"
@@ -1259,7 +1245,7 @@
     "heroInstall": "Installera tillägget",
     "heroDesktopExtension": "Se tillägget för datorn",
     "heroAgents": "Koppla till din agent",
-    "body": "Ingen inloggning krävs förrän du vill aktivera Pro. Tillägget finns i Chrome Web Store. Edge och Firefox öppnar löpande, och i Edge kan du redan nu installera det manuellt.",
+    "body": "Ingen inloggning krävs förrän du vill aktivera Pro.",
     "zipLead": "Väntar du på din webbläsares butik?",
     "zipCta": "Ladda ner ZIP-filen",
     "zipTail": "och läs in den okomprimerad via chrome://extensions eller edge://extensions.",
@@ -1281,7 +1267,7 @@
       },
       "safari": {
         "name": "Safari",
-        "store": "Mac App Store · kommer senare"
+        "store": "Mac App Store"
       }
     }
   },
@@ -1343,7 +1329,7 @@
     "howCta": "Så fungerar det",
     "productsCta": "Produkter och priser",
     "whoTitle": "Vem som står bakom",
-    "who": "Maskera utvecklas och drivs av Hägvall Labs AB (org.nr 559598-0110), ett svenskt aktiebolag i Stockholm grundat av Joel Hägvall. Bolaget är personuppgiftsansvarigt för maskera.dev; hur webbplatsen själv behandlar uppgifter beskrivs i integritetspolicyn. Källkoden, träningspipelinen och benchmarken ligger öppet på GitHub så att resultaten kan granskas och återskapas.",
+    "who": "Maskera utvecklas och drivs av Hägvall Labs AB (org.nr 559598-0110), ett svenskt aktiebolag i Stockholm grundat av Joel Hägvall. Bolaget är personuppgiftsansvarigt för maskera.dev. Källkoden, träningspipelinen och benchmarken ligger öppet på GitHub så att resultaten kan granskas och återskapas.",
     "contactTitle": "Kontakt",
     "contact": [
       {
@@ -1383,7 +1369,7 @@
       "metaTitle": "Dokumentation",
       "metaDescription": "Välj rätt läge för Maskera: webbläsartillägg, lokal LLM-proxy, Streamable HTTP eller stdio MCP, guard-hooks och npm-SDK.",
       "title": "Dokumentation",
-      "lede": "All maskering i Maskera körs lokalt på din enhet. Välj läge efter var texten uppstår, konfigurera på en minut och verifiera med påhittade uppgifter.",
+      "lede": "All maskering i Maskera körs lokalt på din enhet. Välj läge efter var texten uppstår och verifiera med påhittade uppgifter.",
       "verifyTitle": "Du vet att det funkar när",
       "verifyBody": "Kör npx -y @maskera/mcp doctor. Svaret ska börja med OK och sluta med en provmaskering som visar 0 läckor.",
       "doctorRoot": "/Users/du/projekt",
@@ -1640,7 +1626,7 @@
         {
           "id": "verifiera",
           "title": "Testa med påhittade uppgifter",
-          "body": "Kör alltid ett snabbt prov innan du hanterar verkliga personuppgifter. Inspektören lagrar allt i lokalt RAM och visar originalvärden först om du klickar på knappen.",
+          "body": "Inspektören lagrar allt i lokalt RAM och visar originalvärden först om du klickar på knappen.",
           "codeLabel": "Terminal",
           "code": "# Kör automatisk diagnostik\nnpx -y @maskera/mcp doctor --root .\n\n# Öppna lokal live-inspektör och godkännandevy\nopen http://127.0.0.1:8787/_maskera"
         }
@@ -1691,7 +1677,7 @@
         {
           "id": "driftchecklista",
           "title": "Driftchecklista i produktion",
-          "body": "Maskera är ett lokalt skyddslager, inte en noll-läckagegaranti. Följ fyra regler i produktion:",
+          "body": "Maskera är ett lokalt skyddslager, inte en noll-läckagegaranti.",
           "bullets": [
             "Återanvänd en enda createNerRecognizer()-instans per process så modellen inte laddas om vid varje anrop.",
             "Spara aldrig återställningskartan i samma logg, databas eller trace som den maskerade texten.",
@@ -1759,7 +1745,6 @@
         {
           "id": "begransningar",
           "title": "Säkerhetsgränser",
-          "body": "Lokal maskering har de här gränserna:",
           "bullets": [
             "Maskera är byggt för svensk (och blandad svensk/engelsk) text. Ren text på andra språk täcks bara delvis.",
             "Bilder och skannade PDF-filer måste OCR-tolkas till text innan de skickas genom Maskera.",

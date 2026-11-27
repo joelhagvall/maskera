@@ -264,7 +264,6 @@ function AgentScene() {
       </div>
       <p className="stage-window-foot">
         <span>{agent.worksWith}</span>
-        <span>{agent.restoredNote}</span>
       </p>
     </div>
   )

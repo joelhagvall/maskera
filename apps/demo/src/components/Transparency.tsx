@@ -15,7 +15,6 @@ export function Transparency({ go }: { go: (view: View) => void }) {
       <main id="main-content">
         <article className="prose prose-with-toc">
           <h1>{copy.transparency.title}</h1>
-          <p className="prose-lede">{copy.transparency.lede}</p>
 
           <PageToc items={copy.transparency.toc} />
 
@@ -60,7 +59,7 @@ export function Transparency({ go }: { go: (view: View) => void }) {
                 >
                   {copy.transparency.training.baseCta}
                 </a>
-                . {copy.transparency.training.baseBoundary}
+                .
               </li>
               <li>
                 <strong>{copy.transparency.training.reproTitle}</strong>{" "}

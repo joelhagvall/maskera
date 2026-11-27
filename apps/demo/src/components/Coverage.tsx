@@ -10,7 +10,7 @@ export function Coverage() {
         {copy.coverage.groups.map((group) => (
           <div className="coverage-group" key={group.id} data-id={group.id}>
             <h3>{group.title}</h3>
-            <p>{group.description}</p>
+            {"description" in group && group.description ? <p>{group.description}</p> : null}
             <ul className="coverage-labels">
               {group.items.map((item) => (
                 <li key={item.label}>

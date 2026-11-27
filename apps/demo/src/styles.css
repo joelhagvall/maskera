@@ -790,11 +790,6 @@ html[data-theme="dark"] .stage-window .hl {
   font-weight: 600;
   letter-spacing: -0.02em;
 }
-.home-trust-lede {
-  margin: 6px 0 0;
-  font-size: 14px;
-  color: var(--muted);
-}
 .home-trust-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -840,13 +835,6 @@ html[data-theme="dark"] .stage-window .hl {
   padding: 40px 0 8px;
   border-top: 1px solid var(--border);
   text-align: center;
-}
-.home-closing p {
-  max-width: 52ch;
-  margin: 8px auto 0;
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--muted);
 }
 .home-closing .hero-cta-row {
   justify-content: center;

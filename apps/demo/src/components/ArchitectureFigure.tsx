@@ -31,7 +31,6 @@ export function ArchitectureFigure({ onCoverage }: { onCoverage: () => void }) {
         aria-hidden="true"
       />
       <figcaption>
-        {copy.developerApi.diagramCaption}{" "}
         <a href={`${viewPaths.transparency}#vad-maskeras`} onClick={navClick(onCoverage)}>
           {copy.coverage.linkCta}
         </a>

@@ -13,7 +13,6 @@ export function TestData({ go }: { go: (view: View) => void }) {
         <article className="prose">
           <h1>{copy.testData.title}</h1>
           <p className="prose-lede">{copy.testData.lede}</p>
-          <p className="prose-body">{copy.testData.intro}</p>
           <ul>
             {copy.testData.items.map((item) => (
               <li key={item.title}>

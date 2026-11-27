@@ -19,7 +19,6 @@ export function Faq({ go }: { go: (view: View) => void }) {
       <main id="main-content">
         <article className="prose prose-with-toc faq-page">
           <h1>{faq.title}</h1>
-          <p className="prose-lede">{faq.lede}</p>
 
           <PageToc
             items={faq.groups.map((group) => ({ href: `#${group.id}`, label: group.title }))}

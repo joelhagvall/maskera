@@ -310,14 +310,13 @@ export function Services({
           </div>
 
           <p className="coverage-link">
-            {copy.coverage.servicesLink}{" "}
             <a href={`${viewPaths.transparency}#vad-maskeras`} onClick={navClick(onCoverage)}>
               {copy.coverage.linkCta}
-            </a>{" "}
+            </a>
+            <span aria-hidden="true"> · </span>
             <a href={viewPaths.accuracy} onClick={navClick(() => go("accuracy"))}>
               {copy.accuracy.servicesCta}
             </a>
-            .
           </p>
         </article>
       </main>

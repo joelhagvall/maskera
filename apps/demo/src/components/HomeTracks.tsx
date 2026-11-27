@@ -76,7 +76,6 @@ export function HomeTrust({ go }: { go: (view: View) => void }) {
   return (
     <section className="home-trust" aria-labelledby="home-trust-title">
       <h2 id="home-trust-title">{trust.title}</h2>
-      <p className="home-trust-lede">{trust.lede}</p>
       <div className="home-trust-grid">
         {trust.items.map((item) => (
           <div key={item.title} className="home-trust-item">
@@ -107,7 +106,6 @@ export function HomeClosing({ goSection }: { goSection: (view: View, anchor: str
   return (
     <section className="home-closing" aria-labelledby="home-closing-title">
       <h2 id="home-closing-title">{closing.title}</h2>
-      <p>{closing.body}</p>
       <ExtensionHeroActions goSection={goSection} />
     </section>
   )

@@ -25,7 +25,6 @@ export function Industries({
       <main id="main-content">
         <article className="prose prose-with-toc industries-page">
           <h1>{industries.title}</h1>
-          <p className="prose-lede">{industries.lede}</p>
 
           <PageToc
             items={industries.sections.map((section) => ({

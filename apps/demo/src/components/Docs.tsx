@@ -20,7 +20,7 @@ interface DocsTable {
 interface DocsSection {
   id: string
   title: string
-  body: string
+  body?: string
   bullets?: readonly string[]
   codeLabel?: string
   code?: string
@@ -170,7 +170,7 @@ function DocsPage({
           {data.sections.map((section) => (
             <section key={section.id} aria-labelledby={section.id}>
               <h2 id={section.id}>{section.title}</h2>
-              <p className="prose-body">{keepFlagsWhole(section.body)}</p>
+              {section.body ? <p className="prose-body">{keepFlagsWhole(section.body)}</p> : null}
               {section.bullets && section.bullets.length > 0 ? (
                 <ul>
                   {section.bullets.map((bullet) => (
