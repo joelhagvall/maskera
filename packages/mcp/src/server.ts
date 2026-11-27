@@ -247,14 +247,15 @@ const TOOLS: readonly ToolDefinition[] = [
         },
         session_id: {
           type: "string",
-          description: "Session ID containing the local restore map.",
+          description:
+            "Session ID from maskera_read_file or maskera_redact. When omitted, the latest session that knows every placeholder in text is used; ambiguous matches are refused.",
         },
         overwrite: {
           type: "boolean",
           description: "Allow overwriting an existing file. Default false.",
         },
       },
-      required: ["path", "text", "session_id"],
+      required: ["path", "text"],
     },
     outputSchema: {
       type: "object",
@@ -893,10 +894,10 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
       if (name === "maskera_write_file") {
         if (typeof args.path !== "string") return finish(toolError("Missing required string: path"))
         if (typeof args.text !== "string") return finish(toolError("Missing required string: text"))
-        if (typeof args.session_id !== "string" || !args.session_id.trim()) {
-          return finish(toolError("Missing required non-empty string: session_id"))
-        }
-        const normalizedSessionId = args.session_id.trim()
+        const normalizedSessionId =
+          typeof args.session_id === "string" && args.session_id.trim()
+            ? args.session_id.trim()
+            : vault.resolveSessionFor(args.text)
         telemetrySessionId = normalizedSessionId
         const { restored, knownPlaceholders } = vault.restore(args.text, {
           sessionId: normalizedSessionId,

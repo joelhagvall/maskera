@@ -113,7 +113,7 @@ Tools (all declare `inputSchema`, `outputSchema`, and MCP tool `annotations`):
 - `maskera_list_files`: List files inside allowed workspace roots without reading contents.
 - `maskera_search_files`: Search UTF-8 files locally and redact every matched line before returning (supports searching by an existing placeholder like `[NAMN_1]`).
 - `maskera_read_file`: Read a local UTF-8 file already redacted, storing the restore map locally under `session_id`.
-- `maskera_write_file`: Restore placeholders from `session_id` and write directly to disk without exposing raw PII back to the LLM.
+- `maskera_write_file`: Restore placeholders from `session_id` and write directly to disk without exposing raw PII back to the LLM. Without `session_id` it uses the latest session that knows every placeholder in the text, and refuses when several sessions would restore it differently.
 - `maskera_redact`: Redact text locally (`mode: "auto"` or `"rules"`, `profile: "general" | "clinical"`, `custom_terms`).
 - `maskera_restore`: Restore placeholders using `session_id` or an explicit map (hidden and blocked under `--no-raw-restore`, or gated under `--approval-mode browser|native`).
 - `maskera_list_sessions` / `maskera_clear_session` / `maskera_status`: Inspect counts (never raw PII), clear memory, or check model and policy status.

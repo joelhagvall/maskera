@@ -201,6 +201,37 @@ export class SessionVault {
     }
   }
 
+  /**
+   * Picks the session that restores `text` when the caller named none.
+   * A candidate must know every placeholder in the text. When several do and
+   * would restore it differently, the choice is ambiguous and refused, so a
+   * missing session_id can never put another document's values into a file.
+   */
+  resolveSessionFor(text: string): string {
+    const tokens = [...new Set(text.match(EXISTING_TOKEN_RE) ?? [])]
+    const candidates = [...this.sessions.values()].filter((s) =>
+      tokens.every((token) => token in s.map),
+    )
+    if (candidates.length === 0) {
+      throw new Error(
+        tokens.length > 0
+          ? `No local session knows ${tokens.slice(0, 3).join(", ")}. Read the source with maskera_read_file or maskera_redact first, then pass its session_id.`
+          : "No local session exists yet. Read the source with maskera_read_file or maskera_redact first, then pass its session_id.",
+      )
+    }
+    const restorations = new Set(candidates.map((s) => restore(text, s.map)))
+    if (restorations.size > 1) {
+      throw new Error(
+        `The placeholders match ${candidates.length} sessions that restore them differently (${candidates
+          .map((s) => s.id)
+          .join(", ")}). Pass the session_id from the maskera_read_file result.`,
+      )
+    }
+    const latest = candidates[candidates.length - 1]
+    if (!latest) throw new Error("No local session can restore this text.")
+    return latest.id
+  }
+
   getMap(sessionId: string): Record<string, string> {
     const session = this.sessions.get(sessionId.trim())
     return session ? { ...session.map } : {}

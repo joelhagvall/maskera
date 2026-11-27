@@ -367,6 +367,75 @@ describe("MaskeraMcpServer JSON-RPC protocol and tools", () => {
     ).toBe(true)
   })
 
+  it("writes without session_id only when exactly one restoration is possible", async () => {
+    const root = await makeTempDir()
+    const engine = createMaskeraEngine({
+      defaultMode: "auto",
+      recognizer: stubRecognizer([
+        { value: "Anna Lindqvist", label: "NAMN" },
+        { value: "Erik Berg", label: "NAMN" },
+      ]),
+    })
+    const server = createMaskeraMcpServer({ engine, allowedRoots: [root] })
+    const call = (id: number, name: string, args: Record<string, unknown>) =>
+      server.handleMessage({
+        jsonrpc: "2.0",
+        id,
+        method: "tools/call",
+        params: { name, arguments: args },
+      })
+    const payload = (res: unknown) =>
+      (res as { result: { structuredContent: Record<string, unknown>; isError?: boolean } }).result
+
+    const noSession = payload(
+      await call(1, "maskera_write_file", { path: join(root, "a.txt"), text: "Hej [NAMN_1]" }),
+    )
+    expect(noSession.isError).toBe(true)
+    expect(JSON.stringify(noSession)).toContain("maskera_read_file")
+
+    await writeFile(join(root, "anna.txt"), "Utlägg för Anna Lindqvist, tel 070-174 06 58.", "utf8")
+    const read = payload(await call(2, "maskera_read_file", { path: join(root, "anna.txt") }))
+    expect(read.structuredContent.redacted).toContain("[NAMN_1]")
+
+    const written = payload(
+      await call(3, "maskera_write_file", {
+        path: join(root, "verifikation.txt"),
+        text: "Verifikation för [NAMN_1], ring [TELEFON_1].",
+      }),
+    )
+    expect(written.isError).toBeFalsy()
+    expect(written.structuredContent.session_id).toBe(read.structuredContent.session_id)
+    expect(JSON.stringify(written)).not.toContain("Anna Lindqvist")
+    expect(await readFile(join(root, "verifikation.txt"), "utf8")).toBe(
+      "Verifikation för Anna Lindqvist, ring 070-174 06 58.",
+    )
+
+    const unknown = payload(
+      await call(4, "maskera_write_file", { path: join(root, "b.txt"), text: "Hej [NAMN_9]" }),
+    )
+    expect(unknown.isError).toBe(true)
+    expect(JSON.stringify(unknown)).toContain("[NAMN_9]")
+
+    await writeFile(join(root, "erik.txt"), "Utlägg för Erik Berg.", "utf8")
+    await call(5, "maskera_read_file", { path: join(root, "erik.txt") })
+    const ambiguous = payload(
+      await call(6, "maskera_write_file", { path: join(root, "c.txt"), text: "Hej [NAMN_1]" }),
+    )
+    expect(ambiguous.isError).toBe(true)
+    expect(JSON.stringify(ambiguous)).not.toContain("Anna Lindqvist")
+    expect(JSON.stringify(ambiguous)).not.toContain("Erik Berg")
+    await expect(readFile(join(root, "c.txt"), "utf8")).rejects.toThrow()
+
+    const onlyAnnaKnowsPhone = payload(
+      await call(7, "maskera_write_file", {
+        path: join(root, "d.txt"),
+        text: "[NAMN_1] på [TELEFON_1]",
+      }),
+    )
+    expect(onlyAnnaKnowsPhone.isError).toBeFalsy()
+    expect(await readFile(join(root, "d.txt"), "utf8")).toBe("Anna Lindqvist på 070-174 06 58")
+  })
+
   it("fails loudly in auto mode if NER fails rather than silently leaking names", async () => {
     const failingRecognizer: NerRecognizer = {
       get ready() {
