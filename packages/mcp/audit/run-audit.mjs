@@ -39,7 +39,7 @@ import {
   repoRoot,
   runProcess,
 } from "./lib/harness.mjs"
-import { DEFAULT_LIVE_MAX_USD, parseMaxUsd } from "./lib/live-budget.mjs"
+import { AUDIT_LANES, parseAuditCli } from "./lib/live-budget.mjs"
 import { runAdversarialAudit } from "./suites/adversarial.mjs"
 import { runBenchmarkAudit } from "./suites/benchmark.mjs"
 import { runClientsAudit } from "./suites/clients.mjs"
@@ -50,67 +50,15 @@ import { runProtocolAudit } from "./suites/protocol.mjs"
 import { runSecurityAudit } from "./suites/security.mjs"
 import { AUDIT_FILES, writeAuditSummary } from "./summary.mjs"
 
-const LANES = new Set([
-  "quick",
-  "privacy",
-  "security",
-  "e2e",
-  "clients",
-  "adversarial",
-  "package",
-  "offline",
-  "benchmark",
-  "full",
-])
-
 export function parseCli(argv) {
-  let lane = "quick"
-  let jsonOut = false
-  let ciMode = false
-  let live = false
-  let maxUsd = DEFAULT_LIVE_MAX_USD
-  let maxUsdExplicit = false
-  let release = false
-  let evidence = false
-  let outPath = null
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i]
-    if (arg === "--") continue
-    if (arg === "--json") jsonOut = true
-    else if (arg === "--ci") ciMode = true
-    else if (arg === "--live") live = true
-    else if (arg === "--max-usd") {
-      maxUsd = parseMaxUsd(argv[++i] ?? "")
-      maxUsdExplicit = true
-    } else if (arg.startsWith("--max-usd=")) {
-      maxUsd = parseMaxUsd(arg.slice("--max-usd=".length))
-      maxUsdExplicit = true
-    } else if (arg === "--release") release = true
-    else if (arg === "--evidence") evidence = true
-    else if (arg === "--out") outPath = argv[++i] ?? null
-    else if (arg.startsWith("--out=")) outPath = arg.slice("--out=".length)
-    else if (LANES.has(arg)) lane = arg
-    else if (arg === "--help" || arg === "-h") {
-      console.log(
-        `Usage: node audit/run-audit.mjs <${[...LANES].join("|")}> [--json] [--ci] [--live [--max-usd <usd>]] [--release] [--evidence] [--out <path>]`,
-      )
-      process.exit(0)
-    } else {
-      throw new Error(`Unknown audit option or lane: ${arg}`)
-    }
+  const opts = parseAuditCli(argv, { reportPath: AUDIT_FILES.report })
+  if (opts.help) {
+    console.log(
+      `Usage: node audit/run-audit.mjs <${[...AUDIT_LANES].join("|")}> [--json] [--ci] [--live [--max-usd <usd>]] [--release] [--evidence] [--out <path>]`,
+    )
+    process.exit(0)
   }
-  if (maxUsdExplicit && !live) {
-    throw new Error("--max-usd requires --live")
-  }
-  if (evidence) {
-    if (outPath) throw new Error("--evidence always writes audit-results.json; drop --out")
-    release = true
-    outPath = AUDIT_FILES.report
-  }
-  if (release && lane !== "full") {
-    throw new Error(`--release gates a publish and needs the full lane, not ${lane}`)
-  }
-  return { lane, jsonOut, ciMode, live, maxUsd, release, evidence, outPath }
+  return opts
 }
 
 function getCommitSha() {

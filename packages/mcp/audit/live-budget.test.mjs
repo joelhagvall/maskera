@@ -1,15 +1,17 @@
 import assert from "node:assert/strict"
 import { spawnSync } from "node:child_process"
-import { resolve } from "node:path"
+import { dirname, resolve } from "node:path"
 import test from "node:test"
-import { pkgRoot } from "./lib/harness.mjs"
+import { fileURLToPath } from "node:url"
 import {
   assertWithinBudget,
   DEFAULT_LIVE_MAX_USD,
   extractClaudeCostUsd,
+  parseAuditCli,
   parseMaxUsd,
 } from "./lib/live-budget.mjs"
-import { parseCli } from "./run-audit.mjs"
+
+const pkgRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 
 test("parseMaxUsd accepts positive finite USD caps and falls back to default", () => {
   assert.equal(parseMaxUsd(undefined), DEFAULT_LIVE_MAX_USD)
@@ -45,23 +47,23 @@ test("assertWithinBudget enforces the configured USD cap", () => {
   )
 })
 
-test("run-audit parseCli validates --max-usd and requires --live with it", () => {
-  const def = parseCli(["clients"])
+test("parseAuditCli validates --max-usd and requires --live with it", () => {
+  const def = parseAuditCli(["clients"])
   assert.equal(def.live, false)
   assert.equal(def.maxUsd, DEFAULT_LIVE_MAX_USD)
 
-  const live = parseCli(["clients", "--live", "--max-usd", "0.40"])
+  const live = parseAuditCli(["clients", "--live", "--max-usd", "0.40"])
   assert.equal(live.live, true)
   assert.equal(live.maxUsd, 0.4)
 
-  const eq = parseCli(["clients", "--live", "--max-usd=0.10"])
+  const eq = parseAuditCli(["clients", "--live", "--max-usd=0.10"])
   assert.equal(eq.maxUsd, 0.1)
 
-  assert.throws(() => parseCli(["clients", "--max-usd", "0.50"]), /--max-usd requires --live/)
-  assert.throws(() => parseCli(["clients", "--live", "--max-usd", "0"]), /Invalid --max-usd/)
+  assert.throws(() => parseAuditCli(["clients", "--max-usd", "0.50"]), /--max-usd requires --live/)
+  assert.throws(() => parseAuditCli(["clients", "--live", "--max-usd", "0"]), /Invalid --max-usd/)
 })
 
-test("e2e-harnesses rejects --max-usd without --live and invalid --max-usd", () => {
+test("e2e-harnesses rejects --max-usd without --live and invalid --max-usd even before build", () => {
   const script = resolve(pkgRoot, "scripts/e2e-harnesses.mjs")
   const withoutLive = spawnSync(process.execPath, [script, "--max-usd", "0.50"], {
     encoding: "utf8",

@@ -34,12 +34,6 @@ const cliPath = process.env.MASKERA_MCP_CLI
   ? resolve(process.env.MASKERA_MCP_CLI)
   : resolve(pkgRoot, "dist/cli.js")
 
-if (!existsSync(cliPath)) {
-  throw new Error(
-    `Built CLI not found at ${cliPath}. Run "pnpm --filter @maskera/mcp build" first.`,
-  )
-}
-
 function parseCliFlags(argv) {
   let only = null
   let mode = hasLocalNerModel ? "both" : "rules"
@@ -134,6 +128,12 @@ function parseCliFlags(argv) {
 }
 
 const opts = parseCliFlags(process.argv.slice(2))
+
+if (!existsSync(cliPath)) {
+  throw new Error(
+    `Built CLI not found at ${cliPath}. Run "pnpm --filter @maskera/mcp build" first.`,
+  )
+}
 
 function hasBinary(name) {
   const res = spawnSync("which", [name], { encoding: "utf8" })
