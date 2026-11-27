@@ -1,36 +1,36 @@
-import type { ComponentType } from "react"
+import type { FunctionComponent } from "react"
 import type { DemoWorkspaceProps } from "./components/DemoWorkspace"
 import type { View } from "./routing"
 
 export interface ViewComponents {
-  demo: ComponentType<DemoWorkspaceProps>
-  dev: ComponentType<{
+  demo: FunctionComponent<DemoWorkspaceProps>
+  dev: FunctionComponent<{
     go: (next: View) => void
     goSection?: (next: View, id: string) => void
     onCoverage: () => void
   }>
-  docs: ComponentType<{ go: (next: View) => void }>
-  docsMcp: ComponentType<{ go: (next: View) => void }>
-  docsClients: ComponentType<{ go: (next: View) => void }>
-  docsSdk: ComponentType<{ go: (next: View) => void }>
-  docsTroubleshooting: ComponentType<{ go: (next: View) => void }>
-  transparency: ComponentType<{ go: (next: View) => void }>
-  testdata: ComponentType<{ go: (next: View) => void }>
-  privacy: ComponentType<{ go: (next: View) => void }>
-  services: ComponentType<{
+  docs: FunctionComponent<{ go: (next: View) => void }>
+  docsMcp: FunctionComponent<{ go: (next: View) => void }>
+  docsClients: FunctionComponent<{ go: (next: View) => void }>
+  docsSdk: FunctionComponent<{ go: (next: View) => void }>
+  docsTroubleshooting: FunctionComponent<{ go: (next: View) => void }>
+  transparency: FunctionComponent<{ go: (next: View) => void }>
+  testdata: FunctionComponent<{ go: (next: View) => void }>
+  privacy: FunctionComponent<{ go: (next: View) => void }>
+  services: FunctionComponent<{
     go: (next: View) => void
     goSection: (next: View, id: string) => void
     onCoverage: () => void
   }>
-  accuracy: ComponentType<{ go: (next: View) => void; onTryContext?: () => void }>
-  security: ComponentType<{ go: (next: View) => void }>
-  about: ComponentType<{ go: (next: View) => void }>
-  faq: ComponentType<{ go: (next: View) => void }>
-  guides: ComponentType<{
+  accuracy: FunctionComponent<{ go: (next: View) => void; onTryContext?: () => void }>
+  security: FunctionComponent<{ go: (next: View) => void }>
+  about: FunctionComponent<{ go: (next: View) => void }>
+  faq: FunctionComponent<{ go: (next: View) => void }>
+  guides: FunctionComponent<{
     go: (next: View) => void
     goSection?: (next: View, id: string) => void
   }>
-  industries: ComponentType<{ go: (next: View) => void; onTryScenario: (id: string) => void }>
+  industries: FunctionComponent<{ go: (next: View) => void; onTryScenario: (id: string) => void }>
 }
 
 const loaded: Partial<ViewComponents> = {}

@@ -22,7 +22,7 @@ explicit synthetic marker such as `Maskera`, `Provdata`, `Fiktiv` or
 because a random house number could still resolve to a real property. Because
 ordinary names can coincide by chance, the accurate guarantee is source
 isolation, no sourced relationships, marked addresses, and identifier
-exclusion—not that no generated name pair could ever match a living person.
+exclusion, not that no generated name pair could ever match a living person.
 
 The privacy-clean release runner uses synthetic evaluation data and non-record
 category probes. Historical benchmark reports may retain aggregate results and

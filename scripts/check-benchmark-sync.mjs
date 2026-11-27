@@ -193,7 +193,7 @@ await expectFragments("docs/BENCHMARKS.md", [
   ],
   [
     "historical boundary",
-    `Historical ${historical.release} snapshot — not a ${contract.release} result.`,
+    `Historical ${historical.release} snapshot: not a ${contract.release} result.`,
   ],
   [
     "current KBLab original row",

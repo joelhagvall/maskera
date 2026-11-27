@@ -37,7 +37,7 @@ describe("Guides page", () => {
     }
     const desktop = screen.getByRole("link", { name: new RegExp(copy.guides.sections[0].note) })
     expect(desktop.getAttribute("href")).toBe("/docs/klienter#claude-desktop")
-    // "Gateway" is Maskera's hosted product name, kept off the public site.
+    // "Gateway" is Maskera's dormant self-hosted product name, kept off the public site.
     expect(container.textContent?.toLowerCase()).not.toContain("gateway")
   })
 })

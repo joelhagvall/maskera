@@ -398,7 +398,7 @@ a domain-authored gold set.
 
 ## Curated corpus (upper bound, regression tracker)
 
-> **Historical v18 snapshot — not a v20 result.** This and the following
+> **Historical v18 snapshot: not a v20 result.** This and the following
 > dated comparison sections are retained for transparency. The live Hub
 > default now serves v20, whose current release battery is reported above.
 
@@ -422,15 +422,15 @@ sentence-initial "Fiktivbolaget" classic; v18 keeps the sweep on the extended
 149-sentence set including the org.nr gate).
 
 This historical aggregate does not reproduce from the Hub's moving `main`
-revision, which now serves v19. Exact reproduction requires the archived v18
+revision, which now serves v20. Exact reproduction requires the archived v18
 artifact and the historical `maskera@0.6.4` pipeline; do not use the default
-remote command and relabel its v19 output as this row.
+remote command and relabel its v20 output as this row.
 
 ## Independent gold set (honest floor)
 
-> **Historical v18 snapshot — not a v19 result.** The raw corpus was removed
-> before the privacy-clean v19 build, so this row has not been re-measured or
-> claimed as independent evidence for v19.
+> **Historical v18 snapshot: not a v20 result.** The raw corpus was removed
+> before the privacy-clean v19/v20 line, so this row has not been re-measured or
+> claimed as independent evidence for v20.
 
 22 verbatim sentences of real Swedish Wikipedia prose, 58 entities, written by
 others and excluded from Maskera's task training and vocabulary selection.
@@ -464,8 +464,8 @@ not a dependency of the privacy-clean build or release runner.
 
 ## Address (ADR) eval (the one class the other sets miss)
 
-> **Historical v18 snapshot — not the revised v19 ADR result.** The current
-> synthetic v19 ADR row is reported in the release table above.
+> **Historical v18 snapshot: not the revised v20 ADR result.** The current
+> synthetic v20 ADR row is reported in the release table above.
 
 - **Measured:** 2026-07-19, same q4 artifact as everywhere else.
 
