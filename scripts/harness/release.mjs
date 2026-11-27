@@ -9,7 +9,11 @@
  *      their working trees, so `check:product` passes before anything exists
  *      on npm (it reads the working trees).
  *   3. `pnpm build` (benchmark and product checks included).
- *   4. `changeset publish` (interactive npm 2FA).
+ *   4. `pnpm audit:full -- --release`: the @maskera/mcp release gates, where
+ *      every gate must PASS on this machine with the real CLI agents, and the
+ *      committed audit evidence (`pnpm audit:evidence`) must name the
+ *      @maskera/mcp version and model revision being released.
+ *   5. `changeset publish` (interactive npm 2FA).
  *   5. Verify that every release tag points at a package.json with its version,
  *      then push those tags.
  *   6. Wait until the registry serves each new version.
@@ -18,7 +22,7 @@
  *      contracts; hagvall-labs' maskeraVersion, then its Deploy workflow once
  *      CI passed on that commit.
  *
- * `--after-publish` resumes at step 5 when the publish itself already ran.
+ * `--after-publish` resumes at step 6 when the publish itself already ran.
  * A sibling whose release files already hold someone else's uncommitted
  * changes is skipped with a message: this script never sweeps them up.
  */
@@ -26,6 +30,11 @@ import { spawnSync } from "node:child_process"
 import { existsSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
+import {
+  AUDIT_FILES,
+  auditSummaryIsCurrent,
+  contractMatchesReport,
+} from "../../packages/mcp/audit/summary.mjs"
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..")
 const PARENT = resolve(ROOT, "..")
@@ -111,6 +120,50 @@ export function parseSyncModelResult(stdout) {
     }
   }
   throw new Error(`sync:model --json produced no JSON payload:\n${stdout}`)
+}
+
+const RELEASE_AUDIT_REPORT = "tmp/mcp-release-audit.json"
+
+/** `MASKERA_SV_NER_REVISION` in `packages/ner/src/index.ts`: the Hub sha npm users get. */
+export function parseModelRevision(nerIndexText) {
+  const match = nerIndexText.match(/MASKERA_SV_NER_REVISION\s*=\s*"([0-9a-f]{40})"/)
+  if (!match) throw new Error("MASKERA_SV_NER_REVISION not found in packages/ner/src/index.ts")
+  return match[1]
+}
+
+/**
+ * Problems with the committed audit evidence for a release: audit-results.json
+ * must come from a passing `--release` run of the full lane on the
+ * @maskera/mcp version and model revision being published, and AUDIT.md's
+ * generated block must match it.
+ */
+export function findAuditEvidenceProblems(
+  report,
+  auditMd,
+  contract,
+  { mcpVersion, modelRevision },
+) {
+  const problems = []
+  const where = "packages/mcp/audit-results.json"
+  if (report.lane !== "full") problems.push(`${where} is from the ${report.lane} lane, not full`)
+  if (report.releaseGates?.release !== true || report.releaseGates?.passed !== true) {
+    problems.push(`${where} is not a passing --release run`)
+  }
+  if (report.packageVersion !== mcpVersion) {
+    problems.push(`${where} audited @maskera/mcp@${report.packageVersion}, releasing ${mcpVersion}`)
+  }
+  if (report.model?.revision !== modelRevision) {
+    problems.push(`${where} audited model ${report.model?.revision}, releasing ${modelRevision}`)
+  }
+  if (!contractMatchesReport(report, contract)) {
+    problems.push(
+      `docs/benchmark-release.json pins model ${contract.artifact?.revision}, ${where} audited ${report.model?.revision}`,
+    )
+  }
+  if (!auditSummaryIsCurrent(auditMd, report, contract)) {
+    problems.push("packages/mcp/AUDIT.md's generated block does not match audit-results.json")
+  }
+  return problems
 }
 
 /** The release tags changesets creates for the given package versions. */
@@ -270,6 +323,11 @@ async function main() {
   ) {
     throw new Error("commit the version bump before releasing: a tag must point at it")
   }
+  if (git(ROOT, "status", "--porcelain", "--", AUDIT_FILES.report, AUDIT_FILES.summary)) {
+    throw new Error(
+      "commit packages/mcp/audit-results.json and AUDIT.md before releasing: the audit evidence must be in the released commit",
+    )
+  }
 
   if (!afterPublish) {
     const readmeDrift = findUnbumpedReadmeChanges(tags, {
@@ -282,6 +340,25 @@ async function main() {
     })
     if (readmeDrift.length > 0) {
       throw new Error(`unbumped README drift:\n- ${readmeDrift.join("\n- ")}`)
+    }
+
+    const auditProblems = findAuditEvidenceProblems(
+      JSON.parse(readFileSync(AUDIT_FILES.report, "utf8")),
+      readFileSync(AUDIT_FILES.summary, "utf8"),
+      JSON.parse(readFileSync(AUDIT_FILES.contract, "utf8")),
+      {
+        mcpVersion: released.mcp,
+        modelRevision: parseModelRevision(
+          readFileSync(join(ROOT, "packages/ner/src/index.ts"), "utf8"),
+        ),
+      },
+    )
+    if (auditProblems.length > 0) {
+      throw new Error(
+        `stale @maskera/mcp audit evidence:\n- ${auditProblems.join("\n- ")}\n` +
+          "run `pnpm build && pnpm audit:evidence` and commit packages/mcp/audit-results.json " +
+          "and packages/mcp/AUDIT.md before releasing",
+      )
     }
   }
 
@@ -297,6 +374,8 @@ async function main() {
     syncSiblingWorkingTrees(released.maskera)
     step("build")
     run("pnpm", ["build"])
+    step("@maskera/mcp release gates")
+    run("pnpm", ["audit:full", "--", "--release", "--out", RELEASE_AUDIT_REPORT])
     step("publish (npm 2FA)")
     run("pnpm", ["exec", "changeset", "publish"])
   } else {

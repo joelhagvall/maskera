@@ -1,12 +1,15 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import test from "node:test"
+import { AUDIT_FILES } from "../../packages/mcp/audit/summary.mjs"
 import {
   bumpCoreRange,
   bumpExtensionZipVersion,
   bumpHagvallVersion,
   bumpMaskeraRange,
+  findAuditEvidenceProblems,
   findUnbumpedReadmeChanges,
+  parseModelRevision,
   parsePorcelain,
   parseSyncModelResult,
   releaseTags,
@@ -85,4 +88,41 @@ test("findUnbumpedReadmeChanges blocks releasing when a tagged package README dr
     readHeadFile: () => "same readme",
   })
   assert.deepEqual(clean, [])
+})
+
+test("parseModelRevision reads the pinned Hub sha from the ner source", () => {
+  const source = readFileSync(new URL("../../packages/ner/src/index.ts", import.meta.url), "utf8")
+  assert.match(parseModelRevision(source), /^[0-9a-f]{40}$/)
+  assert.throws(() => parseModelRevision("export const x = 1\n"), /MASKERA_SV_NER_REVISION/)
+})
+
+test("findAuditEvidenceProblems accepts only a passing --release run of what is released", () => {
+  const read = (path) => readFileSync(path, "utf8")
+  const report = JSON.parse(read(AUDIT_FILES.report))
+  const auditMd = read(AUDIT_FILES.summary)
+  const contract = JSON.parse(read(AUDIT_FILES.contract))
+  const target = { mcpVersion: report.packageVersion, modelRevision: report.model.revision }
+  assert.deepEqual(findAuditEvidenceProblems(report, auditMd, contract, target), [])
+
+  const stale = {
+    ...report,
+    lane: "quick",
+    releaseGates: { ...report.releaseGates, release: false },
+  }
+  const problems = findAuditEvidenceProblems(stale, auditMd, contract, {
+    mcpVersion: "99.0.0",
+    modelRevision: "b".repeat(40),
+  })
+  assert.equal(problems.length, 5)
+  assert.match(problems.join("\n"), /quick lane/)
+  assert.match(problems.join("\n"), /not a passing --release run/)
+  assert.match(problems.join("\n"), /releasing 99\.0\.0/)
+  assert.match(problems.join("\n"), /AUDIT\.md's generated block does not match/)
+})
+
+test("the release runs the strict @maskera/mcp audit before changeset publish", () => {
+  const source = readFileSync(new URL("./release.mjs", import.meta.url), "utf8")
+  const audit = source.indexOf('run("pnpm", ["audit:full", "--", "--release"')
+  const publish = source.indexOf('run("pnpm", ["exec", "changeset", "publish"])')
+  assert.ok(audit > 0 && publish > audit, "audit:full --release must run before publish")
 })

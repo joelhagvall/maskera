@@ -17,6 +17,7 @@ import { createServer as createNetServer } from "node:net"
 import { homedir, tmpdir } from "node:os"
 import { join, resolve } from "node:path"
 import { createMaskeraEngine, startMaskeraProxy } from "../../dist/index.js"
+import { REAL_CLI_CLIENTS, REAL_CLI_CLIENTS_CHECK_ID } from "../gates.mjs"
 import {
   createSuiteCollector,
   getLocalNerOptions,
@@ -71,11 +72,8 @@ export async function runClientsAudit(options = {}) {
   const hasClaudeDesktopApp = existsSync("/Applications/Claude.app")
   const hasCursorApp = existsSync("/Applications/Cursor.app")
 
-  const availableCliClients = [
-    ...(claudeBin ? ["claude"] : []),
-    ...(codexBin ? ["codex"] : []),
-    ...(opencodeBin ? ["opencode"] : []),
-  ]
+  const binaries = { claude: claudeBin, codex: codexBin, opencode: opencodeBin }
+  const availableCliClients = REAL_CLI_CLIENTS.filter((name) => binaries[name])
 
   const clientInventory = {
     claudeCode: claudeBin ? `INSTALLED (${claudeBin.version})` : "NOT_INSTALLED",
@@ -114,7 +112,7 @@ export async function runClientsAudit(options = {}) {
       ]
 
       await suite.check(
-        "real-cli-harnesses-installed-artifact",
+        REAL_CLI_CLIENTS_CHECK_ID,
         `Real clients (${availableCliClients.join(", ")}) over cleanly installed @maskera/mcp tarball (${modeArg})`,
         async () => {
           const run = await runProcess(process.execPath, args, {

@@ -15,7 +15,13 @@
  *   full         all lanes + release gate evaluation
  *
  * Usage:
- *   node audit/run-audit.mjs <lane> [--json] [--ci] [--live] [--out <file.json>]
+ *   node audit/run-audit.mjs <lane> [--json] [--ci] [--live] [--release] [--out <file.json>]
+ *
+ * `--release` is the npm publish gate run by `pnpm release`: it only accepts
+ * the full lane, and every release gate must PASS (NOT_TESTED fails).
+ * `--evidence` (`pnpm audit:evidence`) is a `--release` run of the full lane
+ * that writes the committed audit-results.json and regenerates its AUDIT.md
+ * block, which `pnpm release` requires to name the version being published.
  */
 import { execFileSync } from "node:child_process"
 import { existsSync } from "node:fs"
@@ -40,6 +46,7 @@ import { runPackageAudit } from "./suites/package.mjs"
 import { runPrivacyAudit } from "./suites/privacy.mjs"
 import { runProtocolAudit } from "./suites/protocol.mjs"
 import { runSecurityAudit } from "./suites/security.mjs"
+import { AUDIT_FILES, writeAuditSummary } from "./summary.mjs"
 
 const LANES = new Set([
   "quick",
@@ -59,6 +66,8 @@ function parseCli(argv) {
   let jsonOut = false
   let ciMode = false
   let live = false
+  let release = false
+  let evidence = false
   let outPath = null
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i]
@@ -66,19 +75,29 @@ function parseCli(argv) {
     if (arg === "--json") jsonOut = true
     else if (arg === "--ci") ciMode = true
     else if (arg === "--live") live = true
+    else if (arg === "--release") release = true
+    else if (arg === "--evidence") evidence = true
     else if (arg === "--out") outPath = argv[++i] ?? null
     else if (arg.startsWith("--out=")) outPath = arg.slice("--out=".length)
     else if (LANES.has(arg)) lane = arg
     else if (arg === "--help" || arg === "-h") {
       console.log(
-        `Usage: node audit/run-audit.mjs <${[...LANES].join("|")}> [--json] [--ci] [--live] [--out <path>]`,
+        `Usage: node audit/run-audit.mjs <${[...LANES].join("|")}> [--json] [--ci] [--live] [--release] [--evidence] [--out <path>]`,
       )
       process.exit(0)
     } else {
       throw new Error(`Unknown audit option or lane: ${arg}`)
     }
   }
-  return { lane, jsonOut, ciMode, live, outPath }
+  if (evidence) {
+    if (outPath) throw new Error("--evidence always writes audit-results.json; drop --out")
+    release = true
+    outPath = AUDIT_FILES.report
+  }
+  if (release && lane !== "full") {
+    throw new Error(`--release gates a publish and needs the full lane, not ${lane}`)
+  }
+  return { lane, jsonOut, ciMode, live, release, evidence, outPath }
 }
 
 function getCommitSha() {
@@ -178,7 +197,7 @@ async function main() {
     blocked: results.reduce((s, r) => s + r.blocked, 0),
     notTested: results.reduce((s, r) => s + r.notTested, 0),
   }
-  const releaseGates = evaluateReleaseGates(results)
+  const releaseGates = evaluateReleaseGates(results, { release: opts.release })
 
   const report = {
     schema: "maskera-mcp-audit-report/v1",
@@ -213,6 +232,9 @@ async function main() {
     await mkdir(dirname(absOut), { recursive: true })
     await writeFile(absOut, `${JSON.stringify(report, null, 2)}\n`, "utf8")
   }
+  // Evidence only counts when the strict gate passed; a red run leaves AUDIT.md
+  // stale, so `pnpm release` keeps refusing.
+  if (opts.evidence && totals.fail === 0 && releaseGates.passed) writeAuditSummary()
 
   if (opts.jsonOut) {
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`)

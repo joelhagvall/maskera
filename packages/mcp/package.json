@@ -62,7 +62,8 @@
     "audit:package": "node audit/run-audit.mjs package",
     "audit:offline": "node audit/run-audit.mjs offline",
     "audit:benchmark": "node audit/run-audit.mjs benchmark",
-    "audit:full": "node audit/run-audit.mjs full"
+    "audit:full": "node audit/run-audit.mjs full",
+    "audit:evidence": "node audit/run-audit.mjs full --evidence"
   },
   "dependencies": {
     "@huggingface/transformers": "^4.2.0",

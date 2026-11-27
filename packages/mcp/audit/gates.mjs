@@ -30,7 +30,36 @@ export const RELEASE_GATE_THRESHOLDS = {
   maxSoakHeapGrowthMb: 120,
 }
 
-export function evaluateReleaseGates(suiteResults) {
+/** The real CLI agents the clients suite drives; `--release` requires every one. */
+export const REAL_CLI_CLIENTS = ["claude", "codex", "opencode"]
+
+/** The clients-suite check that drives real installed CLI agents over the packed tarball. */
+export const REAL_CLI_CLIENTS_CHECK_ID = "real-cli-harnesses-installed-artifact"
+
+/**
+ * Every gate and the suite that feeds it. A lane that skips a suite reports
+ * that gate as NOT_TESTED instead of leaving it out, so a partial lane can
+ * never read as PRODUCTION READY.
+ */
+export const RELEASE_GATE_SUITES = {
+  "zero-canary-leaks": "privacy",
+  "security-invariants": "security",
+  "mutation-detection": "security",
+  "protocol-conformance": "protocol",
+  "adversarial-regression": "adversarial",
+  "clean-package-install": "package",
+  "offline-operation": "offline",
+  "real-client-e2e": "clients",
+  "production-pipeline-quality": "benchmark",
+  "performance-and-soak": "benchmark",
+}
+
+/**
+ * `release: true` is the npm publish gate (`pnpm release` runs it): every gate
+ * must PASS, a NOT_TESTED gate fails, and the real-client gate needs every
+ * agent in REAL_CLI_CLIENTS to have run, not only the local Ollama check.
+ */
+export function evaluateReleaseGates(suiteResults, { release = false } = {}) {
   const gates = []
   const byName = Object.fromEntries(suiteResults.map((s) => [s.suite, s]))
 
@@ -144,16 +173,22 @@ export function evaluateReleaseGates(suiteResults) {
     )
   }
 
-  // Gate 6: Real-client E2E (when executed)
+  // Gate 6: Real-client E2E. Only the real CLI agents over the installed
+  // tarball count as tested; a passing Ollama check alone does not.
   const clients = byName.clients
   if (clients) {
-    const ok = clients.status === "PASS" || clients.status === "NOT_TESTED"
+    const realCli = clients.checks?.find((c) => c.id === REAL_CLI_CLIENTS_CHECK_ID)
+    const ran = clients.metrics?.availableCliClients ?? []
+    const missing = REAL_CLI_CLIENTS.filter((name) => !ran.includes(name))
+    let status = "NOT_TESTED"
+    if (clients.failed > 0 || realCli?.status === "FAIL") status = "FAIL"
+    else if (realCli?.status === "PASS") status = release && missing.length > 0 ? "FAIL" : "PASS"
     addGate(
       "real-client-e2e",
       "integration",
-      clients.status === "PASS",
-      `Real-client harnesses: ${clients.passed} passed, ${clients.failed} failed, ${clients.notTested ?? 0} not tested`,
-      clients.status === "NOT_TESTED" ? "NOT_TESTED" : ok ? "PASS" : "FAIL",
+      status === "PASS",
+      `Real-client harnesses: ${clients.passed} passed, ${clients.failed} failed, ${clients.notTested ?? 0} not tested; real CLI agents: ${realCli?.status ?? "NOT_RUN"} (${ran.join(", ") || "none"}${missing.length > 0 ? `; missing ${missing.join(", ")}` : ""})`,
+      status,
     )
   }
 
@@ -184,6 +219,28 @@ export function evaluateReleaseGates(suiteResults) {
     )
   }
 
+  for (const [id, suite] of Object.entries(RELEASE_GATE_SUITES)) {
+    if (!gates.some((g) => g.id === id)) {
+      gates.push({
+        id,
+        category: "not-run",
+        status: "NOT_TESTED",
+        passed: false,
+        detail: `${suite} suite did not run in this lane`,
+      })
+    }
+  }
+
+  if (release) {
+    for (const g of gates) {
+      if (g.status !== "PASS") {
+        g.detail = `${g.detail} (release requires PASS, was ${g.status})`
+        g.status = "FAIL"
+        g.passed = false
+      }
+    }
+  }
+
   const failedGates = gates.filter((g) => g.status === "FAIL")
   const notTestedGates = gates.filter((g) => g.status === "NOT_TESTED")
   const totalNotTestedChecks = suiteResults.reduce((sum, s) => sum + (s.notTested ?? 0), 0)
@@ -199,6 +256,7 @@ export function evaluateReleaseGates(suiteResults) {
   return {
     passed,
     verdict,
+    release,
     thresholds: RELEASE_GATE_THRESHOLDS,
     summary: {
       total: gates.length,

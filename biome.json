@@ -18,7 +18,8 @@
       "!**/training/onnx-model",
       "!**/training/student-*",
       "!**/training/data",
-      "!**/apps/demo/public/models"
+      "!**/apps/demo/public/models",
+      "!packages/mcp/audit-results.json"
     ]
   },
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
