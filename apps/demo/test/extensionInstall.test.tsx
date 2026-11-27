@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
+import { EXTENSION_DOWNLOAD_URL } from "../src/extensionBrowsers"
 import copy from "../src/i18n/sv.json"
 
 const browsers = vi.hoisted(() => ({
@@ -120,9 +121,7 @@ describe("ExtensionInstall", () => {
     expect(within(list).getAllByText(copy.extensionInstall.soon)).toHaveLength(4)
     expect(within(list).queryAllByRole("link")).toHaveLength(0)
     const zipLink = screen.getByRole("link", { name: copy.extensionInstall.zipCta })
-    expect(zipLink.getAttribute("href")).toBe(
-      "https://app.maskera.dev/downloads/maskera-extension-0.2.2.zip",
-    )
+    expect(zipLink.getAttribute("href")).toBe(EXTENSION_DOWNLOAD_URL)
     expect(zipLink.className).toContain("ext-zip-cta")
     expect(screen.queryByRole("link", { name: /Testa Pro/ })).toBeNull()
   })

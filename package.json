@@ -17,6 +17,7 @@
     "bench:mcp": "pnpm --filter @maskera/mcp bench",
     "check:benchmarks": "node scripts/check-benchmark-sync.mjs",
     "check:benchmarks:live": "node scripts/check-benchmark-live.mjs --all",
+    "check:extension:live": "node apps/demo/scripts/check-extension-download.mjs",
     "check:fresh": "node scripts/check-fresh-main.mjs",
     "check:lint-ratchet": "node scripts/harness/biome-ratchet.mjs",
     "check:product": "node scripts/harness/check-product-sync.mjs",

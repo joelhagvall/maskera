@@ -2,6 +2,7 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { Services } from "../src/components/Services"
+import { EXTENSION_DOWNLOAD_URL } from "../src/extensionBrowsers"
 import copy from "../src/i18n/sv.json"
 import { portalUrl } from "../src/portal"
 
@@ -60,7 +61,7 @@ describe("Services", () => {
       screen.getByRole("link", { name: copy.services.compare.teamInvoiceCta }).getAttribute("href"),
     ).toBe("mailto:hej@maskera.dev?subject=Maskera%20Team")
     expect(screen.getByRole("link", { name: /Ladda ner ZIP-filen/ }).getAttribute("href")).toBe(
-      "https://app.maskera.dev/downloads/maskera-extension-0.2.2.zip",
+      EXTENSION_DOWNLOAD_URL,
     )
     expect(
       screen

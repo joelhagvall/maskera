@@ -24,8 +24,15 @@ export const EXTENSION_BROWSERS: readonly ExtensionBrowser[] = [
   { id: "safari", storeUrl: null },
 ]
 
+/**
+ * The extension version whose ZIP app.maskera.dev serves. Bump it only after
+ * `bun run release --upload` in maskera-extension; a production build refuses
+ * a link that does not answer 200 (scripts/check-extension-download.mjs).
+ */
+export const EXTENSION_ZIP_VERSION = "0.2.2"
+
 /** Manual-install fallback (load unpacked) until the stores are live. */
-export const EXTENSION_DOWNLOAD_URL = `${PORTAL_ORIGIN}/downloads/maskera-extension-0.2.2.zip`
+export const EXTENSION_DOWNLOAD_URL = `${PORTAL_ORIGIN}/downloads/maskera-extension-${EXTENSION_ZIP_VERSION}.zip`
 
 /**
  * The hero's store button for one kind of visitor. public/theme-init.js reads

@@ -1,7 +1,13 @@
 import { readFileSync } from "node:fs"
 import { runInNewContext } from "node:vm"
 import { describe, expect, it } from "vitest"
-import { EXTENSION_BROWSERS, EXTENSION_DOWNLOAD_URL, heroTargets } from "../src/extensionBrowsers"
+import { linkedZipUrl } from "../scripts/check-extension-download.mjs"
+import {
+  EXTENSION_BROWSERS,
+  EXTENSION_DOWNLOAD_URL,
+  EXTENSION_ZIP_VERSION,
+  heroTargets,
+} from "../src/extensionBrowsers"
 
 const themeInit = readFileSync(new URL("../public/theme-init.js", import.meta.url), "utf8")
 
@@ -102,8 +108,11 @@ describe("EXTENSION_BROWSERS", () => {
       "firefox",
       "safari",
     ])
+    expect(EXTENSION_ZIP_VERSION).toMatch(/^\d+\.\d+\.\d+$/)
     expect(EXTENSION_DOWNLOAD_URL).toBe(
-      "https://app.maskera.dev/downloads/maskera-extension-0.2.2.zip",
+      `https://app.maskera.dev/downloads/maskera-extension-${EXTENSION_ZIP_VERSION}.zip`,
     )
+    // The production build's live check must probe the same URL the page links.
+    expect(linkedZipUrl()).toBe(EXTENSION_DOWNLOAD_URL)
   })
 })
