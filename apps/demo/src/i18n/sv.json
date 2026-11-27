@@ -114,7 +114,7 @@
     "body": "Installera tillägget för AI-chattar eller koppla in Maskera framför din agent. Det är gratis att börja."
   },
   "faq": {
-    "metaTitle": "frågor och svar: pris, dataskydd och installation · maskera",
+    "metaTitle": "Frågor och svar",
     "metaDescription": "Svar på vanliga frågor om Maskera: skickas texten någonstans, behövs avtal, vad kostar det, vilka AI-tjänster och webbläsare fungerar och hur rullar man ut det.",
     "title": "Frågor och svar",
     "lede": "Korta svar på det vi oftast får frågor om. Hittar du inte ditt svar, mejla hej@maskera.dev.",
@@ -217,7 +217,7 @@
     "contactCta": "Mejla hej@maskera.dev"
   },
   "guides": {
-    "metaTitle": "guider: koppla maskera till claude, codex och cursor · maskera",
+    "metaTitle": "Guider: Claude, Codex och Cursor",
     "metaDescription": "Steg för steg: koppla in Maskeras lokala proxy eller MCP-server i Claude Desktop, Claude Code, Codex och Cursor, och testa med påhittade uppgifter.",
     "title": "Guider",
     "lede": "Steg för steg för de vanligaste AI-verktygen. Proxyn maskerar det du skriver i chatten. MCP-servern maskerar filer som agenten läser.",
@@ -272,7 +272,7 @@
     "moreCta": "Dokumentationen för @maskera/mcp"
   },
   "industries": {
-    "metaTitle": "branscher: hr, vård, juridik och kommun · maskera",
+    "metaTitle": "Branscher: HR, vård, juridik, kommun",
     "metaDescription": "Så används Maskera i HR, vård, juridik, kommun och kundsupport: vilka personuppgifter som byts ut och vad som står kvar för AI:n.",
     "title": "Branscher",
     "lede": "Samma motor, olika texter. Så används Maskera där personuppgifterna är många.",
@@ -660,7 +660,7 @@
     }
   },
   "accuracy": {
-    "metaTitle": "träffsäkerhet på oberoende svensk text · maskera",
+    "metaTitle": "Träffsäkerhet på svensk text",
     "metaDescription": "Hur stor andel av namn, platser och adresser Maskera döljer i svensk text som varken Maskera eller vi har skrivit, jämfört med Presidio, swedish-pii och OpenAI Privacy Filter.",
     "title": "Hur bra hittar Maskera personuppgifter?",
     "lede": "Mätt på svensk text som varken Maskera eller vi har skrivit: SUC 3.0 från Kungliga biblioteket, SIC2 från Språkbanken, MultiCoNER v2 och ai4privacy. Alla verktyg kördes på samma texter med samma regler, och siffrorna visar även där Maskera är sämre.",
@@ -779,7 +779,7 @@
     "benchmarksCta": "Fullständig rapport och skript på GitHub"
   },
   "security": {
-    "metaTitle": "säkerhet: nätverksanrop och modellintegritet · maskera",
+    "metaTitle": "Säkerhet och modellintegritet",
     "metaDescription": "Maskeras säkerhetsgränser, nätverksanrop, pinnade modellartefakter, säker återställning och privat rapportering av sårbarheter.",
     "title": "Säkerhet i maskera",
     "lede": "All maskering körs lokalt på din enhet. Här samlar vi hur data rör sig, hur modellfilerna kontrolleras och hur du rapporterar en sårbarhet.",
@@ -846,7 +846,7 @@
     "extensionCta": "Läs om webbläsartilläggets integritet"
   },
   "transparency": {
-    "metaTitle": "integritet & transparens: vad lämnar enheten · maskera",
+    "metaTitle": "Integritet & transparens",
     "metaDescription": "Se vad Maskera gör, vad som lämnar enheten, hur den svenska AI-modellen har tränats och vilka personuppgifter den kan missa.",
     "title": "Integritet & transparens",
     "lede": "Här ser du vad Maskera gör, vad som lämnar enheten, hur modellen tränats och vad den kan missa.",
@@ -911,7 +911,7 @@
     }
   },
   "testData": {
-    "metaTitle": "testdata: påhittade personer och testvärden · maskera",
+    "metaTitle": "Testdata",
     "metaDescription": "Kontrollera ursprunget för personnummer, telefonnummer, konton och andra testvärden i Maskeras webbläsardemo. Inga verkliga personers uppgifter används.",
     "title": "Testdata i demon",
     "lede": "Alla personer är påhittade. Uppgifter med verkliga format kommer från officiellt reserverade testvärden och kan kontrolleras här.",
@@ -951,7 +951,7 @@
     "demoCta": "Prova testvärdena i demon"
   },
   "privacy": {
-    "metaTitle": "integritetspolicy: lokal text, cookiefri statistik · maskera",
+    "metaTitle": "Integritetspolicy",
     "metaDescription": "Integritetspolicy för maskera.dev: texten behandlas lokalt i webbläsaren, cookiefri webbstatistik, hosting hos Vercel och dina rättigheter.",
     "title": "Integritetspolicy",
     "lede": "Texten du maskerar behandlas lokalt och skickas inte till Maskera. Här beskrivs den begränsade behandling som själva webbplatsen gör.",
@@ -1237,18 +1237,18 @@
     "docs": "Docs"
   },
   "meta": {
-    "demoTitle": "Använd AI utan att dela personuppgifter · maskera",
+    "demoTitle": "Använd AI utan att dela personuppgifter",
     "demoDescription": "maskera är det lokala skyddslagret framför alla AI-modeller: maskera svenska personuppgifter i webbläsaren, med tillägget, i AI-agenter via lokal proxy och MCP (@maskera/mcp) eller via npm. Endast maskerad text går vidare.",
-    "devTitle": "för utvecklare: lokal AI-proxy, MCP och npm-paket · maskera",
+    "devTitle": "För utvecklare: proxy, MCP och npm",
     "devDescription": "Koppla in lokal svensk PII-maskering framför AI-agenter med @maskera/mcp (proxy, MCP, guard) eller direkt i webbläsaren och Node med maskera.",
-    "servicesTitle": "produkter: webbläsartillägg, AI-agenter (proxy & MCP) och SDK · maskera",
+    "servicesTitle": "Produkter och priser",
     "servicesDescription": "Välj hur du använder Maskera lokalt: webbläsartillägg för AI-chattar som ChatGPT och Claude, lokal proxy och MCP för AI-agenter, eller npm-paket i egen kod.",
     "siteName": "maskera",
     "servicesSchemaName": "Maskera webbläsartillägg, AI-agent-proxy/MCP och öppen källkod",
     "ogImageAlt": "maskera: Använd AI utan att dela personuppgifter. En exempelmening där namn, personnummer och ort har ersatts med platshållare."
   },
   "about": {
-    "metaTitle": "om & kontakt: Hägvall Labs AB · maskera",
+    "metaTitle": "Om och kontakt",
     "metaDescription": "Om Maskera: vad verktyget gör, vem som står bakom det (Hägvall Labs AB i Stockholm) och hur du kontaktar oss på hej@maskera.dev.",
     "title": "Om Maskera",
     "lede": "Maskera döljer svenska personuppgifter lokalt innan text når en AI-tjänst, logg eller analys.",
@@ -1309,7 +1309,7 @@
       "troubleshooting": "Felsökning"
     },
     "overview": {
-      "metaTitle": "dokumentation: lokal svensk PII-maskering · maskera",
+      "metaTitle": "Dokumentation",
       "metaDescription": "Välj rätt läge för Maskera: webbläsartillägg, lokal LLM-proxy, Streamable HTTP eller stdio MCP, guard-hooks och npm-SDK.",
       "title": "Dokumentation",
       "lede": "All maskering i Maskera körs lokalt på din enhet. Välj läge efter var texten uppstår, konfigurera på en minut och verifiera med påhittade uppgifter.",
@@ -1370,7 +1370,7 @@
       ]
     },
     "mcp": {
-      "metaTitle": "@maskera/mcp: proxy, Streamable HTTP, verktyg och policyer · maskera",
+      "metaTitle": "@maskera/mcp · Docs",
       "metaDescription": "Komplett referens för @maskera/mcp: alla MCP-verktyg, Streamable HTTP /mcp, scoped policyflaggor, webbläsargodkännanden, prompts, resources, guard, install och doctor.",
       "title": "Referens för @maskera/mcp",
       "lede": "Ett npm-paket som maskerar det din AI-agent skickar och läser, lokalt på din dator. Det körs som proxy, MCP-server eller hook.",
@@ -1518,7 +1518,7 @@
       ]
     },
     "clients": {
-      "metaTitle": "klientguider: koppla in Maskera i din AI-klient · maskera",
+      "metaTitle": "Klientguider · Docs",
       "metaDescription": "Steg för steg för AI-klienter som Claude Code, Codex och Cursor, inklusive verifiering med påhittad svensk data.",
       "title": "Klientguider",
       "lede": "Exakta steg och färdiga kommandon per klient. Alla konfigurationer kan också skrivas eller förhandsgranskas med npx -y @maskera/mcp install <klient>.",
@@ -1575,7 +1575,7 @@
       ]
     },
     "sdk": {
-      "metaTitle": "SDK och drift: maskera, @maskera/core och self-hosting · maskera",
+      "metaTitle": "SDK och drift · Docs",
       "metaDescription": "Bygg in svensk PII-maskering i webbläsare och Node.js med maskera och @maskera/core: klinisk profil, egna regler, self-hosting av ONNX och driftschecklista.",
       "title": "SDK och drift",
       "lede": "Använd maskera (regler + 43 MB svensk AI-modell) eller @maskera/core (endast regler, noll beroenden) direkt i egen TypeScript- eller JavaScript-kod.",
@@ -1630,7 +1630,7 @@
       ]
     },
     "troubleshooting": {
-      "metaTitle": "felsökning och säkerhetsgränser · maskera",
+      "metaTitle": "Felsökning · Docs",
       "metaDescription": "Lös vanliga problem med @maskera/mcp och maskera: 502 fail-closed, Codex med ChatGPT-konto, offline-modeller, loopback-skydd och kända begränsningar.",
       "title": "Felsökning och begränsningar",
       "lede": "De vanligaste felen, varför Maskera hellre stoppar ett anrop än läcker rå text, och var verktygets gränser går.",

@@ -14,7 +14,7 @@ import { navClick, useRoute, viewFromPath } from "../src/routing"
  * rendered title). The home view's runtime title must equal the static one.
  */
 
-const STATIC_TITLE = "Använd AI utan att dela personuppgifter · maskera"
+const STATIC_TITLE = "Använd AI utan att dela personuppgifter · Maskera"
 vi.spyOn(window, "scrollTo").mockImplementation(() => {})
 
 beforeEach(() => {
@@ -94,24 +94,24 @@ describe("useRoute: document.title", () => {
 
   it("fresh landing on a sub-page sets its title immediately", () => {
     const { unmount } = mountAt("/utvecklare")
-    expect(document.title).toBe("för utvecklare: lokal AI-proxy, MCP och npm-paket · maskera")
+    expect(document.title).toBe("För utvecklare: proxy, MCP och npm · Maskera")
     unmount()
   })
 
   it("sets the public-documentation titles on direct landings", () => {
     const accuracy = mountAt("/traffsakerhet")
-    expect(document.title).toBe("träffsäkerhet på oberoende svensk text · maskera")
+    expect(document.title).toBe("Träffsäkerhet på svensk text · Maskera")
     accuracy.unmount()
 
     const security = mountAt("/sakerhet")
-    expect(document.title).toBe("säkerhet: nätverksanrop och modellintegritet · maskera")
+    expect(document.title).toBe("Säkerhet och modellintegritet · Maskera")
     security.unmount()
   })
 
   it("navigating away from home sets the sub-page title", () => {
     const { result, unmount } = mountAt("/")
     act(() => result.current.navigate("dev"))
-    expect(document.title).toBe("för utvecklare: lokal AI-proxy, MCP och npm-paket · maskera")
+    expect(document.title).toBe("För utvecklare: proxy, MCP och npm · Maskera")
     expect(window.location.pathname).toBe("/utvecklare")
     unmount()
   })
@@ -132,9 +132,7 @@ describe("useRoute: document.title", () => {
       window.dispatchEvent(new PopStateEvent("popstate"))
     })
     expect(result.current.view).toBe("services")
-    expect(document.title).toBe(
-      "produkter: webbläsartillägg, AI-agenter (proxy & MCP) och SDK · maskera",
-    )
+    expect(document.title).toBe("Produkter och priser · Maskera")
     unmount()
   })
 })
@@ -164,7 +162,7 @@ describe("useRoute: route metadata", () => {
       "https://maskera.dev/utvecklare",
     )
     expect(document.querySelector<HTMLMetaElement>('meta[name="twitter:title"]')?.content).toBe(
-      "för utvecklare: lokal AI-proxy, MCP och npm-paket · maskera",
+      "För utvecklare: proxy, MCP och npm · Maskera",
     )
     unmount()
   })
@@ -176,7 +174,7 @@ describe("useRoute: route metadata", () => {
       "https://maskera.dev/tjanster",
     )
     expect(document.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.content).toBe(
-      "produkter: webbläsartillägg, AI-agenter (proxy & MCP) och SDK · maskera",
+      "Produkter och priser · Maskera",
     )
     expect(
       document.querySelector<HTMLMetaElement>('meta[name="twitter:description"]')?.content,

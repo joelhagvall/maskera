@@ -44,7 +44,22 @@ export function manifestPath(locale: Locale): string {
 
 export type ViewMeta = { title: string; description: string }
 
+/** The brand suffix every page title carries; the i18n files hold only the page part. */
+export const TITLE_SUFFIX = " · Maskera"
+
+/** Page titles stay short enough to read in a browser tab and in search results. */
+export const MAX_TITLE_LENGTH = 50
+
 export function getViewMeta(locale: Locale): Record<View, ViewMeta> {
+  const pages = pageMeta(locale)
+  const result = {} as Record<View, ViewMeta>
+  for (const view of Object.keys(pages) as View[]) {
+    result[view] = { ...pages[view], title: pages[view].title + TITLE_SUFFIX }
+  }
+  return result
+}
+
+function pageMeta(locale: Locale): Record<View, ViewMeta> {
   const strings = copies[locale]
   return {
     demo: {

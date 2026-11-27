@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest"
 import {
   getViewMeta,
+  MAX_TITLE_LENGTH,
   renderRouteHtml,
   routeHtmlViews,
+  TITLE_SUFFIX,
   viewMeta,
   viewPaths,
   viewUrl,
@@ -32,8 +34,20 @@ describe("renderRouteHtml", () => {
 
   it("escapes the ampersand in the transparency title", () => {
     expect(renderRouteHtml("transparency")).toContain(
-      "<title>integritet &amp; transparens: vad lämnar enheten · maskera</title>",
+      "<title>Integritet &amp; transparens · Maskera</title>",
     )
+  })
+
+  it("keeps every page title short, capitalized and suffixed once", () => {
+    for (const locale of ["sv", "en"] as const) {
+      for (const [view, meta] of Object.entries(getViewMeta(locale))) {
+        const where = `${locale}/${view}: ${meta.title}`
+        expect(meta.title.length, where).toBeLessThanOrEqual(MAX_TITLE_LENGTH)
+        expect(meta.title.endsWith(TITLE_SUFFIX), where).toBe(true)
+        expect(meta.title.split(TITLE_SUFFIX).length, where).toBe(2)
+        expect(meta.title, where).toMatch(/^[@A-ZÅÄÖ]/)
+      }
+    }
   })
 
   it("embeds valid JSON-LD", () => {

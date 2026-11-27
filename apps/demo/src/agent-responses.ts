@@ -143,7 +143,7 @@ export function notFoundHtml(pathname: string): string {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>404 · maskera</title>
+<title>404 · Maskera</title>
 <style>
 @font-face{font-family:"Geist";font-style:normal;font-weight:100 900;font-display:swap;src:url("/fonts/geist-latin.woff2") format("woff2")}
 :root{color-scheme:light;--bg:#ffffff;--fg:#000000;--muted:#666666;--border:#eaeaea}

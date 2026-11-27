@@ -114,7 +114,7 @@
     "body": "Install the extension for AI chats or put Maskera in front of your agent. It is free to start."
   },
   "faq": {
-    "metaTitle": "faq: pricing, data protection and setup · maskera",
+    "metaTitle": "FAQ",
     "metaDescription": "Answers to common questions about Maskera: is text sent anywhere, is an agreement needed, what it costs, which AI services and browsers work and how to roll it out.",
     "title": "FAQ",
     "lede": "Short answers to what we are asked most. If your answer is missing, email hej@maskera.dev.",
@@ -217,7 +217,7 @@
     "contactCta": "Email hej@maskera.dev"
   },
   "guides": {
-    "metaTitle": "guides: connect maskera to claude, codex and cursor · maskera",
+    "metaTitle": "Guides: Claude, Codex and Cursor",
     "metaDescription": "Step by step: connect Maskera's local proxy or MCP server in Claude Desktop, Claude Code, Codex and Cursor, and test with made-up data.",
     "title": "Guides",
     "lede": "Step by step for the most common AI tools. The proxy masks what you type in the chat. The MCP server masks files the agent reads.",
@@ -272,7 +272,7 @@
     "moreCta": "The @maskera/mcp documentation"
   },
   "industries": {
-    "metaTitle": "industries: hr, healthcare, legal and public sector · maskera",
+    "metaTitle": "Industries: HR, health, legal, public",
     "metaDescription": "How Maskera is used in HR, healthcare, legal, the public sector and customer support: which personal data is swapped out and what stays for the AI.",
     "title": "Industries",
     "lede": "One engine, different texts. How Maskera is used where personal data is everywhere.",
@@ -660,7 +660,7 @@
     }
   },
   "accuracy": {
-    "metaTitle": "accuracy on independent Swedish text · maskera",
+    "metaTitle": "Accuracy on Swedish text",
     "metaDescription": "How much of the names, places and addresses Maskera hides in Swedish text that neither Maskera nor we wrote, compared with Presidio, swedish-pii and OpenAI Privacy Filter.",
     "title": "How well does Maskera find personal data?",
     "lede": "Measured on Swedish text that neither Maskera nor we wrote: SUC 3.0 from the National Library of Sweden, SIC2 from Språkbanken Text, MultiCoNER v2 and ai4privacy. Every tool ran on the same texts with the same rules, and the numbers also show where Maskera does worse.",
@@ -779,7 +779,7 @@
     "benchmarksCta": "Full report and scripts on GitHub"
   },
   "security": {
-    "metaTitle": "security: network requests and model integrity · maskera",
+    "metaTitle": "Security and model integrity",
     "metaDescription": "Maskera's security boundaries, network requests, pinned model artefacts, safe restoration and private vulnerability reporting.",
     "title": "Security in maskera",
     "lede": "All masking runs locally on your device. Here is how data moves, how model files are verified and how to report a vulnerability.",
@@ -846,7 +846,7 @@
     "extensionCta": "Read the extension privacy policy"
   },
   "transparency": {
-    "metaTitle": "privacy & transparency: what leaves the device · maskera",
+    "metaTitle": "Privacy & transparency",
     "metaDescription": "See what Maskera does, what leaves the device, how the Swedish AI model was trained and which personal data it can miss.",
     "title": "Privacy & transparency",
     "lede": "See what Maskera does, what leaves the device, how the model was trained and what it can miss.",
@@ -911,7 +911,7 @@
     }
   },
   "testData": {
-    "metaTitle": "test data: fictional people and test values · maskera",
+    "metaTitle": "Test data",
     "metaDescription": "Verify the origin of Swedish personal identity numbers, phone numbers, accounts and other test values in Maskera's browser demo.",
     "title": "Test data in the demo",
     "lede": "Every person is fictional. Data in real formats comes from officially reserved test values and can be verified here.",
@@ -951,7 +951,7 @@
     "demoCta": "Try the test values in the demo"
   },
   "privacy": {
-    "metaTitle": "privacy policy: local text, cookieless analytics · maskera",
+    "metaTitle": "Privacy policy",
     "metaDescription": "Privacy policy for maskera.dev: text is processed locally in the browser, cookieless web analytics, hosting on Vercel and your rights.",
     "title": "Privacy policy",
     "lede": "The text you mask is processed locally and is not sent to Maskera. This page describes the limited processing performed by the website itself.",
@@ -1237,18 +1237,18 @@
     "docs": "Docs"
   },
   "meta": {
-    "demoTitle": "Use AI without sharing personal data · maskera",
+    "demoTitle": "Use AI without sharing personal data",
     "demoDescription": "maskera is the local privacy layer in front of every AI model: mask Swedish personal data in the browser extension, in AI agents via local proxy and MCP (@maskera/mcp), or in your own code via npm.",
-    "devTitle": "for developers: local AI proxy, MCP and npm packages · maskera",
+    "devTitle": "For developers: proxy, MCP and npm",
     "devDescription": "Connect local Swedish PII masking in front of AI agents with @maskera/mcp (proxy, MCP, guard) or directly in the browser and Node with maskera.",
-    "servicesTitle": "products: browser extension, AI agents (proxy & MCP) and SDK · maskera",
+    "servicesTitle": "Products and pricing",
     "servicesDescription": "Choose how you use Maskera locally: browser extension for AI chats such as ChatGPT and Claude, local proxy and MCP for AI agents, or npm packages in your own code.",
     "siteName": "maskera",
     "servicesSchemaName": "Maskera browser extension, AI agent proxy/MCP and open source",
     "ogImageAlt": "maskera: Use AI without sharing personal data. A sample sentence where a name, a personal identity number and a town are replaced with placeholders."
   },
   "about": {
-    "metaTitle": "about & contact: Hägvall Labs AB · maskera",
+    "metaTitle": "About and contact",
     "metaDescription": "About Maskera: what the tool does, who is behind it (Hägvall Labs AB in Stockholm) and how to reach us at hej@maskera.dev.",
     "title": "About Maskera",
     "lede": "Maskera hides Swedish personal data locally before text reaches an AI service, log or analytics.",
@@ -1309,7 +1309,7 @@
       "troubleshooting": "Troubleshooting"
     },
     "overview": {
-      "metaTitle": "documentation: local Swedish PII redaction · maskera",
+      "metaTitle": "Documentation",
       "metaDescription": "Choose the right Maskera mode: browser extension, local LLM proxy, Streamable HTTP or stdio MCP, guard hooks, and npm SDK.",
       "title": "Documentation",
       "lede": "All masking in Maskera runs locally on your device. Pick the mode that fits where your text lives, set it up in a minute, and verify with made-up data.",
@@ -1370,7 +1370,7 @@
       ]
     },
     "mcp": {
-      "metaTitle": "@maskera/mcp: proxy, Streamable HTTP, tools and policies · maskera",
+      "metaTitle": "@maskera/mcp · Docs",
       "metaDescription": "Complete reference for @maskera/mcp: all MCP tools, Streamable HTTP /mcp, scoped policy flags, browser approvals, prompts, resources, guard, install, and doctor.",
       "title": "@maskera/mcp reference",
       "lede": "One npm package that masks what your AI agent sends and reads, locally on your machine. It runs as a proxy, an MCP server, or a hook.",
@@ -1522,7 +1522,7 @@
       ]
     },
     "clients": {
-      "metaTitle": "client guides: connect Maskera to your AI client · maskera",
+      "metaTitle": "Client guides · Docs",
       "metaDescription": "Step-by-step setup for AI clients such as Claude Code, Codex, and Cursor, with a made-up Swedish data verification test.",
       "title": "Client guides",
       "lede": "Exact steps and commands per client. Every configuration can also be written or previewed with npx -y @maskera/mcp install <client>.",
@@ -1579,7 +1579,7 @@
       ]
     },
     "sdk": {
-      "metaTitle": "SDK & operations: maskera, @maskera/core and self-hosting · maskera",
+      "metaTitle": "SDK and operations · Docs",
       "metaDescription": "Embed Swedish PII redaction in browsers and Node.js with maskera and @maskera/core: clinical profile, custom rules, ONNX self-hosting, and production checklist.",
       "title": "SDK and operations",
       "lede": "Use maskera (rules + 43 MB Swedish AI model) or @maskera/core (rules only, zero dependencies) directly in your own TypeScript or JavaScript code.",
@@ -1634,7 +1634,7 @@
       ]
     },
     "troubleshooting": {
-      "metaTitle": "troubleshooting and security boundaries · maskera",
+      "metaTitle": "Troubleshooting · Docs",
       "metaDescription": "Resolve common issues with @maskera/mcp and maskera: 502 fail-closed, Codex with ChatGPT login, offline models, loopback protection, and known boundaries.",
       "title": "Troubleshooting and boundaries",
       "lede": "Common issues, why Maskera blocks rather than silently forwarding unredacted text, and where local masking stops.",
