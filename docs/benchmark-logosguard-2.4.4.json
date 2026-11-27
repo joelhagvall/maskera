@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "measuredAt": "2026-11-25",
+  "measuredAt": "2026-11-27",
   "corpus": {
     "name": "Maskera privacy-safe Swedish domain regression corpus",
     "sourceDirectory": "packages/ner/eval/domain-regression/corpus",
@@ -19,7 +19,7 @@
   "systems": {
     "maskera": {
       "name": "Maskera",
-      "version": "0.11.0 / maskera-sv-ner-v20",
+      "version": "0.11.1 / maskera-sv-ner-v20",
       "surface": "Local JavaScript pipeline, q4 ONNX on CPU, general profile",
       "artifact": {
         "model": "maskera-sv-ner-v20",
@@ -31,8 +31,8 @@
       "files": [
         {
           "path": "tmp/maskera-domain.redacted.jsonl",
-          "sha256": "dd6f932771040d953c421ce861da13934940a84582d0b50efd2a95239a7473c1",
-          "bytes": 83621
+          "sha256": "d64c43fd9fa6b47d307c9912b6367965d0629a7db7d246ff624395e22048f568",
+          "bytes": 83648
         }
       ],
       "totals": {
@@ -437,7 +437,7 @@
         {
           "id": "bank-forsakring-07",
           "category": "bank-forsakring",
-          "maskedSha256": "fd15d819c2c433b7ea2ac9391d9793f719d2919b31dae1557e144a31b8f4becc",
+          "maskedSha256": "ce8937d04b415b8eddacc78b64b9cd2382d82a812b3cd0ec73847eb412c62fe5",
           "redactions": 5,
           "annotations": [
             {
@@ -746,7 +746,7 @@
         {
           "id": "bank-forsakring-16",
           "category": "bank-forsakring",
-          "maskedSha256": "3e36592836afb90cc3587e4f8133b0b49951c72ccee8cc6f94346f3e8094875a",
+          "maskedSha256": "554fdd9b73fa9ff7de2a279a4c294eaf9e40f4e4937c8f081b85b72293c41e28",
           "redactions": 7,
           "annotations": [
             {
@@ -1471,7 +1471,7 @@
         {
           "id": "ekonomi-03",
           "category": "ekonomi",
-          "maskedSha256": "beddbca58bb0a139893dca2180930fda8565ead86ed68f0a43f3f09c201bf35c",
+          "maskedSha256": "bfcc58032932e02aea584059b3edcaff91531b08aa943a1b7aead5216699db6f",
           "redactions": 8,
           "annotations": [
             {

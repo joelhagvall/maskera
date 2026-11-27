@@ -4,7 +4,7 @@
   "status": "published",
   "release": "v20",
   "publishedAt": "2026-11-25",
-  "lastMeasuredAt": "2026-11-25",
+  "lastMeasuredAt": "2026-11-27",
   "scope": "Synthetic or author-coupled release gates, not an independent universal quality estimate.",
   "packages": {
     "maskera": "0.11.1",
@@ -29,7 +29,7 @@
   },
   "evaluation": {
     "command": "pnpm eval:release",
-    "suiteSha256": "e2558e5796970043fefa147d57336c1e519c0efc220ed1cf65d11ac9b89ab135",
+    "suiteSha256": "f0c824dce7ed79d459c0d07b287ec529c25a980405bb093b0fbfa376e41c4f2c",
     "files": [
       "apps/demo/scripts/evaluate-candidate-gates.mjs",
       "apps/demo/scripts/fetch-model.mjs",
@@ -155,7 +155,7 @@
   },
   "redactionComparison": {
     "status": "current-v20-directional",
-    "measuredAt": "2026-11-25",
+    "measuredAt": "2026-11-27",
     "scope": "Synthetic, author-coupled Swedish end-product redaction comparison. It is not an independent universal quality estimate, and precision is not reported because every defensible entity is not exhaustively annotated.",
     "commands": {
       "export": "pnpm eval:logosguard:export",
@@ -164,8 +164,8 @@
     },
     "manualStep": "Redact both exported text chunks with LogosGuard 2.4.4 in Chrome, Free plan, Balanced accuracy, and save the two returned files under tmp before scoring.",
     "resultFile": "docs/benchmark-logosguard-2.4.4.json",
-    "resultSha256": "97bc535079d60af22ca5f952cc467816cc6c213a434e4d41f5e93d5480bb71f1",
-    "suiteSha256": "6c45d522d7d7f75fe566360940be5201f489f5cf35012832e1a1d660be2ffa4c",
+    "resultSha256": "2c459cd2cf774dc178d28376626bb7afedd2f5865f6efab21d5ee5f573c43d1a",
+    "suiteSha256": "c5a45b4503a2439c008df5c72ed25cf05cac5a82b2236c4010abd07afbfc975f",
     "files": [
       "apps/demo/scripts/fetch-model.mjs",
       "apps/demo/src/model-meta.json",
@@ -220,7 +220,7 @@
     "scoring": "material-character-survival",
     "systems": {
       "maskera": {
-        "version": "0.11.0 / maskera-sv-ner-v20",
+        "version": "0.11.1 / maskera-sv-ner-v20",
         "fullHits": 941,
         "partialLeaks": 5,
         "misses": 6,
@@ -254,7 +254,7 @@
     },
     "resultFile": "docs/benchmark-independent-v20.json",
     "resultSha256": "ce5ebc19d59c8324ce66a6dcc50b56df16c5238036b5240e523b2f3f789bd9bb",
-    "suiteSha256": "27fa175b9790a9e589a3dbe7035182875f45941d260705f40d8a55de0c4ba360",
+    "suiteSha256": "f21b4c2d142ccd448ee47a5590d19a4d47c9673f1d3efec023a22309af4fc6f9",
     "files": [
       "bench/independent/build_corpora.py",
       "bench/independent/render-markdown.mjs",

@@ -175,6 +175,10 @@ export const DEFAULT_DENYLIST: ReadonlySet<string> = new Set([
   "kontot",
   "kontonummer",
   "betalkonto",
+  // v19 tags the clearing label itself as ADR ("clearingnummer 8327-9")
+  "clearing",
+  "clearingnummer",
+  "clearingnr",
   // v19 can merge these two payment labels into one ADR span. Keep the phrase
   // exact: token-by-token filtering could suppress a real multi-word name.
   "betalkonto iban",
@@ -675,7 +679,7 @@ export function createNerRecognizer(options: NerOptions = {}): NerRecognizer {
       // one character even though its .length is 2.
       const detections = merged.filter((d) => [...d.value].length > 1)
       if (!denySet) return detections
-      return detections.filter((d) => !denySet.has(d.value.toLowerCase()))
+      return detections.flatMap((d) => applyDenylist(d, denySet))
     },
   }
 }
@@ -955,6 +959,27 @@ export function reconstruct(
     }
   }
   return merged
+}
+
+// The house number reconstruct() appends to an ADR span that ends in letters.
+const WIDENED_HOUSE_NUMBER = /\s+(?:nr\s+)?\d{1,4}(?:\s?[A-Da-d])?$/u
+
+/**
+ * Drops a detection whose whole surface form is a denylisted word. An address
+ * that is only a denylisted label word plus the house number the widening step
+ * appended ("clearingnummer 8327" from "clearingnummer 8327-9") is narrowed to
+ * that number instead: the label word is never an address, but the digits may
+ * be PII the rule layer does not recognise, so they stay masked.
+ */
+function applyDenylist(detection: Detection, denySet: ReadonlySet<string>): Detection[] {
+  if (denySet.has(detection.value.toLowerCase())) return []
+  if (detection.label !== "ADRESS") return [detection]
+  const number = detection.value.match(WIDENED_HOUSE_NUMBER)
+  if (!number || number.index === undefined) return [detection]
+  if (!denySet.has(detection.value.slice(0, number.index).toLowerCase())) return [detection]
+  const offset = number.index + (number[0].length - number[0].trimStart().length)
+  const start = detection.start + offset
+  return [{ ...detection, start, value: detection.value.slice(offset) }]
 }
 
 const LETTER = /\p{L}/u

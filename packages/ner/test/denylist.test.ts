@@ -69,6 +69,28 @@ describe("createNerRecognizer denylist", () => {
     expect(result.redactions.some((redaction) => redaction.label === "ADRESS")).toBe(false)
   })
 
+  it('drops "clearingnummer" tagged as an address and masks the whole Swedbank account', async () => {
+    const input = "Ersättning betalas till clearingnummer 8327-9 och konto 3300-0, 032 3232 3232."
+    rawTokens = [tok("B-ADR", "clearing", 1), tok("I-ADR", "##nummer", 2)]
+    const recognizer = createNerRecognizer()
+
+    expect(await recognizer.detect(input)).toEqual([
+      { start: 39, end: 43, value: "8327", label: "ADRESS" },
+    ])
+
+    const result = await redactWithNer(input, { recognizer })
+    expect(result.redactions.some((redaction) => redaction.label === "ADRESS")).toBe(false)
+    expect(result.text).toContain("clearingnummer")
+    expect(result.text).toContain("konto [KONTONUMMER_1].")
+    expect(result.text).not.toContain("3232 3232")
+  })
+
+  it("keeps digits masked when a denylisted label word was widened over them", async () => {
+    rawTokens = [tok("B-ADR", "telefon", 1)]
+    const out = await createNerRecognizer().detect("Ring telefon 12 efter lunch.")
+    expect(out).toEqual([{ start: 13, end: 15, value: "12", label: "ADRESS" }])
+  })
+
   it("drops unambiguous modifiers and generic service nouns", async () => {
     rawTokens = [tok("B-LOC", "Gamla", 1), tok("B-PER", "Butiken", 2)]
     expect(await createNerRecognizer().detect("Gamla Butiken renoveras.")).toEqual([])

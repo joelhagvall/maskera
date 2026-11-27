@@ -392,9 +392,12 @@ export const iban = regexDetector("IBAN", /\bSE\d{2}(?:\s?\d){20}\b/gi)
  * number into PII. This detector is opt-in for rules-only callers and enabled
  * by the hybrid pipeline, whose input is normally free-form customer text.
  */
+// A clearing number may be written apart from the account by a comma, as in
+// Swedbank's "8327-9, 123 456 789-0". The comma must be followed by a space,
+// so a decimal amount ("12 345,50") is never read as one account.
 export const kontonummer = regexDetector(
   "KONTONUMMER",
-  /(?:^|[^\p{L}\p{N}])(?:bankkonto|kontonummer|utbetalningskonto|konto)(?:\s+nr\.?)?\s*[:#-]?\s*((?:\d[ -]?){6,19}\d)\b/giu,
+  /(?:^|[^\p{L}\p{N}])(?:bankkonto|kontonummer|utbetalningskonto|konto)(?:\s+nr\.?)?\s*[:#-]?\s*(\d{4}(?:\s?-\s?\d)?,\s+(?:\d[ -]?){5,14}\d|(?:\d[ -]?){6,19}\d)\b/giu,
   (value) => {
     const digits = value.replace(/\D/g, "")
     return digits.length >= 7 && digits.length <= 20

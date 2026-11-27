@@ -18,7 +18,7 @@ locks the selected resolved dependency closure that executes the evaluation.
 Type-only peers and unrelated build, lint, browser-audit and test-tool updates
 are outside that closure and cannot masquerade as changed accuracy evidence.
 The frozen suite checksum is
-`e2558e5796970043fefa147d57336c1e519c0efc220ed1cf65d11ac9b89ab135` and the
+`f0c824dce7ed79d459c0d07b287ec529c25a980405bb093b0fbfa376e41c4f2c` and the
 frozen evaluation-environment checksum is
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`.
 
@@ -202,7 +202,9 @@ synthetic texts across 19 categories with 952 annotated PII strings, including
 names, street addresses, personnummer, samordningsnummer, phone numbers, email,
 banking identifiers, and government, healthcare and legal language. Maskera
 0.11.0 ran the published v20 q4 artifact through the complete local JavaScript
-pipeline on CPU. LogosGuard 2.4.4 ran through its Chrome file-redaction flow on
+pipeline on CPU; the Maskera side was re-run on 2026-11-27 with 0.11.1 after
+the clearing-label and comma-separated account fixes, with identical hits and
+redaction counts. LogosGuard 2.4.4 ran through its Chrome file-redaction flow on
 the Free plan with `Balanced (recommended)` accuracy (same captured files from
 2026-08-14).
 
@@ -237,8 +239,8 @@ exported chunks manually in the pinned LogosGuard surface, then run
 `pnpm eval:logosguard:maskera` and `pnpm eval:logosguard:score`. Privacy-clean
 per-document outcomes, masked-text hashes and capture hashes are in
 [`benchmark-logosguard-2.4.4.json`](benchmark-logosguard-2.4.4.json).
-Product-comparison result checksum: `97bc535079d60af22ca5f952cc467816cc6c213a434e4d41f5e93d5480bb71f1`.
-Product-comparison suite checksum: `6c45d522d7d7f75fe566360940be5201f489f5cf35012832e1a1d660be2ffa4c`.
+Product-comparison result checksum: `2c459cd2cf774dc178d28376626bb7afedd2f5865f6efab21d5ee5f573c43d1a`.
+Product-comparison suite checksum: `c5a45b4503a2439c008df5c72ed25cf05cac5a82b2236c4010abd07afbfc975f`.
 Selected runtime-environment checksum:
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`;
 corpus checksum:
@@ -339,7 +341,7 @@ an independent universal quality claim.
 
 ## Structured-detector regression corpus (core rules + v20 hybrid)
 
-- **Measured:** 2026-11-25 on the published `maskera-sv-ner-v20` q4 artifact.
+- **Measured:** 2026-11-27 on the published `maskera-sv-ner-v20` q4 artifact.
 - **Corpus:** 258 synthetic Swedish texts across 19 categories, with 952
   annotated PII strings. The privacy-safe corpus and its runner are tracked in
   [`packages/ner/eval/domain-regression/`](../packages/ner/eval/domain-regression/);

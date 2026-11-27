@@ -39,6 +39,20 @@ function run(label, cwd, script, resultFile, extraEnv = {}) {
   if (result.status !== 0) throw new Error(`${label} exited with status ${result.status}`)
 }
 
+// The runners import the built packages, so a stale dist measures old code and
+// can reproduce the published numbers by accident. Build with tsup directly:
+// the packages' prebuild check refuses to build while the suite checksum is
+// stale, which is exactly the state a detector change is measured in.
+for (const pkg of ["packages/core", "packages/ner"]) {
+  console.log(`\n=== build ${pkg} ===`)
+  const built = spawnSync("pnpm", ["exec", "tsup"], {
+    cwd: resolve(repoRoot, pkg),
+    stdio: "inherit",
+  })
+  if (built.error) throw built.error
+  if (built.status !== 0) throw new Error(`${pkg} build exited with status ${built.status}`)
+}
+
 try {
   run("curated NER", "packages/ner", "eval/run-eval.mjs", "curated.json", {
     CORPUS_FILE: "./corpus.mjs",

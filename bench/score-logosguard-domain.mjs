@@ -86,7 +86,7 @@ const logosGuard = scoreSystem(corpus, logosGuardPredictions, {
 
 const result = {
   schemaVersion: 1,
-  measuredAt: "2026-11-25",
+  measuredAt: "2026-11-27",
   corpus: {
     name: "Maskera privacy-safe Swedish domain regression corpus",
     sourceDirectory: "packages/ner/eval/domain-regression/corpus",

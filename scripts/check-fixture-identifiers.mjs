@@ -91,6 +91,8 @@ const TEST_BANKGIRO = new Set(["9912346", "09912346"]) // Bankgirot test value +
 // Bankgiro Link Leverantörsbetalningar test file; the containing page states
 // explicitly that its bankgiro and account numbers are non-authentic test data.
 // https://www.bankgirot.se/globalassets/dokument/exempelfiler/bankgiro-link/bankgirolink_leverantorsbetalning_lb_exempelfil_sv.txt
+const ACCOUNT_PATTERN =
+  /\b(?:bankkontonummer|bankkonto|kontonummer|kontonr|utbetalningskonto|konto)(?:\s+nr\.?)?\s*[:#-]?\s*((?:\d(?:[ \t]|[-.,/][ \t]?)?){6,19}\d)\b/giu
 const TEST_BANK_ACCOUNTS = new Set(["3300003232323232"])
 const TEST_PLUSGIRO = new Set(["9201005"]) // Nordea Total IN test file
 const TEST_CARDS = new Set(["4242424242424242"]) // Stripe test card
@@ -254,7 +256,15 @@ for (const file of repoFiles) {
   ])
   const overlapsHash = (start, end) =>
     hashSpans.some(([hashStart, hashEnd]) => hashStart < end && hashEnd > start)
+  const accountMatches = [...text.matchAll(ACCOUNT_PATTERN)]
+  // A registered test account written as clearing, comma and account
+  // ("konto 3300-0, 032 3232 3232") has a 0-led tail that the phone rule
+  // would otherwise report, like the IBAN and card spans below.
+  const approvedAccountSpans = accountMatches
+    .filter((match) => TEST_BANK_ACCOUNTS.has(match[1].replace(/\D/g, "")))
+    .map((match) => [match.index, match.index + match[0].length])
   const protectedSpans = [
+    ...approvedAccountSpans,
     ...identityMatches.map((match) => [match.index, match.index + match[0].length]),
     ...ibanMatches.map((match) => [match.index, match.index + match[0].length]),
     ...cardMatches.map((match) => [match.index, match.index + match[0].length]),
@@ -328,9 +338,7 @@ for (const file of repoFiles) {
     }
   }
 
-  const accountPattern =
-    /\b(?:bankkontonummer|bankkonto|kontonummer|kontonr|utbetalningskonto|konto)(?:\s+nr\.?)?\s*[:#-]?\s*((?:\d(?:[ \t]|[-.,/][ \t]?)?){6,19}\d)\b/giu
-  for (const match of text.matchAll(accountPattern)) {
+  for (const match of accountMatches) {
     const digits = match[1].replace(/\D/g, "")
     if (!TEST_BANK_ACCOUNTS.has(digits)) {
       report(file, text, match.index + match[0].indexOf(match[1]), "bank account", match[1])

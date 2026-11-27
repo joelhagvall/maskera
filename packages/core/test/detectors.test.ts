@@ -530,17 +530,25 @@ describe("regnummer detector (heuristic)", () => {
 
 describe("kontonummer detector (contextual)", () => {
   const testAccount = "3300-0032 3232 3232"
+  const commaAccount = "konto 3300-0, 032 3232 3232"
 
   it.each([
     ["konto", `konto ${testAccount}`, testAccount],
     ["kontonummer", `Kontonummer: ${testAccount}`, testAccount],
     ["bankkonto", `bankkonto nr ${testAccount}`, testAccount],
     ["utbetalningskonto", `utbetalningskonto # ${testAccount}`, testAccount],
+    [
+      "konto, clearing with check digit and comma",
+      commaAccount,
+      commaAccount.slice("konto ".length),
+    ],
+    ["kontonummer, clearing and comma", "kontonummer 3300, 0032 3232 3232", "3300, 0032 3232 3232"],
   ])("matches with %s context", (_label, input, value) => expectHit(kontonummer, input, value))
 
   it.each([
     ["bare grouped number", `överföring ${testAccount} genomförd`],
     ["amount", "konto 12 500 kr"],
+    ["comma without a space", "konto 3300,0032 3232 3232"],
     ["journal number", "journalnummer TEST-JOURNAL-01"],
     ["short value", "konto 123-45"],
   ])("rejects %s: %s", (_label, input) => expectMiss(kontonummer, input))
