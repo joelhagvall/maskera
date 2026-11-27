@@ -525,14 +525,8 @@ html[data-theme="dark"] .stage-window .hl {
   color: #52525b;
 }
 .agent-reply {
-  display: flex;
-  align-items: center;
-  gap: 7px;
   margin: 0;
   color: #27272a;
-}
-.agent-reply svg {
-  color: #71717a;
 }
 .agent-diff {
   overflow: hidden;

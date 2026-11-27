@@ -12,7 +12,6 @@ import {
 import { highlight } from "../highlight"
 import copy from "../i18n"
 import {
-  CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   LockIcon,
@@ -208,10 +207,7 @@ function AgentScene() {
               </span>
             </p>
           </div>
-          <p className="agent-reply">
-            <CheckIcon size={13} />
-            {agent.done}
-          </p>
+          <p className="agent-reply">{agent.done}</p>
           <div className="agent-composer" aria-hidden="true">
             <span>{agent.composer}</span>
             <span className="agent-composer-bar">
