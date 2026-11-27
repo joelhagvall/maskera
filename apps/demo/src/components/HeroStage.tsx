@@ -11,14 +11,7 @@ import {
 } from "../heroScenes"
 import { highlight } from "../highlight"
 import copy from "../i18n"
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  LockIcon,
-  MaskeraMark,
-  PencilIcon,
-  ToolIcon,
-} from "../icons"
+import { ChevronLeftIcon, ChevronRightIcon, LockIcon, MaskeraMark, PencilIcon } from "../icons"
 import { RedactedText, RestoredText } from "../segments"
 
 /** The npm calls the code scene shows: the package README's redact call, then restore. */
@@ -136,13 +129,13 @@ function BrowserScene() {
 }
 
 /**
- * A neutral coding-agent window (the genre of Codex or T3 Code, no real
- * product's look): a thread list, the run as the tool calls an agent shows
- * and a changed file. The agent calls `maskera_read_file`, which masks the
- * file before the model sees it; the model writes the decision with
- * placeholders through `maskera_write_file`, which restores them locally
- * before the file is written. Those are the real @maskera/mcp tool names and
- * arguments, so the scene is what a user sees in their agent.
+ * A neutral coding-agent window (the genre of desktop agent apps, no real
+ * product's look): a thread list, the run with Maskera as a connector and a
+ * changed file. The agent calls `maskera_read_file`, which masks the file
+ * before the model sees it; the model writes the decision with placeholders
+ * through `maskera_write_file`, which restores them locally before the file
+ * is written. Those are the real @maskera/mcp tool names, so the scene is
+ * what a user sees in their agent.
  */
 function AgentScene() {
   const agent = copy.header.stage.agent
@@ -174,30 +167,27 @@ function AgentScene() {
         </div>
         <div className="agent-chat">
           <p className="agent-message">{agent.userMessage}</p>
-          <div className="agent-step">
-            <p className="agent-step-head">
-              <ToolCall name="maskera_read_file" args={[["path", AGENT_FILES.read]]} />
-              <span>
-                {agent.maskedCount.replace("{count}", String(placeholderCount(HERO_SCENE.masked)))}
-              </span>
-            </p>
-            <p className="agent-step-body">
-              <span className="agent-tool-label">{agent.modelSees}</span>{" "}
+          <ConnectorCall
+            tool="maskera_read_file"
+            status={agent.maskedCount.replace(
+              "{count}",
+              String(placeholderCount(HERO_SCENE.masked)),
+            )}
+          >
+            <p className="agent-connector-label">{agent.request}</p>
+            <dl className="agent-connector-args">
+              <dt>path</dt>
+              <dd>{AGENT_FILES.read}</dd>
+            </dl>
+            <p className="agent-connector-label">{agent.modelSees}</p>
+            <p className="agent-connector-result">
               <RedactedText text={HERO_SCENE.masked} />
             </p>
-          </div>
+          </ConnectorCall>
           <p className="agent-reply">{agent.plan}</p>
+          <ConnectorCall tool="maskera_write_file" status={agent.writeRestored} />
           <div className="agent-diff">
-            <p className="agent-diff-head">
-              <ToolCall
-                name="maskera_write_file"
-                args={[
-                  ["path", AGENT_FILES.write],
-                  ["content", contentPreview(HERO_SCENE.reply)],
-                ]}
-              />
-              <span className="agent-diff-note">{agent.writeRestored}</span>
-            </p>
+            <p className="agent-diff-head">{AGENT_FILES.write}</p>
             <p className="agent-diff-line">
               <span className="agent-diff-gutter" aria-hidden="true">
                 +
@@ -211,7 +201,10 @@ function AgentScene() {
           <div className="agent-composer" aria-hidden="true">
             <span>{agent.composer}</span>
             <span className="agent-composer-bar">
-              <span>{agent.composerMeta}</span>
+              <span className="agent-connector-chip">
+                <ConnectorLogo />
+                maskera
+              </span>
               <span className="agent-composer-send">↑</span>
             </span>
           </div>
@@ -225,29 +218,42 @@ function AgentScene() {
   )
 }
 
-/**
- * One tool call as coding agents print it: the tool name and its arguments.
- * Agents list MCP tools by name, so this is the row the user sees. Sans like
- * the rest of the UI: monospace is for code blocks only.
- */
-function ToolCall({ name, args }: { name: string; args: [string, string][] }) {
+/** Maskera's mark on the dark tile agents show next to a connector's name. */
+function ConnectorLogo() {
   return (
-    <span className="agent-call">
-      <ToolIcon size={13} />
-      <span className="agent-call-text">
-        <span className="agent-call-name">{name}</span>
-        <span className="agent-call-args">
-          ({args.map(([key, value]) => `${key}: "${value}"`).join(", ")})
-        </span>
-      </span>
+    <span className="agent-connector-logo">
+      <MaskeraMark size={13} />
     </span>
   )
 }
 
-/** The start of what the model writes, up to its first placeholder, then an ellipsis. */
-function contentPreview(text: string): string {
-  const cut = text.indexOf("]") + 1
-  return cut > 0 && cut < text.length ? `${text.slice(0, cut)} …` : text
+/**
+ * One MCP tool call as desktop agents show a connector: the connector's logo
+ * and name, the tool's real @maskera/mcp name, a status and a chevron. With
+ * children it is shown open, with the request and what the model got.
+ */
+function ConnectorCall({
+  tool,
+  status,
+  children,
+}: {
+  tool: string
+  status: string
+  children?: ReactNode
+}) {
+  return (
+    <div className="agent-connector">
+      <p className="agent-connector-head">
+        <ConnectorLogo />
+        <span className="agent-connector-title">
+          <strong>maskera</strong> <span className="agent-call-name">{tool}</span>
+        </span>
+        <span className="agent-connector-status">{status}</span>
+        <ChevronRightIcon size={13} className={children ? "is-open" : undefined} />
+      </p>
+      {children && <div className="agent-connector-body">{children}</div>}
+    </div>
+  )
 }
 
 /** The npm package in your own code: the calls, what the model gets, and the reply restored. */

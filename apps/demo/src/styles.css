@@ -480,45 +480,91 @@ html[data-theme="dark"] .stage-window .hl {
   border-radius: var(--radius);
   background: #f4f4f5;
 }
-.agent-step-head {
+/* Maskera as a connector, the way desktop agents show MCP tools: a block
+   with the connector's logo, name, tool and status. The open one shows the
+   request and what the model got. */
+.agent-connector {
+  overflow: hidden;
+  border: 1px solid #e4e4e7;
+  border-radius: var(--radius);
+}
+.agent-connector-head {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 2px 12px;
+  align-items: center;
+  gap: 8px;
   margin: 0;
+  padding: 6px 10px;
+  background: #fafafa;
   font-size: 13px;
   color: #71717a;
 }
-/* A tool call row: wrench, tool name and arguments. Long argument lists
-   wrap inside the row instead of widening the window. */
-.agent-call {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 7px;
-  min-width: 0;
-  color: #3f3f46;
-}
-.agent-call svg {
+.agent-connector-head > svg {
   flex: none;
-  align-self: flex-start;
-  margin-top: 3px;
-  color: #71717a;
+  color: #a1a1aa;
 }
-.agent-call-text {
+.agent-connector-head > svg.is-open {
+  transform: rotate(90deg);
+}
+.agent-connector-title {
+  flex: 1;
+  min-width: 0;
   overflow-wrap: anywhere;
 }
-.agent-call-name {
-  font-weight: 500;
+.agent-connector-title strong {
+  font-weight: 600;
   color: #09090b;
 }
-.agent-call-args {
-  margin-left: 0.3em;
+.agent-connector-status {
+  flex: none;
+}
+.agent-connector-logo {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-token);
+  background: #09090b;
+  color: #fff;
+}
+.agent-connector-body {
+  padding: 8px 12px 10px;
+  border-top: 1px solid #eaeaea;
+  font-size: 13px;
+}
+.agent-connector-label {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 600;
   color: #71717a;
 }
-.agent-step-body {
-  margin: 6px 0 0;
-  padding: 2px 0 2px 12px;
-  border-left: 2px solid #e4e4e7;
+.agent-connector-args {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0 16px;
+  margin: 0 0 8px;
+}
+.agent-connector-args dt {
+  color: #71717a;
+}
+.agent-connector-args dd {
+  margin: 0;
+}
+.agent-connector-result {
+  margin: 0;
+}
+.agent-connector-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px 2px 3px;
+  border: 1px solid #e4e4e7;
+  border-radius: var(--radius);
+  color: #3f3f46;
+}
+.agent-connector-chip .agent-connector-logo {
+  width: 16px;
+  height: 16px;
 }
 .agent-tool-label {
   margin: 0;
@@ -544,10 +590,6 @@ html[data-theme="dark"] .stage-window .hl {
   background: #fafafa;
   font-size: 13px;
   color: #09090b;
-}
-.agent-diff-note {
-  margin-left: auto;
-  color: #71717a;
 }
 .agent-diff-line {
   display: grid;
