@@ -108,3 +108,19 @@ describe("portal helpers", () => {
     )
   })
 })
+
+describe("Services product scenes", () => {
+  it("shows each product in its own section with the same scene as the hero, loaded lazily", () => {
+    const { container } = render(<Services go={vi.fn()} goSection={vi.fn()} onCoverage={vi.fn()} />)
+    const scenes = [...container.querySelectorAll<HTMLElement>("figure.product-scene")]
+    expect(scenes.map((scene) => [scene.closest("section")?.id, scene.dataset.stage])).toEqual([
+      ["tillagg", "browser"],
+      ["agenter", "agent"],
+      ["kod", "code"],
+    ])
+    for (const img of scenes[0].querySelectorAll("img")) {
+      expect(img.getAttribute("loading")).toBe("lazy")
+      expect(img.getAttribute("fetchpriority")).toBeNull()
+    }
+  })
+})

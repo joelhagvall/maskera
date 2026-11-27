@@ -92,8 +92,8 @@ describe("design system guard", () => {
     // it. Placeholders, demo text and labels use the sans face.
     const MONO_SELECTORS = new Set([
       ".footer code",
-      ".prose code",
-      ".prose pre code",
+      ".prose code:not(:where(.hero-window *))",
+      ".prose pre:not(:where(.hero-window *)) code",
       ".hero-code pre",
     ])
     const offenders = rules(css)

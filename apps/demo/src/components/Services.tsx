@@ -6,6 +6,7 @@ import type { View } from "../routing"
 import { navClick, viewPaths } from "../routing"
 import { CopyButton } from "./CopyButton"
 import { ExtensionInstall, SERVICES_SECTIONS } from "./ExtensionInstall"
+import { ProductScene } from "./HeroStage"
 import { PageToc } from "./PageToc"
 import { TopBar } from "./TopBar"
 
@@ -102,6 +103,7 @@ export function Services({
                 <p className="services-section-meta">{extension.badge}</p>
               </div>
               <p className="services-section-body">{extension.summary}</p>
+              <ProductScene stage="browser" />
               <ExtensionInstall />
             </section>
 
@@ -214,6 +216,7 @@ export function Services({
                 <p className="services-section-meta">{agents.badge}</p>
               </div>
               <p className="services-section-body">{services.agents.body}</p>
+              <ProductScene stage="agent" />
               <ul className="sdk-points">
                 {services.agents.points.map((point) => (
                   <li key={point}>{point}</li>
@@ -245,6 +248,7 @@ export function Services({
                 <p className="services-section-meta">{sdk.badge}</p>
               </div>
               <p className="services-section-body">{services.sdk.body}</p>
+              <ProductScene stage="code" />
 
               <div className="code-block install-tabs">
                 <div className="code-head">

@@ -78,11 +78,29 @@ export function HeroStage() {
 }
 
 /**
+ * One scene of the stage on its own, as the product page shows it next to
+ * the product it depicts. Same components as the hero, so the two pages never
+ * show the product differently; images load lazily below the fold.
+ */
+export function ProductScene({ stage }: { stage: Stage }) {
+  const scenes: Record<Stage, ReactNode> = {
+    browser: <BrowserScene lazy />,
+    agent: <AgentScene />,
+    code: <CodeScene />,
+  }
+  return (
+    <figure className="product-scene" data-stage={stage}>
+      {scenes[stage]}
+    </figure>
+  )
+}
+
+/**
  * The real extension capture (fictional test data) in a plain browser
  * window, with the popup opened from the Maskera toolbar icon over the page's
  * empty right side so it never covers the text.
  */
-function BrowserScene() {
+function BrowserScene({ lazy = false }: { lazy?: boolean }) {
   const text = copy.header
   return (
     <div className="hero-window">
@@ -112,7 +130,8 @@ function BrowserScene() {
             width={HERO_SCENE_WIDTH}
             height={HERO_SCENE.height}
             alt={text.stage.browserAlt}
-            fetchPriority="high"
+            fetchPriority={lazy ? undefined : "high"}
+            loading={lazy ? "lazy" : undefined}
             decoding="async"
           />
         </div>
@@ -122,6 +141,7 @@ function BrowserScene() {
           width={680}
           height={1128}
           alt={text.productPopupAlt}
+          loading={lazy ? "lazy" : undefined}
           decoding="async"
         />
       </div>

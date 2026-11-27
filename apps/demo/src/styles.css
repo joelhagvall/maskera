@@ -374,6 +374,18 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
     transition: none;
   }
 }
+/* A single scene on the product page: framed in a grey panel like a
+   screenshot, without the stage's tabs. */
+.product-scene {
+  margin: 18px 0 20px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--gray-100);
+}
+.product-scene .hero-window {
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.08);
+}
 /* The agent and code scenes: the same light window as the browser capture,
    so the stage never flips brightness on rotation. Their placeholders keep
    the light-mode colours in both themes for the same reason. */
@@ -627,6 +639,16 @@ html[data-theme="dark"] .stage-window .hl {
   border-radius: var(--radius);
   background: #09090b;
   color: #fff;
+}
+/* Narrow windows (the product page column, phones) drop the agent's thread
+   list so the conversation keeps its width. */
+@container (max-width: 640px) {
+  .agent-body {
+    grid-template-columns: 1fr;
+  }
+  .agent-side {
+    display: none;
+  }
 }
 .hero-code {
   display: flex;
@@ -2005,12 +2027,14 @@ main:has(.prose-foot) + .footer {
   letter-spacing: -0.02em;
   margin: 44px 0 12px;
 }
-.prose ul {
+/* Prose element styles skip the product windows (hero scenes, also shown on
+   the product page inside prose), which carry their own light styling. */
+.prose ul:not(:where(.hero-window *)) {
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.prose li {
+.prose li:not(:where(.hero-window *)) {
   position: relative;
   padding-left: 18px;
   margin: 10px 0;
@@ -2026,7 +2050,7 @@ main:has(.prose-foot) + .footer {
   line-height: 1.65;
   color: var(--ink);
 }
-.prose li::before {
+.prose li:not(:where(.hero-window *))::before {
   content: "";
   position: absolute;
   left: 2px;
@@ -2036,11 +2060,11 @@ main:has(.prose-foot) + .footer {
   border-radius: 50%;
   background: var(--border-2);
 }
-.prose strong {
+.prose strong:not(:where(.hero-window *)) {
   font-weight: 600;
   color: var(--fg);
 }
-.prose code {
+.prose code:not(:where(.hero-window *)) {
   font-family: var(--mono);
   font-size: 0.88em;
   background: var(--gray-200);
@@ -2179,7 +2203,7 @@ main:has(.prose-foot) + .footer {
   color: var(--fg);
   border-color: var(--fg);
 }
-.prose pre {
+.prose pre:not(:where(.hero-window *)) {
   margin: 14px 0 28px;
   padding: 14px 16px;
   background: var(--gray-100);
@@ -2197,7 +2221,7 @@ main:has(.prose-foot) + .footer {
   padding-top: 14px;
   border-radius: 0 0 var(--radius) var(--radius);
 }
-.prose pre code {
+.prose pre:not(:where(.hero-window *)) code {
   display: block;
   background: none;
   padding: 0;
