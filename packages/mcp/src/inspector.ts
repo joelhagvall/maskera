@@ -363,7 +363,7 @@ export function renderInspectorHtml(info: {
     </div>
     <div class="actions">
       <button id="selftest-btn" type="button" class="primary">Kör självtest</button>
-      <button id="reveal-btn" type="button">Visa originalvärden lokalt</button>
+      <button id="reveal-btn" type="button">Visa originalvärden</button>
       <button id="clear-btn" type="button">Rensa minne</button>
     </div>
   </header>
@@ -513,7 +513,7 @@ export function renderInspectorHtml(info: {
       const r = await fetch("/_maskera/vault", { headers: { "x-maskera-reveal": "1" } });
       const d = await r.json();
       const rows = (d.entries || []).map((e) => "<tr><td>" + esc(e.sessionId) + "</td><td><span class=\\"tok\\">" + esc(e.token) + "</span></td><td>" + esc(e.value) + "</td></tr>").join("");
-      vaultRoot.innerHTML = '<section class="vault-box"><h2>Lokal återställningsnyckel (stannar i RAM)</h2><p>Dölj den här vyn innan du delar skärm.</p>' +
+      vaultRoot.innerHTML = '<section class="vault-box"><h2>Återställningsnyckel</h2>' +
         (rows ? "<table><thead><tr><th>Session</th><th>Platshållare</th><th>Originalvärde</th></tr></thead><tbody>" + rows + "</tbody></table>" : "<p>Inga lagrade värden än.</p>") +
         "</section>";
     } catch {}
@@ -522,8 +522,8 @@ export function renderInspectorHtml(info: {
   function render() {
     if (!items.length) {
       feedEl.innerHTML =
-        '<div class="empty"><p class="empty-title">Väntar på första riktiga anropet från din AI-klient.</p>' +
-        'Klicka på <strong>Kör självtest</strong> ovan för ett omedelbart kvitto, eller klistra in testmeningen i din klient och se platshållarna dyka upp här:' +
+        '<div class="empty"><p class="empty-title">Inga anrop ännu.</p>' +
+        'Skicka ett prov från din klient så visas maskeringen här:' +
         '<div class="sample-row"><span class="sample-text">' + esc(SAMPLE_PROMPT) + '</span><button id="copy-sample-btn" type="button">Kopiera testmening</button></div>' +
         '<code>npx -y @maskera/mcp wrap -- claude\\nANTHROPIC_BASE_URL=${safeUrl} claude\\nOPENAI_BASE_URL=${safeUrl}/v1 codex\\nclaude mcp add --transport http maskera ${safeMcpUrl}</code></div>';
       const copyBtn = document.getElementById("copy-sample-btn");
@@ -551,7 +551,7 @@ export function renderInspectorHtml(info: {
       return '<details class="item" data-id="' + esc(it.id) + '"' + (isOpen ? " open" : "") + '>' +
         '<summary><span class="left"><span class="badge' + statusCls + '">' + it.status + '</span><span class="path">' + esc(it.method + " " + it.path) + '</span>' + tags + (it.redactions === 0 ? '<span style="color:var(--muted);font-size:12px">0 PII</span>' : "") + '</span>' +
         '<span class="right"><span>' + (it.streamed ? "SSE" : "JSON") + '</span><span>' + it.durationMs + ' ms</span><span>' + esc(time) + '</span></span></summary>' +
-        '<div class="body"><p class="body-label">Vad som skickades vidare (0 rå PII):</p>' + (previews || '<pre class="preview">(ingen text i anropet)</pre>') + '</div></details>';
+        '<div class="body"><p class="body-label">Skickat vidare:</p>' + (previews || '<pre class="preview">(ingen text i anropet)</pre>') + '</div></details>';
     }).join("") + "</div>";
     for (const det of feedEl.querySelectorAll("details.item")) {
       det.addEventListener("toggle", () => {
@@ -567,7 +567,7 @@ export function renderInspectorHtml(info: {
   revealBtn.addEventListener("click", () => {
     reveal = !reveal;
     revealBtn.classList.toggle("active", reveal);
-    revealBtn.textContent = reveal ? "Dölj originalvärden" : "Visa originalvärden lokalt";
+    revealBtn.textContent = reveal ? "Dölj originalvärden" : "Visa originalvärden";
     void refreshVault();
   });
 

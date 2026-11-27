@@ -45,7 +45,7 @@ export function notFoundMarkdown(pathname: string): string {
   const path = displayPath(pathname)
   return `# 404: nothing at ${path} on maskera.dev
 
-maskera.dev is the public site for Maskera: Swedish-first, client-side PII redaction for AI apps (open-source npm packages plus the local browser extension for ChatGPT and Claude). The path \`${path}\` does not exist here.
+maskera.dev is the public site for Maskera: Swedish-first, client-side PII redaction for AI apps (open-source npm packages plus the local browser extension for ChatGPT and Claude).
 
 ${NO_API_HINT}
 
@@ -100,7 +100,6 @@ export function notAcceptableJson(pathname: string, available: readonly string[]
 type Strings = {
   lang: string
   title: string
-  lede: string
   home: string
   docs: string
   about: string
@@ -111,7 +110,6 @@ const STRINGS: Record<"sv" | "en", Strings> = {
   sv: {
     lang: "sv",
     title: "Sidan finns inte",
-    lede: "Det finns ingen sida på den här adressen. maskera.dev maskerar svenska personuppgifter innan text når AI, direkt i webbläsaren eller i egen kod.",
     home: "Till startsidan",
     docs: "För utvecklare",
     about: "Om Maskera och kontakt",
@@ -120,7 +118,6 @@ const STRINGS: Record<"sv" | "en", Strings> = {
   en: {
     lang: "en",
     title: "Page not found",
-    lede: "There is no page at this address. maskera.dev masks Swedish personal data before text reaches AI, directly in the browser or in your own code.",
     home: "Go to the start page",
     docs: "For developers",
     about: "About Maskera and contact",
@@ -162,7 +159,6 @@ a:hover{text-decoration:underline}
 <body>
 <main>
 <h1>404 · ${t.title}</h1>
-<p>${t.lede}</p>
 <p><code>${path}</code></p>
 <ul>
 <li><a href="${home}">${t.home}</a></li>

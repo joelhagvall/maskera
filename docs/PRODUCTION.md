@@ -1,8 +1,6 @@
 # Taking maskera to production
 
-Everything you need to run maskera for real: wiring it up in the browser and
-in Node, tuning, self-hosting, operational posture, and what the guarantees
-actually are. For API details see the package READMEs
+For API details, see the package READMEs
 ([core](../packages/core/README.md), [ner](../packages/ner/README.md)).
 
 ## The 30-second version
@@ -31,7 +29,7 @@ That's production-usable as-is: `@maskera/core` is zero-dependency,
 deterministic and synchronous. If you take the model path, `maskera`
 pulls in `@maskera/core` automatically and **re-exports its entire API**, so
 one import covers both layers; the `@maskera/core` imports below assume you
-installed it directly. Everything else is about doing it *well*.
+installed it directly.
 
 ## Architecture: which package does what
 
@@ -216,7 +214,7 @@ Copy `config.json`, `tokenizer.json`, `tokenizer_config.json`,
 `public/models/maskera-sv-ner-v21/`. Version the folder name; Transformers.js
 caches by URL in the browser and never revalidates, so a renamed folder is
 what gets returning visitors onto a new model. After that, nothing leaves your
-infrastructure, which is the whole point of the tool. Keep `localModelPath`
+infrastructure. Keep `localModelPath`
 same-origin; Transformers.js 4.2's tokenizer metadata path does not reliably
 handle an absolute CDN base. Reverse-proxy a CDN below `/models/` instead.
 
@@ -265,7 +263,7 @@ leaks on the LinkedIn-style check. Those are synthetic or author-coupled
 release gates, not an independent universal estimate; validate your own domain
 locally before relying on them. Treat maskera as a strong first line, keep
 server-side access controls, and don't market it as "GDPR compliance in one
-line", it isn't, and I don't claim it is. See
+line". See
 [TRANSPARENCY.md](TRANSPARENCY.md) for exactly what runs where and what
 network calls exist.
 

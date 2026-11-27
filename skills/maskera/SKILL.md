@@ -26,7 +26,7 @@ Pick by where the text comes from: **proxy for text typed straight into the chat
    # Same warm process also serves Streamable HTTP MCP:
    # http://127.0.0.1:8787/mcp (supports ?no_raw_restore=1&read_only=1&approval_mode=browser)
    ```
-   - Claude Desktop: Help -> Troubleshooting -> Enable Developer Mode, then Developer -> Configure Third-Party Inference. Set Inference provider to **Gateway**, Credential kind **Static API key**, Gateway base URL `http://127.0.0.1:8787` (no `/v1`), Gateway API key = the user's Anthropic API key, Gateway auth scheme **x-api-key**. Apply Changes, then Save & Restart. Full guide: `https://maskera.dev/docs/guides`.
+   - Claude Desktop: Help -> Troubleshooting -> Enable Developer Mode, then Developer -> Configure Third-Party Inference. Set Inference provider to **Gateway**, Credential kind **Static API key**, Gateway base URL `http://127.0.0.1:8787` (no `/v1`), Gateway API key = the user's Anthropic API key, Gateway auth scheme **x-api-key**. Apply Changes, then Save & Restart. Full guide: `https://maskera.dev/en/docs/clients#claude-desktop`.
    - Routes Anthropic (`/v1/messages`) and OpenAI (`/v1/chat/completions`, `/v1/responses`) automatically, or set `--upstream <url>`.
    - Restores placeholders transparently in JSON, tool arguments and chunk-split SSE streams.
    - Fails closed (`502`) if local redaction fails. Inspect counts only at `http://127.0.0.1:8787/_maskera/status`.

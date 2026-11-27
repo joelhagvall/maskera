@@ -949,7 +949,7 @@ export function createMaskeraMcpServer(options: MaskeraMcpOptions = {}): Maskera
         )
       }
       const response = await requestElicitation({
-        message: `${input.tool} wants to release ${input.placeholderCount} original Swedish PII value(s) into the model context (${input.reason}). Approve only if you intend to send raw PII to the LLM.`,
+        message: `${input.tool} wants to release ${input.placeholderCount} original Swedish PII value(s) into the model context (${input.reason}).`,
         requestedSchema: {
           type: "object",
           properties: {

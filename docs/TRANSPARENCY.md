@@ -1,9 +1,5 @@
 # Transparency & privacy
 
-maskera is a privacy tool, so it should be honest about its own workings. This is
-the short version of what it does, how the model was made, and where the limits
-are.
-
 ## How your text is processed
 
 - **Redaction runs entirely on your device**: in the browser (WASM/WebGPU) or in
@@ -16,7 +12,7 @@ are.
 - **Hosting request data is separate from your text.** Vercel may process
   technical request data such as an IP address to deliver and protect the
   website. Your text and restore map are not included.
-- **The network calls that *do* exist** (full honesty): the NER **model file** is
+- **Network calls:** the NER **model file** is
   downloaded once (from the Hugging Face Hub, or your own host), and the
   Transformers.js **WASM runtime** loads from a CDN. Both are code/weights, fetched
   once and cached, **never your text.** Want zero external fetches? Self-host the
@@ -24,7 +20,7 @@ are.
 - The **rule layer** (`@maskera/core`) has **no network dependency at all** and no
   model, pure functions.
 
-## How the model was trained (honestly)
+## How the model was trained
 
 - **Published v21 is the privacy-clean artifact.** Its task-specific training
   uses 121,200 generated rows and 7,980 disjoint validation rows (distilled from
@@ -47,9 +43,9 @@ are.
   data, not the third-party checkpoint's earlier pretraining corpus. CC0 grants
   copyright permissions; it is not a GDPR determination.
 - **The whole pipeline is reproducible**: data → train → distill → ONNX → eval are
-  all scripts in [`training/`](../training). Nothing is hidden.
+  all scripts in [`training/`](../training).
 
-## How good is it, really
+## Measured accuracy
 
 - **Independent Swedish text (measured 2026-11-27, what maskera.dev shows):**
   across four corpora neither Maskera nor its developer wrote and absent from

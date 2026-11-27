@@ -366,12 +366,12 @@ function printHelp(): void {
   process.stdout.write(
     [
       `${SERVER_NAME} ${SERVER_VERSION}`,
-      "Local Swedish PII redaction for any AI agent: MCP server (stdio + Streamable HTTP), LLM proxy, wrap launcher, hook guard, installer, doctor, and background service.",
+      "Local Swedish PII redaction for AI agents.",
       "",
       "Usage:",
       "  maskera-mcp [mcp]              [--root <dir>] [--no-raw-restore] [--read-only] [--approval-mode automatic|native] [--rules-only]",
       "  maskera-mcp proxy              [--port 8787] [--host 127.0.0.1] [--root <dir>] [--open] [--upstream <url>] [--audit-log <file.jsonl>] [--no-raw-restore] [--read-only] [--approval-mode automatic|browser] [--rules-only] [--no-restore] [--block-binary]",
-      "  maskera-mcp wrap [flags] -- <cmd> [args...]   Start local proxy, verify, inject ANTHROPIC_BASE_URL/OPENAI_BASE_URL, and run <cmd>",
+      "  maskera-mcp wrap [flags] -- <cmd> [args...]",
       "  maskera-mcp guard              [--redact] [--file <path>] [--proxy-url <url>] [--no-proxy] [--rules-only]",
       `  maskera-mcp install [client|all] [--transport stdio|http] [--url <http://127.0.0.1:8787/mcp>] [--root <dir>] [--apply] [--project] [--with-hook] [--no-raw-restore] [--read-only] [--config <path>] [--receipt <file.json>] [--no-verify] [--dry-run]`,
       "  maskera-mcp doctor             [--root <dir>] [--proxy-url <url>] [--receipt <file.json>] [--rules-only] [--json]",
@@ -808,11 +808,10 @@ async function main(): Promise<void> {
     process.stderr.write(
       [
         `[maskera-proxy] listening on ${running.url} (mode=${args.defaultMode}, restore=${args.restoreResponses})`,
-        `  Local live inspector:    ${running.inspectorUrl}`,
+        `  Inspector:               ${running.inspectorUrl}`,
         `  Streamable HTTP MCP:     ${running.mcpUrl}`,
         `  Claude Code / Anthropic: ANTHROPIC_BASE_URL=${running.url}`,
         `  Codex / Cursor / OpenAI: OPENAI_BASE_URL=${running.url}/v1`,
-        `  Or one-command launch:   npx -y @maskera/mcp wrap -- claude`,
         ...(args.auditLogPath ? [`  Local audit log (JSONL): ${args.auditLogPath}`] : []),
         "",
       ].join("\n"),

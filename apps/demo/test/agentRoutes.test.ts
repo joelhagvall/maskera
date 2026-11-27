@@ -1,7 +1,13 @@
 import { existsSync, readFileSync } from "node:fs"
 import { resolve } from "node:path"
 import { describe, expect, it } from "vitest"
-import { ALIAS_REDIRECTS, PAGE_PATHS, pathsByLocale } from "../src/paths"
+import {
+  ALIAS_REDIRECTS,
+  markdownPathFor,
+  PAGE_PATHS,
+  pathsByLocale,
+  WELL_KNOWN_FILES,
+} from "../src/paths"
 
 /**
  * src/paths.ts is the one route list; these tests keep every hand-maintained
@@ -217,4 +223,26 @@ describe("index.html", () => {
   it("advertises the Markdown alternate", () => {
     expect(html).toContain('<link rel="alternate" type="text/markdown" href="/index.md" />')
   })
+})
+
+describe("published maskera.dev links", () => {
+  const validPaths = new Set<string>([
+    ...PAGE_PATHS,
+    ...PAGE_PATHS.map(markdownPathFor),
+    ...Object.keys(ALIAS_REDIRECTS),
+    ...WELL_KNOWN_FILES,
+  ])
+
+  it.each(["public/llms.txt", "public/setup-prompt.md", "../../skills/maskera/SKILL.md"])(
+    "only references real maskera.dev routes in %s",
+    (relPath) => {
+      const content = read(relPath)
+      const urls = [...content.matchAll(/https:\/\/maskera\.dev(\/[^\s)`"'>]*)/g)].map((m) => m[1])
+      expect(urls.length).toBeGreaterThan(0)
+      const broken = urls
+        .map((raw) => raw.replace(/[.,;:]+$/, "").split("#")[0] || "/")
+        .filter((path) => path !== "/api/*" && !validPaths.has(path))
+      expect(broken).toEqual([])
+    },
+  )
 })
