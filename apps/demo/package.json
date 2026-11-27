@@ -22,7 +22,8 @@
     "record:demo": "node scripts/record-demo.mjs",
     "record:demo:1x1": "node scripts/record-demo-1x1.mjs",
     "record:linkedin": "node scripts/record-linkedin-demo.mjs",
-    "record:linkedin:1x1": "node scripts/record-linkedin-demo-1x1.mjs"
+    "record:linkedin:1x1": "node scripts/record-linkedin-demo-1x1.mjs",
+    "check:claims": "node scripts/check-site-claims.mjs"
   },
   "dependencies": {
     "@huggingface/transformers": "^4.2.0",

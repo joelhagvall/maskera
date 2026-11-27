@@ -12,6 +12,7 @@ pnpm -r test --sequence.shuffle
 
 # Run pa11y against a fresh local build whenever outgoing commits touch apps/demo.
 demo_changed=""
+claims_changed=""
 while read -r local_ref local_oid remote_ref remote_oid; do
   case "$local_oid" in
     0000000000000000000000000000000000000000) continue ;;
@@ -27,6 +28,9 @@ while read -r local_ref local_oid remote_ref remote_oid; do
   if git diff --name-only "$base" "$local_oid" | grep -q '^apps/demo/'; then
     demo_changed=1
   fi
+  if git diff --name-only "$base" "$local_oid" | grep -qE '^(apps/demo/|packages/(core|ner)/)'; then
+    claims_changed=1
+  fi
 done
 
 if [ -n "$demo_changed" ]; then
@@ -36,4 +40,9 @@ if [ -n "$demo_changed" ]; then
   # The commit receipt may cover only the pages a session tried; the push checks
   # all of them (sv + en, light + dark, desktop + mobile, overflow + console errors).
   node scripts/harness/prova.mjs --no-build --lang=all --only=
+fi
+if [ -n "$claims_changed" ]; then
+  echo "pre-push: site, rules or model wrapper changed; checking every masked example on the site against the model..."
+  [ -n "$demo_changed" ] || pnpm --filter @maskera/core --filter maskera build
+  pnpm run check:claims
 fi

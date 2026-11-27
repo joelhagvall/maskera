@@ -47,7 +47,8 @@
     "lint": "pnpm check:fresh && pnpm check:benchmarks && pnpm check:product && pnpm check:lint-ratchet && pnpm check:fixtures && pnpm check:training-privacy && biome check .",
     "format": "biome format --write .",
     "changeset": "changeset",
-    "release": "pnpm build && changeset publish"
+    "release": "pnpm build && changeset publish",
+    "check:claims": "pnpm --filter @maskera/demo check:claims"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.14",
