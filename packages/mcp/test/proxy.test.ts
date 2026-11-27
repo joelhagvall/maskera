@@ -530,6 +530,40 @@ describe("startMaskeraProxy (harness-agnostic LLM proxy)", () => {
       ) + ocOther.flush()
     expect(ocRestored).toContain("proxy@example.com")
 
+    // 3b. OpenAI-compatible providers (e.g. GLM) emit `finish_reason: ""` on
+    //     intermediate SSE chunks; empty finish_reason must not flush early or
+    //     clear the `execute` / Maskera tool shield across chunks.
+    const ocEmptyFinish = createSseRestorer(map)
+    const ocEmptyFinishOut =
+      ocEmptyFinish.push(
+        `data: ${JSON.stringify({ choices: [{ index: 0, delta: { tool_calls: [{ index: 0, function: { name: "execute", arguments: '{"code":"await tools.maskera.' } }] }, finish_reason: "" }] })}\n\n` +
+          `data: ${JSON.stringify({ choices: [{ index: 0, delta: { tool_calls: [{ index: 0, function: { arguments: 'maskera_write_file({ text: \\"Hej [NAMN_1] [EPOST_1]\\" })"}' } }] }, finish_reason: "" }] })}\n\n` +
+          `data: ${JSON.stringify({ choices: [{ index: 0, delta: {}, finish_reason: "tool_calls" }] })}\n\n`,
+      ) + ocEmptyFinish.flush()
+    expect(ocEmptyFinishOut).toContain("[NAMN_1]")
+    expect(ocEmptyFinishOut).toContain("[EPOST_1]")
+    expect(ocEmptyFinishOut).not.toContain("ProxyName")
+    expect(ocEmptyFinishOut).not.toContain("proxy@example.com")
+
+    // Split text placeholder across chunks with `finish_reason: ""` still restores
+    const splitEmptyFinish = createSseRestorer(map)
+    const splitEmptyFinishOut =
+      splitEmptyFinish.push(
+        `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content: "Hej [NA" }, finish_reason: "" }] })}\n\n` +
+          `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content: "MN_1]!" }, finish_reason: "stop" }] })}\n\n`,
+      ) + splitEmptyFinish.flush()
+    expect(splitEmptyFinishOut).toContain("ProxyName!")
+
+    // Single-underscore MCP tool prefix (e.g. `maskera_maskera_write_file`) stays shielded
+    const singlePrefix = createSseRestorer(map)
+    const singlePrefixOut =
+      singlePrefix.push(
+        `data: ${JSON.stringify({ choices: [{ index: 0, delta: { tool_calls: [{ index: 0, function: { name: "maskera_maskera_write_file", arguments: '{"text":"[NAMN_1]"}' } }] }, finish_reason: "" }] })}\n\n` +
+          `data: ${JSON.stringify({ choices: [{ index: 0, delta: {}, finish_reason: "tool_calls" }] })}\n\n`,
+      ) + singlePrefix.flush()
+    expect(singlePrefixOut).toContain("[NAMN_1]")
+    expect(singlePrefixOut).not.toContain("ProxyName")
+
     // 4. Reasoning deltas (OpenAI Chat reasoning_content + Responses reasoning_summary_text)
     const reasonSse = createSseRestorer(map)
     const reasonOut =

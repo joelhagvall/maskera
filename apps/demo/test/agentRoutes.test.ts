@@ -133,6 +133,10 @@ describe("llms.txt", () => {
     expect(llms).toContain("Accept: text/markdown")
     expect(llms).toContain("https://maskera.dev/index.md")
     expect(llms).toContain("https://maskera.dev/en/about")
+    expect(llms).toContain("https://maskera.dev/en/security")
+    expect(llms).toContain("https://maskera.dev/sakerhet")
+    expect(llms).toContain("packages/mcp/AUDIT.md")
+    expect(llms).toContain("packages/mcp/audit-results.json")
     expect(llms).toContain("hej@maskera.dev")
   })
 

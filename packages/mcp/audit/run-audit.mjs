@@ -15,7 +15,7 @@
  *   full         all lanes + release gate evaluation
  *
  * Usage:
- *   node audit/run-audit.mjs <lane> [--json] [--ci] [--live] [--release] [--out <file.json>]
+ *   node audit/run-audit.mjs <lane> [--json] [--ci] [--live [--max-usd <n>]] [--release] [--out <file.json>]
  *
  * `--release` is the npm publish gate run by `pnpm release`: it only accepts
  * the full lane, and every release gate must PASS (NOT_TESTED fails).
@@ -28,6 +28,7 @@ import { existsSync } from "node:fs"
 import { mkdir, readFile, writeFile } from "node:fs/promises"
 import { arch, cpus, platform, totalmem } from "node:os"
 import { dirname, join, resolve } from "node:path"
+import { fileURLToPath } from "node:url"
 import { MASKERA_SV_NER_MODEL, MASKERA_SV_NER_REVISION } from "maskera"
 import { evaluateReleaseGates } from "./gates.mjs"
 import {
@@ -38,6 +39,7 @@ import {
   repoRoot,
   runProcess,
 } from "./lib/harness.mjs"
+import { DEFAULT_LIVE_MAX_USD, parseMaxUsd } from "./lib/live-budget.mjs"
 import { runAdversarialAudit } from "./suites/adversarial.mjs"
 import { runBenchmarkAudit } from "./suites/benchmark.mjs"
 import { runClientsAudit } from "./suites/clients.mjs"
@@ -61,11 +63,13 @@ const LANES = new Set([
   "full",
 ])
 
-function parseCli(argv) {
+export function parseCli(argv) {
   let lane = "quick"
   let jsonOut = false
   let ciMode = false
   let live = false
+  let maxUsd = DEFAULT_LIVE_MAX_USD
+  let maxUsdExplicit = false
   let release = false
   let evidence = false
   let outPath = null
@@ -75,19 +79,28 @@ function parseCli(argv) {
     if (arg === "--json") jsonOut = true
     else if (arg === "--ci") ciMode = true
     else if (arg === "--live") live = true
-    else if (arg === "--release") release = true
+    else if (arg === "--max-usd") {
+      maxUsd = parseMaxUsd(argv[++i] ?? "")
+      maxUsdExplicit = true
+    } else if (arg.startsWith("--max-usd=")) {
+      maxUsd = parseMaxUsd(arg.slice("--max-usd=".length))
+      maxUsdExplicit = true
+    } else if (arg === "--release") release = true
     else if (arg === "--evidence") evidence = true
     else if (arg === "--out") outPath = argv[++i] ?? null
     else if (arg.startsWith("--out=")) outPath = arg.slice("--out=".length)
     else if (LANES.has(arg)) lane = arg
     else if (arg === "--help" || arg === "-h") {
       console.log(
-        `Usage: node audit/run-audit.mjs <${[...LANES].join("|")}> [--json] [--ci] [--live] [--release] [--evidence] [--out <path>]`,
+        `Usage: node audit/run-audit.mjs <${[...LANES].join("|")}> [--json] [--ci] [--live [--max-usd <usd>]] [--release] [--evidence] [--out <path>]`,
       )
       process.exit(0)
     } else {
       throw new Error(`Unknown audit option or lane: ${arg}`)
     }
+  }
+  if (maxUsdExplicit && !live) {
+    throw new Error("--max-usd requires --live")
   }
   if (evidence) {
     if (outPath) throw new Error("--evidence always writes audit-results.json; drop --out")
@@ -97,7 +110,7 @@ function parseCli(argv) {
   if (release && lane !== "full") {
     throw new Error(`--release gates a publish and needs the full lane, not ${lane}`)
   }
-  return { lane, jsonOut, ciMode, live, release, evidence, outPath }
+  return { lane, jsonOut, ciMode, live, maxUsd, release, evidence, outPath }
 }
 
 function getCommitSha() {
@@ -148,7 +161,7 @@ async function main() {
     adversarial: () => runAdversarialAudit(),
     package: () => runPackageAudit(),
     offline: () => runOfflineAudit(),
-    clients: () => runClientsAudit({ live: opts.live }),
+    clients: () => runClientsAudit({ live: opts.live, maxUsd: opts.maxUsd }),
     benchmark: () => runBenchmarkAudit(),
   }
 
@@ -269,7 +282,11 @@ async function main() {
   }
 }
 
-void main().catch((err) => {
-  console.error(`[audit] fatal: ${err instanceof Error ? (err.stack ?? err.message) : String(err)}`)
-  process.exit(1)
-})
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  void main().catch((err) => {
+    console.error(
+      `[audit] fatal: ${err instanceof Error ? (err.stack ?? err.message) : String(err)}`,
+    )
+    process.exit(1)
+  })
+}

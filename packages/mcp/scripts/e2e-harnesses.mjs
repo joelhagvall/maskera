@@ -21,6 +21,12 @@ import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { brotliDecompressSync, gunzipSync, inflateSync } from "node:zlib"
 import { hasLocalNerModel, localModelId, localModelsDir } from "../audit/lib/harness.mjs"
+import {
+  assertWithinBudget,
+  DEFAULT_LIVE_MAX_USD,
+  extractClaudeCostUsd,
+  parseMaxUsd,
+} from "../audit/lib/live-budget.mjs"
 
 const here = dirname(fileURLToPath(import.meta.url))
 const pkgRoot = resolve(here, "..")
@@ -38,6 +44,8 @@ function parseCliFlags(argv) {
   let only = null
   let mode = hasLocalNerModel ? "both" : "rules"
   let live = false
+  let maxUsd = DEFAULT_LIVE_MAX_USD
+  let maxUsdExplicit = false
   let claudeModel = "haiku"
   let opencodeModel = "opencode-go/glm-5.3-flash"
   let opencodeUpstream = "https://opencode.ai/zen/go"
@@ -67,6 +75,12 @@ function parseCliFlags(argv) {
       mode = arg.slice("--mode=".length).trim().toLowerCase()
     } else if (arg === "--live") {
       live = true
+    } else if (arg === "--max-usd") {
+      maxUsd = parseMaxUsd(argv[++i] ?? "")
+      maxUsdExplicit = true
+    } else if (arg.startsWith("--max-usd=")) {
+      maxUsd = parseMaxUsd(arg.slice("--max-usd=".length))
+      maxUsdExplicit = true
     } else if (arg === "--claude-model") {
       claudeModel = argv[++i] ?? claudeModel
     } else if (arg === "--opencode-model") {
@@ -84,6 +98,7 @@ function parseCliFlags(argv) {
           "  --only <list>             Comma-separated harnesses: claude,codex,opencode",
           "  --mode <m>                rules | auto | both (offline mock lane; default: both if local ONNX exists)",
           "  --live                    Opt-in live subscription proof (Claude Max, Codex ChatGPT, OpenCode Go)",
+          `  --max-usd <amount>        USD budget cap for --live runs (default: ${DEFAULT_LIVE_MAX_USD})`,
           "  --claude-model <m>        Model alias for --live claude (default: haiku)",
           "  --opencode-model <m>      Model id for --live opencode (default: opencode-go/glm-5.3-flash)",
           "  --opencode-upstream <u>   Upstream base URL for --live opencode proxy (default: https://opencode.ai/zen/go)",
@@ -96,13 +111,26 @@ function parseCliFlags(argv) {
       throw new Error(`Unknown option: ${arg}`)
     }
   }
+  if (maxUsdExplicit && !live) {
+    throw new Error("--max-usd requires --live")
+  }
   if (!["rules", "auto", "both"].includes(mode)) {
     throw new Error(`Invalid --mode "${mode}": expected rules, auto, or both.`)
   }
   if ((live || mode === "auto" || mode === "both") && !hasLocalNerModel) {
     throw new Error(`Local ONNX model not found at ${join(localModelsDir, localModelId)}`)
   }
-  return { only, mode, live, claudeModel, opencodeModel, opencodeUpstream, jsonOut, keepTmp }
+  return {
+    only,
+    mode,
+    live,
+    maxUsd,
+    claudeModel,
+    opencodeModel,
+    opencodeUpstream,
+    jsonOut,
+    keepTmp,
+  }
 }
 
 const opts = parseCliFlags(process.argv.slice(2))
@@ -1298,20 +1326,37 @@ async function testClaudeLive(workRoot) {
         "--strict-mcp-config",
         "--mcp-config",
         mcpCfgPath,
+        "--setting-sources",
+        "",
+        "--disable-slash-commands",
         "--permission-mode",
         "bypassPermissions",
         "--tools",
         "",
         "--model",
         opts.claudeModel,
+        "--max-budget-usd",
+        String(opts.maxUsd),
         "--output-format",
         "json",
         'Använd verktyget maskera_read_file med path "klient.txt" och session_id "live-c1". Skriv sedan med maskera_write_file en kort svensk bekräftelse till "svar.txt" med session_id "live-c1" som inkluderar alla platshållare (namn, plats, personnummer, telefon, epost) exakt som de kom tillbaka. Svara kort på svenska.',
       ],
-      { cwd: dir, env, timeoutMs: 60_000 },
+      { cwd: dir, env, timeoutMs: 90_000 },
     )
-    assert.equal(res.timedOut, false, `claude live timed out:\n${res.stderr}`)
-    assert.equal(res.code, 0, `claude live exited ${res.code}:\n${res.stdout}\n${res.stderr}`)
+    assert.equal(
+      res.timedOut,
+      false,
+      `claude live timed out:\n${res.stderr}\nproxy logs:\n${proxy.getStderr()}`,
+    )
+    assert.equal(
+      res.code,
+      0,
+      `claude live exited ${res.code}:\n${res.stdout}\n${res.stderr}\nproxy logs:\n${proxy.getStderr()}`,
+    )
+    const costUsd = extractClaudeCostUsd(res.stdout)
+    if (costUsd !== null) {
+      assertWithinBudget({ spentUsd: costUsd, maxUsd: opts.maxUsd, label: "claude-live" })
+    }
     const written = await readFile(join(dir, "svar.txt"), "utf8")
     assertRestoredAllEntities(written, "claude-live")
     const st = await proxy.status()
@@ -1321,6 +1366,7 @@ async function testClaudeLive(workRoot) {
       requests: st.requests_proxied,
       cacheHits: st.engine.cacheHits,
       redactions: st.total_redactions,
+      ...(costUsd !== null ? { costUsd } : {}),
     }
   } finally {
     await proxy.stop()
@@ -1465,15 +1511,19 @@ async function testOpenCodeLive(workRoot) {
         "json",
         "-m",
         opts.opencodeModel,
-        'Use the execute tool to call await tools.maskera.maskera_read_file({ path: "klient.txt", session_id: "live-oc" }) and then await tools.maskera.maskera_write_file({ path: "svar.txt", session_id: "live-oc", text: ... }) with a short confirmation keeping every placeholder verbatim from maskera_read_file. Reply briefly.',
+        'Use the execute tool to call await tools.maskera.maskera_read_file({ path: "klient.txt", session_id: "live-oc" }) and then await tools.maskera.maskera_write_file({ path: "svar.txt", session_id: "live-oc", text: ... }) with a short confirmation that includes ALL FIVE placeholders verbatim from maskera_read_file (name, place, personnummer, phone, email). Reply briefly.',
       ],
       { cwd: dir, env: ocEnv, timeoutMs: 60_000 },
     )
-    assert.equal(runRes.timedOut, false, `opencode live timed out:\n${runRes.stderr}`)
+    assert.equal(
+      runRes.timedOut,
+      false,
+      `opencode live timed out:\n${runRes.stderr}\nproxy logs:\n${proxy.getStderr()}`,
+    )
     assert.equal(
       runRes.code,
       0,
-      `opencode live exited ${runRes.code}:\n${runRes.stdout}\n${runRes.stderr}`,
+      `opencode live exited ${runRes.code}:\n${runRes.stdout}\n${runRes.stderr}\nproxy logs:\n${proxy.getStderr()}`,
     )
     const written = await readFile(join(dir, "svar.txt"), "utf8")
     assertRestoredAllEntities(written, "opencode-live")
@@ -1508,10 +1558,14 @@ const lanes = opts.live ? ["live"] : opts.mode === "both" ? ["rules", "auto"] : 
 const workRoot = await mkdtemp(join("/tmp", "maskera-harnesses-"))
 const results = []
 let failures = 0
+let liveSpentUsd = 0
 
 try {
   if (!opts.jsonOut) {
-    console.log(`Running @maskera/mcp real-harness E2E (lanes: ${lanes.join(", ")})...`)
+    const budgetNote = opts.live ? `, max-usd: $${opts.maxUsd.toFixed(2)}` : ""
+    console.log(
+      `Running @maskera/mcp real-harness E2E (lanes: ${lanes.join(", ")}${budgetNote})...`,
+    )
   }
   for (const h of harnesses) {
     if (opts.only && !opts.only.has(h.id)) continue
@@ -1525,7 +1579,16 @@ try {
     for (const lane of lanes) {
       const t0 = performance.now()
       try {
+        if (lane === "live" && liveSpentUsd >= opts.maxUsd) {
+          throw new Error(
+            `Live budget cap $${opts.maxUsd.toFixed(2)} reached (spent $${liveSpentUsd.toFixed(4)}) before running ${h.id}.`,
+          )
+        }
         const metrics = lane === "live" ? await h.liveFn(workRoot) : await h.fn(workRoot, lane)
+        if (lane === "live" && typeof metrics.costUsd === "number") {
+          liveSpentUsd += metrics.costUsd
+          assertWithinBudget({ spentUsd: liveSpentUsd, maxUsd: opts.maxUsd, label: h.id })
+        }
         const totalMs = Math.round(performance.now() - t0)
         const entry = {
           harness: h.id,
@@ -1537,8 +1600,10 @@ try {
         }
         results.push(entry)
         if (!opts.jsonOut) {
+          const costNote =
+            typeof metrics.costUsd === "number" ? `, cost=$${metrics.costUsd.toFixed(4)}` : ""
           console.log(
-            `  ok    ${h.id} [${lane}] (${totalMs}ms, run=${metrics.ms}ms, cacheHits=${metrics.cacheHits}, redactions=${metrics.redactions})`,
+            `  ok    ${h.id} [${lane}] (${totalMs}ms, run=${metrics.ms}ms, cacheHits=${metrics.cacheHits}, redactions=${metrics.redactions}${costNote})`,
           )
         }
       } catch (err) {
@@ -1554,7 +1619,15 @@ try {
   }
 
   if (opts.jsonOut) {
-    console.log(JSON.stringify({ ok: failures === 0, results }, null, 2))
+    const payload = opts.live
+      ? {
+          ok: failures === 0,
+          maxUsd: opts.maxUsd,
+          spentUsd: Number(liveSpentUsd.toFixed(6)),
+          results,
+        }
+      : { ok: failures === 0, results }
+    console.log(JSON.stringify(payload, null, 2))
   } else {
     const passed = results.filter((r) => r.status === "pass").length
     const skipped = results.filter((r) => r.status === "skipped").length

@@ -255,7 +255,7 @@ function restoreJsonLeaves(value: unknown, map: Readonly<Record<string, string>>
   return value
 }
 
-const MASKERA_VAULT_TOOL_RE = /(?:^|__)maskera_(?:write_file|restore|clear_session)$/
+const MASKERA_VAULT_TOOL_RE = /(?:^|[^a-zA-Z0-9]|_)maskera_(?:write_file|restore|clear_session)$/
 const MASKERA_VAULT_CODE_RE = /\bmaskera_(?:write_file|restore)\b/
 
 function isMaskeraVaultToolName(name: unknown): boolean {
@@ -1156,7 +1156,7 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
               }
             }
           }
-          if (choice.finish_reason !== null && choice.finish_reason !== undefined) {
+          if (typeof choice.finish_reason === "string" && choice.finish_reason.length > 0) {
             const textTail = flushStream(`openai_chat_text:${cIdx}`)
             if (textTail) {
               if (!isPlainObject(choice.delta)) choice.delta = {}
