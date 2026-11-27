@@ -162,7 +162,7 @@
           {
             "id": "webblasare",
             "q": "Which browsers are supported?",
-            "a": "Chrome, Edge and Firefox on desktop. Safari is coming later. Until the stores open, you can install the extension manually in Chrome and Edge."
+            "a": "Chrome, Edge and Firefox on desktop. Safari is coming later. The extension is in the Chrome Web Store. Until the Edge and Firefox stores open, you can install it manually in Edge."
           },
           {
             "id": "offline",
@@ -1188,7 +1188,7 @@
     "heroInstall": "Install the extension",
     "heroTryDemo": "Try it in your browser",
     "heroAgents": "Connect to your agent",
-    "body": "No account is needed until you activate Pro. Store listings are rolling out, and you can install the extension manually in Chrome and Edge today.",
+    "body": "No account is needed until you activate Pro. The extension is in the Chrome Web Store. Edge and Firefox are rolling out, and you can install it manually in Edge today.",
     "zipLead": "Waiting for your browser's store?",
     "zipCta": "Download the ZIP file",
     "zipTail": "and load it unpacked via chrome://extensions or edge://extensions.",

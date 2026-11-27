@@ -16,7 +16,10 @@ export type ExtensionBrowser = {
  * install card switch from "Snart" to the store link on that value alone.
  */
 export const EXTENSION_BROWSERS: readonly ExtensionBrowser[] = [
-  { id: "chrome", storeUrl: null },
+  {
+    id: "chrome",
+    storeUrl: "https://chromewebstore.google.com/detail/maskera/gjllhfldkkmbdhjhldjkglcihjdicbbe",
+  },
   { id: "edge", storeUrl: null },
   { id: "firefox", storeUrl: null },
   { id: "safari", storeUrl: null },
