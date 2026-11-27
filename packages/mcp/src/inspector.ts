@@ -1,4 +1,5 @@
 import type { ServerResponse } from "node:http"
+import type { ApprovalSummary } from "./approvals"
 
 export interface InspectedRequest {
   id: string
@@ -19,12 +20,13 @@ export interface InspectedRequest {
 const MAX_EVENTS = 100
 
 /**
- * In-memory ring buffer and SSE fan-out for the local proxy inspector.
+ * In-memory ring buffer and SSE fan-out for the local proxy and MCP inspector.
  * Keeps only metadata and already-redacted previews (never raw PII).
  */
 export class ProxyInspector {
   private readonly items: InspectedRequest[] = []
   private readonly subscribers = new Set<ServerResponse>()
+  private approvalsSnapshot: ApprovalSummary[] = []
   private seq = 0
 
   record(entry: Omit<InspectedRequest, "id">): InspectedRequest {
@@ -44,12 +46,25 @@ export class ProxyInspector {
     return item
   }
 
+  publishApprovals(approvals: ApprovalSummary[]): void {
+    this.approvalsSnapshot = approvals
+    const payload = `event: approvals\ndata: ${JSON.stringify({ approvals })}\n\n`
+    for (const res of [...this.subscribers]) {
+      if (res.writableEnded || res.destroyed) {
+        this.subscribers.delete(res)
+        continue
+      }
+      res.write(payload)
+    }
+  }
+
   list(): readonly InspectedRequest[] {
     return this.items
   }
 
   clear(): void {
     this.items.length = 0
+    this.approvalsSnapshot = []
     const payload = `event: cleared\ndata: {}\n\n`
     for (const res of [...this.subscribers]) {
       if (res.writableEnded || res.destroyed) {
@@ -67,7 +82,9 @@ export class ProxyInspector {
       "cache-control": "no-cache, no-transform",
       connection: "keep-alive",
     })
-    res.write(`event: init\ndata: ${JSON.stringify({ items: this.items })}\n\n`)
+    res.write(
+      `event: init\ndata: ${JSON.stringify({ items: this.items, approvals: this.approvalsSnapshot })}\n\n`,
+    )
     this.subscribers.add(res)
     res.on("close", () => {
       this.subscribers.delete(res)
@@ -88,16 +105,18 @@ export class ProxyInspector {
 
 export function renderInspectorHtml(info: {
   url: string
+  mcpUrl?: string
   defaultMode: string
   restoreResponses: boolean
 }): string {
   const safeUrl = info.url.replace(/[<>&"']/g, "")
+  const safeMcpUrl = (info.mcpUrl ?? `${info.url}/mcp`).replace(/[<>&"']/g, "")
   return `<!doctype html>
 <html lang="sv">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Maskera Proxy Inspector</title>
+<title>Maskera Proxy & MCP Inspector</title>
 <style>
   :root {
     --bg: #ffffff;
@@ -105,8 +124,6 @@ export function renderInspectorHtml(info: {
     --fg: #111113;
     --muted: #666670;
     --border: #e4e4e7;
-    --ok: #15803d;
-    --ok-bg: #f0fdf4;
     --err: #b91c1c;
     --err-bg: #fef2f2;
     --tok-bg: #eff6ff;
@@ -122,8 +139,6 @@ export function renderInspectorHtml(info: {
       --fg: #f4f4f5;
       --muted: #a1a1aa;
       --border: #27272a;
-      --ok: #4ade80;
-      --ok-bg: #052e16;
       --err: #f87171;
       --err-bg: #450a0a;
       --tok-bg: #172554;
@@ -151,24 +166,20 @@ export function renderInspectorHtml(info: {
   }
   h1 { margin: 0; font-size: 18px; font-weight: 650; letter-spacing: -0.02em; }
   .sub { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
-  .dot {
-    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-    background: var(--ok); margin-right: 6px; vertical-align: middle;
-  }
   .actions { display: flex; gap: 8px; flex-wrap: wrap; }
   button {
     font-family: var(--sans);
     font-weight: 500;
     font-size: 12.5px;
     padding: 7px 12px;
-    border-radius: 7px;
+    border-radius: 6px;
     border: 1px solid var(--border);
     background: var(--bg);
     color: var(--fg);
     cursor: pointer;
   }
   button:hover { background: var(--bg-subtle); }
-  button.active { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  button.active, button.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
   .stats {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -178,29 +189,49 @@ export function renderInspectorHtml(info: {
   @media (max-width: 640px) { .stats { grid-template-columns: repeat(2, 1fr); } }
   .stat {
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 6px;
     padding: 12px 14px;
     background: var(--bg-subtle);
   }
   .stat-k { font-size: 11.5px; color: var(--muted); }
   .stat-v { font-size: 20px; font-weight: 650; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .approvals {
+    margin: 0 0 22px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    background: var(--bg-subtle);
+  }
+  .approvals h2 { margin: 0 0 8px; font-size: 14px; }
+  .approval-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .approval-row:first-of-type { border-top: 0; padding-top: 2px; }
+  .approval-meta { color: var(--muted); font-size: 12px; }
   .empty {
     border: 1px dashed var(--border);
-    border-radius: 8px;
+    border-radius: 6px;
     padding: 28px 20px;
     text-align: center;
     color: var(--muted);
     font-size: 13.5px;
   }
   .empty code {
-    display: block; margin: 10px auto 0; max-width: 560px; padding: 10px 12px;
+    display: block; margin: 10px auto 0; max-width: 600px; padding: 10px 12px;
     background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 6px;
     font: 12px/1.6 var(--mono); color: var(--fg); text-align: left; white-space: pre-wrap;
   }
   .list { display: flex; flex-direction: column; gap: 8px; }
   details.item {
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 6px;
     background: var(--bg);
     overflow: hidden;
   }
@@ -220,21 +251,20 @@ export function renderInspectorHtml(info: {
   .left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .right { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
   .badge {
-    font-family: var(--mono);
     font-weight: 600;
     font-size: 11px;
     padding: 2px 6px;
-    border-radius: 5px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--bg-subtle);
   }
-  .badge.ok { background: var(--ok-bg); color: var(--ok); }
-  .badge.err { background: var(--err-bg); color: var(--err); }
-  .path { font-family: var(--mono); font-weight: 500; font-size: 12.5px; }
-  .pill {
-    font-family: var(--mono);
+  .badge.err { background: var(--err-bg); color: var(--err); border-color: var(--err); }
+  .path { font-weight: 500; font-size: 12.5px; }
+  .count-tag {
     font-weight: 500;
     font-size: 11px;
     padding: 2px 6px;
-    border-radius: 5px;
+    border-radius: 3px;
     background: var(--tok-bg);
     color: var(--tok-fg);
     border: 1px solid var(--tok-border);
@@ -258,7 +288,7 @@ export function renderInspectorHtml(info: {
   .tok {
     display: inline-block;
     padding: 0 4px;
-    border-radius: 4px;
+    border-radius: 3px;
     background: var(--tok-bg);
     color: var(--tok-fg);
     border: 1px solid var(--tok-border);
@@ -267,23 +297,23 @@ export function renderInspectorHtml(info: {
   .vault-box {
     margin-top: 24px;
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 6px;
     padding: 14px 16px;
     background: var(--bg-subtle);
   }
   .vault-box h2 { margin: 0 0 6px; font-size: 14px; }
   .vault-box p { margin: 0 0 10px; font-size: 12.5px; color: var(--muted); }
   table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); font-family: var(--mono); }
-  th { font-family: var(--sans); font-size: 11.5px; color: var(--muted); }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  th { font-size: 11.5px; color: var(--muted); }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <div>
-      <h1><span class="dot"></span>Maskera lokal proxy-inspektör</h1>
-      <p class="sub">Körs enbart på ${safeUrl} · läge: ${info.defaultMode} · återställning: ${info.restoreResponses ? "på" : "av"} · allt lagras bara i lokalt RAM</p>
+      <h1>Maskera lokal proxy-inspektör</h1>
+      <p class="sub">Proxy: ${safeUrl} · MCP: ${safeMcpUrl} · läge: ${info.defaultMode} · återställning: ${info.restoreResponses ? "på" : "av"} · enbart i lokalt RAM</p>
     </div>
     <div class="actions">
       <button id="reveal-btn" type="button">Visa originalvärden lokalt</button>
@@ -298,12 +328,14 @@ export function renderInspectorHtml(info: {
     <div class="stat"><div class="stat-k">AI-modell</div><div class="stat-v" id="st-model">Redo</div></div>
   </section>
 
+  <div id="approvals-root"></div>
   <div id="feed"></div>
   <div id="vault-root"></div>
 </div>
 <script>
 (() => {
   const feedEl = document.getElementById("feed");
+  const approvalsRoot = document.getElementById("approvals-root");
   const vaultRoot = document.getElementById("vault-root");
   const revealBtn = document.getElementById("reveal-btn");
   const clearBtn = document.getElementById("clear-btn");
@@ -312,12 +344,13 @@ export function renderInspectorHtml(info: {
   const stUniq = document.getElementById("st-uniq");
   const stModel = document.getElementById("st-model");
   let items = [];
+  let approvals = [];
   let reveal = false;
   let userToggled = false;
   const openIds = new Set();
   const seenIds = new Set();
 
-  const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
   const highlightTokens = (s) => esc(s).replace(/\\[[A-ZÅÄÖ][A-ZÅÄÖ0-9_]*_\\d+\\]/g, (m) => '<span class="tok">' + m + "</span>");
 
   async function refreshStatus() {
@@ -334,6 +367,37 @@ export function renderInspectorHtml(info: {
     } catch {}
   }
 
+  async function decideApproval(id, action) {
+    try {
+      await fetch("/_maskera/approvals/" + encodeURIComponent(id) + "/" + action, {
+        method: "POST",
+        headers: { "x-maskera-action": "decide" },
+      });
+    } catch {}
+  }
+
+  function renderApprovals() {
+    const visible = (approvals || []).filter((a) => a.status === "pending" || a.status === "approved" || a.status === "declined");
+    if (!visible.length) {
+      approvalsRoot.innerHTML = "";
+      return;
+    }
+    const rows = visible.map((a) => {
+      const btns = a.status === "pending"
+        ? '<div class="actions"><button type="button" class="primary" data-apr="' + esc(a.id) + '" data-act="approve">Godkänn</button><button type="button" data-apr="' + esc(a.id) + '" data-act="decline">Neka</button></div>'
+        : '<span class="badge">' + esc(a.status) + "</span>";
+      return '<div class="approval-row" id="approval-' + esc(a.id) + '"><div><strong>' + esc(a.tool) + '</strong> · ' + esc(a.reason) + '<div class="approval-meta">Förfrågan ' + esc(a.id) + (a.sessionId ? ' · session ' + esc(a.sessionId) : '') + ' · ' + esc(a.placeholderCount) + ' värden</div></div>' + btns + '</div>';
+    }).join("");
+    approvalsRoot.innerHTML = '<section class="approvals"><h2>Väntande godkännanden (rå PII)</h2>' + rows + "</section>";
+    for (const btn of approvalsRoot.querySelectorAll("button[data-apr]")) {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-apr");
+        const act = btn.getAttribute("data-act");
+        if (id && act) void decideApproval(id, act);
+      });
+    }
+  }
+
   async function refreshVault() {
     if (!reveal) { vaultRoot.innerHTML = ""; return; }
     try {
@@ -348,7 +412,7 @@ export function renderInspectorHtml(info: {
 
   function render() {
     if (!items.length) {
-      feedEl.innerHTML = '<div class="empty">Inga proxade AI-anrop ännu. Peka din agent hit för att se maskeringen i realtid:<code>ANTHROPIC_BASE_URL=${safeUrl} claude\\nOPENAI_BASE_URL=${safeUrl}/v1 codex</code></div>';
+      feedEl.innerHTML = '<div class="empty">Inga anrop ännu. Peka din agent mot proxyn eller Streamable HTTP MCP för att se maskeringen i realtid:<code>ANTHROPIC_BASE_URL=${safeUrl} claude\\nOPENAI_BASE_URL=${safeUrl}/v1 codex\\nclaude mcp add --transport http maskera ${safeMcpUrl}</code></div>';
       return;
     }
     if (seenIds.size === 0 && items[0]?.id) {
@@ -357,14 +421,14 @@ export function renderInspectorHtml(info: {
     for (const it of items) seenIds.add(it.id);
     feedEl.innerHTML = '<div class="list">' + items.map((it) => {
       const time = (it.timestamp || "").slice(11, 19);
-      const pills = Object.entries(it.counts || {}).map(([k, v]) => '<span class="pill">' + esc(k) + " ×" + v + "</span>").join("");
+      const tags = Object.entries(it.counts || {}).map(([k, v]) => '<span class="count-tag">' + esc(k) + " ×" + v + "</span>").join("");
       const previews = (it.redactedPreview || []).map((p) => '<pre class="preview">' + highlightTokens(p) + "</pre>").join("");
-      const statusCls = it.status >= 200 && it.status < 400 ? "ok" : "err";
+      const statusCls = it.status >= 200 && it.status < 400 ? "" : " err";
       const isOpen = openIds.has(it.id);
       return '<details class="item" data-id="' + esc(it.id) + '"' + (isOpen ? " open" : "") + '>' +
-        '<summary><span class="left"><span class="badge ' + statusCls + '">' + it.status + '</span><span class="path">' + esc(it.method + " " + it.path) + '</span>' + pills + (it.redactions === 0 ? '<span style="color:var(--muted);font-size:12px">0 PII</span>' : "") + '</span>' +
+        '<summary><span class="left"><span class="badge' + statusCls + '">' + it.status + '</span><span class="path">' + esc(it.method + " " + it.path) + '</span>' + tags + (it.redactions === 0 ? '<span style="color:var(--muted);font-size:12px">0 PII</span>' : "") + '</span>' +
         '<span class="right"><span>' + (it.streamed ? "SSE" : "JSON") + '</span><span>' + it.durationMs + ' ms</span><span>' + esc(time) + '</span></span></summary>' +
-        '<div class="body"><p class="body-label">Vad som skickades vidare till molnet (0 rå PII):</p>' + (previews || '<pre class="preview">(ingen text i anropet)</pre>') + '</div></details>';
+        '<div class="body"><p class="body-label">Vad som skickades vidare (0 rå PII):</p>' + (previews || '<pre class="preview">(ingen text i anropet)</pre>') + '</div></details>';
     }).join("") + "</div>";
     for (const det of feedEl.querySelectorAll("details.item")) {
       det.addEventListener("toggle", () => {
@@ -387,9 +451,11 @@ export function renderInspectorHtml(info: {
   clearBtn.addEventListener("click", async () => {
     await fetch("/_maskera/clear", { method: "POST", headers: { "x-maskera-action": "clear" } });
     items = [];
+    approvals = [];
     userToggled = false;
     openIds.clear();
     seenIds.clear();
+    renderApprovals();
     render();
     await refreshStatus();
     await refreshVault();
@@ -397,8 +463,17 @@ export function renderInspectorHtml(info: {
 
   const es = new EventSource("/_maskera/events");
   es.addEventListener("init", (ev) => {
-    items = JSON.parse(ev.data).items || [];
+    const data = JSON.parse(ev.data);
+    items = data.items || [];
+    approvals = data.approvals || [];
+    renderApprovals();
     render();
+    void refreshStatus();
+  });
+  es.addEventListener("approvals", (ev) => {
+    const data = JSON.parse(ev.data);
+    approvals = data.approvals || [];
+    renderApprovals();
     void refreshStatus();
   });
   es.addEventListener("request", (ev) => {
@@ -412,9 +487,11 @@ export function renderInspectorHtml(info: {
   });
   es.addEventListener("cleared", () => {
     items = [];
+    approvals = [];
     userToggled = false;
     openIds.clear();
     seenIds.clear();
+    renderApprovals();
     render();
     void refreshStatus();
     void refreshVault();

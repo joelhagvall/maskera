@@ -216,4 +216,94 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://maskera.dev/docs</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/docs" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/docs" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://maskera.dev/docs" />
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/docs/mcp</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/docs/mcp" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/docs/mcp" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://maskera.dev/docs/mcp" />
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/docs/klienter</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/docs/klienter" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/docs/clients" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://maskera.dev/docs/klienter" />
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/docs/sdk</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/docs/sdk" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/docs/sdk" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://maskera.dev/docs/sdk" />
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/docs/felsokning</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/docs/felsokning" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/docs/troubleshooting" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://maskera.dev/docs/felsokning" />
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/en/docs</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/docs" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/docs" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://maskera.dev/docs" />
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/en/docs/mcp</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/docs/mcp" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/docs/mcp" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://maskera.dev/docs/mcp" />
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/en/docs/clients</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/docs/klienter" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/docs/clients" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://maskera.dev/docs/klienter" />
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/en/docs/sdk</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/docs/sdk" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/docs/sdk" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://maskera.dev/docs/sdk" />
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://maskera.dev/en/docs/troubleshooting</loc>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/docs/felsokning" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/docs/troubleshooting" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://maskera.dev/docs/felsokning" />
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>

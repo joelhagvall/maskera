@@ -7,10 +7,15 @@ export type Locale = "sv" | "en"
 
 export type View =
   | "demo"
+  | "dev"
+  | "docs"
+  | "docsMcp"
+  | "docsClients"
+  | "docsSdk"
+  | "docsTroubleshooting"
   | "transparency"
   | "testdata"
   | "privacy"
-  | "dev"
   | "services"
   | "accuracy"
   | "security"
@@ -25,6 +30,11 @@ export const pathsByLocale: Record<Locale, Record<View, string>> = {
   sv: {
     demo: "/",
     dev: "/utvecklare",
+    docs: "/docs",
+    docsMcp: "/docs/mcp",
+    docsClients: "/docs/klienter",
+    docsSdk: "/docs/sdk",
+    docsTroubleshooting: "/docs/felsokning",
     transparency: "/integritet",
     testdata: "/testdata",
     privacy: "/integritetspolicy",
@@ -39,6 +49,11 @@ export const pathsByLocale: Record<Locale, Record<View, string>> = {
   en: {
     demo: "/en",
     dev: "/en/developers",
+    docs: "/en/docs",
+    docsMcp: "/en/docs/mcp",
+    docsClients: "/en/docs/clients",
+    docsSdk: "/en/docs/sdk",
+    docsTroubleshooting: "/en/docs/troubleshooting",
     transparency: "/en/privacy",
     testdata: "/en/test-data",
     privacy: "/en/privacy-policy",
@@ -78,7 +93,6 @@ export const ALIAS_REDIRECTS: Readonly<Record<string, string>> = {
   "/about": "/en/about",
   "/contact": "/en/about#kontakt",
   "/privacy": "/en/privacy-policy",
-  "/docs": "/en/developers",
   "/tillagg": "/tjanster",
   "/extension": "/en/services",
 }
@@ -86,6 +100,7 @@ export const ALIAS_REDIRECTS: Readonly<Record<string, string>> = {
 /** Machine-readable files served from the site root (public/ or build output). */
 export const WELL_KNOWN_FILES: readonly string[] = [
   "/llms.txt",
+  "/setup-prompt.md",
   "/sitemap.xml",
   "/robots.txt",
   "/benchmark-release.json",

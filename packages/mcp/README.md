@@ -2,21 +2,22 @@
 
 Local Swedish PII redaction for any AI agent or LLM client:
 
-1. **Local LLM proxy (`maskera-mcp proxy`)**: sits between any client that accepts a custom API URL (Claude Code, Codex with an API key, Cursor, OpenCode, Claude Desktop via third-party inference, Python/JS SDKs) and Anthropic/OpenAI, redacts outgoing prompts and tool results locally on-device, and transparently restores placeholders in both JSON and SSE streaming responses. Zero trust in the agent required.
-2. **MCP stdio server (`maskera-mcp`)**: exposes `maskera_read_file`, `maskera_write_file`, `maskera_redact`, `maskera_restore`, and session management tools over JSON-RPC 2.0 stdio.
+1. **Local LLM proxy + Streamable HTTP MCP (`maskera-mcp proxy`)**: sits between any client that accepts a custom API URL (Claude Code, Codex with an API key, Cursor, OpenCode, Claude Desktop via third-party inference, Python/JS SDKs) and Anthropic/OpenAI, redacts outgoing prompts and tool results locally on-device, and transparently restores placeholders in both JSON and SSE streaming responses. The same warm process also exposes Streamable HTTP MCP at `http://127.0.0.1:8787/mcp`, sharing the loaded ONNX model, session vault, browser approval broker, and live inspector.
+2. **MCP stdio server (`maskera-mcp`)**: exposes `maskera_read_file`, `maskera_write_file`, `maskera_list_files`, `maskera_search_files`, `maskera_redact`, `maskera_restore`, `maskera_list_sessions`, `maskera_clear_session`, `maskera_status` (plus `maskera_resume` in browser approval mode), along with built-in MCP `prompts` and `resources` (`maskera://skills/maskera/SKILL.md`) over JSON-RPC 2.0 stdio or Streamable HTTP.
 3. **Hook / pipe guard (`maskera-mcp guard`)**: blocks PII in Claude Code / Cursor hooks or Unix pipelines (`exit 2`, never echoes raw PII) or redacts streams via `--redact`.
+4. **Client installer and diagnostics (`maskera-mcp install` / `maskera-mcp doctor`)**: writes or prints MCP config per client and verifies the local Swedish redaction roundtrip with made-up PII.
 
 All redaction runs 100% locally using `maskera` (deterministic Swedish rules + the 43 MB open Swedish ONNX NER model `joelhagvall/maskera-sv-ner`).
 
-## 1. Local LLM proxy (clients with a custom API URL)
+## 1. Local LLM proxy + warm Streamable HTTP MCP
 
 Start the proxy on loopback (`127.0.0.1:8787`):
 
 ```bash
-npx -y @maskera/mcp proxy
+npx -y @maskera/mcp proxy --root /path/to/workspace
 ```
 
-Point any client that accepts a custom API URL at it:
+Point any client that accepts a custom API URL at it, or connect an MCP client to `/mcp` on the same warm process:
 
 ```bash
 # Claude Code / Anthropic SDK
@@ -27,7 +28,13 @@ ANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude
 # use the MCP stdio server below (`codex mcp add maskera -- npx -y @maskera/mcp`) instead.
 OPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex
 
-# Inspect live redactions in your browser (local RAM only, screen-share safe by default)
+# Connect an HTTP MCP client to the same warm ONNX model & vault
+claude mcp add --transport http maskera 'http://127.0.0.1:8787/mcp?no_raw_restore=1'
+
+# Or require browser approval before raw PII ever leaves the vault
+claude mcp add --transport http maskera 'http://127.0.0.1:8787/mcp?approval_mode=browser'
+
+# Inspect live redactions and answer pending approvals in your browser (local RAM only)
 open http://127.0.0.1:8787/_maskera
 
 # Optional: write local metadata-only audit logs (counts only, never raw text)
@@ -35,15 +42,16 @@ npx -y @maskera/mcp proxy --audit-log ./maskera-audit.jsonl
 ```
 
 - Routes Anthropic (`/v1/messages`, `/anthropic/*`) and OpenAI (`/v1/chat/completions`, `/v1/responses`, `/openai/*`) automatically, or use `--upstream <url>` for any OpenAI/Anthropic-compatible endpoint (Azure, OpenRouter, LiteLLM).
-- Built-in local live inspector at `http://127.0.0.1:8787/_maskera`: see every proxied request, entity counts, and the exact masked text sent upstream in real time (originals hidden by default until you toggle reveal).
+- Built-in local live inspector at `http://127.0.0.1:8787/_maskera`: see every proxied request and MCP tool call, entity counts, pending approvals, and the exact masked text sent upstream in real time (originals hidden by default until you toggle reveal).
 - Restores placeholders even when split across SSE stream chunks, including JSON `tool_use` / `tool_calls` arguments.
 - Fails closed (`502`) if local redaction fails: raw PII is never forwarded upstream.
 
 ### Which mode to use
 
 - **Proxy** for text typed straight into the chat. It also masks tool results, because they travel in the same request.
-- **MCP server** for local files the agent reads with `maskera_read_file`, in clients where the API URL cannot be changed.
-- Before you send real personal data, test with made-up data: send a fictional address and check that `http://127.0.0.1:8787/_maskera` shows a placeholder going upstream.
+- **Streamable HTTP MCP (`/mcp`)** when multiple clients should share one warm ONNX model, one session vault, and browser approvals.
+- **MCP stdio server** for local files the agent reads with `maskera_read_file` when no background proxy is running.
+- Before you send real personal data, run `npx -y @maskera/mcp doctor` or test with made-up data: send a fictional address and check that `http://127.0.0.1:8787/_maskera` shows a placeholder going upstream.
 
 ### Claude Desktop through the proxy
 
@@ -62,25 +70,48 @@ Claude Desktop can send its chat traffic to an Anthropic-compatible gateway. Poi
 
 To go back to your Claude account, choose the Anthropic sign-in option on the sign-in screen. The gateway settings stay on the device and can be changed in the same window.
 
-## 2. MCP stdio server (Claude Desktop / Cursor / Claude Code / Codex / T3 Code)
+## 2. MCP server setup (`install`, stdio, and scoped policies)
+
+Generate or write the configuration for your client directly:
+
+```bash
+# Supported clients: claude-code, claude-desktop, codex, cursor, opencode, t3-code
+npx -y @maskera/mcp install cursor --root /path/to/workspace --no-raw-restore
+npx -y @maskera/mcp install claude-code --transport http --no-raw-restore
+npx -y @maskera/mcp doctor
+```
+
+Or configure stdio manually:
 
 ```json
 {
   "mcpServers": {
     "maskera": {
       "command": "npx",
-      "args": ["-y", "@maskera/mcp", "--root", "/path/to/your/workspace"]
+      "args": ["-y", "@maskera/mcp", "--root", "/path/to/workspace", "--no-raw-restore"]
     }
   }
 }
 ```
 
-Tools:
+Tools (all declare `inputSchema`, `outputSchema`, and MCP tool `annotations`):
+- `maskera_list_files`: List files inside allowed workspace roots without reading contents.
+- `maskera_search_files`: Search UTF-8 files locally and redact every matched line before returning (supports searching by an existing placeholder like `[NAMN_1]`).
 - `maskera_read_file`: Read a local UTF-8 file already redacted, storing the restore map locally under `session_id`.
 - `maskera_write_file`: Restore placeholders from `session_id` and write directly to disk without exposing raw PII back to the LLM.
 - `maskera_redact`: Redact text locally (`mode: "auto"` or `"rules"`, `profile: "general" | "clinical"`, `custom_terms`).
-- `maskera_restore`: Restore placeholders using `session_id` or an explicit map.
-- `maskera_list_sessions` / `maskera_clear_session` / `maskera_status`: Inspect counts (never raw PII), clear memory, or check model status.
+- `maskera_restore`: Restore placeholders using `session_id` or an explicit map (hidden and blocked under `--no-raw-restore`, or gated under `--approval-mode browser|native`).
+- `maskera_list_sessions` / `maskera_clear_session` / `maskera_status`: Inspect counts (never raw PII), clear memory, or check model and policy status.
+- `maskera_resume`: Exposed in `--approval-mode browser` to resume a paused raw-PII export once approved in `http://127.0.0.1:8787/_maskera`.
+
+Built-in MCP `prompts` and `resources`:
+- Prompts: `maskera-workflow` (with optional `profile` and `custom_terms`) and `maskera-redact-file`.
+- Resources: `maskera://skills/maskera/SKILL.md` (full agent operating guide) and `maskera://status`.
+
+Scoped policies (CLI flags or `/mcp` query parameters):
+- `--no-raw-restore` / `?no_raw_restore=1`: Hides and blocks `maskera_restore` and `include_map: true`. The agent can still write restored output directly to disk via `maskera_write_file`.
+- `--read-only` / `?read_only=1`: Hides and blocks `maskera_write_file` and `maskera_clear_session`.
+- `--approval-mode automatic|browser|native` / `?approval_mode=browser`: Gates raw PII exports (`maskera_restore`, `include_map: true`) behind either browser approval in `/_maskera` or native MCP form elicitation (`elicitation/create`). Query parameters may only tighten server defaults, never weaken them.
 
 ## 3. Harness-agnostic guard / hook
 
@@ -94,7 +125,7 @@ cat klient.txt | npx -y @maskera/mcp guard --redact
 
 ## 4. Agent skill (`SKILL.md`)
 
-Install the workflow skill (`skills/maskera/SKILL.md`) in Claude Code, Codex, Cursor, or OpenCode:
+The skill is served automatically over MCP at `maskera://skills/maskera/SKILL.md` and prompt `maskera-workflow`. You can also install it directly in Claude Code, Codex, Cursor, or OpenCode:
 
 ```bash
 npx skills add joelhagvall/maskera
@@ -105,7 +136,7 @@ npx skills add joelhagvall/maskera
 Run the built-in reusable E2E and benchmark suites locally (zero paid API calls):
 
 ```bash
-# Protocol, security, streaming, and local ONNX E2E (also runs in CI)
+# Protocol, security, streaming, HTTP /mcp, approvals, install, doctor, and local ONNX E2E
 pnpm test:mcp:e2e
 
 # Real installed agent harnesses (claude, codex, opencode) with MCP + proxy + hooks
@@ -125,6 +156,9 @@ pnpm bench:mcp
 - `--rules-only` or `MASKERA_MCP_MODE=rules`: Deterministic rules only without loading the ONNX model.
 - `--profile general|clinical`: Built-in precision profile.
 - `--custom-term <word>` (repeatable): Extra protected words (client names, codenames, case IDs).
+- `--no-raw-restore` or `MASKERA_MCP_NO_RAW_RESTORE=1`: Disallow raw PII export into model context.
+- `--read-only` or `MASKERA_MCP_READ_ONLY=1`: Disallow file writes and session clears.
+- `--approval-mode automatic|browser|native` or `MASKERA_MCP_APPROVAL_MODE`: Gate raw PII exports.
 - `--port <n>` / `--host <addr>` / `--upstream <url>` / `--no-restore`: Proxy options.
-- `--root <dir>` (repeatable) or `MASKERA_MCP_ROOTS`: Allowed file roots for MCP file tools.
+- `--root <dir>` (repeatable) or `MASKERA_MCP_ROOTS`: Allowed file roots for MCP file tools (works on both `mcp` and `proxy`).
 - `MASKERA_MODEL_PATH` + `MASKERA_MODEL_ID` + `MASKERA_ALLOW_REMOTE_MODELS=0`: Load a local ONNX model directory offline.

@@ -4,6 +4,7 @@ import { About } from "./components/About"
 import { Accuracy } from "./components/Accuracy"
 import { DemoWorkspace } from "./components/DemoWorkspace"
 import { Developers } from "./components/Developers"
+import { DocsClients, DocsMcp, DocsOverview, DocsSdk, DocsTroubleshooting } from "./components/Docs"
 import { Faq } from "./components/Faq"
 import { Guides } from "./components/Guides"
 import { Industries } from "./components/Industries"
@@ -24,6 +25,11 @@ import { registerViews } from "./views"
 registerViews({
   demo: DemoWorkspace,
   dev: Developers,
+  docs: DocsOverview,
+  docsMcp: DocsMcp,
+  docsClients: DocsClients,
+  docsSdk: DocsSdk,
+  docsTroubleshooting: DocsTroubleshooting,
   transparency: Transparency,
   testdata: TestData,
   privacy: PrivacyPolicy,

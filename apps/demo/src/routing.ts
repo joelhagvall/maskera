@@ -56,6 +56,11 @@ export function viewFromPath(pathname: string): View {
   const path = pathname.replace(/\/+$/, "") || "/"
   const paths = getViewPaths(localeFromPath(path))
   if (path === paths.dev) return "dev"
+  if (path === paths.docs) return "docs"
+  if (path === paths.docsMcp) return "docsMcp"
+  if (path === paths.docsClients) return "docsClients"
+  if (path === paths.docsSdk) return "docsSdk"
+  if (path === paths.docsTroubleshooting) return "docsTroubleshooting"
   if (path === paths.transparency) return "transparency"
   if (path === paths.testdata) return "testdata"
   if (path === paths.privacy) return "privacy"

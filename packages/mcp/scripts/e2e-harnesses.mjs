@@ -491,8 +491,8 @@ async function testClaudeCode(workRoot, lane) {
     assert.equal(out.is_error, false, `claude returned error: ${res.stdout}`)
     assert.equal(
       discoveredMaskeraTools.length,
-      7,
-      `expected 7 MCP tools in claude, got ${discoveredMaskeraTools.length}`,
+      9,
+      `expected 9 MCP tools in claude, got ${discoveredMaskeraTools.length}`,
     )
     assert.equal(toolStep, 2, "claude did not complete maskera_read_file + maskera_write_file")
     assert.equal(readToolResultText.includes("[PERSONNUMMER_1]"), true)
@@ -873,8 +873,8 @@ async function testCodex(workRoot, lane) {
     )
     assert.equal(
       discoveredTools.length,
-      7,
-      `expected 7 MCP tools in codex namespace, got ${discoveredTools.length}`,
+      9,
+      `expected 9 MCP tools in codex namespace, got ${discoveredTools.length}`,
     )
     assert.equal(turn, 3, `expected 3 codex turns, got ${turn}`)
     assert.equal(readOutputText.includes("[PERSONNUMMER_1]"), true)

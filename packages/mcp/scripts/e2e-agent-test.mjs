@@ -825,6 +825,81 @@ try {
     }
   })
 
+  // ---------------------------------------------------------------------------
+  // 3c. Built CLI Streamable HTTP /mcp, install, and doctor E2E
+  // ---------------------------------------------------------------------------
+  await test("Built CLI: Streamable HTTP /mcp, scoped policy, install --dry-run, and doctor", async () => {
+    const root = join(workDir, "http-mcp-root")
+    const { mkdir } = await import("node:fs/promises")
+    await mkdir(root, { recursive: true })
+    await writeFile(join(root, "client.txt"), "Kontakt 19900101-2385 tel 070-174 06 58", "utf8")
+
+    const proxy = await startProxyCli(["--rules-only", "--root", root])
+    try {
+      const init = await fetch(`${proxy.url}/mcp?no_raw_restore=1`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "initialize",
+          params: { protocolVersion: "2025-11-25" },
+        }),
+      })
+      assert.equal(init.status, 200)
+      const mcpSession = init.headers.get("mcp-session-id")
+      assert.ok(mcpSession, "missing Mcp-Session-Id header")
+
+      const search = await fetch(`${proxy.url}/mcp`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "mcp-session-id": mcpSession },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 2,
+          method: "tools/call",
+          params: {
+            name: "maskera_search_files",
+            arguments: { query: "Kontakt", session_id: "s-http" },
+          },
+        }),
+      })
+      const searchText = await search.text()
+      assert.equal(searchText.includes("19900101-2385"), false, "PII leaked from HTTP MCP search")
+      assert.equal(searchText.includes("070-174 06 58"), false, "Phone leaked from HTTP MCP search")
+      assert.ok(searchText.includes("[PERSONNUMMER_1]"))
+
+      const doc = await runCli([
+        "doctor",
+        "--rules-only",
+        "--root",
+        root,
+        "--proxy-url",
+        proxy.url,
+        "--json",
+      ])
+      assert.equal(doc.code, 0, `doctor failed: ${doc.stderr}`)
+      const report = JSON.parse(doc.stdout)
+      assert.equal(report.ok, true)
+      assert.equal(report.checks.find((c) => c.name === "proxy")?.status, "ok")
+
+      const inst = await runCli([
+        "install",
+        "cursor",
+        "--root",
+        root,
+        "--no-raw-restore",
+        "--dry-run",
+        "--json",
+      ])
+      assert.equal(inst.code, 0, `install failed: ${inst.stderr}`)
+      const instData = JSON.parse(inst.stdout)
+      assert.equal(instData.written, false)
+      assert.ok(instData.snippet.includes("--no-raw-restore"))
+    } finally {
+      await proxy.stop()
+    }
+  })
+
   // 4. Optional local ONNX Swedish NER E2E lane (zero network, offline model)
   // ---------------------------------------------------------------------------
   if (hasLocalNerModel) {

@@ -7,11 +7,18 @@ import { fileURLToPath } from "node:url"
 import type { NerRecognizer } from "maskera"
 import { afterEach, describe, expect, it } from "vitest"
 import {
+  ApprovalBroker,
   buildCustomTermsDetector,
   createFileGuard,
   createMaskeraEngine,
   createMaskeraMcpServer,
+  MASKERA_SKILL_MARKDOWN,
+  MASKERA_SKILL_URI,
+  MASKERA_STATUS_URI,
+  runDoctor,
+  runInstall,
   SessionVault,
+  startMaskeraProxy,
 } from "../src/index"
 
 const pkgRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..")
@@ -195,6 +202,7 @@ describe("MaskeraMcpServer JSON-RPC protocol and tools", () => {
       list?.result as {
         tools: Array<{
           name: string
+          outputSchema?: Record<string, unknown>
           annotations?: {
             readOnlyHint: boolean
             destructiveHint: boolean
@@ -209,14 +217,21 @@ describe("MaskeraMcpServer JSON-RPC protocol and tools", () => {
       "maskera_restore",
       "maskera_read_file",
       "maskera_write_file",
+      "maskera_list_files",
+      "maskera_search_files",
       "maskera_list_sessions",
       "maskera_clear_session",
       "maskera_status",
     ])
     for (const tool of tools) {
       expect(tool.annotations?.openWorldHint).toBe(false)
+      expect(tool.outputSchema?.type).toBe("object")
     }
     expect(tools.find((t) => t.name === "maskera_read_file")?.annotations?.readOnlyHint).toBe(true)
+    expect(tools.find((t) => t.name === "maskera_list_files")?.annotations?.readOnlyHint).toBe(true)
+    expect(tools.find((t) => t.name === "maskera_search_files")?.annotations?.readOnlyHint).toBe(
+      true,
+    )
     expect(tools.find((t) => t.name === "maskera_write_file")?.annotations?.readOnlyHint).toBe(
       false,
     )
@@ -230,7 +245,7 @@ describe("MaskeraMcpServer JSON-RPC protocol and tools", () => {
     const unknownMethod = await server.handleMessage({
       jsonrpc: "2.0",
       id: 4,
-      method: "resources/read",
+      method: "unknown/method",
     })
     expect(unknownMethod?.error?.code).toBe(-32601)
 
@@ -467,6 +482,428 @@ describe("MaskeraMcpServer JSON-RPC protocol and tools", () => {
     failingEngine.warmup()
     await new Promise((r) => setTimeout(r, 10))
     expect(failingEngine.status().nerError).toContain("offline")
+  })
+
+  it("lists and searches local files with redacted matches and supports placeholder search", async () => {
+    const root = await makeTempDir()
+    const outside = await makeTempDir()
+    await writeFile(
+      join(root, "case.txt"),
+      "Faktura för 19900101-2385\nRing 070-174 06 58 om faktura.\n",
+      "utf8",
+    )
+    await writeFile(join(root, "bin.dat"), Buffer.from([0x00, 0x01, 0x02]))
+    await writeFile(join(outside, "secret.txt"), "faktura 19900101-2385", "utf8")
+    await symlink(join(outside, "secret.txt"), join(root, "escape.txt"))
+
+    const server = createMaskeraMcpServer({
+      engine: createMaskeraEngine({ defaultMode: "rules" }),
+      allowedRoots: [root],
+    })
+
+    const listed = await server.handleMessage({
+      jsonrpc: "2.0",
+      id: 50,
+      method: "tools/call",
+      params: { name: "maskera_list_files", arguments: {} },
+    })
+    const listData = (listed?.result as { structuredContent: { files: Array<{ path: string }> } })
+      .structuredContent
+    expect(listData.files.map((f) => f.path)).toEqual(["bin.dat", "case.txt"])
+
+    const searched = await server.handleMessage({
+      jsonrpc: "2.0",
+      id: 51,
+      method: "tools/call",
+      params: {
+        name: "maskera_search_files",
+        arguments: { query: "faktura", session_id: "search-1" },
+      },
+    })
+    const serialized = JSON.stringify(searched)
+    expect(serialized).not.toContain("19900101-2385")
+    expect(serialized).not.toContain("070-174 06 58")
+    const searchData = (
+      searched?.result as {
+        structuredContent: {
+          matches: Array<{ path: string; line: number; redacted_line: string }>
+        }
+      }
+    ).structuredContent
+    expect(searchData.matches).toEqual([
+      { path: "case.txt", line: 1, redacted_line: "Faktura för [PERSONNUMMER_1]" },
+      { path: "case.txt", line: 2, redacted_line: "Ring [TELEFON_1] om faktura." },
+    ])
+
+    // Searching by known session placeholder resolves locally without leaking raw value.
+    const byPlaceholder = await server.handleMessage({
+      jsonrpc: "2.0",
+      id: 52,
+      method: "tools/call",
+      params: {
+        name: "maskera_search_files",
+        arguments: { query: "[TELEFON_1]", session_id: "search-1" },
+      },
+    })
+    const phData = (
+      byPlaceholder?.result as {
+        structuredContent: { matches: Array<{ line: number; redacted_line: string }> }
+      }
+    ).structuredContent
+    expect(phData.matches).toHaveLength(1)
+    expect(phData.matches[0]?.line).toBe(2)
+    expect(JSON.stringify(byPlaceholder)).not.toContain("070-174 06 58")
+  })
+
+  it("enforces --no-raw-restore and --read-only policies and exposes prompts/resources synced with SKILL.md", async () => {
+    const root = await makeTempDir()
+    const server = createMaskeraMcpServer({
+      engine: createMaskeraEngine({ defaultMode: "rules" }),
+      allowedRoots: [root],
+      allowRawRestore: false,
+      readOnly: true,
+    })
+
+    const list = await server.handleMessage({ jsonrpc: "2.0", id: 60, method: "tools/list" })
+    const names = (list?.result as { tools: Array<{ name: string }> }).tools.map((t) => t.name)
+    expect(names).not.toContain("maskera_restore")
+    expect(names).not.toContain("maskera_write_file")
+    expect(names).not.toContain("maskera_clear_session")
+
+    const blockedMap = await server.handleMessage({
+      jsonrpc: "2.0",
+      id: 61,
+      method: "tools/call",
+      params: {
+        name: "maskera_redact",
+        arguments: { text: "Ring 070-174 06 58", include_map: true },
+      },
+    })
+    expect((blockedMap?.result as { isError?: boolean }).isError).toBe(true)
+
+    const blockedWrite = await server.handleMessage({
+      jsonrpc: "2.0",
+      id: 62,
+      method: "tools/call",
+      params: {
+        name: "maskera_write_file",
+        arguments: { path: "x.txt", text: "hi", session_id: "s1" },
+      },
+    })
+    expect((blockedWrite?.result as { isError?: boolean }).isError).toBe(true)
+
+    const promptsList = await server.handleMessage({
+      jsonrpc: "2.0",
+      id: 63,
+      method: "prompts/list",
+    })
+    expect(
+      (promptsList?.result as { prompts: Array<{ name: string }> }).prompts.map((p) => p.name),
+    ).toEqual(["maskera-workflow", "maskera-redact-file"])
+
+    const promptGet = await server.handleMessage({
+      jsonrpc: "2.0",
+      id: 64,
+      method: "prompts/get",
+      params: { name: "maskera-workflow", arguments: { profile: "clinical" } },
+    })
+    const promptText = (promptGet?.result as { messages: Array<{ content: { text: string } }> })
+      .messages[0]?.content.text
+    expect(promptText).toContain('Active profile: "clinical"')
+
+    const resourcesList = await server.handleMessage({
+      jsonrpc: "2.0",
+      id: 65,
+      method: "resources/list",
+    })
+    expect(
+      (resourcesList?.result as { resources: Array<{ uri: string }> }).resources.map((r) => r.uri),
+    ).toEqual([MASKERA_SKILL_URI, MASKERA_STATUS_URI])
+
+    const skillRes = await server.handleMessage({
+      jsonrpc: "2.0",
+      id: 66,
+      method: "resources/read",
+      params: { uri: MASKERA_SKILL_URI },
+    })
+    const skillText = (skillRes?.result as { contents: Array<{ text: string }> }).contents[0]?.text
+    expect(skillText).toBe(MASKERA_SKILL_MARKDOWN)
+    // Keep the bundled MCP skill verbatim in sync with repo skills/maskera/SKILL.md
+    const repoSkillPath = resolve(pkgRoot, "../../skills/maskera/SKILL.md")
+    if (existsSync(repoSkillPath)) {
+      expect(await readFile(repoSkillPath, "utf8")).toBe(MASKERA_SKILL_MARKDOWN)
+    }
+  })
+
+  it("gates raw PII export under browser and native approval modes", async () => {
+    const approvals = new ApprovalBroker()
+    const browserServer = createMaskeraMcpServer({
+      engine: createMaskeraEngine({ defaultMode: "rules" }),
+      approvalMode: "browser",
+      approvals,
+      approvalBaseUrl: "http://127.0.0.1:8787",
+    })
+
+    const toolsRes = await browserServer.handleMessage({
+      jsonrpc: "2.0",
+      id: 70,
+      method: "tools/list",
+    })
+    expect(
+      (toolsRes?.result as { tools: Array<{ name: string }> }).tools.map((t) => t.name),
+    ).toContain("maskera_resume")
+
+    await browserServer.handleMessage({
+      jsonrpc: "2.0",
+      id: 71,
+      method: "tools/call",
+      params: {
+        name: "maskera_redact",
+        arguments: { text: "Ring 070-174 06 58", session_id: "apr-s1" },
+      },
+    })
+
+    const paused = await browserServer.handleMessage({
+      jsonrpc: "2.0",
+      id: 72,
+      method: "tools/call",
+      params: {
+        name: "maskera_restore",
+        arguments: { text: "Hej [TELEFON_1]", session_id: "apr-s1" },
+      },
+    })
+    expect(JSON.stringify(paused)).not.toContain("070-174 06 58")
+    const pausedData = (
+      paused?.result as {
+        structuredContent: { status: string; request_id: string; approval_url: string }
+      }
+    ).structuredContent
+    expect(pausedData.status).toBe("approval_required")
+    expect(pausedData.approval_url).toContain("http://127.0.0.1:8787/_maskera#approval-")
+
+    // Approve via broker and resume
+    approvals.decide(pausedData.request_id, "approve")
+    const resumed = await browserServer.handleMessage({
+      jsonrpc: "2.0",
+      id: 73,
+      method: "tools/call",
+      params: { name: "maskera_resume", arguments: { request_id: pausedData.request_id } },
+    })
+    expect(
+      (resumed?.result as { structuredContent: { status: string; restored: string } })
+        .structuredContent,
+    ).toMatchObject({ status: "completed", restored: "Hej 070-174 06 58" })
+
+    // Native elicitation mode: fails closed if client doesn't advertise elicitation, succeeds when accepted
+    let elicitCalls = 0
+    const nativeServer = createMaskeraMcpServer({
+      engine: createMaskeraEngine({ defaultMode: "rules" }),
+      approvalMode: "native",
+      requestElicitation: async () => {
+        elicitCalls += 1
+        return { action: "accept", content: { confirm: true } }
+      },
+    })
+    await nativeServer.handleMessage({
+      jsonrpc: "2.0",
+      id: 74,
+      method: "tools/call",
+      params: {
+        name: "maskera_redact",
+        arguments: { text: "Ring 070-174 06 58", session_id: "nat-1" },
+      },
+    })
+    const deniedNoCap = await nativeServer.handleMessage({
+      jsonrpc: "2.0",
+      id: 75,
+      method: "tools/call",
+      params: {
+        name: "maskera_restore",
+        arguments: { text: "Hej [TELEFON_1]", session_id: "nat-1" },
+      },
+    })
+    expect((deniedNoCap?.result as { isError?: boolean }).isError).toBe(true)
+
+    await nativeServer.handleMessage({
+      jsonrpc: "2.0",
+      id: 76,
+      method: "initialize",
+      params: { protocolVersion: "2025-11-25", capabilities: { elicitation: {} } },
+    })
+    const allowedCap = await nativeServer.handleMessage({
+      jsonrpc: "2.0",
+      id: 77,
+      method: "tools/call",
+      params: {
+        name: "maskera_restore",
+        arguments: { text: "Hej [TELEFON_1]", session_id: "nat-1" },
+      },
+    })
+    expect(elicitCalls).toBe(1)
+    expect(
+      (allowedCap?.result as { structuredContent: { restored: string } }).structuredContent
+        .restored,
+    ).toBe("Hej 070-174 06 58")
+  })
+
+  it("serves Streamable HTTP /mcp on startMaskeraProxy with shared vault, scoped URLs, and browser approvals", async () => {
+    const root = await makeTempDir()
+    await writeFile(join(root, "doc.txt"), "Kontakt 070-174 06 58", "utf8")
+    const running = await startMaskeraProxy({
+      port: 0,
+      defaultMode: "rules",
+      mcpRoots: [root],
+    })
+    try {
+      const getRes = await fetch(running.mcpUrl)
+      expect(getRes.status).toBe(405)
+
+      const crossOrigin = await fetch(running.mcpUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json", origin: "http://evil.test" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "ping" }),
+      })
+      expect(crossOrigin.status).toBe(403)
+
+      // Initialize scoped HTTP MCP session with browser approval mode
+      const initRes = await fetch(`${running.mcpUrl}?approval_mode=browser`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "initialize",
+          params: { protocolVersion: "2025-11-25" },
+        }),
+      })
+      expect(initRes.status).toBe(200)
+      const sessionId = initRes.headers.get("mcp-session-id")
+      expect(sessionId).toBeTruthy()
+
+      // Notification returns 202 Accepted
+      const notifRes = await fetch(running.mcpUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json", "mcp-session-id": sessionId ?? "" },
+        body: JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }),
+      })
+      expect(notifRes.status).toBe(202)
+
+      // Read file over HTTP MCP, then request restore (pauses for browser approval)
+      const readRes = await fetch(running.mcpUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json", "mcp-session-id": sessionId ?? "" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 2,
+          method: "tools/call",
+          params: {
+            name: "maskera_read_file",
+            arguments: { path: "doc.txt", session_id: "http1" },
+          },
+        }),
+      })
+      const readBody = (await readRes.json()) as {
+        result: { structuredContent: { redacted: string } }
+      }
+      expect(readBody.result.structuredContent.redacted).toBe("Kontakt [TELEFON_1]")
+
+      const restorePaused = await fetch(running.mcpUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json", "mcp-session-id": sessionId ?? "" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 3,
+          method: "tools/call",
+          params: {
+            name: "maskera_restore",
+            arguments: { text: "Ring [TELEFON_1]", session_id: "http1" },
+          },
+        }),
+      })
+      const pausedJson = (await restorePaused.json()) as {
+        result: { structuredContent: { status: string; request_id: string } }
+      }
+      expect(pausedJson.result.structuredContent.status).toBe("approval_required")
+
+      // Approve through inspector HTTP endpoint (requires x-maskera-action: decide)
+      const reqId = pausedJson.result.structuredContent.request_id
+      const badApprove = await fetch(`${running.url}/_maskera/approvals/${reqId}/approve`, {
+        method: "POST",
+      })
+      expect(badApprove.status).toBe(403)
+
+      const goodApprove = await fetch(`${running.url}/_maskera/approvals/${reqId}/approve`, {
+        method: "POST",
+        headers: { "x-maskera-action": "decide" },
+      })
+      expect(goodApprove.status).toBe(200)
+
+      const resumedRes = await fetch(running.mcpUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json", "mcp-session-id": sessionId ?? "" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 4,
+          method: "tools/call",
+          params: { name: "maskera_resume", arguments: { request_id: reqId } },
+        }),
+      })
+      const resumedJson = (await resumedRes.json()) as {
+        result: { structuredContent: { restored: string } }
+      }
+      expect(resumedJson.result.structuredContent.restored).toBe("Ring 070-174 06 58")
+
+      // DELETE /mcp closes session; subsequent reuse returns 404
+      const delRes = await fetch(running.mcpUrl, {
+        method: "DELETE",
+        headers: { "mcp-session-id": sessionId ?? "" },
+      })
+      expect(delRes.status).toBe(204)
+      const afterDel = await fetch(running.mcpUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json", "mcp-session-id": sessionId ?? "" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 5, method: "ping" }),
+      })
+      expect(afterDel.status).toBe(404)
+    } finally {
+      await running.close()
+    }
+  })
+
+  it("runInstall merges client configs safely and runDoctor verifies Swedish redaction roundtrip", async () => {
+    const dir = await makeTempDir()
+    const cursorCfg = join(dir, ".cursor", "mcp.json")
+    const res1 = await runInstall({
+      client: "cursor",
+      roots: [dir],
+      noRawRestore: true,
+      configPath: cursorCfg,
+    })
+    expect(res1.written).toBe(true)
+    const parsedCursor = JSON.parse(await readFile(cursorCfg, "utf8")) as {
+      mcpServers: { maskera: { command: string; args: string[] } }
+    }
+    expect(parsedCursor.mcpServers.maskera.command).toBe("npx")
+    expect(parsedCursor.mcpServers.maskera.args).toContain("--no-raw-restore")
+
+    const claudeHttp = await runInstall({
+      client: "claude-code",
+      transport: "http",
+      noRawRestore: true,
+      approvalMode: "browser",
+    })
+    expect(claudeHttp.written).toBe(false)
+    expect(claudeHttp.command).toContain("claude mcp add --transport http maskera")
+    expect(claudeHttp.command).toContain("no_raw_restore=1")
+    expect(claudeHttp.command).toContain("approval_mode=browser")
+
+    const report = await runDoctor({
+      engine: createMaskeraEngine({ defaultMode: "rules" }),
+      roots: [dir],
+      proxyUrl: "http://127.0.0.1:1",
+    })
+    expect(report.ok).toBe(true)
+    expect(report.checks.find((c) => c.name === "redaction")?.status).toBe("ok")
   })
 })
 

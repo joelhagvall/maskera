@@ -22,11 +22,6 @@
       "permanent": true
     },
     {
-      "source": "/docs",
-      "destination": "/en/developers",
-      "permanent": true
-    },
-    {
       "source": "/tillagg",
       "destination": "/tjanster",
       "permanent": true
@@ -129,6 +124,46 @@
     {
       "source": "/en/industries",
       "destination": "/en/industries/index.html"
+    },
+    {
+      "source": "/docs",
+      "destination": "/docs/index.html"
+    },
+    {
+      "source": "/docs/mcp",
+      "destination": "/docs/mcp/index.html"
+    },
+    {
+      "source": "/docs/klienter",
+      "destination": "/docs/klienter/index.html"
+    },
+    {
+      "source": "/docs/sdk",
+      "destination": "/docs/sdk/index.html"
+    },
+    {
+      "source": "/docs/felsokning",
+      "destination": "/docs/felsokning/index.html"
+    },
+    {
+      "source": "/en/docs",
+      "destination": "/en/docs/index.html"
+    },
+    {
+      "source": "/en/docs/mcp",
+      "destination": "/en/docs/mcp/index.html"
+    },
+    {
+      "source": "/en/docs/clients",
+      "destination": "/en/docs/clients/index.html"
+    },
+    {
+      "source": "/en/docs/sdk",
+      "destination": "/en/docs/sdk/index.html"
+    },
+    {
+      "source": "/en/docs/troubleshooting",
+      "destination": "/en/docs/troubleshooting/index.html"
     }
   ],
   "headers": [

@@ -1,10 +1,13 @@
+import { randomUUID } from "node:crypto"
 import { appendFile, mkdir } from "node:fs/promises"
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http"
 import { dirname } from "node:path"
 import * as zlib from "node:zlib"
 import type { RedactionProfile } from "maskera"
+import { ApprovalBroker, type ApprovalMode } from "./approvals"
 import { createMaskeraEngine, type MaskeraEngine, type MaskMode } from "./engine"
 import { type InspectedRequest, ProxyInspector, renderInspectorHtml } from "./inspector"
+import { createMaskeraMcpServer, type MaskeraMcpPolicy } from "./server"
 import { SessionVault } from "./vault"
 
 export interface ProxyOptions {
@@ -22,6 +25,16 @@ export interface ProxyOptions {
   engine?: MaskeraEngine
   /** Optional custom SessionVault. */
   vault?: SessionVault
+  /** Optional custom ApprovalBroker for browser MCP approvals. */
+  approvals?: ApprovalBroker
+  /** Allowed workspace roots for the co-hosted Streamable HTTP `/mcp` endpoint. */
+  mcpRoots?: readonly string[]
+  /** Allow `maskera_restore` / `include_map: true` over `/mcp`. Default `true`. */
+  allowRawRestore?: boolean
+  /** Disable file writes and session clears over `/mcp`. Default `false`. */
+  readOnly?: boolean
+  /** Default approval mode for `/mcp` raw PII exports. Default `"automatic"`. */
+  approvalMode?: ApprovalMode
   /** Default mode if creating a new engine (`"auto"` or `"rules"`). */
   defaultMode?: MaskMode
   /** Optional built-in precision profile (`"general"` or `"clinical"`). */
@@ -38,12 +51,14 @@ export interface ProxyOptions {
 
 export interface RunningMaskeraProxy {
   readonly url: string
+  readonly mcpUrl: string
   readonly inspectorUrl: string
   readonly host: string
   readonly port: number
   readonly server: Server
   readonly vault: SessionVault
   readonly inspector: ProxyInspector
+  readonly approvals: ApprovalBroker
   close(): Promise<void>
 }
 
@@ -1263,25 +1278,78 @@ function shouldRedactPath(pathname: string): boolean {
   )
 }
 
+const APPROVAL_STRICTNESS: Record<ApprovalMode, number> = {
+  automatic: 0,
+  native: 1,
+  browser: 2,
+}
+
+function parseScopedMcpPolicy(
+  urlPath: string,
+  base: Required<MaskeraMcpPolicy>,
+): Required<MaskeraMcpPolicy> {
+  const qIndex = urlPath.indexOf("?")
+  if (qIndex < 0) return base
+  const params = new URLSearchParams(urlPath.slice(qIndex + 1))
+
+  const flagTrue = (name: string) => {
+    const v = params.get(name)?.trim().toLowerCase()
+    return v === "1" || v === "true" || v === "yes"
+  }
+  const flagFalse = (name: string) => {
+    const v = params.get(name)?.trim().toLowerCase()
+    return v === "0" || v === "false" || v === "no"
+  }
+
+  // Scoped URL parameters may only tighten policy, never weaken server defaults.
+  const allowRawRestore =
+    base.allowRawRestore && !flagTrue("no_raw_restore") && !flagFalse("allow_raw_restore")
+  const readOnly = base.readOnly || flagTrue("read_only")
+
+  let approvalMode = base.approvalMode
+  const requestedMode = (params.get("approval_mode") ?? params.get("elicitation_mode") ?? "")
+    .trim()
+    .toLowerCase()
+  if (requestedMode === "automatic" || requestedMode === "native" || requestedMode === "browser") {
+    if (APPROVAL_STRICTNESS[requestedMode] >= APPROVAL_STRICTNESS[base.approvalMode]) {
+      approvalMode = requestedMode
+    }
+  }
+
+  return { allowRawRestore, readOnly, approvalMode }
+}
+
 /**
  * Starts a local, harness-agnostic LLM HTTP reverse proxy.
  *
  * Point `ANTHROPIC_BASE_URL`, `OPENAI_BASE_URL`, or any OpenAI/Anthropic SDK
  * at this proxy to automatically redact Swedish PII locally before prompts or
  * tool results leave the machine, and transparently restore placeholders in
- * both JSON and SSE streaming responses.
+ * both JSON and SSE streaming responses. Also serves Streamable HTTP MCP on
+ * `/mcp` sharing the same warm ONNX model, session vault, and live inspector.
  */
 export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<RunningMaskeraProxy> {
   const host = options.host ?? "127.0.0.1"
   const requestedPort = options.port ?? 8787
   const engine = options.engine ?? createMaskeraEngine({ defaultMode: options.defaultMode })
   const vault = options.vault ?? new SessionVault()
+  const approvals = options.approvals ?? new ApprovalBroker()
   const inspector = new ProxyInspector()
+  const unsubscribeApprovals = approvals.onChange((snapshot) => {
+    inspector.publishApprovals(snapshot)
+  })
   const restoreResponses = options.restoreResponses !== false
   const anthropicUpstream = options.anthropicUpstream ?? DEFAULT_ANTHROPIC_UPSTREAM
   const openaiUpstream = options.openaiUpstream ?? DEFAULT_OPENAI_UPSTREAM
   const auditLogPath = options.auditLogPath
   const log = options.onLog ?? (() => {})
+  const baseMcpPolicy: Required<MaskeraMcpPolicy> = {
+    allowRawRestore: options.allowRawRestore ?? true,
+    readOnly: options.readOnly ?? false,
+    approvalMode: options.approvalMode ?? "automatic",
+  }
+  const mcpSessions = new Map<string, Required<MaskeraMcpPolicy>>()
+  const closedMcpSessions = new Set<string>()
 
   if (auditLogPath) {
     await mkdir(dirname(auditLogPath), { recursive: true })
@@ -1293,6 +1361,40 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
   let boundPort = requestedPort
   let boundUrl = `http://${host}:${requestedPort}`
   let auditChain = Promise.resolve()
+  let mcpServerInstance: ReturnType<typeof createMaskeraMcpServer> | null = null
+
+  function getMcpServer() {
+    if (!mcpServerInstance) {
+      mcpServerInstance = createMaskeraMcpServer({
+        engine,
+        vault,
+        allowedRoots: options.mcpRoots,
+        defaultProfile: options.profile,
+        defaultCustomTerms: options.customTerms,
+        allowRawRestore: baseMcpPolicy.allowRawRestore,
+        readOnly: baseMcpPolicy.readOnly,
+        approvalMode: baseMcpPolicy.approvalMode,
+        approvals,
+        approvalBaseUrl: boundUrl,
+        onToolCall: (event) => {
+          recordAuditAndInspector({
+            timestamp: new Date().toISOString(),
+            method: "MCP",
+            path: `/mcp/${event.tool}`,
+            upstream: "local-mcp",
+            sessionId: event.sessionId ?? "mcp",
+            status: event.isError ? 400 : 200,
+            streamed: false,
+            durationMs: event.durationMs,
+            redactions: event.redactions,
+            counts: event.counts,
+            redactedPreview: [],
+          })
+        },
+      })
+    }
+    return mcpServerInstance
+  }
 
   function recordAuditAndInspector(entry: Omit<InspectedRequest, "id">): void {
     totalRequests += 1
@@ -1352,6 +1454,7 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
       res.end(
         renderInspectorHtml({
           url: boundUrl,
+          mcpUrl: `${boundUrl}/mcp`,
           defaultMode: engine.status().defaultMode,
           restoreResponses,
         }),
@@ -1361,6 +1464,49 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
 
     if (method === "GET" && pathname === "/_maskera/events") {
       inspector.subscribe(res, INSPECTOR_SECURITY_HEADERS)
+      return
+    }
+
+    if (method === "GET" && pathname === "/_maskera/approvals") {
+      res.writeHead(200, {
+        ...INSPECTOR_SECURITY_HEADERS,
+        "content-type": "application/json; charset=utf-8",
+      })
+      res.end(JSON.stringify({ approvals: approvals.list() }))
+      return
+    }
+
+    const approvalMatch = /^\/_maskera\/approvals\/([^/]+)\/(approve|decline)$/.exec(pathname)
+    if (method === "POST" && approvalMatch) {
+      if (
+        req.headers["x-maskera-action"] !== "decide" ||
+        !isSameOriginLoopbackRequest(req, host, boundPort)
+      ) {
+        res.writeHead(403, {
+          ...INSPECTOR_SECURITY_HEADERS,
+          "content-type": "application/json; charset=utf-8",
+        })
+        res.end(
+          JSON.stringify({ error: "Pass x-maskera-action: decide from same-origin loopback." }),
+        )
+        return
+      }
+      const approvalId = decodeURIComponent(approvalMatch[1] ?? "")
+      const decision = approvalMatch[2] === "approve" ? "approve" : "decline"
+      const updated = approvals.decide(approvalId, decision)
+      if (!updated) {
+        res.writeHead(404, {
+          ...INSPECTOR_SECURITY_HEADERS,
+          "content-type": "application/json; charset=utf-8",
+        })
+        res.end(JSON.stringify({ error: "Unknown approval id." }))
+        return
+      }
+      res.writeHead(200, {
+        ...INSPECTOR_SECURITY_HEADERS,
+        "content-type": "application/json; charset=utf-8",
+      })
+      res.end(JSON.stringify({ approval: updated }))
       return
     }
 
@@ -1399,6 +1545,7 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
         return
       }
       vault.clearAll()
+      approvals.clearAll()
       engine.clearCache()
       inspector.clear()
       totalRequests = 0
@@ -1415,9 +1562,11 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
       const payload = {
         status: "ok",
         inspector_url: `${boundUrl}/_maskera`,
+        mcp_url: `${boundUrl}/mcp`,
         engine: engine.status(),
         requests_proxied: totalRequests,
         total_redactions: totalRedactions,
+        pending_approvals: approvals.list().filter((a) => a.status === "pending").length,
         sessions: vault.list(),
       }
       res.writeHead(200, {
@@ -1434,6 +1583,139 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
         "content-type": "application/json; charset=utf-8",
       })
       res.end(JSON.stringify({ error: "Unknown inspector route." }))
+      return
+    }
+
+    // Streamable HTTP MCP endpoint sharing the warm ONNX engine, session vault,
+    // approval broker, and live inspector.
+    if (normalizedPath === "/mcp" || normalizedPath === "/mcp/") {
+      if (!isLoopbackHost(req.headers.host, host, boundPort, true)) {
+        res.writeHead(403, {
+          ...INSPECTOR_SECURITY_HEADERS,
+          "content-type": "application/json; charset=utf-8",
+        })
+        res.end(JSON.stringify({ error: "Forbidden host header for local MCP endpoint." }))
+        return
+      }
+      if (req.headers.origin && !isSameOriginLoopbackRequest(req, host, boundPort)) {
+        res.writeHead(403, {
+          ...INSPECTOR_SECURITY_HEADERS,
+          "content-type": "application/json; charset=utf-8",
+        })
+        res.end(
+          JSON.stringify({ error: "Cross-origin requests to local MCP endpoint are forbidden." }),
+        )
+        return
+      }
+
+      const incomingSessionId =
+        typeof req.headers["mcp-session-id"] === "string"
+          ? req.headers["mcp-session-id"].trim()
+          : ""
+
+      if (method === "DELETE") {
+        if (incomingSessionId) {
+          mcpSessions.delete(incomingSessionId)
+          closedMcpSessions.add(incomingSessionId)
+          if (closedMcpSessions.size > 500) {
+            const first = closedMcpSessions.values().next().value
+            if (first !== undefined) closedMcpSessions.delete(first)
+          }
+        }
+        res.writeHead(204, INSPECTOR_SECURITY_HEADERS)
+        res.end()
+        return
+      }
+
+      if (method === "GET") {
+        res.writeHead(405, {
+          ...INSPECTOR_SECURITY_HEADERS,
+          allow: "POST, DELETE",
+          "content-type": "application/json; charset=utf-8",
+        })
+        res.end(
+          JSON.stringify({
+            error: "Streamable HTTP MCP expects JSON-RPC POST requests on /mcp.",
+          }),
+        )
+        return
+      }
+
+      if (method !== "POST") {
+        res.writeHead(405, {
+          ...INSPECTOR_SECURITY_HEADERS,
+          allow: "POST, DELETE",
+          "content-type": "application/json; charset=utf-8",
+        })
+        res.end(JSON.stringify({ error: `Unsupported HTTP method ${method} for /mcp.` }))
+        return
+      }
+
+      if (incomingSessionId && closedMcpSessions.has(incomingSessionId)) {
+        res.writeHead(404, {
+          ...INSPECTOR_SECURITY_HEADERS,
+          "content-type": "application/json; charset=utf-8",
+        })
+        res.end(JSON.stringify({ error: "MCP session has been closed." }))
+        return
+      }
+
+      const mcpBody = await readRequestBody(req)
+      let parsedMcp: unknown
+      try {
+        parsedMcp = JSON.parse(mcpBody.toString("utf8"))
+      } catch {
+        res.writeHead(400, {
+          ...INSPECTOR_SECURITY_HEADERS,
+          "content-type": "application/json; charset=utf-8",
+        })
+        res.end(
+          JSON.stringify({
+            jsonrpc: "2.0",
+            id: null,
+            error: { code: -32700, message: "Parse error" },
+          }),
+        )
+        return
+      }
+
+      const sessionBasePolicy =
+        (incomingSessionId ? mcpSessions.get(incomingSessionId) : undefined) ?? baseMcpPolicy
+      const effectivePolicy = parseScopedMcpPolicy(urlPath, sessionBasePolicy)
+      const mcpServer = getMcpServer()
+
+      const messages = Array.isArray(parsedMcp) ? parsedMcp : [parsedMcp]
+      const isInit = messages.some((m) => isPlainObject(m) && m.method === "initialize")
+      let responseSessionId = incomingSessionId
+      if (isInit) {
+        responseSessionId = `mcp_${randomUUID().slice(0, 16)}`
+        if (mcpSessions.size >= 200) {
+          const oldest = mcpSessions.keys().next().value
+          if (oldest !== undefined) mcpSessions.delete(oldest)
+        }
+        mcpSessions.set(responseSessionId, effectivePolicy)
+      }
+
+      const responses = []
+      for (const msg of messages) {
+        const reply = await mcpServer.handleMessage(msg, effectivePolicy)
+        if (reply !== null) responses.push(reply)
+      }
+
+      const mcpHeaders: Record<string, string> = {
+        ...INSPECTOR_SECURITY_HEADERS,
+      }
+      if (responseSessionId) mcpHeaders["mcp-session-id"] = responseSessionId
+
+      if (responses.length === 0) {
+        res.writeHead(202, mcpHeaders)
+        res.end()
+        return
+      }
+
+      mcpHeaders["content-type"] = "application/json; charset=utf-8"
+      res.writeHead(200, mcpHeaders)
+      res.end(JSON.stringify(Array.isArray(parsedMcp) ? responses : responses[0]))
       return
     }
 
@@ -1777,11 +2059,14 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
     host,
     port: actualPort,
     url: boundUrl,
+    mcpUrl: `${boundUrl}/mcp`,
     inspectorUrl: `${boundUrl}/_maskera`,
     server,
     vault,
     inspector,
+    approvals,
     close: async () => {
+      unsubscribeApprovals()
       inspector.closeAll()
       await new Promise<void>((resolveClose, rejectClose) => {
         server.close((err) => (err ? rejectClose(err) : resolveClose()))

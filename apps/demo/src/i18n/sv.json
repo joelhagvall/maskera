@@ -10,7 +10,11 @@
     "productPopupAlt": "Maskeras popup med reglaget Maskera när jag skickar, den svenska AI-modellen och 20 av 20 AI-maskeringar kvar.",
     "stage": {
       "label": "Välj var maskera körs",
-      "tabs": { "browser": "Webbläsare", "agent": "AI-agent", "code": "Din kod" },
+      "tabs": {
+        "browser": "Webbläsare",
+        "agent": "AI-agent",
+        "code": "Din kod"
+      },
       "browserAlt": "Maskeras förhandsvisning i en AI-chatt: Bo Ek, personnumret, Boden, Liv och bankgironumret blir platshållare, medan bostadsanpassning, bo kvar och i dag står kvar så att AI:n kan skriva beslutet.",
       "agent": {
         "windowLabel": "Din AI-agent",
@@ -431,7 +435,12 @@
       "tagline": "Biståndsansökan",
       "text": "Ansökan om försörjningsstöd: Jonas Wikström, 20020301 2398, boende på Påhittsvägen 21 i Stockholm. Sökande når oss på jonas.wikstrom@example.com. Sambo Elin Bergman är arbetssökande. Sammanfatta ärendet för handläggare."
     },
-    { "id": "fritext", "name": "Egen text", "tagline": "", "text": "" }
+    {
+      "id": "fritext",
+      "name": "Egen text",
+      "tagline": "",
+      "text": ""
+    }
   ],
   "labels": {
     "NAMN": "Namn",
@@ -459,9 +468,18 @@
   "developerApi": {
     "title": "För utvecklare",
     "toc": [
-      { "href": "#agenter", "label": "AI-agenter" },
-      { "href": "#installera", "label": "Egen kod" },
-      { "href": "#sa-fungerar-det", "label": "Så fungerar det" }
+      {
+        "href": "#agenter",
+        "label": "AI-agenter"
+      },
+      {
+        "href": "#installera",
+        "label": "Egen kod"
+      },
+      {
+        "href": "#sa-fungerar-det",
+        "label": "Så fungerar det"
+      }
     ],
     "lede": "Använd Maskera framför din AI-agent eller i din egen kod. Allt körs lokalt.",
     "agentsTitle": "Skydda din AI-agent",
@@ -498,10 +516,22 @@
         "title": "AI-modellen: fri text",
         "description": "Hittas utifrån sammanhanget. Modellen är träffsäker men kan ibland missa ovanliga namn eller uttryck.",
         "items": [
-          { "label": "NAMN", "name": "Namn" },
-          { "label": "PLATS", "name": "Platser" },
-          { "label": "ORGANISATION", "name": "Organisationer" },
-          { "label": "ADRESS", "name": "Gatuadresser" }
+          {
+            "label": "NAMN",
+            "name": "Namn"
+          },
+          {
+            "label": "PLATS",
+            "name": "Platser"
+          },
+          {
+            "label": "ORGANISATION",
+            "name": "Organisationer"
+          },
+          {
+            "label": "ADRESS",
+            "name": "Gatuadresser"
+          }
         ]
       },
       {
@@ -509,8 +539,14 @@
         "title": "Utöver npm-standarden",
         "description": "Tillägg utöver npm-paketets standardval, förklarade i noterna nedan.",
         "items": [
-          { "label": "REGNUMMER", "name": "Registreringsnummer" },
-          { "label": "CUSTOM", "name": "Egna verksamhetsformat" }
+          {
+            "label": "REGNUMMER",
+            "name": "Registreringsnummer"
+          },
+          {
+            "label": "CUSTOM",
+            "name": "Egna verksamhetsformat"
+          }
         ]
       },
       {
@@ -518,21 +554,66 @@
         "title": "Regler: bestämda format",
         "description": "Hittas med fasta formatregler. Personnummer maskeras även om kontrollsiffran är felskriven, så länge datumformen stämmer. Webblänkar fångas när de börjar med http, https eller www.",
         "items": [
-          { "label": "PERSONNUMMER", "name": "Personnummer" },
-          { "label": "SAMORDNINGSNUMMER", "name": "Samordningsnummer" },
-          { "label": "ORGANISATIONSNUMMER", "name": "Organisationsnummer" },
-          { "label": "EPOST", "name": "E-postadresser" },
-          { "label": "TELEFON", "name": "Svenska telefonnummer" },
-          { "label": "POSTNUMMER", "name": "Postnummer" },
-          { "label": "LAGENHETSNUMMER", "name": "Lägenhetsnummer" },
-          { "label": "BANKGIRO", "name": "Bankgiro" },
-          { "label": "PLUSGIRO", "name": "Plusgiro" },
-          { "label": "IBAN", "name": "Svenska IBAN" },
-          { "label": "KORTNUMMER", "name": "Betalkortsnummer" },
-          { "label": "KONTONUMMER", "name": "Kontextmärkta kontonummer" },
-          { "label": "JOURNALNUMMER", "name": "Kontextmärkta journalnummer" },
-          { "label": "IP_ADRESS", "name": "IPv4-adresser" },
-          { "label": "URL", "name": "Webblänkar" }
+          {
+            "label": "PERSONNUMMER",
+            "name": "Personnummer"
+          },
+          {
+            "label": "SAMORDNINGSNUMMER",
+            "name": "Samordningsnummer"
+          },
+          {
+            "label": "ORGANISATIONSNUMMER",
+            "name": "Organisationsnummer"
+          },
+          {
+            "label": "EPOST",
+            "name": "E-postadresser"
+          },
+          {
+            "label": "TELEFON",
+            "name": "Svenska telefonnummer"
+          },
+          {
+            "label": "POSTNUMMER",
+            "name": "Postnummer"
+          },
+          {
+            "label": "LAGENHETSNUMMER",
+            "name": "Lägenhetsnummer"
+          },
+          {
+            "label": "BANKGIRO",
+            "name": "Bankgiro"
+          },
+          {
+            "label": "PLUSGIRO",
+            "name": "Plusgiro"
+          },
+          {
+            "label": "IBAN",
+            "name": "Svenska IBAN"
+          },
+          {
+            "label": "KORTNUMMER",
+            "name": "Betalkortsnummer"
+          },
+          {
+            "label": "KONTONUMMER",
+            "name": "Kontextmärkta kontonummer"
+          },
+          {
+            "label": "JOURNALNUMMER",
+            "name": "Kontextmärkta journalnummer"
+          },
+          {
+            "label": "IP_ADRESS",
+            "name": "IPv4-adresser"
+          },
+          {
+            "label": "URL",
+            "name": "Webblänkar"
+          }
         ]
       }
     ],
@@ -563,7 +644,8 @@
     "github": "GitHub",
     "faq": "Frågor och svar",
     "guides": "Guider",
-    "industries": "Branscher"
+    "industries": "Branscher",
+    "docs": "Dokumentation"
   },
   "footer": {
     "openSource": "Öppen källkod",
@@ -704,12 +786,30 @@
     "title": "Säkerhet i maskera",
     "lede": "All maskering körs lokalt på din enhet. Här samlar vi hur data rör sig, hur modellfilerna kontrolleras och hur du rapporterar en sårbarhet.",
     "toc": [
-      { "href": "#dataflode", "label": "Dataflöde och nätverk" },
-      { "href": "#artefakter", "label": "Verifierade modellfiler" },
-      { "href": "#aterstallning", "label": "Säker återställning" },
-      { "href": "#omfattning", "label": "Vad räknas som en sårbarhet?" },
-      { "href": "#rapportera", "label": "Rapportera privat" },
-      { "href": "#produktion", "label": "Drift i produktion" }
+      {
+        "href": "#dataflode",
+        "label": "Dataflöde och nätverk"
+      },
+      {
+        "href": "#artefakter",
+        "label": "Verifierade modellfiler"
+      },
+      {
+        "href": "#aterstallning",
+        "label": "Säker återställning"
+      },
+      {
+        "href": "#omfattning",
+        "label": "Vad räknas som en sårbarhet?"
+      },
+      {
+        "href": "#rapportera",
+        "label": "Rapportera privat"
+      },
+      {
+        "href": "#produktion",
+        "label": "Drift i produktion"
+      }
     ],
     "dataFlowTitle": "Dataflöde och nätverk",
     "dataFlow": [
@@ -753,11 +853,26 @@
     "title": "Integritet & transparens",
     "lede": "Här ser du vad Maskera gör, vad som lämnar enheten, hur modellen tränats och vad den kan missa.",
     "toc": [
-      { "href": "#hur-fungerar", "label": "Hur fungerar det?" },
-      { "href": "#vad-maskeras", "label": "Vad maskeras?" },
-      { "href": "#dataflode", "label": "Så behandlas din text" },
-      { "href": "#modelltraning", "label": "Hur modellen tränats" },
-      { "href": "#begransningar", "label": "Begränsningar" }
+      {
+        "href": "#hur-fungerar",
+        "label": "Hur fungerar det?"
+      },
+      {
+        "href": "#vad-maskeras",
+        "label": "Vad maskeras?"
+      },
+      {
+        "href": "#dataflode",
+        "label": "Så behandlas din text"
+      },
+      {
+        "href": "#modelltraning",
+        "label": "Hur modellen tränats"
+      },
+      {
+        "href": "#begransningar",
+        "label": "Begränsningar"
+      }
     ],
     "howTitle": "Hur fungerar det?",
     "how": [
@@ -907,11 +1022,26 @@
     "title": "Ett skyddslager, tre sätt att använda det",
     "lede": "Samma svenska modell och samma regler i alla tre. Allt körs på din enhet, och ingen text skickas till Maskera.",
     "toc": [
-      { "href": "#oversikt", "label": "Översikt" },
-      { "href": "#tillagg", "label": "Webbläsartillägg" },
-      { "href": "#jamfor", "label": "Priser" },
-      { "href": "#agenter", "label": "AI-agenter" },
-      { "href": "#kod", "label": "Egen kod" }
+      {
+        "href": "#oversikt",
+        "label": "Översikt"
+      },
+      {
+        "href": "#tillagg",
+        "label": "Webbläsartillägg"
+      },
+      {
+        "href": "#jamfor",
+        "label": "Priser"
+      },
+      {
+        "href": "#agenter",
+        "label": "AI-agenter"
+      },
+      {
+        "href": "#kod",
+        "label": "Egen kod"
+      }
     ],
     "overview": {
       "title": "Översikt",
@@ -1068,10 +1198,22 @@
     "listLabel": "Webbläsare och butiker",
     "soon": "Snart",
     "browsers": {
-      "chrome": { "name": "Chrome", "store": "Chrome Web Store" },
-      "edge": { "name": "Edge", "store": "Microsoft Edge-tillägg" },
-      "firefox": { "name": "Firefox", "store": "Firefox Add-ons" },
-      "safari": { "name": "Safari", "store": "Mac App Store · kommer senare" }
+      "chrome": {
+        "name": "Chrome",
+        "store": "Chrome Web Store"
+      },
+      "edge": {
+        "name": "Edge",
+        "store": "Microsoft Edge-tillägg"
+      },
+      "firefox": {
+        "name": "Firefox",
+        "store": "Firefox Add-ons"
+      },
+      "safari": {
+        "name": "Safari",
+        "store": "Mac App Store · kommer senare"
+      }
     }
   },
   "homeProof": {
@@ -1092,7 +1234,8 @@
     "breadcrumbLabel": "Brödsmulor",
     "developers": "Utvecklare",
     "services": "Produkter",
-    "accuracy": "Träffsäkerhet"
+    "accuracy": "Träffsäkerhet",
+    "docs": "Docs"
   },
   "meta": {
     "demoTitle": "Använd AI utan att dela personuppgifter · maskera",
@@ -1153,5 +1296,412 @@
     ],
     "securityCta": "Säkerhetssidan",
     "privacyCta": "Integritetspolicy"
+  },
+  "docs": {
+    "navLabel": "Dokumentationsavsnitt",
+    "resourcesLabel": "Resurser",
+    "setupPromptCta": "Agent-prompt (setup-prompt.md)",
+    "llmsCta": "Maskinläsbart index (llms.txt)",
+    "nav": {
+      "overview": "Översikt",
+      "mcp": "@maskera/mcp",
+      "clients": "Klientguider",
+      "sdk": "SDK och drift",
+      "troubleshooting": "Felsökning"
+    },
+    "overview": {
+      "metaTitle": "dokumentation: lokal svensk PII-maskering · maskera",
+      "metaDescription": "Välj rätt läge för Maskera: webbläsartillägg, lokal LLM-proxy, Streamable HTTP eller stdio MCP, guard-hooks och npm-SDK.",
+      "title": "Dokumentation",
+      "lede": "All maskering i Maskera körs lokalt på din enhet. Välj läge efter var texten uppstår, konfigurera på en minut och verifiera med påhittade uppgifter.",
+      "verifyTitle": "Du vet att det funkar när",
+      "verifyBody": "npx -y @maskera/mcp doctor skriver [ok] för redaction, eller den lokala inspektören på http://127.0.0.1:8787/_maskera visar platshållare som [EPOST_1] på väg ut medan svaret återställer adressen.",
+      "sections": [
+        {
+          "id": "valj-lage",
+          "title": "Välj rätt läge",
+          "body": "Maskera har fem ingångar på samma svenska regel- och AI-motor. Välj den som sitter närmast där texten skapas.",
+          "table": {
+            "headers": ["Läge", "Passar när", "Kommando / ingång"],
+            "rows": [
+              [
+                "Webbläsartillägg",
+                "Du använder webbchattar som ChatGPT och Claude i webbläsaren.",
+                "maskera.dev/tjanster"
+              ],
+              [
+                "Lokal LLM-proxy",
+                "Allt du skriver i AI-agenten och verktygens svar ska maskeras automatiskt.",
+                "npx -y @maskera/mcp proxy --root ."
+              ],
+              [
+                "Streamable HTTP MCP",
+                "Flera klienter ska dela en varm 43 MB AI-modell, sessionsvalv och webbläsargodkännanden.",
+                "http://127.0.0.1:8787/mcp"
+              ],
+              [
+                "MCP stdio-server",
+                "Klienten saknar egen API-adress och agenten läser och skriver lokala filer.",
+                "npx -y @maskera/mcp --root . --no-raw-restore"
+              ],
+              [
+                "Guard (hooks / pipe)",
+                "Du vill stoppa PII i agent-hooks (exit 2) eller maskera Unix-pipes.",
+                "npx -y @maskera/mcp guard"
+              ],
+              [
+                "npm-SDK",
+                "Du bygger in svensk maskering i egen webbapp eller Node-tjänst.",
+                "npm install maskera @huggingface/transformers"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "snabbstart",
+          "title": "Snabbstart på 60 sekunder",
+          "body": "Starta den lokala proxyn (som även ger Streamable HTTP MCP och live-inspektör på samma port), eller konfigurera din MCP-klient direkt och kör den inbyggda kontrollen.",
+          "codeLabel": "Terminal",
+          "code": "# 1. Starta proxy + Streamable HTTP /mcp + inspektör på 127.0.0.1:8787\nnpx -y @maskera/mcp proxy --root .\n\n# 2. Skriv eller visa MCP-konfiguration för din klient\nnpx -y @maskera/mcp install cursor --root . --no-raw-restore\n\n# 3. Verifiera modell, mappar och rundresa med påhittad svensk PII\nnpx -y @maskera/mcp doctor --root ."
+        },
+        {
+          "id": "for-agenter",
+          "title": "Låt agenten sätta upp Maskera själv",
+          "body": "Varje sida på maskera.dev har en ren Markdown-version via Accept: text/markdown eller .md-ändelse (till exempel /docs.md och /docs/mcp.md). För en färdig startprompt till din kodagent finns /setup-prompt.md och det samlade indexet på /llms.txt.",
+          "bullets": [
+            "MCP-servern levererar även arbetsflödesguiden direkt som resursen maskera://skills/maskera/SKILL.md och prompten maskera-workflow.",
+            "Använd --no-raw-restore om agenten ska kunna läsa och skriva lokala filer utan att någonsin dra in rå PII i chatten."
+          ]
+        }
+      ]
+    },
+    "mcp": {
+      "metaTitle": "@maskera/mcp: proxy, Streamable HTTP, verktyg och policyer · maskera",
+      "metaDescription": "Komplett referens för @maskera/mcp: alla MCP-verktyg, Streamable HTTP /mcp, scoped policyflaggor, webbläsargodkännanden, prompts, resources, guard, install och doctor.",
+      "title": "@maskera/mcp-referens",
+      "lede": "Ett enda npm-paket med fem kommandon: lokal LLM-proxy med Streamable HTTP /mcp, MCP stdio-server, hook-guard, klientinstallerare och diagnostik.",
+      "verifyTitle": "Du vet att det funkar när",
+      "verifyBody": "Klienten listar maskera_list_files, maskera_search_files, maskera_read_file och maskera_status, och maskera_status visar mode, active_sessions och aktiv policy.",
+      "sections": [
+        {
+          "id": "transport",
+          "title": "Streamable HTTP (/mcp) och stdio",
+          "body": "Startar du maskera-mcp proxy får du både LLM-proxyn och en Streamable HTTP MCP-slutpunkt på http://127.0.0.1:8787/mcp. Alla anslutna klienter delar samma redan laddade 43 MB ONNX-modell, samma sessionsvalv i lokalt RAM och samma live-inspektör på /_maskera. För klienter som bara pratar stdio fungerar npx -y @maskera/mcp utan bakgrundsprocess.",
+          "codeLabel": "Terminal",
+          "code": "# Varm lokal tjänst: LLM-proxy + Streamable HTTP MCP + live-inspektör\nnpx -y @maskera/mcp proxy --root /sokvag/till/arbetsyta\n\n# Skärp policyn per MCP-anslutning via query-parametrar\n# http://127.0.0.1:8787/mcp?no_raw_restore=1\n# http://127.0.0.1:8787/mcp?read_only=1&no_raw_restore=1\n# http://127.0.0.1:8787/mcp?approval_mode=browser"
+        },
+        {
+          "id": "verktyg",
+          "title": "MCP-verktyg",
+          "body": "Samtliga verktyg deklarerar inputSchema, outputSchema och MCP-annoteringar (readOnlyHint, destructiveHint, openWorldHint: false).",
+          "table": {
+            "headers": ["Verktyg", "Gör", "Policy / skydd"],
+            "rows": [
+              [
+                "maskera_list_files",
+                "Listar filer inom tillåtna --root-kataloger utan att läsa innehåll.",
+                "Låst till --root, följer ej externa symlänkar."
+              ],
+              [
+                "maskera_search_files",
+                "Söker i lokala UTF-8-filer och maskerar varje träffrad innan svar. Stöder sökning på platshållare som [NAMN_1].",
+                "Ingen rå PII lämnar disken."
+              ],
+              [
+                "maskera_read_file",
+                "Läser lokal UTF-8-fil (max 2 MiB) och returnerar maskerad text + session_id.",
+                "Original sparas endast i lokalt RAM."
+              ],
+              [
+                "maskera_write_file",
+                "Återställer platshållare från session_id och skriver direkt till disk utan att eka rå PII i chatten.",
+                "Döljs i --read-only; kräver overwrite: true vid överskrivning."
+              ],
+              [
+                "maskera_redact",
+                "Maskerar text lokalt med auto (AI + regler) eller rules, profil och custom_terms.",
+                "include_map: true spärras av --no-raw-restore och godkännandeläge."
+              ],
+              [
+                "maskera_restore",
+                "Återställer platshållare i text från session_id eller explicit karta.",
+                "Döljs av --no-raw-restore; pausas i browser/native approval-mode."
+              ],
+              [
+                "maskera_list_sessions",
+                "Listar aktiva sessioner och antal träffar per typ.",
+                "Visar aldrig råa värden."
+              ],
+              [
+                "maskera_clear_session",
+                "Raderar en sessions återställningskarta ur RAM direkt.",
+                "Döljs i --read-only."
+              ],
+              [
+                "maskera_status",
+                "Rapporterar modellstatus, cache, aktiva sessioner, rötter och policy.",
+                "Skrivskyddat statusanrop."
+              ],
+              [
+                "maskera_resume",
+                "Slutför en pausad godkännandeförfrågan efter beslut i /_maskera.",
+                "Visas endast i --approval-mode browser."
+              ]
+            ]
+          }
+        },
+        {
+          "id": "policy-godkannande",
+          "title": "Begränsade anslutningar och godkännandelägen",
+          "body": "Du kan begränsa vad en enskild agent får göra både via CLI-flaggor och via URL-parametrar på /mcp. Parametrar på en URL kan bara skärpa serverns grundpolicy, aldrig försvaga den.",
+          "table": {
+            "headers": ["Flagga / parameter", "Effekt", "Rekommenderas för"],
+            "rows": [
+              [
+                "--no-raw-restore / ?no_raw_restore=1",
+                "Döljer och spärrar maskera_restore och include_map: true. Agenten kan fortfarande skriva återställda filer via maskera_write_file.",
+                "Standard för agenter som jobbar med känsliga filer."
+              ],
+              [
+                "--read-only / ?read_only=1",
+                "Döljer och spärrar maskera_write_file och maskera_clear_session.",
+                "Analys- och läsagenter."
+              ],
+              [
+                "--approval-mode browser / ?approval_mode=browser",
+                "Pausar maskera_restore och include_map: true och visar Godkänn / Neka i http://127.0.0.1:8787/_maskera.",
+                "När en människa ska godkänna varje export av rå PII."
+              ],
+              [
+                "--approval-mode native",
+                "Skickar MCP form-elicitation (elicitation/create) till klienten; nekar om klienten saknar stöd.",
+                "Klienter med inbyggd MCP-elicitation."
+              ]
+            ]
+          }
+        },
+        {
+          "id": "prompts-resources",
+          "title": "Inbyggda prompts, resurser och skill",
+          "body": "MCP-servern skickar med Maskeras arbetsflödesguide direkt över protokollet så klienten inte behöver installera något separat paket.",
+          "bullets": [
+            "Resurs maskera://skills/maskera/SKILL.md ger hela guiden som text/markdown.",
+            "Resurs maskera://status ger aktuell motor-, policy- och sessionsstatus som JSON.",
+            "Prompt maskera-workflow tar valfri profile (general eller clinical) och custom_terms.",
+            "Prompt maskera-redact-file ger steg-för-steg för säker filredigering med maskera_read_file och maskera_write_file."
+          ]
+        },
+        {
+          "id": "guard-install-doctor",
+          "title": "Guard, install, doctor och miljövariabler",
+          "body": "Utöver proxy och MCP finns guard för hooks och pipes, install för klientkonfiguration och doctor för snabb lokal felsökning.",
+          "codeLabel": "Terminal",
+          "code": "# Blockera PII i agent-hooks (exit 2 vid träff, loggar bara antal)\necho '{\"prompt\":\"Ring 070-174 06 58\"}' | npx -y @maskera/mcp guard\n\n# Maskera en ström lokalt\ncat underlag.txt | npx -y @maskera/mcp guard --redact\n\n# Skriv eller förhandsgranska klientkonfiguration\nnpx -y @maskera/mcp install cursor --root . --no-raw-restore --dry-run\n\n# Självtesta lokal motor, rötter och pågående proxy\nnpx -y @maskera/mcp doctor --root . --json",
+          "table": {
+            "headers": ["Miljövariabel", "Standard", "Funktion"],
+            "rows": [
+              [
+                "MASKERA_MCP_ROOTS",
+                "Aktuell katalog",
+                "Sökvägsseparerade tillåtna kataloger för filverktygen."
+              ],
+              ["MASKERA_MCP_MODE", "auto", "auto (AI + regler) eller rules (endast regler)."],
+              [
+                "MASKERA_MCP_NO_RAW_RESTORE",
+                "0",
+                "Sätt till 1 för att spärra all rå PII-export in i chatten."
+              ],
+              ["MASKERA_MCP_READ_ONLY", "0", "Sätt till 1 för enbart läsverktyg."],
+              ["MASKERA_MCP_APPROVAL_MODE", "automatic", "automatic, browser eller native."],
+              [
+                "MASKERA_MODEL_PATH + MASKERA_ALLOW_REMOTE_MODELS=0",
+                "Hugging Face cache",
+                "Ladda en lokal ONNX-modell helt offline utan nätverksanrop."
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    "clients": {
+      "metaTitle": "klientguider: koppla in Maskera i din AI-klient · maskera",
+      "metaDescription": "Steg för steg för AI-klienter som Claude Code, Codex och Cursor, inklusive verifiering med påhittad svensk data.",
+      "title": "Klientguider",
+      "lede": "Exakta steg och färdiga kommandon per klient. Alla konfigurationer kan också skrivas eller förhandsgranskas med npx -y @maskera/mcp install <klient>.",
+      "verifyTitle": "Du vet att det funkar när",
+      "verifyBody": "Du skickar en påhittad e-postadress (provnamn.maskera@example.com) och ser [EPOST_1] i inspektören på http://127.0.0.1:8787/_maskera, eller när agenten svarar på maskera_status med dina tillåtna rötter.",
+      "sections": [
+        {
+          "id": "claude-desktop",
+          "title": "Claude Desktop (lokal proxy)",
+          "body": "Starta proxyn först och låt den vara igång. Öppna sedan Help -> Troubleshooting -> Enable Developer Mode och därefter Developer -> Configure Third-Party Inference. Välj tredje-partsinferens med Static API key, ange bas-URL http://127.0.0.1:8787 (utan /v1), klistra in din Anthropic API-nyckel och ändra auth-schemat till x-api-key (standardläget Bearer avvisas av Anthropic). Klicka Apply Changes och sedan Save & Restart.",
+          "bullets": [
+            "Trafiken faktureras på din Anthropic API-nyckel i stället för ett Claude-abonnemang.",
+            "Stannar du proxyn stoppas chatten i stället för att skicka omaskerad text.",
+            "För att byta tillbaka väljer du Anthropic-inloggningen på inloggningsskärmen."
+          ],
+          "codeLabel": "Terminal",
+          "code": "npx -y @maskera/mcp proxy --root /sokvag/till/dina-filer"
+        },
+        {
+          "id": "claude-code",
+          "title": "Claude Code (proxy eller MCP)",
+          "body": "Med proxyn maskeras allt du skriver och alla verktygssvar automatiskt. För lokala filer via MCP kan du koppla antingen mot den varma HTTP-slutpunkten /mcp eller direkt via stdio.",
+          "codeLabel": "Terminal",
+          "code": "# Proxy (maskerar hela chatten + verktygssvar)\nnpx -y @maskera/mcp proxy --root .\nANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude\n\n# Eller varm Streamable HTTP MCP med spärr mot rå PII i chatten\nclaude mcp add --transport http maskera 'http://127.0.0.1:8787/mcp?no_raw_restore=1'\n\n# Eller fristående stdio MCP\nclaude mcp add maskera -- npx -y @maskera/mcp --root . --no-raw-restore"
+        },
+        {
+          "id": "codex",
+          "title": "Codex (API-nyckel eller ChatGPT-konto)",
+          "body": "Med en OpenAI API-nyckel fungerar den lokala proxyn direkt. Är du inloggad med ett ChatGPT-konto kräver Codex HTTPS på sin egen bas-URL, så använd MCP-servern i stället.",
+          "codeLabel": "Terminal",
+          "code": "# Med OpenAI API-nyckel (proxy)\nnpx -y @maskera/mcp proxy --root .\nOPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex\n\n# Inloggad med ChatGPT-konto (MCP stdio)\ncodex mcp add maskera -- npx -y @maskera/mcp --root . --no-raw-restore\n\n# Eller mot redan startad proxy via Streamable HTTP\ncodex mcp add maskera --url 'http://127.0.0.1:8787/mcp?no_raw_restore=1'"
+        },
+        {
+          "id": "cursor",
+          "title": "Cursor",
+          "body": "Kör installeraren i projektmappen så uppdateras .cursor/mcp.json utan att skriva över dina andra servrar.",
+          "codeLabel": "Terminal",
+          "code": "# Skriv .cursor/mcp.json automatiskt (stdio)\nnpx -y @maskera/mcp install cursor --root . --no-raw-restore\n\n# Eller koppla mot redan startad varm proxy (/mcp)\nnpx -y @maskera/mcp install cursor --transport http --no-raw-restore"
+        },
+        {
+          "id": "opencode-t3",
+          "title": "OpenCode och T3 Code",
+          "body": "Både OpenCode (opencode.json under mcp.servers) och T3 Code stöder både stdio och Streamable HTTP via samma installerare.",
+          "codeLabel": "Terminal",
+          "code": "# OpenCode (uppdaterar opencode.json)\nnpx -y @maskera/mcp install opencode --root . --no-raw-restore\n\n# T3 Code (skriver ut färdig JSON-konfiguration)\nnpx -y @maskera/mcp install t3-code --root . --no-raw-restore"
+        },
+        {
+          "id": "verifiera",
+          "title": "Testa med påhittade uppgifter",
+          "body": "Kör alltid ett snabbt prov innan du hanterar verkliga personuppgifter. Inspektören lagrar allt i lokalt RAM och visar originalvärden först om du klickar på knappen.",
+          "codeLabel": "Terminal",
+          "code": "# Kör automatisk diagnostik\nnpx -y @maskera/mcp doctor --root .\n\n# Öppna lokal live-inspektör och godkännandevy\nopen http://127.0.0.1:8787/_maskera"
+        }
+      ]
+    },
+    "sdk": {
+      "metaTitle": "SDK och drift: maskera, @maskera/core och self-hosting · maskera",
+      "metaDescription": "Bygg in svensk PII-maskering i webbläsare och Node.js med maskera och @maskera/core: klinisk profil, egna regler, self-hosting av ONNX och driftschecklista.",
+      "title": "SDK och drift",
+      "lede": "Använd maskera (regler + 43 MB svensk AI-modell) eller @maskera/core (endast regler, noll beroenden) direkt i egen TypeScript- eller JavaScript-kod.",
+      "verifyTitle": "Du vet att det funkar när",
+      "verifyBody": "redactWithNer ersätter namn, personnummer och ort med platshållare lokalt i din process och restore(svar) återskapar exakt originaltext utan att nyckeln lämnat enheten.",
+      "sections": [
+        {
+          "id": "paket",
+          "title": "Välj paket",
+          "body": "Båda paketen kör synkront på regler och har samma återställningskarta. maskera återexporterar hela @maskera/core.",
+          "table": {
+            "headers": ["Paket", "Innehåll", "När du väljer det"],
+            "rows": [
+              [
+                "maskera + @huggingface/transformers",
+                "Deterministiska svenska regler + 43 MB q4/q8 ONNX-modell (maskera-sv-ner).",
+                "Fri svensk text med namn, adresser, orter och organisationer."
+              ],
+              [
+                "@maskera/core",
+                "Endast format- och kontrollsifferregler, noll beroenden, synkront.",
+                "Strukturerade loggar, snabba kantmiljöer eller när du vill undvika modellvikter."
+              ]
+            ]
+          }
+        },
+        {
+          "id": "kodexempel",
+          "title": "Grundflöde, klinisk profil och egna mönster",
+          "body": "Skapa recognizer en gång vid uppstart och återanvänd den mellan anrop. För vårdtext behåller profile: \"clinical\" doser, mätvärden och vårdtermer medan personuppgifter maskeras. Egna mönster ansluts med regexDetector.",
+          "codeLabel": "TypeScript",
+          "code": "import { createNerRecognizer, redactWithNer, regexDetector } from \"maskera\"\n\nconst recognizer = createNerRecognizer()\n\nconst caseIdDetector = regexDetector(\"EGENT\", /\\bÄRENDE-\\d{4}-\\d{4}\\b/g)\n\nconst { text, restore } = await redactWithNer(\n  \"Patient Anna Lindqvist (19900101-2385) i ÄRENDE-2026-0412 fick 500 mg Alvedon.\",\n  {\n    recognizer,\n    profile: \"clinical\",\n    detectors: [caseIdDetector],\n  },\n)\n\nconst answer = await callYourModel(text)\nconst finalReply = restore(answer)"
+        },
+        {
+          "id": "self-hosting",
+          "title": "Self-hosting av modell och offline-drift",
+          "body": "I standardläget laddas modellvikterna (sha256-verifierade mot pinnad commit) en gång från Hugging Face och cachas lokalt. För slutna nät eller egna servrar laddar du hem katalogen en gång och pekar ut den lokalt.",
+          "codeLabel": "TypeScript",
+          "code": "// q8 är snabbast på Node CPU; använd q4 i webbläsare\nconst recognizer = createNerRecognizer({\n  localModelPath: \"/opt/models\",\n  model: \"maskera-sv-ner-v20\",\n  allowRemoteModels: false,\n  dtype: \"q8\",\n})"
+        },
+        {
+          "id": "driftchecklista",
+          "title": "Driftchecklista i produktion",
+          "body": "Maskera är ett lokalt skyddslager, inte en noll-läckagegaranti. Följ fyra regler i produktion:",
+          "bullets": [
+            "Återanvänd en enda createNerRecognizer()-instans per process så modellen inte laddas om vid varje anrop.",
+            "Spara aldrig återställningskartan i samma logg, databas eller trace som den maskerade texten.",
+            "Fail-closed vid modellfel: låt inte ett undantag från NER leda till att omaskerad text skickas vidare.",
+            "Kör en syntetisk röktest vid deploy med påhittade svenska uppgifter innan verklig trafik släpps på."
+          ]
+        }
+      ]
+    },
+    "troubleshooting": {
+      "metaTitle": "felsökning och säkerhetsgränser · maskera",
+      "metaDescription": "Lös vanliga problem med @maskera/mcp och maskera: 502 fail-closed, Codex med ChatGPT-konto, offline-modeller, loopback-skydd och kända begränsningar.",
+      "title": "Felsökning och begränsningar",
+      "lede": "De vanligaste felen, varför Maskera hellre stoppar ett anrop än läcker rå text, och var verktygets gränser går.",
+      "verifyTitle": "Första steget vid problem",
+      "verifyBody": "Kör npx -y @maskera/mcp doctor --root . för att se exakt vilken del som fallerar (Node-version, katalogrättigheter, ONNX-modell eller lokal proxy).",
+      "sections": [
+        {
+          "id": "vanliga-fel",
+          "title": "Vanliga fel och lösningar",
+          "body": "Alla säkerhetskritiska lägen i @maskera/mcp misslyckas stängt (fail-closed) så rå text aldrig smiter förbi tyst.",
+          "table": {
+            "headers": ["Symptom", "Orsak", "Åtgärd"],
+            "rows": [
+              [
+                "Proxyn svarar 502",
+                "Lokal NER misslyckades eller uppströms API nås inte.",
+                "Kontrollera stderr eller kör doctor. Behöver du bara formatregler, starta med --rules-only."
+              ],
+              [
+                "Codex med ChatGPT-konto nekar http://127.0.0.1:8787",
+                "ChatGPT-inloggningen kräver HTTPS för egen bas-URL.",
+                "Använd MCP-servern (codex mcp add maskera -- npx -y @maskera/mcp --root .) i stället för proxyn."
+              ],
+              [
+                "Claude Desktop får 401 från Anthropic",
+                "Auth-schemat står kvar på Bearer.",
+                "Byt auth-schema till x-api-key och kontrollera att bas-URL är http://127.0.0.1:8787 utan /v1."
+              ],
+              [
+                "HTTP 403 på /_maskera eller /mcp",
+                "Host- eller Origin-headern är inte samma loopback-adress.",
+                "Öppna alltid exakt http://127.0.0.1:8787/_maskera och anropa /mcp utan främmande Origin-header."
+              ],
+              [
+                "Access denied på maskera_read_file",
+                "Sökvägen eller en symlänk pekar utanför --root.",
+                "Starta med rätt --root <katalog> (flaggan kan upprepas för flera kataloger)."
+              ],
+              [
+                "maskera_restore saknas eller ger fel",
+                "Servern körs med --no-raw-restore eller ?no_raw_restore=1.",
+                "Det är avsiktligt skydd. Använd maskera_write_file för att återställa direkt till disk, eller --approval-mode browser."
+              ]
+            ]
+          }
+        },
+        {
+          "id": "offline",
+          "title": "Köra helt utan internetåtkomst",
+          "body": "Om din arbetsstation eller server blockerar Hugging Face kan du förladda modellfilerna i en lokal mapp och stänga av fjärrhämtning helt.",
+          "codeLabel": "Terminal",
+          "code": "MASKERA_MODEL_PATH=/opt/models \\\nMASKERA_MODEL_ID=maskera-sv-ner-v20 \\\nMASKERA_ALLOW_REMOTE_MODELS=0 \\\nnpx -y @maskera/mcp doctor --root ."
+        },
+        {
+          "id": "begransningar",
+          "title": "Säkerhetsgränser",
+          "body": "Var tydlig internt med vad lokal maskering täcker och vad den inte ersätter:",
+          "bullets": [
+            "Maskera är byggt för svensk (och blandad svensk/engelsk) text. Ren text på andra språk täcks bara delvis.",
+            "Bilder och skannade PDF-filer måste OCR-tolkas till text innan de skickas genom Maskera.",
+            "En AI-modell kan missa ovanliga namn eller stavfel (se uppmätta siffror på /traffsakerhet). Lägg till kända klientnamn och ärendekoder med --custom-term.",
+            "En skill styr agentens beteende men kan kringgås om agenten har fria skalverktyg. För teknisk spärr krävs lokal proxy eller att filåtkomst begränsas till Maskera MCP."
+          ]
+        }
+      ]
+    }
   }
 }

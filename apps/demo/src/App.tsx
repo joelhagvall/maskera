@@ -80,6 +80,12 @@ export function App({ initialView }: { initialView?: View }) {
 
   const DemoView = view === "demo" ? getLoadedView("demo") : undefined
   const DevView = view === "dev" ? getLoadedView("dev") : undefined
+  const DocsView = view === "docs" ? getLoadedView("docs") : undefined
+  const DocsMcpView = view === "docsMcp" ? getLoadedView("docsMcp") : undefined
+  const DocsClientsView = view === "docsClients" ? getLoadedView("docsClients") : undefined
+  const DocsSdkView = view === "docsSdk" ? getLoadedView("docsSdk") : undefined
+  const DocsTroubleshootingView =
+    view === "docsTroubleshooting" ? getLoadedView("docsTroubleshooting") : undefined
   const TransparencyView = view === "transparency" ? getLoadedView("transparency") : undefined
   const TestDataView = view === "testdata" ? getLoadedView("testdata") : undefined
   const PrivacyView = view === "privacy" ? getLoadedView("privacy") : undefined
@@ -106,6 +112,11 @@ export function App({ initialView }: { initialView?: View }) {
         />
       )}
       {DevView && <DevView go={go} onCoverage={goCoverage} />}
+      {DocsView && <DocsView go={go} />}
+      {DocsMcpView && <DocsMcpView go={go} />}
+      {DocsClientsView && <DocsClientsView go={go} />}
+      {DocsSdkView && <DocsSdkView go={go} />}
+      {DocsTroubleshootingView && <DocsTroubleshootingView go={go} />}
       {TransparencyView && <TransparencyView go={go} />}
       {TestDataView && <TestDataView go={go} />}
       {PrivacyView && <PrivacyView go={go} />}

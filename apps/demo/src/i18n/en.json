@@ -10,7 +10,11 @@
     "productPopupAlt": "Maskera's popup with the Mask when I send switch, the Swedish AI model and 20 of 20 AI redactions left.",
     "stage": {
       "label": "Choose where maskera runs",
-      "tabs": { "browser": "Browser", "agent": "AI agent", "code": "Your code" },
+      "tabs": {
+        "browser": "Browser",
+        "agent": "AI agent",
+        "code": "Your code"
+      },
       "browserAlt": "Maskera's preview in an AI chat: Bo Ek, the personal identity number, Boden, Liv and the bankgiro number become placeholders, while the housing adaptation and the Swedish words bo kvar and i dag stay, so the AI can write the decision.",
       "agent": {
         "windowLabel": "Your AI agent",
@@ -431,7 +435,12 @@
       "tagline": "An income-support application",
       "text": "Ansökan om försörjningsstöd: Jonas Wikström, 20020301 2398, boende på Påhittsvägen 21 i Stockholm. Sökande når oss på jonas.wikstrom@example.com. Sambo Elin Bergman är arbetssökande. Sammanfatta ärendet för handläggare."
     },
-    { "id": "fritext", "name": "Your text", "tagline": "", "text": "" }
+    {
+      "id": "fritext",
+      "name": "Your text",
+      "tagline": "",
+      "text": ""
+    }
   ],
   "labels": {
     "NAMN": "Name",
@@ -459,9 +468,18 @@
   "developerApi": {
     "title": "For developers",
     "toc": [
-      { "href": "#agenter", "label": "AI agents" },
-      { "href": "#installera", "label": "Your own code" },
-      { "href": "#sa-fungerar-det", "label": "How it works" }
+      {
+        "href": "#agenter",
+        "label": "AI agents"
+      },
+      {
+        "href": "#installera",
+        "label": "Your own code"
+      },
+      {
+        "href": "#sa-fungerar-det",
+        "label": "How it works"
+      }
     ],
     "lede": "Use Maskera in front of your AI agent or in your own code. Everything runs locally.",
     "agentsTitle": "Protect your AI agent",
@@ -498,10 +516,22 @@
         "title": "AI model: free text",
         "description": "Found from context. Accurate on everyday Swedish, though unusual names or phrasing can still slip through.",
         "items": [
-          { "label": "NAMN", "name": "Names" },
-          { "label": "PLATS", "name": "Places" },
-          { "label": "ORGANISATION", "name": "Organisations" },
-          { "label": "ADRESS", "name": "Street addresses" }
+          {
+            "label": "NAMN",
+            "name": "Names"
+          },
+          {
+            "label": "PLATS",
+            "name": "Places"
+          },
+          {
+            "label": "ORGANISATION",
+            "name": "Organisations"
+          },
+          {
+            "label": "ADRESS",
+            "name": "Street addresses"
+          }
         ]
       },
       {
@@ -509,8 +539,14 @@
         "title": "Beyond the npm defaults",
         "description": "Additions beyond the npm package defaults, explained in the notes below.",
         "items": [
-          { "label": "REGNUMMER", "name": "Vehicle registration numbers" },
-          { "label": "CUSTOM", "name": "Custom business formats" }
+          {
+            "label": "REGNUMMER",
+            "name": "Vehicle registration numbers"
+          },
+          {
+            "label": "CUSTOM",
+            "name": "Custom business formats"
+          }
         ]
       },
       {
@@ -518,21 +554,66 @@
         "title": "Rules: fixed formats",
         "description": "Found with fixed format rules. Swedish personal identity numbers are masked even if the check digit is mistyped, as long as the date shape is valid. Web links are caught when they start with http, https or www.",
         "items": [
-          { "label": "PERSONNUMMER", "name": "Swedish personal identity numbers" },
-          { "label": "SAMORDNINGSNUMMER", "name": "Swedish coordination numbers" },
-          { "label": "ORGANISATIONSNUMMER", "name": "Swedish organisation numbers" },
-          { "label": "EPOST", "name": "Email addresses" },
-          { "label": "TELEFON", "name": "Swedish phone numbers" },
-          { "label": "POSTNUMMER", "name": "Swedish postcodes" },
-          { "label": "LAGENHETSNUMMER", "name": "Swedish apartment numbers" },
-          { "label": "BANKGIRO", "name": "Bankgiro numbers" },
-          { "label": "PLUSGIRO", "name": "PlusGiro numbers" },
-          { "label": "IBAN", "name": "Swedish IBANs" },
-          { "label": "KORTNUMMER", "name": "Payment card numbers" },
-          { "label": "KONTONUMMER", "name": "Context-labelled account numbers" },
-          { "label": "JOURNALNUMMER", "name": "Context-labelled medical record numbers" },
-          { "label": "IP_ADRESS", "name": "IPv4 addresses" },
-          { "label": "URL", "name": "Web links" }
+          {
+            "label": "PERSONNUMMER",
+            "name": "Swedish personal identity numbers"
+          },
+          {
+            "label": "SAMORDNINGSNUMMER",
+            "name": "Swedish coordination numbers"
+          },
+          {
+            "label": "ORGANISATIONSNUMMER",
+            "name": "Swedish organisation numbers"
+          },
+          {
+            "label": "EPOST",
+            "name": "Email addresses"
+          },
+          {
+            "label": "TELEFON",
+            "name": "Swedish phone numbers"
+          },
+          {
+            "label": "POSTNUMMER",
+            "name": "Swedish postcodes"
+          },
+          {
+            "label": "LAGENHETSNUMMER",
+            "name": "Swedish apartment numbers"
+          },
+          {
+            "label": "BANKGIRO",
+            "name": "Bankgiro numbers"
+          },
+          {
+            "label": "PLUSGIRO",
+            "name": "PlusGiro numbers"
+          },
+          {
+            "label": "IBAN",
+            "name": "Swedish IBANs"
+          },
+          {
+            "label": "KORTNUMMER",
+            "name": "Payment card numbers"
+          },
+          {
+            "label": "KONTONUMMER",
+            "name": "Context-labelled account numbers"
+          },
+          {
+            "label": "JOURNALNUMMER",
+            "name": "Context-labelled medical record numbers"
+          },
+          {
+            "label": "IP_ADRESS",
+            "name": "IPv4 addresses"
+          },
+          {
+            "label": "URL",
+            "name": "Web links"
+          }
         ]
       }
     ],
@@ -563,7 +644,8 @@
     "github": "GitHub",
     "faq": "FAQ",
     "guides": "Guides",
-    "industries": "Industries"
+    "industries": "Industries",
+    "docs": "Documentation"
   },
   "footer": {
     "openSource": "Open source",
@@ -704,12 +786,30 @@
     "title": "Security in maskera",
     "lede": "All masking runs locally on your device. Here is how data moves, how model files are verified and how to report a vulnerability.",
     "toc": [
-      { "href": "#dataflode", "label": "Data flow and network" },
-      { "href": "#artefakter", "label": "Verified model files" },
-      { "href": "#aterstallning", "label": "Safe restoration" },
-      { "href": "#omfattning", "label": "What counts as a vulnerability?" },
-      { "href": "#rapportera", "label": "Report privately" },
-      { "href": "#produktion", "label": "Production operation" }
+      {
+        "href": "#dataflode",
+        "label": "Data flow and network"
+      },
+      {
+        "href": "#artefakter",
+        "label": "Verified model files"
+      },
+      {
+        "href": "#aterstallning",
+        "label": "Safe restoration"
+      },
+      {
+        "href": "#omfattning",
+        "label": "What counts as a vulnerability?"
+      },
+      {
+        "href": "#rapportera",
+        "label": "Report privately"
+      },
+      {
+        "href": "#produktion",
+        "label": "Production operation"
+      }
     ],
     "dataFlowTitle": "Data flow and network",
     "dataFlow": [
@@ -753,11 +853,26 @@
     "title": "Privacy & transparency",
     "lede": "See what Maskera does, what leaves the device, how the model was trained and what it can miss.",
     "toc": [
-      { "href": "#hur-fungerar", "label": "How does it work?" },
-      { "href": "#vad-maskeras", "label": "What is masked?" },
-      { "href": "#dataflode", "label": "How your text is processed" },
-      { "href": "#modelltraning", "label": "How the model was trained" },
-      { "href": "#begransningar", "label": "Limitations" }
+      {
+        "href": "#hur-fungerar",
+        "label": "How does it work?"
+      },
+      {
+        "href": "#vad-maskeras",
+        "label": "What is masked?"
+      },
+      {
+        "href": "#dataflode",
+        "label": "How your text is processed"
+      },
+      {
+        "href": "#modelltraning",
+        "label": "How the model was trained"
+      },
+      {
+        "href": "#begransningar",
+        "label": "Limitations"
+      }
     ],
     "howTitle": "How does it work?",
     "how": [
@@ -907,11 +1022,26 @@
     "title": "One privacy layer, three ways to use it",
     "lede": "The same Swedish model and rules in all three. Everything runs on your device, and no text is sent to Maskera.",
     "toc": [
-      { "href": "#oversikt", "label": "Overview" },
-      { "href": "#tillagg", "label": "Browser extension" },
-      { "href": "#jamfor", "label": "Pricing" },
-      { "href": "#agenter", "label": "AI agents" },
-      { "href": "#kod", "label": "Own code" }
+      {
+        "href": "#oversikt",
+        "label": "Overview"
+      },
+      {
+        "href": "#tillagg",
+        "label": "Browser extension"
+      },
+      {
+        "href": "#jamfor",
+        "label": "Pricing"
+      },
+      {
+        "href": "#agenter",
+        "label": "AI agents"
+      },
+      {
+        "href": "#kod",
+        "label": "Own code"
+      }
     ],
     "overview": {
       "title": "Overview",
@@ -1068,10 +1198,22 @@
     "listLabel": "Browsers and stores",
     "soon": "Soon",
     "browsers": {
-      "chrome": { "name": "Chrome", "store": "Chrome Web Store" },
-      "edge": { "name": "Edge", "store": "Microsoft Edge Add-ons" },
-      "firefox": { "name": "Firefox", "store": "Firefox Add-ons" },
-      "safari": { "name": "Safari", "store": "Mac App Store · coming later" }
+      "chrome": {
+        "name": "Chrome",
+        "store": "Chrome Web Store"
+      },
+      "edge": {
+        "name": "Edge",
+        "store": "Microsoft Edge Add-ons"
+      },
+      "firefox": {
+        "name": "Firefox",
+        "store": "Firefox Add-ons"
+      },
+      "safari": {
+        "name": "Safari",
+        "store": "Mac App Store · coming later"
+      }
     }
   },
   "homeProof": {
@@ -1092,7 +1234,8 @@
     "breadcrumbLabel": "Breadcrumb",
     "developers": "Developers",
     "services": "Products",
-    "accuracy": "Accuracy"
+    "accuracy": "Accuracy",
+    "docs": "Docs"
   },
   "meta": {
     "demoTitle": "Use AI without sharing personal data · maskera",
@@ -1153,5 +1296,416 @@
     ],
     "securityCta": "Security page",
     "privacyCta": "Privacy policy"
+  },
+  "docs": {
+    "navLabel": "Documentation sections",
+    "resourcesLabel": "Resources",
+    "setupPromptCta": "Agent setup prompt (setup-prompt.md)",
+    "llmsCta": "Machine-readable index (llms.txt)",
+    "nav": {
+      "overview": "Overview",
+      "mcp": "@maskera/mcp",
+      "clients": "Client guides",
+      "sdk": "SDK & operations",
+      "troubleshooting": "Troubleshooting"
+    },
+    "overview": {
+      "metaTitle": "documentation: local Swedish PII redaction · maskera",
+      "metaDescription": "Choose the right Maskera mode: browser extension, local LLM proxy, Streamable HTTP or stdio MCP, guard hooks, and npm SDK.",
+      "title": "Documentation",
+      "lede": "All masking in Maskera runs locally on your device. Pick the mode that fits where your text lives, set it up in a minute, and verify with made-up data.",
+      "verifyTitle": "You know it worked when",
+      "verifyBody": "npx -y @maskera/mcp doctor reports [ok] for redaction, or the local inspector at http://127.0.0.1:8787/_maskera shows placeholders such as [EPOST_1] going upstream while the reply restores the address.",
+      "sections": [
+        {
+          "id": "valj-lage",
+          "title": "Choose the right mode",
+          "body": "Maskera offers five entry points backed by the same Swedish rules and local AI model. Pick the one closest to where text is created.",
+          "table": {
+            "headers": ["Mode", "Best when", "Command / entry point"],
+            "rows": [
+              [
+                "Browser extension",
+                "You use web AI chats such as ChatGPT and Claude in the browser.",
+                "maskera.dev/en/services"
+              ],
+              [
+                "Local LLM proxy",
+                "Every chat prompt and tool output from your AI agent must be masked automatically.",
+                "npx -y @maskera/mcp proxy --root ."
+              ],
+              [
+                "Streamable HTTP MCP",
+                "Several clients should share one warm 43 MB AI model, one session vault, and browser approvals.",
+                "http://127.0.0.1:8787/mcp"
+              ],
+              [
+                "MCP stdio server",
+                "Your client has no custom API URL and the agent reads and writes local files.",
+                "npx -y @maskera/mcp --root . --no-raw-restore"
+              ],
+              [
+                "Guard (hooks / pipe)",
+                "You want to block PII in agent hooks (exit 2) or redact Unix pipes.",
+                "npx -y @maskera/mcp guard"
+              ],
+              [
+                "npm SDK",
+                "You embed Swedish redaction inside your own web app or Node service.",
+                "npm install maskera @huggingface/transformers"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "snabbstart",
+          "title": "60-second quickstart",
+          "body": "Start the local proxy (which also serves Streamable HTTP MCP and the live inspector on the same port), or configure your MCP client directly and run the built-in self-check.",
+          "codeLabel": "Terminal",
+          "code": "# 1. Start proxy + Streamable HTTP /mcp + inspector on 127.0.0.1:8787\nnpx -y @maskera/mcp proxy --root .\n\n# 2. Write or print MCP configuration for your client\nnpx -y @maskera/mcp install cursor --root . --no-raw-restore\n\n# 3. Verify model, roots, and roundtrip with made-up Swedish PII\nnpx -y @maskera/mcp doctor --root ."
+        },
+        {
+          "id": "for-agenter",
+          "title": "Let your agent configure Maskera",
+          "body": "Every page on maskera.dev has a plain Markdown sibling via Accept: text/markdown or a .md suffix (for example /en/docs.md and /en/docs/mcp.md). For a ready-made coding-agent prompt, see /setup-prompt.md and the full index at /llms.txt.",
+          "bullets": [
+            "The MCP server also serves the full workflow skill directly as resource maskera://skills/maskera/SKILL.md and prompt maskera-workflow.",
+            "Pass --no-raw-restore when an agent may read and write local files without ever pulling raw PII back into chat."
+          ]
+        }
+      ]
+    },
+    "mcp": {
+      "metaTitle": "@maskera/mcp: proxy, Streamable HTTP, tools and policies · maskera",
+      "metaDescription": "Complete reference for @maskera/mcp: all MCP tools, Streamable HTTP /mcp, scoped policy flags, browser approvals, prompts, resources, guard, install, and doctor.",
+      "title": "@maskera/mcp reference",
+      "lede": "One npm package with five subcommands: local LLM proxy with Streamable HTTP /mcp, MCP stdio server, hook guard, client installer, and diagnostics.",
+      "verifyTitle": "You know it worked when",
+      "verifyBody": "Your client lists maskera_list_files, maskera_search_files, maskera_read_file, and maskera_status, and maskera_status reports the active engine mode, roots, and policy.",
+      "sections": [
+        {
+          "id": "transport",
+          "title": "Streamable HTTP (/mcp) and stdio",
+          "body": "Running maskera-mcp proxy serves both the LLM proxy and a Streamable HTTP MCP endpoint at http://127.0.0.1:8787/mcp. Connected clients share the warm 43 MB ONNX model, the local in-memory session vault, and the live inspector at /_maskera. Clients that only support stdio can launch npx -y @maskera/mcp with no background daemon.",
+          "codeLabel": "Terminal",
+          "code": "# Warm local service: LLM proxy + Streamable HTTP MCP + live inspector\nnpx -y @maskera/mcp proxy --root /path/to/workspace\n\n# Tighten policy per MCP connection via query parameters\n# http://127.0.0.1:8787/mcp?no_raw_restore=1\n# http://127.0.0.1:8787/mcp?read_only=1&no_raw_restore=1\n# http://127.0.0.1:8787/mcp?approval_mode=browser"
+        },
+        {
+          "id": "verktyg",
+          "title": "MCP tools",
+          "body": "Every tool declares inputSchema, outputSchema, and MCP annotations (readOnlyHint, destructiveHint, openWorldHint: false).",
+          "table": {
+            "headers": ["Tool", "Purpose", "Policy / boundary"],
+            "rows": [
+              [
+                "maskera_list_files",
+                "List regular files inside allowed --root directories without reading contents.",
+                "Confined to --root; external symlinks are skipped."
+              ],
+              [
+                "maskera_search_files",
+                "Search local UTF-8 files and redact every matching line before returning. Supports searching by placeholders such as [NAMN_1].",
+                "Zero raw PII leaves disk."
+              ],
+              [
+                "maskera_read_file",
+                "Read a local UTF-8 file (max 2 MiB) and return redacted text + session_id.",
+                "Originals stay in local RAM only."
+              ],
+              [
+                "maskera_write_file",
+                "Restore placeholders from session_id and write directly to disk without echoing raw PII into chat.",
+                "Hidden in --read-only; requires overwrite: true to replace existing files."
+              ],
+              [
+                "maskera_redact",
+                "Redact text locally with auto (AI + rules) or rules, profile, and custom_terms.",
+                "include_map: true is blocked by --no-raw-restore and gated by approval mode."
+              ],
+              [
+                "maskera_restore",
+                "Restore placeholders in text from session_id or an explicit map.",
+                "Hidden by --no-raw-restore; paused in browser/native approval mode."
+              ],
+              [
+                "maskera_list_sessions",
+                "List active sessions and entity counts by label.",
+                "Never returns raw values."
+              ],
+              [
+                "maskera_clear_session",
+                "Erase a session restore map from RAM immediately.",
+                "Hidden in --read-only."
+              ],
+              [
+                "maskera_status",
+                "Report model status, cache stats, active sessions, allowed roots, and policy.",
+                "Read-only status check."
+              ],
+              [
+                "maskera_resume",
+                "Complete a paused approval request after deciding in /_maskera.",
+                "Exposed only in --approval-mode browser."
+              ]
+            ]
+          }
+        },
+        {
+          "id": "policy-godkannande",
+          "title": "Scoped policies and approval modes",
+          "body": "Restrict what each agent connection is allowed to do via CLI flags or /mcp URL query parameters. URL parameters can only tighten server defaults, never weaken them.",
+          "table": {
+            "headers": ["Flag / query param", "Effect", "Recommended for"],
+            "rows": [
+              [
+                "--no-raw-restore / ?no_raw_restore=1",
+                "Hides and blocks maskera_restore and include_map: true. Agents can still restore files directly to disk with maskera_write_file.",
+                "Default for agents working on sensitive files."
+              ],
+              [
+                "--read-only / ?read_only=1",
+                "Hides and blocks maskera_write_file and maskera_clear_session.",
+                "Read-only analysis agents."
+              ],
+              [
+                "--approval-mode browser / ?approval_mode=browser",
+                "Pauses maskera_restore and include_map: true and shows Approve / Decline controls in http://127.0.0.1:8787/_maskera.",
+                "Human confirmation before any raw PII enters chat."
+              ],
+              [
+                "--approval-mode native",
+                "Sends MCP form elicitation (elicitation/create) to the client; fails closed if unsupported.",
+                "Clients with native MCP elicitation support."
+              ]
+            ]
+          }
+        },
+        {
+          "id": "prompts-resources",
+          "title": "Built-in prompts, resources, and skill",
+          "body": "The MCP server ships Maskera workflow guidance directly over the protocol so clients need no separate skill install.",
+          "bullets": [
+            "Resource maskera://skills/maskera/SKILL.md serves the complete operating guide as text/markdown.",
+            "Resource maskera://status returns live engine, policy, and session status as JSON.",
+            "Prompt maskera-workflow accepts optional profile (general or clinical) and custom_terms.",
+            "Prompt maskera-redact-file guides a safe read, draft, and local restore file roundtrip."
+          ]
+        },
+        {
+          "id": "guard-install-doctor",
+          "title": "Guard, install, doctor, and environment variables",
+          "body": "Alongside proxy and MCP, the CLI includes guard for hooks and pipes, install for client config setup, and doctor for local verification.",
+          "codeLabel": "Terminal",
+          "code": "# Block PII in agent hooks (exits 2 on match, prints counts only)\necho '{\"prompt\":\"Ring 070-174 06 58\"}' | npx -y @maskera/mcp guard\n\n# Redact a stream locally\ncat input.txt | npx -y @maskera/mcp guard --redact\n\n# Write or preview client MCP config\nnpx -y @maskera/mcp install cursor --root . --no-raw-restore --dry-run\n\n# Self-test local engine, roots, and running proxy\nnpx -y @maskera/mcp doctor --root . --json",
+          "table": {
+            "headers": ["Environment variable", "Default", "Purpose"],
+            "rows": [
+              [
+                "MASKERA_MCP_ROOTS",
+                "Current directory",
+                "Path-delimited allowed directories for file tools."
+              ],
+              [
+                "MASKERA_MCP_MODE",
+                "auto",
+                "auto (AI + rules) or rules (deterministic rules only)."
+              ],
+              [
+                "MASKERA_MCP_NO_RAW_RESTORE",
+                "0",
+                "Set to 1 to block raw PII export into model context."
+              ],
+              ["MASKERA_MCP_READ_ONLY", "0", "Set to 1 to disable file writes and session clears."],
+              ["MASKERA_MCP_APPROVAL_MODE", "automatic", "automatic, browser, or native."],
+              [
+                "MASKERA_MODEL_PATH + MASKERA_ALLOW_REMOTE_MODELS=0",
+                "Hugging Face cache",
+                "Load a local ONNX model directory completely offline."
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    "clients": {
+      "metaTitle": "client guides: connect Maskera to your AI client · maskera",
+      "metaDescription": "Step-by-step setup for AI clients such as Claude Code, Codex, and Cursor, with a made-up Swedish data verification test.",
+      "title": "Client guides",
+      "lede": "Exact steps and commands per client. Every configuration can also be written or previewed with npx -y @maskera/mcp install <client>.",
+      "verifyTitle": "You know it worked when",
+      "verifyBody": "You send a made-up address (provnamn.maskera@example.com) and see [EPOST_1] in the inspector at http://127.0.0.1:8787/_maskera, or your agent calls maskera_status and returns your allowed roots.",
+      "sections": [
+        {
+          "id": "claude-desktop",
+          "title": "Claude Desktop (local proxy)",
+          "body": "Start the proxy first and leave it running. Choose Help -> Troubleshooting -> Enable Developer Mode, then Developer -> Configure Third-Party Inference. Select third-party inference with Static API key, set base URL http://127.0.0.1:8787 (without /v1), enter your Anthropic API key, and change the auth scheme to x-api-key (Anthropic rejects the default Bearer scheme). Click Apply Changes, then Save & Restart.",
+          "bullets": [
+            "Requests are billed to your Anthropic API key rather than a Claude plan.",
+            "While the proxy is stopped, Desktop fails instead of sending unmasked text.",
+            "To switch back, pick the Anthropic sign-in option on the sign-in screen."
+          ],
+          "codeLabel": "Terminal",
+          "code": "npx -y @maskera/mcp proxy --root /path/to/your/files"
+        },
+        {
+          "id": "claude-code",
+          "title": "Claude Code (proxy or MCP)",
+          "body": "With the proxy, every prompt and tool output is masked automatically. For local files over MCP, connect either to the warm Streamable HTTP /mcp endpoint or directly over stdio.",
+          "codeLabel": "Terminal",
+          "code": "# Proxy (masks full chat + tool outputs)\nnpx -y @maskera/mcp proxy --root .\nANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude\n\n# Or warm Streamable HTTP MCP blocking raw PII export\nclaude mcp add --transport http maskera 'http://127.0.0.1:8787/mcp?no_raw_restore=1'\n\n# Or standalone stdio MCP\nclaude mcp add maskera -- npx -y @maskera/mcp --root . --no-raw-restore"
+        },
+        {
+          "id": "codex",
+          "title": "Codex (API key or ChatGPT account)",
+          "body": "With an OpenAI API key, Codex routes straight through the local proxy. If you sign in with a ChatGPT account, Codex requires HTTPS for its base URL, so use the MCP server instead.",
+          "codeLabel": "Terminal",
+          "code": "# With OpenAI API key (proxy)\nnpx -y @maskera/mcp proxy --root .\nOPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex\n\n# Signed in with ChatGPT account (MCP stdio)\ncodex mcp add maskera -- npx -y @maskera/mcp --root . --no-raw-restore\n\n# Or connect to an already running proxy over Streamable HTTP\ncodex mcp add maskera --url 'http://127.0.0.1:8787/mcp?no_raw_restore=1'"
+        },
+        {
+          "id": "cursor",
+          "title": "Cursor",
+          "body": "Run the installer inside your project folder to merge the Maskera entry into .cursor/mcp.json without touching your other servers.",
+          "codeLabel": "Terminal",
+          "code": "# Write .cursor/mcp.json automatically (stdio)\nnpx -y @maskera/mcp install cursor --root . --no-raw-restore\n\n# Or connect to a running warm proxy (/mcp)\nnpx -y @maskera/mcp install cursor --transport http --no-raw-restore"
+        },
+        {
+          "id": "opencode-t3",
+          "title": "OpenCode and T3 Code",
+          "body": "Both OpenCode (opencode.json under mcp.servers) and T3 Code support stdio and Streamable HTTP through the same installer.",
+          "codeLabel": "Terminal",
+          "code": "# OpenCode (merges into opencode.json)\nnpx -y @maskera/mcp install opencode --root . --no-raw-restore\n\n# T3 Code (prints ready-to-paste JSON)\nnpx -y @maskera/mcp install t3-code --root . --no-raw-restore"
+        },
+        {
+          "id": "verifiera",
+          "title": "Test with made-up data",
+          "body": "Always run a quick check before handling real personal data. The inspector keeps everything in local RAM and hides original values until you click reveal.",
+          "codeLabel": "Terminal",
+          "code": "# Run automated diagnostics\nnpx -y @maskera/mcp doctor --root .\n\n# Open local live inspector and approvals view\nopen http://127.0.0.1:8787/_maskera"
+        }
+      ]
+    },
+    "sdk": {
+      "metaTitle": "SDK & operations: maskera, @maskera/core and self-hosting · maskera",
+      "metaDescription": "Embed Swedish PII redaction in browsers and Node.js with maskera and @maskera/core: clinical profile, custom rules, ONNX self-hosting, and production checklist.",
+      "title": "SDK and operations",
+      "lede": "Use maskera (rules + 43 MB Swedish AI model) or @maskera/core (rules only, zero dependencies) directly in your own TypeScript or JavaScript code.",
+      "verifyTitle": "You know it worked when",
+      "verifyBody": "redactWithNer replaces names, personnummer, and places with placeholders locally in your process and restore(answer) brings back the exact originals without the key leaving your device.",
+      "sections": [
+        {
+          "id": "paket",
+          "title": "Pick a package",
+          "body": "Both packages share the same synchronous rule engine and restore map. maskera re-exports everything from @maskera/core.",
+          "table": {
+            "headers": ["Package", "Includes", "Best when"],
+            "rows": [
+              [
+                "maskera + @huggingface/transformers",
+                "Deterministic Swedish rules + 43 MB q4/q8 ONNX model (maskera-sv-ner).",
+                "Free-form Swedish text with names, street addresses, places, and organisations."
+              ],
+              [
+                "@maskera/core",
+                "Format and check-digit rules only, zero dependencies, synchronous.",
+                "Structured logs, constrained runtimes, or when you want no model weights."
+              ]
+            ]
+          }
+        },
+        {
+          "id": "kodexempel",
+          "title": "Core flow, clinical profile, and custom detectors",
+          "body": "Create one recognizer at startup and reuse it across calls. For Swedish healthcare text, profile: \"clinical\" retains doses, measurements, and care terms while masking personal data. Add custom patterns with regexDetector.",
+          "codeLabel": "TypeScript",
+          "code": "import { createNerRecognizer, redactWithNer, regexDetector } from \"maskera\"\n\nconst recognizer = createNerRecognizer()\n\nconst caseIdDetector = regexDetector(\"EGENT\", /\\bÄRENDE-\\d{4}-\\d{4}\\b/g)\n\nconst { text, restore } = await redactWithNer(\n  \"Patient Anna Lindqvist (19900101-2385) i ÄRENDE-2026-0412 fick 500 mg Alvedon.\",\n  {\n    recognizer,\n    profile: \"clinical\",\n    detectors: [caseIdDetector],\n  },\n)\n\nconst answer = await callYourModel(text)\nconst finalReply = restore(answer)"
+        },
+        {
+          "id": "self-hosting",
+          "title": "Self-hosting the model and offline operation",
+          "body": "By default, model weights (sha256-verified against a pinned commit) are fetched once from Hugging Face and cached locally. For air-gapped networks or internal servers, host the folder locally and disable remote fetches.",
+          "codeLabel": "TypeScript",
+          "code": "// q8 is fastest on Node CPU; use q4 in browsers\nconst recognizer = createNerRecognizer({\n  localModelPath: \"/opt/models\",\n  model: \"maskera-sv-ner-v20\",\n  allowRemoteModels: false,\n  dtype: \"q8\",\n})"
+        },
+        {
+          "id": "driftchecklista",
+          "title": "Production checklist",
+          "body": "Maskera is defense in depth, not a zero-leak compliance guarantee. Follow four operational rules:",
+          "bullets": [
+            "Reuse one createNerRecognizer() instance per process so the model is not reloaded per request.",
+            "Never store the restore map in the same log, database, or trace as the redacted text.",
+            "Fail closed on model errors: never fall through and forward unredacted text if NER throws.",
+            "Run a synthetic smoke test on deploy with made-up Swedish data before sending real traffic."
+          ]
+        }
+      ]
+    },
+    "troubleshooting": {
+      "metaTitle": "troubleshooting and security boundaries · maskera",
+      "metaDescription": "Resolve common issues with @maskera/mcp and maskera: 502 fail-closed, Codex with ChatGPT login, offline models, loopback protection, and known boundaries.",
+      "title": "Troubleshooting and boundaries",
+      "lede": "Common issues, why Maskera blocks rather than silently forwarding unredacted text, and where local masking stops.",
+      "verifyTitle": "First step when debugging",
+      "verifyBody": "Run npx -y @maskera/mcp doctor --root . to see which layer failed (Node version, directory access, ONNX model, or local proxy).",
+      "sections": [
+        {
+          "id": "vanliga-fel",
+          "title": "Common errors and fixes",
+          "body": "Every security-critical mode in @maskera/mcp fails closed so raw text is never forwarded silently.",
+          "table": {
+            "headers": ["Symptom", "Cause", "Fix"],
+            "rows": [
+              [
+                "Proxy returns 502",
+                "Local NER failed to run or the upstream API is unreachable.",
+                "Check stderr or run doctor. If you only want deterministic rules, pass --rules-only."
+              ],
+              [
+                "Codex with ChatGPT login rejects http://127.0.0.1:8787",
+                "ChatGPT sign-in requires HTTPS for a custom base URL.",
+                "Use the MCP server (codex mcp add maskera -- npx -y @maskera/mcp --root .) instead of the proxy."
+              ],
+              [
+                "Claude Desktop gets 401 from Anthropic",
+                "Auth scheme is still set to Bearer.",
+                "Switch auth scheme to x-api-key and verify base URL is http://127.0.0.1:8787 without /v1."
+              ],
+              [
+                "HTTP 403 on /_maskera or /mcp",
+                "Host or Origin header does not match the loopback listener.",
+                "Always open http://127.0.0.1:8787/_maskera directly and call /mcp without a foreign Origin header."
+              ],
+              [
+                "Access denied on maskera_read_file",
+                "The path or a symlink points outside --root.",
+                "Start with the right --root <dir> (repeatable for multiple folders)."
+              ],
+              [
+                "maskera_restore is missing or rejected",
+                "The server runs with --no-raw-restore or ?no_raw_restore=1.",
+                "This is intentional protection. Use maskera_write_file to restore directly to disk, or --approval-mode browser."
+              ]
+            ]
+          }
+        },
+        {
+          "id": "offline",
+          "title": "Running completely offline",
+          "body": "When your workstation or server cannot reach Hugging Face, place the model directory on local disk and disable remote fetches.",
+          "codeLabel": "Terminal",
+          "code": "MASKERA_MODEL_PATH=/opt/models \\\nMASKERA_MODEL_ID=maskera-sv-ner-v20 \\\nMASKERA_ALLOW_REMOTE_MODELS=0 \\\nnpx -y @maskera/mcp doctor --root ."
+        },
+        {
+          "id": "begransningar",
+          "title": "Security boundaries",
+          "body": "Be clear internally about what local masking covers and what it does not replace:",
+          "bullets": [
+            "Maskera is built for Swedish (and mixed Swedish/English) text. Other languages are only partially covered.",
+            "Images and scanned PDFs must be converted to text via OCR before passing through Maskera.",
+            "A neural model can miss unusual names or typos (see measured numbers on /en/accuracy). Add known client names and case IDs via --custom-term.",
+            "A skill guides agent behaviour but can be bypassed if the agent has unrestricted shell tools. Hard enforcement requires the local proxy or restricting file access to Maskera MCP."
+          ]
+        }
+      ]
+    }
   }
 }

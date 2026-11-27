@@ -7,9 +7,12 @@ import { SITE_ORIGIN } from "./paths"
 
 const LINKS = {
   llms: `${SITE_ORIGIN}/llms.txt`,
+  setupPrompt: `${SITE_ORIGIN}/setup-prompt.md`,
   sitemap: `${SITE_ORIGIN}/sitemap.xml`,
-  docs: `${SITE_ORIGIN}/en/developers`,
-  docsMarkdown: `${SITE_ORIGIN}/en/developers.md`,
+  docs: `${SITE_ORIGIN}/en/docs`,
+  docsMarkdown: `${SITE_ORIGIN}/en/docs.md`,
+  developers: `${SITE_ORIGIN}/en/developers`,
+  developersMarkdown: `${SITE_ORIGIN}/en/developers.md`,
   extension: `${SITE_ORIGIN}/en/services`,
   about: `${SITE_ORIGIN}/en/about`,
   source: "https://github.com/joelhagvall/maskera",
@@ -49,9 +52,11 @@ ${NO_API_HINT}
 Where to look next:
 
 - Start here: ${LINKS.llms} (what Maskera is, when to use it, how to call it)
+- Agent setup prompt: ${LINKS.setupPrompt}
 - Sitemap: ${LINKS.sitemap}
 - Browser extension: ${LINKS.extension}
-- Developer docs: ${LINKS.docs} (Swedish: ${SITE_ORIGIN}/utvecklare), Markdown: ${LINKS.docsMarkdown}
+- Documentation: ${LINKS.docs} (Swedish: ${SITE_ORIGIN}/docs), Markdown: ${LINKS.docsMarkdown}
+- Developer overview: ${LINKS.developers} (Swedish: ${SITE_ORIGIN}/utvecklare), Markdown: ${LINKS.developersMarkdown}
 - About and contact: ${LINKS.about}
 - Source code: ${LINKS.source}
 

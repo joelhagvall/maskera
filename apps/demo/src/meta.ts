@@ -55,6 +55,26 @@ export function getViewMeta(locale: Locale): Record<View, ViewMeta> {
       title: strings.meta.devTitle,
       description: strings.meta.devDescription,
     },
+    docs: {
+      title: strings.docs.overview.metaTitle,
+      description: strings.docs.overview.metaDescription,
+    },
+    docsMcp: {
+      title: strings.docs.mcp.metaTitle,
+      description: strings.docs.mcp.metaDescription,
+    },
+    docsClients: {
+      title: strings.docs.clients.metaTitle,
+      description: strings.docs.clients.metaDescription,
+    },
+    docsSdk: {
+      title: strings.docs.sdk.metaTitle,
+      description: strings.docs.sdk.metaDescription,
+    },
+    docsTroubleshooting: {
+      title: strings.docs.troubleshooting.metaTitle,
+      description: strings.docs.troubleshooting.metaDescription,
+    },
     transparency: {
       title: strings.transparency.metaTitle,
       description: strings.transparency.metaDescription,
@@ -106,6 +126,11 @@ export const viewMeta = new Proxy(getViewMeta("sv"), {
 
 export const routeHtmlViews = [
   "dev",
+  "docs",
+  "docsMcp",
+  "docsClients",
+  "docsSdk",
+  "docsTroubleshooting",
   "transparency",
   "testdata",
   "privacy",
@@ -185,6 +210,16 @@ function jsonLdFor(view: View, locale: Locale): object {
         return strings.faq.title
       case "guides":
         return strings.guides.title
+      case "docs":
+        return strings.docs.overview.title
+      case "docsMcp":
+        return strings.docs.mcp.title
+      case "docsClients":
+        return strings.docs.clients.title
+      case "docsSdk":
+        return strings.docs.sdk.title
+      case "docsTroubleshooting":
+        return strings.docs.troubleshooting.title
       case "industries":
         return strings.industries.title
       default:
@@ -407,8 +442,14 @@ export function renderRouteHtml(view: View, locale: Locale = activeLocale): stri
   // The demo and developer pages show mono text above the fold (the
   // hand-authored Swedish index.html preloads it too); the diagrams are only
   // on the developer page.
+  const isDocsView =
+    view === "docs" ||
+    view === "docsMcp" ||
+    view === "docsClients" ||
+    view === "docsSdk" ||
+    view === "docsTroubleshooting"
   const monoPreload =
-    view === "demo" || view === "dev"
+    view === "demo" || view === "dev" || isDocsView
       ? `
     <link rel="preload" href="/fonts/geist-mono-latin.woff2" as="font" type="font/woff2" crossorigin />`
       : ""

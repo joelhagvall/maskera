@@ -19,6 +19,11 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
   const pageNames: Record<Exclude<View, "demo">, string> = {
     services: copy.navigation.services,
     dev: copy.navigation.developers,
+    docs: copy.navigation.docs,
+    docsMcp: `${copy.navigation.docs} / ${copy.docs.nav.mcp}`,
+    docsClients: `${copy.navigation.docs} / ${copy.docs.nav.clients}`,
+    docsSdk: `${copy.navigation.docs} / ${copy.docs.nav.sdk}`,
+    docsTroubleshooting: `${copy.navigation.docs} / ${copy.docs.nav.troubleshooting}`,
     accuracy: copy.navigation.accuracy,
     security: copy.navigation.security,
     transparency: copy.navigation.transparency,
@@ -29,9 +34,16 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
     guides: copy.navigation.guides,
     industries: copy.navigation.industries,
   }
+  const isDocsCurrent =
+    current === "docs" ||
+    current === "docsMcp" ||
+    current === "docsClients" ||
+    current === "docsSdk" ||
+    current === "docsTroubleshooting"
   const nav: readonly { view: View; label: string }[] = [
     { view: "services", label: copy.topBar.services },
     { view: "dev", label: copy.topBar.developers },
+    { view: "docs", label: copy.topBar.docs },
     { view: "accuracy", label: copy.topBar.accuracy },
   ]
   return (
@@ -64,7 +76,11 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
               key={item.view}
               className="ghlink"
               href={viewPaths[item.view]}
-              aria-current={item.view === current ? "page" : undefined}
+              aria-current={
+                item.view === current || (item.view === "docs" && isDocsCurrent)
+                  ? "page"
+                  : undefined
+              }
               onMouseEnter={() => void loadView(item.view)}
               onFocus={() => void loadView(item.view)}
               onClick={navClick(() => go(item.view))}

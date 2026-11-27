@@ -5,6 +5,11 @@ import type { View } from "./routing"
 export interface ViewComponents {
   demo: ComponentType<DemoWorkspaceProps>
   dev: ComponentType<{ go: (next: View) => void; onCoverage: () => void }>
+  docs: ComponentType<{ go: (next: View) => void }>
+  docsMcp: ComponentType<{ go: (next: View) => void }>
+  docsClients: ComponentType<{ go: (next: View) => void }>
+  docsSdk: ComponentType<{ go: (next: View) => void }>
+  docsTroubleshooting: ComponentType<{ go: (next: View) => void }>
   transparency: ComponentType<{ go: (next: View) => void }>
   testdata: ComponentType<{ go: (next: View) => void }>
   privacy: ComponentType<{ go: (next: View) => void }>
@@ -27,6 +32,11 @@ const inflight: Partial<Record<View, Promise<unknown>>> = {}
 const importers: { [K in View]: () => Promise<ViewComponents[K]> } = {
   demo: () => import("./components/DemoWorkspace").then((m) => m.DemoWorkspace),
   dev: () => import("./components/Developers").then((m) => m.Developers),
+  docs: () => import("./components/Docs").then((m) => m.DocsOverview),
+  docsMcp: () => import("./components/Docs").then((m) => m.DocsMcp),
+  docsClients: () => import("./components/Docs").then((m) => m.DocsClients),
+  docsSdk: () => import("./components/Docs").then((m) => m.DocsSdk),
+  docsTroubleshooting: () => import("./components/Docs").then((m) => m.DocsTroubleshooting),
   transparency: () => import("./components/Transparency").then((m) => m.Transparency),
   testdata: () => import("./components/TestData").then((m) => m.TestData),
   privacy: () => import("./components/PrivacyPolicy").then((m) => m.PrivacyPolicy),
