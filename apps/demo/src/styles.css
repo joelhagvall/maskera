@@ -512,6 +512,7 @@ html[data-theme="dark"] .stage-window .hl {
   color: #09090b;
 }
 .agent-call-args {
+  margin-left: 0.3em;
   color: #71717a;
 }
 .agent-step-body {
