@@ -1194,7 +1194,7 @@
     "heroAddTo": "Lägg till i {browser}, gratis",
     "heroAddToVia": "Lägg till i {browser} via {store}",
     "heroInstall": "Installera tillägget",
-    "heroTryDemo": "Testa i webbläsaren",
+    "heroDesktopExtension": "Se tillägget för datorn",
     "heroAgents": "Koppla till din agent",
     "body": "Ingen inloggning krävs förrän du vill aktivera Pro. Tillägget finns i Chrome Web Store. Edge och Firefox öppnar löpande, och i Edge kan du redan nu installera det manuellt.",
     "zipLead": "Väntar du på din webbläsares butik?",

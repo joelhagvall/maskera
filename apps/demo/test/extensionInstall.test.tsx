@@ -101,14 +101,18 @@ describe("ExtensionHeroActions", () => {
     expect(heroButton(container, "firefox").getAttribute("href")).toBe("/tjanster#tillagg")
   })
 
-  it("sends phones to the in-page demo without a desktop browser icon", () => {
+  it("sends phones to the desktop extension section without a browser icon", () => {
     chromeLive()
-    const { container } = render(<ExtensionHeroActions goSection={vi.fn()} />)
+    const goSection = vi.fn()
+    const { container } = render(<ExtensionHeroActions goSection={goSection} />)
 
-    const demo = heroButton(container, "mobile")
-    expect(demo.textContent).toBe(copy.extensionInstall.heroTryDemo)
-    expect(demo.getAttribute("href")).toBe("#testa")
-    expect(demo.querySelector("svg")).toBeNull()
+    const phone = heroButton(container, "mobile")
+    expect(phone.textContent).toBe(copy.extensionInstall.heroDesktopExtension)
+    expect(phone.getAttribute("href")).toBe("/tjanster#tillagg")
+    expect(phone.getAttribute("target")).toBeNull()
+    expect(phone.querySelector("svg")).toBeNull()
+    fireEvent.click(phone)
+    expect(goSection).toHaveBeenLastCalledWith("services", "tillagg")
   })
 })
 

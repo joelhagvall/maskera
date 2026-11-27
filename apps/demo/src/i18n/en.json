@@ -1194,7 +1194,7 @@
     "heroAddTo": "Add to {browser}, it's free",
     "heroAddToVia": "Add to {browser} via {store}",
     "heroInstall": "Install the extension",
-    "heroTryDemo": "Try it in your browser",
+    "heroDesktopExtension": "See the desktop extension",
     "heroAgents": "Connect to your agent",
     "body": "No account is needed until you activate Pro. The extension is in the Chrome Web Store. Edge and Firefox are rolling out, and you can install it manually in Edge today.",
     "zipLead": "Waiting for your browser's store?",

@@ -7,7 +7,7 @@ import { CopyButton } from "./CopyButton"
 
 export const INSTALL_ANCHOR = "installera"
 
-/** The home page's try-it-yourself demo, where phones are sent. */
+/** The home page's try-it-yourself demo section. */
 export const DEMO_ANCHOR = "testa"
 
 /** Where the hero's buttons land on the services page (section ids there). */
@@ -20,9 +20,10 @@ export const SERVICES_SECTIONS = {
 
 /**
  * Hero call to action. One primary button that fits the visitor: the store
- * button for their browser once that listing is live, the install section on
- * the services page until then, and the in-page demo on phones, which cannot
- * run extensions. The second button gives AI agents the same weight.
+ * button for their browser once that listing is live, and the install section
+ * on the services page until then. Phones cannot run desktop extensions, so
+ * they get the same install section labelled as the desktop extension, with
+ * no browser icon. The second button gives AI agents the same weight.
  */
 export function ExtensionHeroActions({
   goSection,
@@ -39,9 +40,10 @@ export function ExtensionHeroActions({
             key={visitor}
             data-for={visitor}
             className="hero-cta hero-cta-primary"
-            href={`#${DEMO_ANCHOR}`}
+            href={`${viewPaths.services}#${SERVICES_SECTIONS.extension}`}
+            onClick={navClick(() => goSection("services", SERVICES_SECTIONS.extension))}
           >
-            {text.heroTryDemo}
+            {text.heroDesktopExtension}
           </a>
         )
       }
