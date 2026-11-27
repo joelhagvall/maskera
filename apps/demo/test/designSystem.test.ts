@@ -87,6 +87,18 @@ describe("design system guard", () => {
     expect(spaced, "only negative tracking (tight headings) is allowed").toEqual([])
   })
 
+  it("keeps prose element styles out of the product windows", () => {
+    // The hero scenes also sit inside prose on the product page; bare
+    // .prose li/strong/code/pre rules gave them bullets, invisible bold text
+    // and a dark code block there (2026-11-27).
+    const offenders = rules(css)
+      .flatMap(([selector]) => selector.split(","))
+      .map((selector) => selector.trim())
+      .filter((selector) => /^\.prose (ul|li|strong|code|pre)\b/.test(selector))
+      .filter((selector) => !selector.includes(":not(:where(.hero-window *))"))
+    expect(offenders, "add :not(:where(.hero-window *)) to prose element rules").toEqual([])
+  })
+
   it("keeps monospace to code the reader copies", () => {
     // Joel 2026-11-26: no monospace in the UI; terminal and code blocks keep
     // it. Placeholders, demo text and labels use the sans face.

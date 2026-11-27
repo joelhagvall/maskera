@@ -50,6 +50,31 @@ export function sitemapPaths(xml, lang) {
   return unique.filter((p) => lang === "all" || p.lang === lang).map((p) => p.path)
 }
 
+/**
+ * Load every image before the full-page screenshot, lazy ones included: a
+ * full-page capture never scrolls, so a loading="lazy" image below the fold
+ * would show as an empty frame. Returns the src of every shown image that
+ * still has no pixels, which the run reports as an error.
+ */
+export async function loadEveryImage(page) {
+  return page.evaluate(async () => {
+    const images = [...document.images]
+    for (const img of images) img.loading = "eager"
+    const settled = (img) =>
+      img.complete
+        ? null
+        : new Promise((done) => {
+            img.addEventListener("load", done, { once: true })
+            img.addEventListener("error", done, { once: true })
+          })
+    const timeout = new Promise((done) => setTimeout(done, 10_000))
+    await Promise.race([Promise.all(images.map(settled)), timeout])
+    return images
+      .filter((img) => getComputedStyle(img).display !== "none" && img.naturalWidth === 0)
+      .map((img) => img.getAttribute("src"))
+  })
+}
+
 /** Keep only the comma-separated `only` paths; an empty list keeps them all. */
 export function onlyPaths(paths, only) {
   const wanted = only
@@ -121,6 +146,8 @@ async function main() {
             overflowX: document.documentElement.scrollWidth - innerWidth,
           }
         })
+        const brokenImages = await loadEveryImage(page)
+        for (const src of brokenImages) pageErrors.push(`image did not load: ${src}`)
         const routeErrors = pageErrors.slice(beforeCount)
         metrics.push({ viewport: vp.id, theme, path, ...metric, consoleErrors: routeErrors })
         const file = `${vp.id}-${slug(path)}.png`
