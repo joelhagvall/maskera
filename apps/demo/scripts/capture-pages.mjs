@@ -76,14 +76,19 @@ export async function loadEveryImage(page) {
 }
 
 /** Keep only the comma-separated `only` paths; an empty list keeps them all. */
-export function onlyPaths(paths, only) {
+export function onlyPaths(paths, only, lang = "sv") {
   const wanted = only
     .split(",")
     .map((p) => p.trim())
     .filter(Boolean)
   if (wanted.length === 0) return paths
   const unknown = wanted.filter((p) => !paths.includes(p))
-  if (unknown.length > 0) throw new Error(`--only paths not in the sitemap: ${unknown.join(", ")}`)
+  if (unknown.length > 0) {
+    // prova and this script check one locale per run (--lang, default sv).
+    const hint =
+      lang === "sv" ? " (English pages need --lang=en)" : " (Swedish pages need --lang=sv)"
+    throw new Error(`--only paths not in the ${lang} sitemap: ${unknown.join(", ")}${hint}`)
+  }
   return paths.filter((p) => wanted.includes(p))
 }
 
@@ -99,6 +104,7 @@ async function main() {
   const paths = onlyPaths(
     sitemapPaths(readFileSync(join(ROOT, "public", "sitemap.xml"), "utf8"), lang),
     only,
+    lang,
   )
   if (paths.length === 0) throw new Error(`no sitemap pages for --lang=${lang} --only=${only}`)
   mkdirSync(OUT, { recursive: true })

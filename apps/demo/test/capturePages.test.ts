@@ -14,5 +14,6 @@ describe("capture-pages --only", () => {
 
   it("refuses a path the sitemap does not have instead of shooting nothing", () => {
     expect(() => onlyPaths(paths, "/developers")).toThrow("/developers")
+    expect(() => onlyPaths(paths, "/en/security")).toThrow("English pages need --lang=en")
   })
 })
