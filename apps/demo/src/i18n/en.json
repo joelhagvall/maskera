@@ -1185,6 +1185,7 @@
   },
   "extensionInstall": {
     "heroAddTo": "Add to {browser}, it's free",
+    "heroAddToVia": "Add to {browser} via {store}",
     "heroInstall": "Install the extension",
     "heroTryDemo": "Try it in your browser",
     "heroAgents": "Connect to your agent",

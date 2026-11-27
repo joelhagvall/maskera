@@ -1185,6 +1185,7 @@
   },
   "extensionInstall": {
     "heroAddTo": "Lägg till i {browser}, gratis",
+    "heroAddToVia": "Lägg till i {browser} via {store}",
     "heroInstall": "Installera tillägget",
     "heroTryDemo": "Testa i webbläsaren",
     "heroAgents": "Koppla till din agent",

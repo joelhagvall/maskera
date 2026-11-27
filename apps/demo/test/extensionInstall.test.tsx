@@ -21,13 +21,13 @@ const { ExtensionHeroActions, ExtensionInstall } = await import(
   "../src/components/ExtensionInstall"
 )
 
-const CHROME_UA =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.7444.59 Safari/537.36"
-const IPHONE_UA =
-  "Mozilla/5.0 (iPhone; CPU iPhone OS 27_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1"
-
-function setUserAgent(value: string) {
-  Object.defineProperty(window.navigator, "userAgent", { value, configurable: true })
+/** The prerendered hero button for one visitor kind (CSS shows only that one). */
+function heroButton(container: HTMLElement, visitor: string): HTMLAnchorElement {
+  const button = container.querySelector<HTMLAnchorElement>(
+    `.hero-cta-primary[data-for="${visitor}"]`,
+  )
+  if (!button) throw new Error(`no hero button for ${visitor}`)
+  return button
 }
 
 function allSoon() {
@@ -47,20 +47,30 @@ function chromeLive() {
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
-  setUserAgent(CHROME_UA)
 })
 
 describe("ExtensionHeroActions", () => {
+  it("prerenders one primary button per visitor kind, none tied to the user agent", () => {
+    allSoon()
+    const { container } = render(<ExtensionHeroActions goSection={vi.fn()} />)
+    const kinds = [...container.querySelectorAll(".hero-cta-primary")].map((a) =>
+      a.getAttribute("data-for"),
+    )
+    expect(kinds).toEqual(["chrome", "edge", "firefox", "safari", "mobile"])
+  })
+
   it("points to the services install section while no store listing is live", () => {
     allSoon()
-    setUserAgent(CHROME_UA)
     const goSection = vi.fn()
-    render(<ExtensionHeroActions goSection={goSection} />)
+    const { container } = render(<ExtensionHeroActions goSection={goSection} />)
 
-    const install = screen.getByRole("link", { name: copy.extensionInstall.heroInstall })
-    expect(install.getAttribute("href")).toBe("/tjanster#tillagg")
-    expect(install.querySelector("svg")).toBeTruthy()
-    fireEvent.click(install)
+    for (const visitor of ["chrome", "edge", "firefox", "safari"]) {
+      const install = heroButton(container, visitor)
+      expect(install.textContent).toBe(copy.extensionInstall.heroInstall)
+      expect(install.getAttribute("href")).toBe("/tjanster#tillagg")
+      expect(install.querySelector("svg")).toBeTruthy()
+    }
+    fireEvent.click(heroButton(container, "chrome"))
     expect(goSection).toHaveBeenLastCalledWith("services", "tillagg")
 
     const writeText = vi.fn().mockResolvedValue(undefined)
@@ -74,23 +84,28 @@ describe("ExtensionHeroActions", () => {
     expect(writeText).toHaveBeenCalledWith(copy.agentSetup.promptText)
   })
 
-  it("offers the visitor's store once that listing is live", () => {
+  it("offers the Chrome Web Store to Chrome, and to Edge until Edge Add-ons is live", () => {
     chromeLive()
-    setUserAgent(CHROME_UA)
-    render(<ExtensionHeroActions goSection={vi.fn()} />)
+    const { container } = render(<ExtensionHeroActions goSection={vi.fn()} />)
 
-    const add = screen.getByRole("link", { name: "Lägg till i Chrome, gratis" })
+    const add = heroButton(container, "chrome")
+    expect(add.textContent).toBe("Lägg till i Chrome, gratis")
     expect(add.getAttribute("href")).toBe("https://chromewebstore.google.com/detail/example")
     expect(add.getAttribute("target")).toBe("_blank")
     expect(add.querySelector("svg")).toBeTruthy()
+
+    const edge = heroButton(container, "edge")
+    expect(edge.textContent).toBe("Lägg till i Edge via Chrome Web Store")
+    expect(edge.getAttribute("href")).toBe("https://chromewebstore.google.com/detail/example")
+    expect(heroButton(container, "firefox").getAttribute("href")).toBe("/tjanster#tillagg")
   })
 
   it("sends phones to the in-page demo without a desktop browser icon", () => {
     chromeLive()
-    setUserAgent(IPHONE_UA)
-    render(<ExtensionHeroActions goSection={vi.fn()} />)
+    const { container } = render(<ExtensionHeroActions goSection={vi.fn()} />)
 
-    const demo = screen.getByRole("link", { name: copy.extensionInstall.heroTryDemo })
+    const demo = heroButton(container, "mobile")
+    expect(demo.textContent).toBe(copy.extensionInstall.heroTryDemo)
     expect(demo.getAttribute("href")).toBe("#testa")
     expect(demo.querySelector("svg")).toBeNull()
   })

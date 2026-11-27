@@ -1,10 +1,5 @@
 import type { ReactElement } from "react"
-import {
-  EXTENSION_BROWSERS,
-  EXTENSION_DOWNLOAD_URL,
-  featuredBrowser,
-  useVisitorBrowser,
-} from "../extensionBrowsers"
+import { EXTENSION_BROWSERS, EXTENSION_DOWNLOAD_URL, heroTargets } from "../extensionBrowsers"
 import copy from "../i18n"
 import { AgentLogoStack, ArrowUpRightIcon, BROWSER_ICONS } from "../icons"
 import { navClick, type View, viewPaths } from "../routing"
@@ -35,42 +30,56 @@ export function ExtensionHeroActions({
   goSection: (view: View, anchor: string) => void
 }) {
   const text = copy.extensionInstall
-  const visitor = useVisitorBrowser()
-  const featured = featuredBrowser(visitor, EXTENSION_BROWSERS)
 
-  let primary: ReactElement
-  if (featured?.storeUrl) {
-    const Icon = BROWSER_ICONS[featured.id]
-    primary = (
-      <a
-        className="hero-cta hero-cta-primary"
-        href={featured.storeUrl}
-        target="_blank"
-        rel="noreferrer"
-      >
-        <Icon size={16} />
-        {text.heroAddTo.replace("{browser}", text.browsers[featured.id].name)}
-      </a>
-    )
-  } else if (visitor === "mobile") {
-    primary = (
-      <a className="hero-cta hero-cta-primary" href={`#${DEMO_ANCHOR}`}>
-        {text.heroTryDemo}
-      </a>
-    )
-  } else {
-    const Icon = BROWSER_ICONS[visitor]
-    primary = (
-      <a
-        className="hero-cta hero-cta-primary"
-        href={`${viewPaths.services}#${SERVICES_SECTIONS.extension}`}
-        onClick={navClick(() => goSection("services", SERVICES_SECTIONS.extension))}
-      >
-        <Icon size={16} />
-        {text.heroInstall}
-      </a>
-    )
-  }
+  const primary: ReactElement[] = heroTargets(EXTENSION_BROWSERS).map(
+    ({ visitor, storeUrl, via }) => {
+      if (visitor === "mobile") {
+        return (
+          <a
+            key={visitor}
+            data-for={visitor}
+            className="hero-cta hero-cta-primary"
+            href={`#${DEMO_ANCHOR}`}
+          >
+            {text.heroTryDemo}
+          </a>
+        )
+      }
+      const Icon = BROWSER_ICONS[visitor]
+      if (storeUrl) {
+        const name = text.browsers[visitor].name
+        return (
+          <a
+            key={visitor}
+            data-for={visitor}
+            className="hero-cta hero-cta-primary"
+            href={storeUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <Icon size={16} />
+            {via
+              ? text.heroAddToVia
+                  .replace("{browser}", name)
+                  .replace("{store}", text.browsers[via].store)
+              : text.heroAddTo.replace("{browser}", name)}
+          </a>
+        )
+      }
+      return (
+        <a
+          key={visitor}
+          data-for={visitor}
+          className="hero-cta hero-cta-primary"
+          href={`${viewPaths.services}#${SERVICES_SECTIONS.extension}`}
+          onClick={navClick(() => goSection("services", SERVICES_SECTIONS.extension))}
+        >
+          <Icon size={16} />
+          {text.heroInstall}
+        </a>
+      )
+    },
+  )
 
   return (
     <div className="hero-install">

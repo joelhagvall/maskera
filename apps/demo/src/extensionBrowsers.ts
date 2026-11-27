@@ -1,4 +1,3 @@
-import { useSyncExternalStore } from "react"
 import { PORTAL_ORIGIN } from "./portal"
 
 export type BrowserId = "chrome" | "edge" | "firefox" | "safari"
@@ -29,38 +28,43 @@ export const EXTENSION_BROWSERS: readonly ExtensionBrowser[] = [
 export const EXTENSION_DOWNLOAD_URL = `${PORTAL_ORIGIN}/downloads/maskera-extension-0.2.0.zip`
 
 /**
- * Maps a user agent to the extension build the visitor can install. Phones
- * and tablets cannot run desktop extensions; unknown desktop browsers
- * (Brave, Arc, Opera, Vivaldi) are Chromium and take the Chrome build.
+ * The hero's store button for one kind of visitor. public/theme-init.js reads
+ * the user agent before first paint and sets `html[data-browser]` to one of
+ * these kinds; the stylesheet then shows only the matching button, so the
+ * prerendered page never flashes another browser's button. Phones and
+ * tablets cannot run desktop extensions; unknown desktop browsers (Brave,
+ * Arc, Opera, Vivaldi) are Chromium and take the Chrome build.
  */
-export function detectBrowser(userAgent: string): VisitorBrowser {
-  if (/Android|iPhone|iPad|iPod|Mobile/i.test(userAgent)) return "mobile"
-  if (/Edg\//.test(userAgent)) return "edge"
-  if (/Firefox\//.test(userAgent)) return "firefox"
-  if (/Safari\//.test(userAgent) && !/Chrome\/|Chromium\//.test(userAgent)) return "safari"
-  return "chrome"
+export type HeroTarget = {
+  visitor: VisitorBrowser
+  /** Store listing to link, or null when the hero should link elsewhere. */
+  storeUrl: string | null
+  /** Set when the link is another browser's store, as Edge uses Chrome's. */
+  via: BrowserId | null
 }
 
-const noSubscription = () => () => {}
+export const VISITOR_KINDS: readonly VisitorBrowser[] = [
+  "chrome",
+  "edge",
+  "firefox",
+  "safari",
+  "mobile",
+]
 
 /**
- * The visitor's browser for rendering. The prerender and the hydration pass
- * use "chrome" so the static HTML matches; React then re-renders once with
- * the real user agent.
+ * One hero target per visitor kind. Edge installs from the Chrome Web Store
+ * after one "allow extensions from other stores" prompt, so it links there
+ * until its own Edge Add-ons listing is live.
  */
-export function useVisitorBrowser(): VisitorBrowser {
-  return useSyncExternalStore(
-    noSubscription,
-    () => detectBrowser(navigator.userAgent),
-    () => "chrome",
-  )
-}
-
-/** The browser whose store button the hero shows, if its listing is live. */
-export function featuredBrowser(
-  visitor: VisitorBrowser,
-  browsers: readonly ExtensionBrowser[],
-): ExtensionBrowser | undefined {
-  if (visitor === "mobile") return undefined
-  return browsers.find((browser) => browser.id === visitor && browser.storeUrl)
+export function heroTargets(browsers: readonly ExtensionBrowser[]): HeroTarget[] {
+  const storeOf = (id: BrowserId) => browsers.find((browser) => browser.id === id)?.storeUrl ?? null
+  return VISITOR_KINDS.map((visitor) => {
+    if (visitor === "mobile") return { visitor, storeUrl: null, via: null }
+    const own = storeOf(visitor)
+    if (own) return { visitor, storeUrl: own, via: null }
+    const chrome = visitor === "edge" ? storeOf("chrome") : null
+    return chrome
+      ? { visitor, storeUrl: chrome, via: "chrome" }
+      : { visitor, storeUrl: null, via: null }
+  })
 }

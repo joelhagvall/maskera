@@ -1556,6 +1556,19 @@ html[data-theme="dark"] .tag {
 .hero-cta-primary:hover {
   opacity: 0.85;
 }
+/* One primary button per visitor kind is prerendered; theme-init.js sets
+   html[data-browser] before first paint and only the matching one shows. */
+.hero-cta-primary[data-for] {
+  display: none;
+}
+html:not([data-browser]) .hero-cta-primary[data-for="chrome"],
+html[data-browser="chrome"] .hero-cta-primary[data-for="chrome"],
+html[data-browser="edge"] .hero-cta-primary[data-for="edge"],
+html[data-browser="firefox"] .hero-cta-primary[data-for="firefox"],
+html[data-browser="safari"] .hero-cta-primary[data-for="safari"],
+html[data-browser="mobile"] .hero-cta-primary[data-for="mobile"] {
+  display: inline-flex;
+}
 .hero-cta-secondary {
   color: var(--fg);
   background: var(--bg);

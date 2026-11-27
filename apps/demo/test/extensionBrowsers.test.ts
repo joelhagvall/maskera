@@ -1,10 +1,20 @@
+import { readFileSync } from "node:fs"
+import { runInNewContext } from "node:vm"
 import { describe, expect, it } from "vitest"
-import {
-  detectBrowser,
-  EXTENSION_BROWSERS,
-  EXTENSION_DOWNLOAD_URL,
-  featuredBrowser,
-} from "../src/extensionBrowsers"
+import { EXTENSION_BROWSERS, EXTENSION_DOWNLOAD_URL, heroTargets } from "../src/extensionBrowsers"
+
+const themeInit = readFileSync(new URL("../public/theme-init.js", import.meta.url), "utf8")
+
+/** Runs the real public/theme-init.js for one user agent; returns html[data-browser]. */
+function detectBrowser(userAgent: string): string | undefined {
+  const documentElement = { dataset: {} as Record<string, string>, style: {} }
+  runInNewContext(themeInit, {
+    localStorage: { getItem: () => null },
+    navigator: { userAgent },
+    document: { documentElement, querySelectorAll: () => [] },
+  })
+  return documentElement.dataset.browser
+}
 
 const UA = {
   chrome:
@@ -37,16 +47,50 @@ describe("detectBrowser", () => {
   })
 })
 
-describe("featuredBrowser", () => {
-  const live = [
+describe("heroTargets", () => {
+  const chromeLive = [
     { id: "chrome", storeUrl: "https://chromewebstore.google.com/detail/example" },
     { id: "edge", storeUrl: null },
+    { id: "firefox", storeUrl: null },
+    { id: "safari", storeUrl: null },
   ] as const
+  const target = (browsers: Parameters<typeof heroTargets>[0], visitor: string) =>
+    heroTargets(browsers).find((t) => t.visitor === visitor)
 
-  it("features the visitor's browser only once its store listing is live", () => {
-    expect(featuredBrowser("chrome", live)?.id).toBe("chrome")
-    expect(featuredBrowser("edge", live)).toBeUndefined()
-    expect(featuredBrowser("mobile", live)).toBeUndefined()
+  it("has one target per kind theme-init.js can set", () => {
+    expect(heroTargets(chromeLive).map((t) => t.visitor)).toEqual([
+      "chrome",
+      "edge",
+      "firefox",
+      "safari",
+      "mobile",
+    ])
+  })
+
+  it("links each browser to its own live store", () => {
+    expect(target(chromeLive, "chrome")).toMatchObject({
+      storeUrl: chromeLive[0].storeUrl,
+      via: null,
+    })
+  })
+
+  it("sends Edge to the Chrome Web Store until Edge Add-ons is live", () => {
+    expect(target(chromeLive, "edge")).toMatchObject({
+      storeUrl: chromeLive[0].storeUrl,
+      via: "chrome",
+    })
+    const edgeLive = chromeLive.map((b) =>
+      b.id === "edge"
+        ? { ...b, storeUrl: "https://microsoftedge.microsoft.com/addons/detail/x" }
+        : b,
+    )
+    expect(target(edgeLive, "edge")).toMatchObject({ via: null })
+  })
+
+  it("leaves Firefox, Safari and phones without a store link until theirs is live", () => {
+    expect(target(chromeLive, "firefox")?.storeUrl).toBeNull()
+    expect(target(chromeLive, "safari")?.storeUrl).toBeNull()
+    expect(target(chromeLive, "mobile")?.storeUrl).toBeNull()
   })
 })
 
