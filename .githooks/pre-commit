@@ -6,6 +6,9 @@ node scripts/check-fresh-main.mjs
 node scripts/harness/biome-ratchet.mjs
 node scripts/check-benchmark-sync.mjs
 node scripts/harness/check-product-sync.mjs
+# A PII product: no real identifiers in fixtures, and the training privacy guards hold.
+node scripts/check-fixture-identifiers.mjs
+node --test training/privacy_guard.test.mjs training/privacy_attestation.test.mjs
 
 staged_lint=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx|js|jsx|mjs|cjs|json|css)$' || true)
 if [ -n "$staged_lint" ]; then

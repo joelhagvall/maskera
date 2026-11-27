@@ -8,7 +8,7 @@ node scripts/check-benchmark-sync.mjs
 node scripts/harness/check-product-sync.mjs
 pnpm run check:tooling
 pnpm run typecheck
-pnpm -r test -- --sequence.shuffle
+pnpm -r test --sequence.shuffle
 
 # Run pa11y against a fresh local build whenever outgoing commits touch apps/demo.
 demo_changed=""
@@ -30,7 +30,10 @@ while read -r local_ref local_oid remote_ref remote_oid; do
 done
 
 if [ -n "$demo_changed" ]; then
-  echo "pre-push: apps/demo changed; building and running pa11y accessibility audit..."
+  echo "pre-push: apps/demo changed; building, then pa11y and prova on every sitemap page..."
   pnpm --filter @maskera/demo build
   pnpm --filter @maskera/demo audit:a11y
+  # The commit receipt may cover only the pages a session tried; the push checks
+  # all of them (sv + en, light + dark, desktop + mobile, overflow + console errors).
+  node scripts/harness/prova.mjs --no-build --lang=all --only=
 fi

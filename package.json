@@ -9,7 +9,7 @@
     "prepare": "node scripts/harness/install-local-guards.mjs --if-possible",
     "harness:install": "node scripts/harness/install-local-guards.mjs",
     "build": "pnpm check:benchmarks && pnpm check:product && pnpm -r build",
-    "test": "pnpm check:fresh && pnpm check:benchmarks && pnpm check:product && pnpm check:lint-ratchet && pnpm check:fixtures && pnpm check:training-privacy && pnpm check:tooling && pnpm -r test -- --sequence.shuffle",
+    "test": "pnpm check:fresh && pnpm check:benchmarks && pnpm check:product && pnpm check:lint-ratchet && pnpm check:fixtures && pnpm check:training-privacy && pnpm check:tooling && pnpm -r test --sequence.shuffle",
     "test:mcp:e2e": "pnpm --filter @maskera/mcp test:e2e",
     "test:mcp:harnesses": "pnpm --filter @maskera/mcp test:harnesses",
     "test:mcp:pack": "pnpm --filter @maskera/mcp test:pack",
