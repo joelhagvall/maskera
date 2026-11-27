@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { existsSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { fireEvent, render, screen, within } from "@testing-library/react"
@@ -65,6 +65,22 @@ describe("Header", () => {
     const agentScene = container.querySelector('[data-stage="agent"]')
     expect(agentScene?.textContent).toContain(stage.agent.worksWith)
     expect(agentScene?.textContent).toContain(stage.agent.maskedCount.replace("{count}", "5"))
+  })
+
+  it("shows the agent run as calls to real @maskera/mcp tools", () => {
+    const { container } = renderHeader()
+    const agentScene = container.querySelector('[data-stage="agent"]')
+    const calls = [...(agentScene?.querySelectorAll(".agent-call-name") ?? [])].map(
+      (call) => call.textContent,
+    )
+    expect(calls).toEqual(["maskera_read_file", "maskera_write_file"])
+    // A renamed or removed tool must fail here, not leave the hero showing a
+    // call no agent can make.
+    const server = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "../../../packages/mcp/src/server.ts"),
+      "utf8",
+    )
+    for (const name of calls) expect(server).toContain(`name: "${name}"`)
   })
 
   it("switches between the three places on tab click", () => {

@@ -113,10 +113,10 @@ export const PencilIcon = (p: IconProps) => (
   </Svg>
 )
 
-export const EyeIcon = (p: IconProps) => (
+/** A wrench: the row is a tool call, as coding agents mark them. */
+export const ToolIcon = (p: IconProps) => (
   <Svg {...p}>
-    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
-    <circle cx="12" cy="12" r="3" />
+    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z" />
   </Svg>
 )
 

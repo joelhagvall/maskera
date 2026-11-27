@@ -489,11 +489,30 @@ html[data-theme="dark"] .stage-window .hl {
   font-size: 13px;
   color: #71717a;
 }
-.agent-step-head span:first-child {
+/* A tool call row: wrench, tool name and arguments. Long argument lists
+   wrap inside the row instead of widening the window. */
+.agent-call {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   gap: 7px;
+  min-width: 0;
   color: #3f3f46;
+}
+.agent-call svg {
+  flex: none;
+  align-self: flex-start;
+  margin-top: 3px;
+  color: #71717a;
+}
+.agent-call-text {
+  overflow-wrap: anywhere;
+}
+.agent-call-name {
+  font-weight: 500;
+  color: #09090b;
+}
+.agent-call-args {
+  color: #71717a;
 }
 .agent-step-body {
   margin: 6px 0 0;
@@ -530,11 +549,6 @@ html[data-theme="dark"] .stage-window .hl {
   background: #fafafa;
   font-size: 13px;
   color: #09090b;
-}
-.agent-diff-stat {
-  font-size: 12.5px;
-  font-variant-numeric: tabular-nums;
-  color: #52525b;
 }
 .agent-diff-note {
   margin-left: auto;

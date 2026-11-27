@@ -1,5 +1,6 @@
 import { type ReactNode, useState } from "react"
 import {
+  AGENT_FILES,
   HERO_SCENE,
   HERO_SCENE_WIDTH,
   HERO_STAGES,
@@ -14,10 +15,10 @@ import {
   CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  EyeIcon,
   LockIcon,
   MaskeraMark,
   PencilIcon,
+  ToolIcon,
 } from "../icons"
 import { RedactedText, RestoredText } from "../segments"
 
@@ -34,7 +35,7 @@ const CODE_LINES = [
 
 /**
  * The hero stage: one task (HERO_SCENE) shown in the browser extension, in an
- * AI agent behind the local proxy and in your own code, with the same
+ * AI agent calling Maskera's MCP tools and in your own code, with the same
  * sentence and the same placeholders. The scenes share one grid cell, so the
  * stage keeps the tallest one's height and never jumps on switch. Only the
  * shown scene reaches assistive tech and the tab order. The stage stays light
@@ -137,11 +138,12 @@ function BrowserScene() {
 
 /**
  * A neutral coding-agent window (the genre of Codex or T3 Code, no real
- * product's look): a thread list, the run as compact tool rows and a changed
- * file. The agent reads a file and the local proxy masks the tool result
- * before the model sees it; the model writes the decision with placeholders
- * and the proxy restores them in the tool call before the file is written.
- * That is the proxy mode end to end.
+ * product's look): a thread list, the run as the tool calls an agent shows
+ * and a changed file. The agent calls `maskera_read_file`, which masks the
+ * file before the model sees it; the model writes the decision with
+ * placeholders through `maskera_write_file`, which restores them locally
+ * before the file is written. Those are the real @maskera/mcp tool names and
+ * arguments, so the scene is what a user sees in their agent.
  */
 function AgentScene() {
   const agent = copy.header.stage.agent
@@ -175,10 +177,7 @@ function AgentScene() {
           <p className="agent-message">{agent.userMessage}</p>
           <div className="agent-step">
             <p className="agent-step-head">
-              <span>
-                <EyeIcon size={13} />
-                {agent.toolRead}
-              </span>
+              <ToolCall name="maskera_read_file" args={[["path", AGENT_FILES.read]]} />
               <span>
                 {agent.maskedCount.replace("{count}", String(placeholderCount(HERO_SCENE.masked)))}
               </span>
@@ -191,8 +190,13 @@ function AgentScene() {
           <p className="agent-reply">{agent.plan}</p>
           <div className="agent-diff">
             <p className="agent-diff-head">
-              <span>{agent.edited}</span>
-              <span className="agent-diff-stat">+1</span>
+              <ToolCall
+                name="maskera_write_file"
+                args={[
+                  ["path", AGENT_FILES.write],
+                  ["content", contentPreview(HERO_SCENE.reply)],
+                ]}
+              />
               <span className="agent-diff-note">{agent.writeRestored}</span>
             </p>
             <p className="agent-diff-line">
@@ -223,6 +227,31 @@ function AgentScene() {
       </p>
     </div>
   )
+}
+
+/**
+ * One tool call as coding agents print it: the tool name and its arguments.
+ * Agents list MCP tools by name, so this is the row the user sees. Sans like
+ * the rest of the UI: monospace is for code blocks only.
+ */
+function ToolCall({ name, args }: { name: string; args: [string, string][] }) {
+  return (
+    <span className="agent-call">
+      <ToolIcon size={13} />
+      <span className="agent-call-text">
+        <span className="agent-call-name">{name}</span>
+        <span className="agent-call-args">
+          ({args.map(([key, value]) => `${key}: "${value}"`).join(", ")})
+        </span>
+      </span>
+    </span>
+  )
+}
+
+/** The start of what the model writes, up to its first placeholder, then an ellipsis. */
+function contentPreview(text: string): string {
+  const cut = text.indexOf("]") + 1
+  return cut > 0 && cut < text.length ? `${text.slice(0, cut)} …` : text
 }
 
 /** The npm package in your own code: the calls, what the model gets, and the reply restored. */

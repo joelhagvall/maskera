@@ -28,6 +28,9 @@ export const HERO_SCENE = {
     "Beslut: [NAMN_1] ([PERSONNUMMER_1]) i [PLATS_1] beviljas bostadsanpassning så att han kan bo kvar. Ersättningen betalas till bankgiro [BANKGIRO_1].",
 } as const
 
+/** The files the agent scene reads and writes through Maskera's MCP tools. */
+export const AGENT_FILES = { read: "ärende.txt", write: "beslut.md" } as const
+
 export const HERO_SCENE_WIDTH = 1368
 
 /** The three places the stage shows, in tab order. */
