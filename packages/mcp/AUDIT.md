@@ -8,8 +8,8 @@
 
 ## Latest audit run
 
-- **Run:** 2026-11-27 (`full` lane, `--release` gate: every gate must PASS), commit `82d7f7e26113`
-- **Package:** `@maskera/mcp@0.4.3`
+- **Run:** 2026-11-28 (`full` lane, `--release` gate: every gate must PASS), commit `c7746d17f4e7`
+- **Package:** `@maskera/mcp@0.4.4`
 - **Model:** `joelhagvall/maskera-sv-ner` (v21, pinned revision `5bd47f3031fea64eb1ae98f77ebfc67882f792fa`)
 - **Test machine:** Apple M4 Pro (12 cores), 24 GiB RAM, `darwin/arm64`, Node `v24.22.1`
 - **Checks:** PASS 31, FAIL 0, BLOCKED 0, NOT TESTED 3
@@ -26,21 +26,21 @@
 | `offline-operation` | privacy-egress | **PASS** | Offline egress attempts blocked: 0 unexpected outbound connections |
 | `real-client-e2e` | integration | **PASS** | Real-client harnesses: 2 passed, 0 failed, 3 not tested; real CLI agents: PASS (claude, codex, opencode) |
 | `production-pipeline-quality` | probabilistic-ner-baseline | **PASS** | structuredRecall=100.0%, overallRecall=100.0%, roundtrip=100.0%, nonPiiRetention=95.0% |
-| `performance-and-soak` | reliability | **PASS** | coldStart=152.87ms, proxyP95=16.92ms, soakHeapDelta=1.22MB |
+| `performance-and-soak` | reliability | **PASS** | coldStart=196.85ms, proxyP95=13.96ms, soakHeapDelta=4.33MB |
 
 **Checks not tested in this run:**
 
 - `clients/claude-desktop-gui` (NOT_TESTED): Claude.app installed, but GUI Electron interaction requires manual session; protocol path verified in e2e-agent-test.mjs
 - `clients/cursor-ide-gui` (NOT_TESTED): Cursor.app installed, but IDE GUI session requires interactive sign-in; .cursor/mcp.json & beforeSubmitPrompt hook verified in unit/E2E tests
-- `clients/cloud-llm-live-opt-in` (NOT_TESTED): Opt-in only (zero paid API calls by default); run with `pnpm test:mcp:harnesses -- --live` to execute against live subscriptions
+- `clients/cloud-llm-live-opt-in` (NOT_TESTED): Opt-in only (zero paid API calls by default); run with `pnpm audit:clients -- --live --max-usd 0.25` to execute against live subscriptions
 
-**Real clients over the installed tarball:** 2.1.332 (Claude Code), codex-cli 0.172.0, opencode v2.4.2: claude/rules:pass(3334ms,redactions=4), claude/auto:pass(1545ms,redactions=80), codex/rules:pass(511ms,redactions=3), codex/auto:pass(938ms,redactions=322), opencode/rules:pass(1443ms,redactions=28), opencode/auto:pass(11129ms,redactions=1466)
+**Real clients over the installed tarball:** 2.1.332 (Claude Code), codex-cli 0.172.0, opencode v2.4.2: claude/rules:pass(5946ms,redactions=4), claude/auto:pass(1358ms,redactions=53), codex/rules:pass(720ms,redactions=3), codex/auto:pass(637ms,redactions=47), opencode/rules:pass(1746ms,redactions=28), opencode/auto:pass(1879ms,redactions=71)
 
 ### Production-pipeline quality (12 unseen documents, `auto` mode)
 
 Measured through the live MCP server and HTTP proxy. The standalone column is the v21 release contract (`docs/benchmark-release.json`, reported in `docs/BENCHMARKS.md`) on its own, larger corpora, so the two columns are not the same test set.
 
-| Metric | Pipeline (`@maskera/mcp@0.4.3`) | Standalone v21 |
+| Metric | Pipeline (`@maskera/mcp@0.4.4`) | Standalone v21 |
 | --- | ---: | ---: |
 | Structured PII recall | 100.0% | 98.4% (structured regression) |
 | Overall entity recall | 100.0% | 100.0% (curated) |
@@ -72,13 +72,13 @@ Measured through the live MCP server and HTTP proxy. The standalone column is th
 
 One run on the machine above; latencies move with machine load, so compare against the gate ceilings in RELEASE_GATES.md, not run to run.
 
-- **CLI cold start (`--version`):** 152.87 ms
-- **Local ONNX model load:** 89 ms
-- **ONNX inference (cache disabled):** p50 9.97 ms, p95 17.55 ms, p99 17.55 ms
-- **HTTP proxy round trip:** p50 11.51 ms, p95 16.92 ms, p99 16.92 ms (median proxy overhead 1.54 ms)
-- **StreamingRestorer:** 10,000 chunks in 2.1 ms
-- **Concurrent burst:** 2085.83 req/s
-- **Soak:** 500 operations, heap delta 1.22 MB, `SessionVault` bounded: yes
+- **CLI cold start (`--version`):** 196.85 ms
+- **Local ONNX model load:** 75 ms
+- **ONNX inference (cache disabled):** p50 9.63 ms, p95 13.39 ms, p99 13.39 ms
+- **HTTP proxy round trip:** p50 10.75 ms, p95 13.96 ms, p99 13.96 ms (median proxy overhead 1.12 ms)
+- **StreamingRestorer:** 10,000 chunks in 2.08 ms
+- **Concurrent burst:** 2025.39 req/s
+- **Soak:** 500 operations, heap delta 4.33 MB, `SessionVault` bounded: yes
 
 ### Packed tarballs
 
@@ -86,7 +86,7 @@ One run on the machine above; latencies move with machine load, so compare again
 | --- | ---: | --- |
 | `@maskera/core` | 86529 | `94fb8e02a3e95e1c01d423a28cf1cc0cb35c17a610050f10d277cdd27f269517` |
 | `maskera` | 109163 | `510d46023d3f22b01e7fa08aa7a31a2eb2f88d988e9f690d18bd913645a2b4b6` |
-| `@maskera/mcp` | 366801 | `e7ff75e225bf42e3d80b1ed9a57ee4f6fd3eb554df7e70f5aa61160e2618b8e9` |
+| `@maskera/mcp` | 384735 | `b8f27369291a75575d8cb4060a79724c36682c5fe89b1f1694c1647ae3cc04f7` |
 
 <!-- audit-results:end -->
 

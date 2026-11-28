@@ -1,5 +1,17 @@
 # @maskera/mcp
 
+## 0.4.4
+
+### Patch Changes
+
+- Fix local proxy over-masking, inspector polish, and MCP vault collision handling:
+
+  - Serve browser icon probes (`/favicon.ico`, `/apple-touch-icon*.png`, `/robots.txt`) locally with HTTP 204 instead of forwarding them upstream as 404s.
+  - Format `/_maskera` inspector timestamps in local browser time and show a safe, rules-redacted upstream error summary for HTTP 4xx/5xx responses.
+  - Classify English `system`, `<system-reminder>`, unfenced TypeScript/JSDoc schema, `# gitStatus`, OpenCode Code Mode tool catalog, and `reasoning_content`/`thinking` blocks per paragraph so deterministic rules and `customTerms` run without Swedish NER false positives, while keeping full hybrid NER on Swedish text and user messages.
+  - Prevent proxy vault tokens from overwriting colliding external MCP `tool_result` placeholders across multi-turn agent loops.
+  - Prioritize user message previews in the `/_maskera` inspector over system boilerplate.
+
 ## 0.4.3
 
 ### Patch Changes
