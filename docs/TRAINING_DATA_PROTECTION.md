@@ -77,6 +77,9 @@ HARD_NEGATIVE_TRAIN_ROWS=5600 HARD_NEGATIVE_VAL_ROWS=560 \
 CLINICAL_CONTRAST_TRAIN_ROWS=4000 CLINICAL_CONTRAST_VAL_ROWS=400 \
 HOMOGRAPH_CONTRAST_TRAIN_ROWS=2400 HOMOGRAPH_CONTRAST_VAL_ROWS=240 \
 REGISTER_PRECISION_TRAIN_ROWS=4000 REGISTER_PRECISION_VAL_ROWS=400 \
+CASED_HOMOGRAPH_TRAIN_ROWS=800 CASED_HOMOGRAPH_VAL_ROWS=80 \
+MIXED_PRECISION_TRAIN_ROWS=6000 MIXED_PRECISION_VAL_ROWS=600 \
+PARAGRAPH_TRAIN_ROWS=6000 PARAGRAPH_VAL_ROWS=400 \
   node generate_data.mjs 90000 5000
 node audit_data.mjs
 node privacy_attestation.mjs
@@ -84,8 +87,9 @@ node verify_attestation.mjs data/privacy-attestation.json
 node --test privacy_guard.test.mjs privacy_attestation.test.mjs
 ```
 
-The published 2026-11-25 v20 artifact therefore contains 108,400 training
-rows and 6,900 disjoint validation rows. Its train, validation, and generator
+The published 2026-11-27 v21 artifact therefore contains 121,200 training
+rows and 7,980 disjoint validation rows (the `train.rows` and
+`validation.rows` of its `privacy-attestation.json`). Its train, validation, and generator
 SHA-256 values are recorded in `docs/BENCHMARKS.md` and bound in the artifact's
 schema-2 attestation. The published weights carry that attestation unchanged.
 
@@ -98,7 +102,7 @@ copyright licence is not a GDPR determination and does not waive rights held
 by other people. Creative Commons itself notes that CC0 does not affect third
 parties' privacy or publicity rights.
 
-For that reason the accurate statement is: **the privacy-clean Maskera v20
+For that reason the accurate statement is: **the privacy-clean Maskera v21
 release adds no sourced real records, plausible real street/number pairs, or
 structured identifiers during fine-tuning or distillation.** An absolute
 claim about all information ever seen during KB-BERT pretraining would require

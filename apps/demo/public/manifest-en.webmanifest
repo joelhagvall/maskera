@@ -1,6 +1,6 @@
 {
   "id": "/en",
-  "name": "maskera: protect personal data before it reaches AI",
+  "name": "Maskera: Use AI without sharing personal data",
   "short_name": "maskera",
   "description": "Mask Swedish personal data in the browser before text is sent to AI.",
   "lang": "en",

@@ -36,7 +36,7 @@ describe("Controls accessibility", () => {
       />,
     )
 
-    const progress = screen.getByRole("progressbar", { name: /Laddar maskeras AI-modell/ })
+    const progress = screen.getByRole("progressbar", { name: /Laddar Maskeras AI-modell/ })
     expect(progress.getAttribute("aria-valuenow")).toBe("42")
     expect(progress.closest('[role="status"]')).not.toBeNull()
     expect(progress.closest(".model-status-group")?.textContent).toContain("sparas lokalt")

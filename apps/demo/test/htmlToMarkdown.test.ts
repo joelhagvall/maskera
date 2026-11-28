@@ -15,7 +15,7 @@ describe("htmlToMarkdown", () => {
     expect(md).toContain("en: https://maskera.dev/en")
     expect(md).toContain("Markdown: https://maskera.dev/index.md")
     expect(md).toContain("https://maskera.dev/llms.txt")
-    expect(md).toContain("maskera är det lokala skyddslagret framför alla AI-modeller")
+    expect(md).toContain("Maskera är det lokala skyddslagret framför alla AI-modeller")
     // Interactive regions and chrome are gone
     expect(md).not.toContain("Bo ska bo i Boden")
     expect(md).not.toContain("Kandidat: Sara Lindgren")

@@ -36,12 +36,29 @@ const [scenes, i18n] = await Promise.all([
 ])
 await vite.close()
 
-const { createNerRecognizer, redactWithNer } = await import(pathToFileURL(NER_DIST).href)
-const recognizer = createNerRecognizer()
+const library = await import(pathToFileURL(NER_DIST).href)
+const recognizer = library.createNerRecognizer()
+// A code example runs as written up to its `// text:` line, with the names it
+// imports from "maskera" bound to the real library. It reuses the one loaded
+// model instead of loading another per example.
+const scope = { ...library, createNerRecognizer: () => recognizer }
+const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor
+async function runExample(code) {
+  const imported = code.match(/^import \{([^}]*)\} from "maskera"\n/m)
+  if (!imported) throw new Error(`code example does not import from "maskera":\n${code}`)
+  const names = imported[1]
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean)
+  const body = code.replace(imported[0], "")
+  return new AsyncFunction(...names, `${body}\nreturn text`)(...names.map((name) => scope[name]))
+}
 const failures = []
 const claims = collectSiteClaims({ scenes, i18n })
 for (const claim of claims) {
-  const { text } = await redactWithNer(claim.input, { recognizer })
+  const text = claim.code
+    ? await runExample(claim.code)
+    : (await library.redactWithNer(claim.input, { recognizer })).text
   if (text !== claim.masked) failures.push({ ...claim, actual: text })
 }
 
@@ -51,7 +68,7 @@ if (failures.length > 0) {
   )
   for (const f of failures) {
     console.error(
-      `\n- ${f.where}\n  input:  ${f.input}\n  page:   ${f.masked}\n  model:  ${f.actual}`,
+      `\n- ${f.where}\n  input:  ${f.input ?? f.code}\n  page:   ${f.masked}\n  model:  ${f.actual}`,
     )
   }
   process.exit(1)

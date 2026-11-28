@@ -1,6 +1,7 @@
 /**
  * Every place maskera.dev shows what Maskera turns a sentence into, as
- * { where, input, masked } pairs. Pure, so test/siteClaims.test.ts can check
+ * { where, input, masked } pairs, or { where, code, masked } for a code
+ * example that check:claims runs. Pure, so test/siteClaims.test.ts can check
  * that none goes missing; scripts/check-site-claims.mjs runs them through the
  * real model.
  *
@@ -8,13 +9,32 @@
  * the script, by Vitest in the test).
  */
 
-/** The developer page's README example: the redact call's input and its `// text:` comment. */
+/**
+ * A code example on the site that calls redactWithNer: the code up to its
+ * `// text: "..."` comment (which check:claims executes against the real
+ * library) and the output that comment promises.
+ */
 export function codeExampleClaim(code) {
-  const input = code.match(/redactWithNer\(\s*"([^"]+)"/)?.[1]
-  const masked = code.match(/\/\/ text: "([^"]+)"/)?.[1]
-  if (!input || !masked)
-    throw new Error("developerApi.codeExample has no redact input or // text: line")
-  return { input, masked }
+  const lines = code.split("\n")
+  const at = lines.findIndex((line) => /^\s*\/\/ text: "/.test(line))
+  const masked = at === -1 ? undefined : lines[at].match(/\/\/ text: "([^"]+)"/)?.[1]
+  if (!code.includes("redactWithNer(") || !masked)
+    throw new Error("code example has no redactWithNer call or no // text: line")
+  return { code: lines.slice(0, at).join("\n"), masked }
+}
+
+/** Every string under a `code` or `codeExample` key that calls redactWithNer, with its key path. */
+function redactingCodeExamples(node, path, out) {
+  if (Array.isArray(node)) {
+    for (const [i, item] of node.entries()) redactingCodeExamples(item, `${path}[${i}]`, out)
+  } else if (node && typeof node === "object")
+    for (const [key, value] of Object.entries(node)) {
+      const here = path ? `${path}.${key}` : key
+      if ((key === "code" || key === "codeExample") && typeof value === "string") {
+        if (value.includes("redactWithNer(")) out.push({ path: here, code: value })
+      } else redactingCodeExamples(value, here, out)
+    }
+  return out
 }
 
 export function collectSiteClaims({ scenes, i18n }) {
@@ -38,10 +58,9 @@ export function collectSiteClaims({ scenes, i18n }) {
         masked: ex.masked,
       })
     })
-    claims.push({
-      where: `${locale} developerApi.codeExample`,
-      ...codeExampleClaim(copy.developerApi.codeExample),
-    })
+    for (const example of redactingCodeExamples(copy, "", [])) {
+      claims.push({ where: `${locale} ${example.path}`, ...codeExampleClaim(example.code) })
+    }
   }
   return claims
 }

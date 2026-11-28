@@ -1,6 +1,6 @@
 {
   "id": "/",
-  "name": "maskera: skydda personuppgifter innan texten skickas till AI",
+  "name": "Maskera: Använd AI utan att dela personuppgifter",
   "short_name": "maskera",
   "description": "Maskera svenska personuppgifter direkt i webbläsaren innan texten skickas till AI.",
   "lang": "sv",

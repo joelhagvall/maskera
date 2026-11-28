@@ -1,12 +1,12 @@
 # Security policy
 
-maskera is a privacy tool, so we treat security reports seriously and
+Maskera is a privacy tool, so we treat security reports seriously and
 appreciate them.
 
 ## Supported versions
 
-Only the latest published versions of `maskera` and `@maskera/core` on npm
-receive security fixes. Please update before reporting.
+Only the latest published versions of `maskera`, `@maskera/core` and
+`@maskera/mcp` on npm receive security fixes. Please update before reporting.
 
 ## Reporting a vulnerability
 
