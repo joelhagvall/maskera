@@ -51,7 +51,9 @@ if [ -n "$claims_changed" ]; then
   pnpm run check:claims
 fi
 if [ -n "$mcp_changed" ]; then
-  echo "pre-push: packages/mcp changed; building and running @maskera/mcp E2E..."
+  echo "pre-push: packages/mcp changed; building and running @maskera/mcp E2E, harnesses, and pack..."
   pnpm --filter @maskera/mcp... build
   pnpm run test:mcp:e2e
+  pnpm run test:mcp:harnesses
+  pnpm run test:mcp:pack
 fi

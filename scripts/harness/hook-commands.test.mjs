@@ -56,8 +56,11 @@ test("pre-push runs prova over every sitemap page when apps/demo changes", () =>
   assert.match(prePush, /scripts\/harness\/prova\.mjs --no-build --lang=all --only=(\s|$)/m)
 })
 
-test("pre-push builds and runs @maskera/mcp E2E when packages/mcp changes", () => {
+test("pre-push builds and runs @maskera/mcp E2E, harnesses, and pack when packages/mcp changes", () => {
   assert.match(prePush, /\^packages\/mcp\//)
   assert.match(prePush, /pnpm --filter @maskera\/mcp\.\.\. build/)
   assert.match(prePush, /pnpm run test:mcp:e2e/)
+  assert.match(prePush, /pnpm run test:mcp:harnesses/)
+  assert.match(prePush, /pnpm run test:mcp:pack/)
+  assert.doesNotMatch(prePush, /test:mcp:harnesses[^\n]*--live/)
 })
