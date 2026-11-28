@@ -19,6 +19,8 @@ fi
 staged_demo=$(git diff --cached --name-only --diff-filter=ACMR | grep '^apps/demo/' || true)
 if [ -n "$staged_demo" ]; then
   node --test scripts/demo-i18n.test.mjs
+  # Vitest strips types, so a wrong prop only surfaced at pre-push before.
+  node node_modules/typescript-7/lib/tsc.js -p apps/demo/tsconfig.json --noEmit
   pnpm --filter @maskera/demo exec vitest run test/designSystem.test.ts test/i18n.test.ts test/docs.test.tsx
   node scripts/harness/prova-receipt.mjs --check --staged
 fi

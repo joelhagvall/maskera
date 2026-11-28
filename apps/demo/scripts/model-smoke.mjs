@@ -81,8 +81,19 @@ async function smoke(name) {
       }
     })
 
-    await page.goto(URL, { waitUntil: "domcontentloaded", timeout: 30_000 })
-    // The model loads when the demo comes near the viewport.
+    const modelRequests = []
+    page.on("request", (request) => {
+      if (/\.(onnx|wasm)(\?|$)/.test(request.url())) modelRequests.push(request.url())
+    })
+    await page.goto(URL, { waitUntil: "load", timeout: 30_000 })
+    // The model loads only when the demo comes near the viewport (useWhenNear):
+    // a visitor who never scrolls must not download it.
+    await page.waitForTimeout(1500)
+    if (modelRequests.length > 0) {
+      failures.push(
+        `the model was fetched before scrolling to the demo: ${modelRequests.join(", ")}`,
+      )
+    }
     await page.locator("#testa").scrollIntoViewIfNeeded()
 
     const ready = page.getByText(sv.controls.modelReady, { exact: true })
