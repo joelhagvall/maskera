@@ -1417,7 +1417,7 @@
         },
         {
           "id": "for-agenter",
-          "title": "Låt agenten sätta upp Maskera själv",
+          "title": "Markdown, llms.txt och inbyggd skill",
           "body": "Varje sida på maskera.dev har en ren Markdown-version via Accept: text/markdown eller .md-ändelse (till exempel /docs.md och /docs/mcp.md). För en färdig startprompt till din kodagent finns /setup-prompt.md och det samlade indexet på /llms.txt.",
           "bullets": [
             "MCP-servern levererar även arbetsflödesguiden direkt som resursen maskera://skills/maskera/SKILL.md och prompten maskera-workflow.",

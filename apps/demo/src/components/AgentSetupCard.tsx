@@ -6,6 +6,38 @@ import { CopyButton } from "./CopyButton"
 
 export type AgentModeId = "proxy" | "mcp" | "guard"
 
+/**
+ * One-row callout that copies the agent setup prompt and links to llms.txt.
+ * Uses a <p> title so it fits any heading level (both under an <h2> on
+ * /utvecklare and above the first <h2> on /docs) without breaking heading order.
+ */
+export function AgentPromptCard() {
+  const agent = copy.agentSetup
+  return (
+    <div className="agent-prompt-card">
+      <div className="agent-prompt-head">
+        <p className="agent-prompt-title">{agent.promptTitle}</p>
+        <div className="agent-prompt-actions">
+          <CopyButton
+            text={agent.promptText}
+            className="agent-prompt-copy"
+            iconSize={14}
+            iconPosition="end"
+            leading={<AgentLogoStack />}
+            label={agent.copyPromptCta}
+            copiedLabel={agent.copiedPromptCta}
+            ariaLabel={agent.copyPromptCta}
+          />
+          <a className="agent-llms-link" href="/llms.txt" target="_blank" rel="noreferrer">
+            {agent.llmsLinkCta}
+            <ArrowUpRightIcon size={12} />
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function AgentSetupCard({
   idPrefix = "agent",
   goSection,
@@ -42,27 +74,7 @@ export function AgentSetupCard({
 
   return (
     <div className="agent-setup">
-      <div className="agent-prompt-card">
-        <div className="agent-prompt-head">
-          <h3 className="agent-prompt-title">{agent.promptTitle}</h3>
-          <div className="agent-prompt-actions">
-            <CopyButton
-              text={agent.promptText}
-              className="agent-prompt-copy"
-              iconSize={14}
-              iconPosition="end"
-              leading={<AgentLogoStack />}
-              label={agent.copyPromptCta}
-              copiedLabel={agent.copiedPromptCta}
-              ariaLabel={agent.copyPromptCta}
-            />
-            <a className="agent-llms-link" href="/llms.txt" target="_blank" rel="noreferrer">
-              {agent.llmsLinkCta}
-              <ArrowUpRightIcon size={12} />
-            </a>
-          </div>
-        </div>
-      </div>
+      <AgentPromptCard />
 
       <div className="agent-modes">
         <p className="agent-modes-label">{agent.manualLabel}</p>

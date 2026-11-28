@@ -18,7 +18,7 @@ export function PrivacyPolicy({ go }: { go: (view: View) => void }) {
           <ul>
             {copy.privacy.items.map((item) => (
               <li key={item.title}>
-                <strong>{item.title}:</strong> {linkify(item.body)}
+                <strong>{item.title}:</strong> {linkify(item.body, { go })}
               </li>
             ))}
           </ul>

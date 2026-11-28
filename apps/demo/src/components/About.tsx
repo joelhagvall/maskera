@@ -40,7 +40,7 @@ export function About({ go }: { go: (view: View) => void }) {
           </p>
 
           <h2 id="bakom">{copy.about.whoTitle}</h2>
-          <p className="prose-body">{linkify(copy.about.who)}</p>
+          <p className="prose-body">{linkify(copy.about.who, { go })}</p>
           <p className="prose-body">
             <a href={viewPaths.privacy} onClick={navClick(() => go("privacy"))}>
               {copy.about.privacyCta}
@@ -51,7 +51,7 @@ export function About({ go }: { go: (view: View) => void }) {
           <ul>
             {copy.about.contact.map((item) => (
               <li key={item.title}>
-                <strong>{item.title}:</strong> {linkify(item.body)}
+                <strong>{item.title}:</strong> {linkify(item.body, { go })}
               </li>
             ))}
           </ul>

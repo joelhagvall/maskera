@@ -120,4 +120,50 @@ describe("Docs pages", () => {
       cleanup()
     }
   })
+
+  it("shows the agent prompt copy button on /docs and /docs/klienter", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      configurable: true,
+    })
+
+    for (const Component of [DocsOverview, DocsClients] as const) {
+      render(<Component go={vi.fn()} onCoverage={vi.fn()} />)
+      const button = screen.getByRole("button", { name: copy.agentSetup.copyPromptCta })
+      fireEvent.click(button)
+      expect(writeText).toHaveBeenLastCalledWith(copy.agentSetup.promptText)
+      cleanup()
+    }
+  })
+
+  it("links every printed URL and site path across the docs pages", () => {
+    const go = vi.fn()
+    const { container } = render(<DocsOverview go={go} onCoverage={vi.fn()} />)
+
+    const servicesLink = screen.getByRole("link", { name: "maskera.dev/tjanster" })
+    expect(servicesLink.getAttribute("href")).toBe("/tjanster")
+    fireEvent.click(servicesLink)
+    expect(go).toHaveBeenCalledWith("services")
+
+    for (const path of ["/docs.md", "/docs/mcp.md", "/setup-prompt.md", "/llms.txt"]) {
+      expect(container.querySelector(`section a[href="${path}"]`), path).toBeTruthy()
+    }
+    cleanup()
+
+    const goTroubleshooting = vi.fn()
+    render(<DocsTroubleshooting go={goTroubleshooting} />)
+    const accuracyLink = screen.getByRole("link", { name: "/traffsakerhet" })
+    expect(accuracyLink.getAttribute("href")).toBe("/traffsakerhet")
+    fireEvent.click(accuracyLink)
+    expect(goTroubleshooting).toHaveBeenCalledWith("accuracy")
+    cleanup()
+
+    render(<DocsClients go={vi.fn()} />)
+    expect(
+      screen.getByRole("link", { name: "http://127.0.0.1:8787/_maskera" }).getAttribute("href"),
+    ).toBe("http://127.0.0.1:8787/_maskera")
+    // Fictional example email stays plain text, never a mailto link.
+    expect(screen.queryByRole("link", { name: /@example\.com/ })).toBeNull()
+  })
 })

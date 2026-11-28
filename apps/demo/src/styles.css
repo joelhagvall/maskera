@@ -3429,6 +3429,9 @@ html[data-theme="dark"] .stage-window .tok-c {
   font-weight: 500;
   border-bottom-color: var(--ink);
 }
+.docs-page .agent-prompt-card {
+  margin: 0 0 20px;
+}
 .docs-verify {
   margin: 20px 0 28px;
   padding: 14px 16px;

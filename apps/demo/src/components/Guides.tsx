@@ -1,4 +1,5 @@
 import copy from "../i18n"
+import { linkify } from "../linkify"
 import { navClick, type View, viewPaths } from "../routing"
 import { Code } from "./CodeSnippet"
 import { PageToc } from "./PageToc"
@@ -38,7 +39,7 @@ export function Guides({
           {guides.sections.map((section) => (
             <section key={section.id} aria-labelledby={section.id}>
               <h2 id={section.id}>{section.title}</h2>
-              <p className="prose-body">{section.body}</p>
+              <p className="prose-body">{linkify(section.body, { go })}</p>
               <Code languageLabel={section.codeLabel}>{section.code}</Code>
               {section.note && section.noteLink === "desktop" ? (
                 <p className="prose-note">

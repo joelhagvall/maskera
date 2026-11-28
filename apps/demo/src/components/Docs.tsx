@@ -3,8 +3,10 @@ import { GITHUB, HF_MODEL, NPM_MCP, NPM_NER } from "../constants"
 import { DOCTOR_COMMAND, doctorSample } from "../doctorSample"
 import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
+import { linkify } from "../linkify"
 import { navClick, type View, viewPaths } from "../routing"
 import { loadView } from "../views"
+import { AgentPromptCard } from "./AgentSetupCard"
 import { ArchitectureFigure } from "./ArchitectureFigure"
 import { Code } from "./CodeSnippet"
 import { PageToc } from "./PageToc"
@@ -124,16 +126,23 @@ function DocsNext({ current, go }: { current: DocsView; go: (view: View) => void
   )
 }
 
+function formatDocsText(text: string, go: (view: View) => void): ReactNode[] {
+  return linkify(text, { go, formatText: keepFlagsWhole })
+}
+
 function DocsPage({
   current,
   data,
   go,
+  beforeVerify,
   verifyExtra,
   afterSection,
 }: {
   current: DocsView
   data: DocsPageData
   go: (view: View) => void
+  /** Shown directly under the docs subnav, before the verification box. */
+  beforeVerify?: ReactNode
   /** Shown inside the "you know it works when" box, under its text. */
   verifyExtra?: ReactNode
   /** A figure or block placed at the end of the section with that id. */
@@ -153,28 +162,32 @@ function DocsPage({
       <main id="main-content">
         <article className="prose prose-with-toc docs-page">
           <h1>{data.title}</h1>
-          <p className="prose-lede">{keepFlagsWhole(data.lede)}</p>
+          <p className="prose-lede">{formatDocsText(data.lede, go)}</p>
 
           <DocsSubNav current={current} go={go} />
 
           <PageToc items={tocItems} />
 
+          {beforeVerify}
+
           <aside className="docs-verify" aria-labelledby="docs-verify-title">
             <p id="docs-verify-title" className="docs-verify-title">
               {data.verifyTitle}
             </p>
-            <p>{keepFlagsWhole(data.verifyBody)}</p>
+            <p>{formatDocsText(data.verifyBody, go)}</p>
             {verifyExtra}
           </aside>
 
           {data.sections.map((section) => (
             <section key={section.id} aria-labelledby={section.id}>
               <h2 id={section.id}>{section.title}</h2>
-              {section.body ? <p className="prose-body">{keepFlagsWhole(section.body)}</p> : null}
+              {section.body ? (
+                <p className="prose-body">{formatDocsText(section.body, go)}</p>
+              ) : null}
               {section.bullets && section.bullets.length > 0 ? (
                 <ul>
                   {section.bullets.map((bullet) => (
-                    <li key={bullet}>{keepFlagsWhole(bullet)}</li>
+                    <li key={bullet}>{formatDocsText(bullet, go)}</li>
                   ))}
                 </ul>
               ) : null}
@@ -195,7 +208,7 @@ function DocsPage({
                         <tr key={row[0]}>
                           {row.map((cell, idx) => (
                             <td key={`${row[0]}-${idx}`} data-label={section.table?.headers[idx]}>
-                              {keepFlagsWhole(cell)}
+                              {formatDocsText(cell, go)}
                             </td>
                           ))}
                         </tr>
@@ -272,6 +285,7 @@ export function DocsOverview({
       current="docs"
       data={overview}
       go={go}
+      beforeVerify={<AgentPromptCard />}
       verifyExtra={
         <Code languageLabel="Terminal" output={doctorSample(overview.doctorRoot)}>
           {DOCTOR_COMMAND}
@@ -287,7 +301,14 @@ export function DocsMcp({ go }: { go: (view: View) => void }) {
 }
 
 export function DocsClients({ go }: { go: (view: View) => void }) {
-  return <DocsPage current="docsClients" data={copy.docs.clients} go={go} />
+  return (
+    <DocsPage
+      current="docsClients"
+      data={copy.docs.clients}
+      go={go}
+      beforeVerify={<AgentPromptCard />}
+    />
+  )
 }
 
 export function DocsSdk({ go }: { go: (view: View) => void }) {

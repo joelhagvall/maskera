@@ -1417,7 +1417,7 @@
         },
         {
           "id": "for-agenter",
-          "title": "Let your agent configure Maskera",
+          "title": "Markdown, llms.txt, and built-in skill",
           "body": "Every page on maskera.dev has a plain Markdown sibling via Accept: text/markdown or a .md suffix (for example /en/docs.md and /en/docs/mcp.md). For a ready-made coding-agent prompt, see /setup-prompt.md and the full index at /llms.txt.",
           "bullets": [
             "The MCP server also serves the full workflow skill directly as resource maskera://skills/maskera/SKILL.md and prompt maskera-workflow.",

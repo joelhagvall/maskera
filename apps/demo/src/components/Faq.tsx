@@ -1,4 +1,5 @@
 import copy from "../i18n"
+import { linkify } from "../linkify"
 import type { View } from "../routing"
 import { PageToc } from "./PageToc"
 import { TopBar } from "./TopBar"
@@ -31,7 +32,7 @@ export function Faq({ go }: { go: (view: View) => void }) {
                 {group.items.map((item) => (
                   <div key={item.id} id={item.id} className="faq-item">
                     <dt>{item.q}</dt>
-                    <dd>{item.a}</dd>
+                    <dd>{linkify(item.a, { go })}</dd>
                   </div>
                 ))}
               </dl>

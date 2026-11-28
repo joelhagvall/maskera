@@ -2,6 +2,7 @@ import { GITHUB } from "../constants"
 import copy, { fill } from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
 import { formatCount } from "../independentBench"
+import { linkify } from "../linkify"
 import {
   auditedClients,
   auditFigures,
@@ -54,7 +55,7 @@ export function Security({ go }: { go: (view: View) => void }) {
           <p className="prose-body">{copy.security.scopeIntro}</p>
           <ul>
             {copy.security.inScope.map((item) => (
-              <li key={item}>{item}</li>
+              <li key={item}>{linkify(item, { go })}</li>
             ))}
           </ul>
           <p className="prose-body">{copy.security.qualityBody}</p>
