@@ -323,7 +323,7 @@ const SWEDISH_STOP_WORDS = new Set([
   "adress",
 ])
 const CLI_SYSTEM_HEADER_RE =
-  /^(?:x-anthropic-billing-header:|you are claude code\b|you are a claude agent\b|you are codex\b|you are opencode\b|sessionstart:|# gitstatus\b|current branch:|recent commits:|status:)/i
+  /^(?:x-anthropic-billing-header:|you are claude code\b|you are a claude agent\b|you are codex\b|you are opencode\b|sessionstart:|# gitstatus\b|# currentdate\b|today's date is\b|current branch:|recent commits:|status:)/i
 const ENGLISH_BOILERPLATE_WORDS = new Set([
   "the",
   "and",

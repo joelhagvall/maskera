@@ -325,16 +325,16 @@ async function testClaudeCode(workRoot, lane) {
     // Capture redacted user prompt and tool_result from maskera_read_file
     for (const msg of parsed.messages || []) {
       if (msg.role === "user") {
-        const text =
+        const blocks =
           typeof msg.content === "string"
-            ? msg.content
+            ? [msg.content]
             : Array.isArray(msg.content)
-              ? msg.content
-                  .filter((b) => b.type === "text")
-                  .map((b) => b.text)
-                  .join("\n")
-              : ""
-        if (text.includes("klient.txt")) userPromptText = text
+              ? msg.content.filter((b) => b.type === "text").map((b) => b.text)
+              : []
+        const promptBlock = blocks.find(
+          (t) => t.includes("klient.txt") && !t.includes("<system-reminder>"),
+        )
+        if (promptBlock) userPromptText = promptBlock
       }
       if (Array.isArray(msg.content)) {
         for (const blk of msg.content) {
@@ -482,6 +482,31 @@ async function testClaudeCode(workRoot, lane) {
       }),
     )
 
+    const claudeHome = join(dir, "claude-home")
+    await mkdir(claudeHome, { recursive: true })
+    await runCmd("git", ["init", "-q"], { cwd: dir })
+    await writeFile(
+      join(dir, "CLAUDE.md"),
+      [
+        "# Demo Repo Notes",
+        "",
+        "## Git",
+        "",
+        "Always read the existing files before editing code or running git commands in this repository.",
+        "Never commit or push changes unless explicitly asked and always verify tests before finishing.",
+        "Even when a long English repository guide mentions a maintainer once, keep coding instructions",
+        "on deterministic rules without Swedish NER false positives.",
+        "",
+        "```bash",
+        "pnpm --filter @maskera/mcp build",
+        "```",
+        "",
+        "På svenska: sammanfatta ärendet kort utan att läcka personuppgifter.",
+        "",
+      ].join("\n"),
+      "utf8",
+    )
+
     const prompt = isNer
       ? "Läs klient.txt för Anna Lindqvist (19900101-2385) och skriv svar-claude.txt"
       : "Läs klient.txt för 19900101-2385 och skriv svar-claude.txt"
@@ -489,9 +514,11 @@ async function testClaudeCode(workRoot, lane) {
     const res = await runCmd(
       "claude",
       [
-        "--bare",
         "-p",
         "--no-session-persistence",
+        "--setting-sources",
+        "project",
+        "--disable-slash-commands",
         "--strict-mcp-config",
         "--mcp-config",
         mcpCfgPath,
@@ -508,6 +535,7 @@ async function testClaudeCode(workRoot, lane) {
       {
         cwd: dir,
         env: {
+          HOME: claudeHome,
           ANTHROPIC_BASE_URL: proxy.url,
           ANTHROPIC_API_KEY: "sk-ant-local-e2e-only",
         },
@@ -528,6 +556,15 @@ async function testClaudeCode(workRoot, lane) {
 
     // Verify ZERO raw PII ever reached upstream!
     assertNoLeaks(mock.seen, isNer ? SECRETS_NER : SECRETS_RULES, `claude-${lane}`)
+    // Verify Claude Code actually loaded project CLAUDE.md via <system-reminder>
+    // and kept English boilerplate uncorrupted while staying under the redaction cap.
+    const allUpstreamBodies = mock.seen.map((entry) => entry.body).join("\n")
+    assert.equal(
+      allUpstreamBodies.includes("<system-reminder>") &&
+        allUpstreamBodies.includes("Always read the existing files before editing code"),
+      true,
+      `claude [${lane}] did not preserve English project CLAUDE.md <system-reminder> boilerplate`,
+    )
 
     // Verify restored file written directly to disk by maskera_write_file!
     const written = await readFile(join(dir, "svar-claude.txt"), "utf8")

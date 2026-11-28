@@ -28,6 +28,7 @@
  */
 import { spawnSync } from "node:child_process"
 import { existsSync, readFileSync, writeFileSync } from "node:fs"
+import { homedir, tmpdir } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import {
@@ -84,6 +85,20 @@ export function bumpExtensionZipVersion(browsersText, version) {
     /(export const EXTENSION_ZIP_VERSION = ["'])[^"']+(["'])/,
     (_match, open, close) => `${open}${version}${close}`,
   )
+}
+
+/**
+ * Rewrites a pinned `"@maskera/mcp@x.y.z"` entry inside Claude Desktop's
+ * `claude_desktop_config.json` while leaving unpinned `"@maskera/mcp"` entries
+ * and surrounding formatting untouched.
+ */
+export function bumpClaudeDesktopMcpPin(configText, mcpVersion) {
+  if (!configText.includes('"mcpServers"')) return { changed: false, text: configText }
+  const updated = configText.replace(
+    /("@maskera\/mcp@)\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(")/g,
+    `$1${mcpVersion}$2`,
+  )
+  return { changed: updated !== configText, text: updated }
 }
 
 /**
@@ -386,6 +401,25 @@ async function main() {
   verifyAndPushTags(tags)
   step("wait for npm")
   await waitForRegistry(tags)
+
+  const claudeDesktopConfig =
+    process.env.CLAUDE_DESKTOP_CONFIG_PATH ||
+    join(homedir(), "Library", "Application Support", "Claude", "claude_desktop_config.json")
+  if (existsSync(claudeDesktopConfig)) {
+    const before = readFileSync(claudeDesktopConfig, "utf8")
+    const bumped = bumpClaudeDesktopMcpPin(before, released.mcp)
+    if (bumped.changed) {
+      step(`claude desktop pin -> @maskera/mcp@${released.mcp}`)
+      writeFileSync(claudeDesktopConfig, bumped.text)
+      // Warm npx's cache outside the monorepo so Claude Desktop starts cleanly.
+      run("npx", ["--prefer-online", "-y", `@maskera/mcp@${released.mcp}`, "--version"], tmpdir(), {
+        allowFail: true,
+      })
+      console.log(
+        `Claude Desktop: updated ${claudeDesktopConfig} to @maskera/mcp@${released.mcp} (restart Claude Desktop to pick it up)`,
+      )
+    }
+  }
 
   const message = `Follow Maskera ${label}`
   if (siblings.includes("maskera-extension")) {

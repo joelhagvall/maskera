@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs"
 import test from "node:test"
 import { AUDIT_FILES } from "../../packages/mcp/audit/summary.mjs"
 import {
+  bumpClaudeDesktopMcpPin,
   bumpCoreRange,
   bumpExtensionZipVersion,
   bumpHagvallVersion,
@@ -60,6 +61,30 @@ test("bumpExtensionZipVersion updates EXTENSION_ZIP_VERSION and keeps quotes", (
     bumpExtensionZipVersion('export const EXTENSION_ZIP_VERSION = "0.2.3"\n', "0.2.4"),
     'export const EXTENSION_ZIP_VERSION = "0.2.4"\n',
   )
+})
+
+test("bumpClaudeDesktopMcpPin updates pinned @maskera/mcp versions and ignores unpinned configs", () => {
+  const pinned = JSON.stringify(
+    {
+      mcpServers: {
+        maskera: {
+          command: "npx",
+          args: ["-y", "@maskera/mcp@0.4.4", "--root", "/tmp/demo", "--no-raw-restore"],
+        },
+      },
+    },
+    null,
+    2,
+  )
+  const bumped = bumpClaudeDesktopMcpPin(pinned, "0.4.5")
+  assert.equal(bumped.changed, true)
+  assert.match(bumped.text, /"@maskera\/mcp@0\.4\.5"/)
+
+  const same = bumpClaudeDesktopMcpPin(bumped.text, "0.4.5")
+  assert.equal(same.changed, false)
+
+  const unpinned = pinned.replace("@maskera/mcp@0.4.4", "@maskera/mcp")
+  assert.equal(bumpClaudeDesktopMcpPin(unpinned, "0.4.5").changed, false)
 })
 
 test("parseSyncModelResult extracts trailing JSON even with bun banner lines", () => {
