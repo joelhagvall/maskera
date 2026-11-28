@@ -165,7 +165,7 @@
           {
             "id": "webblasare",
             "q": "Which browsers are supported?",
-            "a": "Chrome and Edge on desktop, both through the Chrome Web Store. Firefox and Safari are coming later."
+            "a": "Chrome and Edge on desktop, both through the Chrome Web Store. Pro and Team need version 137 or later. Firefox and Safari are coming later."
           },
           {
             "id": "offline",
@@ -1171,7 +1171,7 @@
     "accuracyDesc": "of names in independent Swedish text",
     "localDesc": "runs locally on your device",
     "licenseValue": "MIT",
-    "licenseDesc": "open source"
+    "licenseDesc": "open-source engine and model"
   },
   "theme": {
     "toggle": "Dark mode"

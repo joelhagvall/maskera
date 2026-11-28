@@ -165,7 +165,7 @@
           {
             "id": "webblasare",
             "q": "Vilka webbläsare stöds?",
-            "a": "Chrome och Edge på dator, båda via Chrome Web Store. Firefox och Safari kommer senare."
+            "a": "Chrome och Edge på dator, båda via Chrome Web Store. Pro och Team kräver version 137 eller senare. Firefox och Safari kommer senare."
           },
           {
             "id": "offline",
@@ -1171,7 +1171,7 @@
     "accuracyDesc": "av namnen i oberoende svensk text",
     "localDesc": "körs lokalt på din enhet",
     "licenseValue": "MIT",
-    "licenseDesc": "öppen källkod"
+    "licenseDesc": "öppen motor och modell"
   },
   "theme": {
     "toggle": "Mörkt läge"

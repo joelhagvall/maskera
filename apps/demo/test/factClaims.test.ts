@@ -93,6 +93,16 @@ describe("browsers the extension runs in", () => {
     }
   })
 
+  it.each(copies)(
+    "are all named where the services overview says where it runs, in %s",
+    (_l, copy) => {
+      // The other direction: when a store listing goes live (storeUrl set), the
+      // overview, the FAQ, llms.txt and the portal copy must start naming it.
+      const runsIn = copy.services.overview.rows[1].values[0]
+      for (const name of SUPPORTED_EXTENSION_BROWSERS.split(", ")) expect(runsIn).toContain(name)
+    },
+  )
+
   it("are never claimed for an unshipped browser in llms.txt", () => {
     for (const browser of unshipped) {
       const name = i18n.copies.en.extensionInstall.browsers[browser.id].name

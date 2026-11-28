@@ -88,10 +88,10 @@ node --test privacy_guard.test.mjs privacy_attestation.test.mjs
 ```
 
 The published 2026-11-27 v21 artifact therefore contains 121,200 training
-rows and 7,980 disjoint validation rows (the `train.rows` and
-`validation.rows` of its `privacy-attestation.json`). Its train, validation, and generator
-SHA-256 values are recorded in `docs/BENCHMARKS.md` and bound in the artifact's
-schema-2 attestation. The published weights carry that attestation unchanged.
+rows and 7,980 disjoint validation rows. Its train, validation and generator
+SHA-256 values and those row counts are bound in the artifact's schema-2
+`privacy-attestation.json`, published with the weights at the pinned Hub
+revision. The published weights carry that attestation unchanged.
 
 ## Base-model boundary
 
