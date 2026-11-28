@@ -69,6 +69,16 @@ test("the prova receipt hint suggests commands that run", () => {
   }
 })
 
+test("demo audits fail instead of testing another server on a busy preview port", () => {
+  const demo = JSON.parse(read("apps/demo/package.json")).scripts
+  assert.match(demo.preview, /--port 4173 --strictPort/)
+  for (const [name, script] of Object.entries(demo)) {
+    if (script.includes("start-server-and-test preview")) {
+      assert.match(script, /http:\/\/127\.0\.0\.1:4173 /, `${name} waits on the preview port`)
+    }
+  }
+})
+
 test("pre-push runs prova over every sitemap page when apps/demo changes", () => {
   assert.match(prePush, /scripts\/harness\/prova\.mjs --no-build --lang=all --only=(\s|$)/m)
 })
