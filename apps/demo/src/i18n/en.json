@@ -1137,7 +1137,7 @@
   "extensionInstall": {
     "heroAddTo": "Add to {browser}, it's free",
     "heroAddToVia": "Add to {browser} via {store}",
-    "heroTryHere": "Try the masking here",
+    "heroOtherBrowser": "See the extension for {browsers}",
     "heroDesktopExtension": "See the desktop extension",
     "heroAgents": "Connect to your agent",
     "body": "No account is needed until you activate Pro.",

@@ -1137,7 +1137,7 @@
   "extensionInstall": {
     "heroAddTo": "Lägg till i {browser}, gratis",
     "heroAddToVia": "Lägg till i {browser} via {store}",
-    "heroTryHere": "Testa maskeringen här",
+    "heroOtherBrowser": "Se tillägget för {browsers}",
     "heroDesktopExtension": "Se tillägget för datorn",
     "heroAgents": "Koppla till din agent",
     "body": "Ingen inloggning krävs förrän du vill aktivera Pro.",

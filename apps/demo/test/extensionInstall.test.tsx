@@ -60,19 +60,19 @@ describe("ExtensionHeroActions", () => {
     expect(kinds).toEqual(["chrome", "edge", "firefox", "safari", "mobile"])
   })
 
-  it("sends a browser without a store listing to the demo on this page, not to a dead end", () => {
+  it("points every desktop browser at the extension section while no store listing is live", () => {
     allSoon()
     const go = vi.fn()
     const goSection = vi.fn()
     const { container } = render(<ExtensionHeroActions go={go} goSection={goSection} />)
 
     for (const visitor of ["chrome", "edge", "firefox", "safari"]) {
-      const tryHere = heroButton(container, visitor)
-      expect(tryHere.textContent).toBe(copy.extensionInstall.heroTryHere)
-      expect(tryHere.getAttribute("href")).toBe("/#testa")
+      const button = heroButton(container, visitor)
+      expect(button.textContent).toBe(copy.extensionInstall.heroDesktopExtension)
+      expect(button.getAttribute("href")).toBe("/tjanster#tillagg")
     }
     fireEvent.click(heroButton(container, "firefox"))
-    expect(goSection).toHaveBeenLastCalledWith("demo", "testa")
+    expect(goSection).toHaveBeenLastCalledWith("services", "tillagg")
 
     const agents = screen.getByRole("link", { name: copy.extensionInstall.heroAgents })
     expect(agents.querySelectorAll(".agent-logo-badge")).toHaveLength(4)
@@ -81,14 +81,15 @@ describe("ExtensionHeroActions", () => {
     expect(go).toHaveBeenLastCalledWith("docs")
   })
 
-  it("drops the try-it-here button below the demo, where the demo is behind the visitor", () => {
+  it("names the browsers the extension installs in for Firefox and Safari, never an install button", () => {
     chromeLive()
-    const { container } = render(
-      <ExtensionHeroActions go={vi.fn()} goSection={vi.fn()} belowDemo />,
-    )
-    expect(container.querySelector('[data-for="firefox"]')).toBeNull()
-    expect(container.querySelector('[data-for="safari"]')).toBeNull()
-    expect(container.querySelector('[data-for="chrome"]')).toBeTruthy()
+    const { container } = render(<ExtensionHeroActions go={vi.fn()} goSection={vi.fn()} />)
+    for (const visitor of ["firefox", "safari"]) {
+      const button = heroButton(container, visitor)
+      expect(button.textContent).toBe("Se tillägget för Chrome och Edge")
+      expect(button.getAttribute("href")).toBe("/tjanster#tillagg")
+      expect(button.querySelector("svg")).toBeNull()
+    }
   })
 
   it("offers the Chrome Web Store to Chrome, and to Edge until Edge Add-ons is live", () => {
@@ -104,7 +105,7 @@ describe("ExtensionHeroActions", () => {
     const edge = heroButton(container, "edge")
     expect(edge.textContent).toBe("Lägg till i Edge via Chrome Web Store")
     expect(edge.getAttribute("href")).toBe("https://chromewebstore.google.com/detail/example")
-    expect(heroButton(container, "firefox").getAttribute("href")).toBe("/#testa")
+    expect(heroButton(container, "firefox").getAttribute("href")).toBe("/tjanster#tillagg")
   })
 
   it("sends phones to the desktop extension section without a browser icon", () => {
