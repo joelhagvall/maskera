@@ -271,13 +271,81 @@ function shouldSkipToolArgRestore(toolName: unknown, argsText: string): boolean 
 export type RedactFieldKind = "message" | "system" | "tool_description"
 
 const SWEDISH_DIACRITIC_RE = /[åäöÅÄÖ]/
-const SWEDISH_SIGNAL_WORD_RE =
-  /\b(?:och|inte|ska|eller|enligt|kund|personnummer|svenska|sekretess|arbetsgivare|utbetalning|sammanfatta|skriv|svara|nedan|uppgifter)\b/i
+const SWEDISH_STOP_WORDS = new Set([
+  "och",
+  "att",
+  "det",
+  "som",
+  "för",
+  "med",
+  "har",
+  "inte",
+  "på",
+  "är",
+  "av",
+  "till",
+  "ett",
+  "från",
+  "kan",
+  "ska",
+  "eller",
+  "vid",
+  "så",
+  "men",
+  "den",
+  "jag",
+  "din",
+  "ditt",
+  "mitt",
+  "var",
+  "blev",
+  "enligt",
+  "kund",
+  "personnummer",
+  "svenska",
+  "sekretess",
+  "arbetsgivare",
+  "utbetalning",
+  "sammanfatta",
+  "skriv",
+  "svara",
+  "nedan",
+  "uppgifter",
+  "vänliga",
+  "hälsningar",
+  "ärendet",
+  "ärende",
+  "mejl",
+  "brev",
+  "patient",
+  "namn",
+  "telefon",
+  "adress",
+])
 const CLI_SYSTEM_HEADER_RE =
-  /^(?:x-anthropic-billing-header:|you are claude code\b|you are codex\b|you are opencode\b)/i
+  /^(?:x-anthropic-billing-header:|you are claude code\b|you are a claude agent\b|you are codex\b|you are opencode\b|sessionstart:|# gitstatus\b|current branch:|recent commits:|status:)/i
 const ENGLISH_BOILERPLATE_WORDS = new Set([
   "the",
   "and",
+  "to",
+  "of",
+  "in",
+  "is",
+  "it",
+  "on",
+  "as",
+  "be",
+  "by",
+  "or",
+  "an",
+  "at",
+  "if",
+  "do",
+  "no",
+  "yes",
+  "so",
+  "but",
+  "not",
   "you",
   "your",
   "with",
@@ -285,7 +353,6 @@ const ENGLISH_BOILERPLATE_WORDS = new Set([
   "this",
   "from",
   "are",
-  "not",
   "when",
   "use",
   "must",
@@ -345,6 +412,7 @@ const ENGLISH_BOILERPLATE_WORDS = new Set([
   "keep",
   "does",
   "have",
+  "has",
   "been",
   "its",
   "their",
@@ -359,9 +427,43 @@ const ENGLISH_BOILERPLATE_WORDS = new Set([
   "next",
   "existing",
   "changes",
+  "where",
+  "which",
+  "what",
+  "how",
+  "why",
+  "because",
+  "unless",
+  "instead",
+  "below",
+  "above",
+  "work",
+  "working",
+  "task",
+  "tasks",
+  "skill",
+  "skills",
+  "rule",
+  "rules",
+  "repo",
+  "project",
+  "build",
+  "lint",
+  "hook",
+  "hooks",
+  "memory",
+  "local",
+  "remote",
+  "status",
+  "current",
+  "recent",
 ])
-const ASCII_WORD_RE = /\b[a-z]{2,}\b/g
+const WORD_TOKEN_RE = /[a-zåäö]{2,}/gi
 const SYSTEM_REMINDER_SPLIT_RE = /(<system-reminder>[\s\S]*?<\/system-reminder>)/g
+const FENCED_CODE_SPLIT_RE = /(```[\s\S]*?```)/g
+const GIT_STATUS_LINE_RE = /^(?:[MADRCU?!]{1,2}\s+\S|[0-9a-f]{7,40}\s+\S)/
+const XML_TAG_ONLY_RE = /^<\/?[a-z][a-z0-9_-]*(?:\s[^>]*)?>$/i
+const MARKDOWN_HEADING_RE = /^#{1,6}\s+\S/
 const BROWSER_PROBE_PATHS = new Set([
   "/favicon.ico",
   "/apple-touch-icon.png",
@@ -369,32 +471,96 @@ const BROWSER_PROBE_PATHS = new Set([
   "/robots.txt",
 ])
 
+function isEnglishSystemParagraph(paragraph: string): boolean {
+  const trimmed = paragraph.trim()
+  if (!trimmed) return true
+  if (XML_TAG_ONLY_RE.test(trimmed)) return true
+  if (trimmed.startsWith("```") && trimmed.endsWith("```")) return true
+  if (CLI_SYSTEM_HEADER_RE.test(trimmed)) return true
+
+  // Git status / commit log / file-path lists inside system context
+  const nonEmptyLines = trimmed
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+  if (
+    nonEmptyLines.length > 0 &&
+    nonEmptyLines.every(
+      (l) =>
+        GIT_STATUS_LINE_RE.test(l) ||
+        XML_TAG_ONLY_RE.test(l) ||
+        CLI_SYSTEM_HEADER_RE.test(l) ||
+        l.startsWith("(use "),
+    )
+  ) {
+    return true
+  }
+
+  let enTotal = 0
+  const enDistinct = new Set<string>()
+  let svTotal = 0
+  let svDiacriticWords = 0
+  const lower = trimmed.toLowerCase()
+  WORD_TOKEN_RE.lastIndex = 0
+  for (let m = WORD_TOKEN_RE.exec(lower); m !== null; m = WORD_TOKEN_RE.exec(lower)) {
+    const word = m[0]
+    if (!word) continue
+    if (SWEDISH_STOP_WORDS.has(word)) {
+      svTotal += 1
+    }
+    if (SWEDISH_DIACRITIC_RE.test(word)) {
+      svDiacriticWords += 1
+    }
+    if (ENGLISH_BOILERPLATE_WORDS.has(word)) {
+      enTotal += 1
+      enDistinct.add(word)
+    }
+  }
+
+  // Short markdown headings without Swedish signals (e.g. "## Git", "## Code", "# gitStatus")
+  if (
+    nonEmptyLines.length === 1 &&
+    MARKDOWN_HEADING_RE.test(trimmed) &&
+    svTotal === 0 &&
+    svDiacriticWords === 0 &&
+    trimmed.length < 120
+  ) {
+    return true
+  }
+
+  // Keep short prompts (like "Summarize patient Anna Lindqvist.") on full NER.
+  if (trimmed.length < 60 && enDistinct.size < 4) return false
+
+  const svSignal = svTotal + svDiacriticWords
+  if (svSignal === 0) {
+    const minDistinct = trimmed.length >= 240 ? 5 : 3
+    return enDistinct.size >= minDistinct
+  }
+
+  // Long predominantly-English boilerplate paragraphs (e.g. AGENTS.md or MEMORY.md
+  // referencing a single Swedish proper noun or example) still stay on rules +
+  // customTerms when English function words vastly outnumber Swedish signals.
+  return enTotal >= 12 && enDistinct.size >= 6 && enTotal >= svSignal * 6
+}
+
 /**
  * Returns `true` when a `system` prompt block is clearly English agent
  * boilerplate (e.g. Claude Code / Codex / OpenCode system instructions,
- * billing headers, or CLAUDE.md/MEMORY.md rules) with zero Swedish characters
- * or domain words. Those blocks still run deterministic structured PII rules
- * + `customTerms`, avoiding hundreds of false Swedish NER hits on English
- * keywords while keeping full NER on Swedish or short prompts.
+ * billing headers, or CLAUDE.md/MEMORY.md rules) rather than Swedish text.
+ * Multi-paragraph blocks return `true` only when every paragraph is English
+ * boilerplate, so mixed blocks split cleanly per paragraph.
  */
 export function isLikelyEnglishSystemPrompt(text: string): boolean {
-  if (SWEDISH_DIACRITIC_RE.test(text)) return false
-  if (SWEDISH_SIGNAL_WORD_RE.test(text)) return false
   const trimmed = text.trim()
-  if (CLI_SYSTEM_HEADER_RE.test(trimmed)) return true
-  if (trimmed.length < 60) return false
-  const minMatches = trimmed.length >= 240 ? 6 : 4
-  const found = new Set<string>()
-  const lower = trimmed.toLowerCase()
-  ASCII_WORD_RE.lastIndex = 0
-  for (let m = ASCII_WORD_RE.exec(lower); m !== null; m = ASCII_WORD_RE.exec(lower)) {
-    const word = m[0]
-    if (word && ENGLISH_BOILERPLATE_WORDS.has(word)) {
-      found.add(word)
-      if (found.size >= minMatches) return true
-    }
+  if (!trimmed) return false
+  if (trimmed.includes("\n\n")) {
+    const paragraphs = trimmed
+      .split(/\n{2,}/)
+      .map((p) => p.trim())
+      .filter(Boolean)
+    return paragraphs.length > 0 && paragraphs.every((p) => isEnglishSystemParagraph(p))
   }
-  return false
+  return isEnglishSystemParagraph(trimmed)
 }
 
 async function redactSystemText(
@@ -404,31 +570,32 @@ async function redactSystemText(
   if (isLikelyEnglishSystemPrompt(text)) {
     return redactChunk(text, true, false)
   }
-  const redactMixedBlock = async (block: string): Promise<string> => {
-    if (isLikelyEnglishSystemPrompt(block)) {
-      return redactChunk(block, true, false)
+  const redactSegment = async (segment: string): Promise<string> => {
+    if (!segment.trim()) return segment
+    if (segment.startsWith("```") && segment.endsWith("```")) {
+      return redactChunk(segment, true, false)
     }
-    if (!block.includes("\n")) {
-      return redactChunk(block, false, false)
+    if (!segment.includes("\n\n")) {
+      return redactChunk(segment, isEnglishSystemParagraph(segment), false)
     }
-    const lines = block.split("\n")
-    for (let j = 0; j < lines.length; j += 1) {
-      const line = lines[j] ?? ""
-      if (!line.trim()) continue
-      lines[j] = await redactChunk(line, isLikelyEnglishSystemPrompt(line), false)
-    }
-    return lines.join("\n")
-  }
-  if (text.includes("\n\n")) {
-    const parts = text.split(/(\n{2,})/)
+    const parts = segment.split(/(\n{2,})/)
     for (let i = 0; i < parts.length; i += 2) {
       const para = parts[i] ?? ""
       if (!para.trim()) continue
-      parts[i] = await redactMixedBlock(para)
+      parts[i] = await redactChunk(para, isEnglishSystemParagraph(para), false)
     }
     return parts.join("")
   }
-  return redactMixedBlock(text)
+  if (!text.includes("```")) {
+    return redactSegment(text)
+  }
+  const codeParts = text.split(FENCED_CODE_SPLIT_RE)
+  for (let i = 0; i < codeParts.length; i += 1) {
+    const part = codeParts[i] ?? ""
+    if (!part.trim()) continue
+    codeParts[i] = await redactSegment(part)
+  }
+  return codeParts.join("")
 }
 
 async function redactMessageText(

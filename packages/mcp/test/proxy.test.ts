@@ -999,9 +999,22 @@ describe("guard (harness-agnostic pre-prompt / pre-tool / pipe check)", () => {
     // English <system-reminder> lists inside user messages.
     const reminderList = [
       "<system-reminder>",
-      "- Always read the existing files before editing code or running git commands in this repository.",
-      "- Never commit or push changes unless explicitly asked and always check test output first.",
-      "- På svenska: sammanfatta ärendet för Anna Lindqvist.",
+      "## Git",
+      "",
+      "Always read the existing files before editing code or running git commands in this repository.",
+      "Never commit or push changes unless explicitly asked and always check test output first.",
+      "Even when a long English repository guide mentions Joel Hägvall once in a rule, the rest of the",
+      "English coding instructions should stay on deterministic rules without Swedish NER false hits.",
+      "",
+      "```bash",
+      "pnpm --filter @maskera/mcp build",
+      "```",
+      "",
+      "# gitStatus",
+      "Current branch: main",
+      "M training/generate_data.mjs",
+      "",
+      "På svenska: sammanfatta ärendet för Anna Lindqvist.",
       "</system-reminder>",
       "Skriv ett kort mejl till Anna Lindqvist (19900101-2385).",
     ].join("\n")
@@ -1013,7 +1026,7 @@ describe("guard (harness-agnostic pre-prompt / pre-tool / pipe check)", () => {
         model: "claude-sonnet-4-6",
         system: [
           { type: "text", text: "x-anthropic-billing-header: cc_version=2.1.0; cch=abc123;" },
-          { type: "text", text: "You are Claude Code, Anthropic's official CLI for Claude." },
+          { type: "text", text: "You are a Claude agent, built on Anthropic's Claude Agent SDK." },
         ],
         messages: [{ role: "user", content: reminderList }],
       }),
@@ -1022,11 +1035,12 @@ describe("guard (harness-agnostic pre-prompt / pre-tool / pipe check)", () => {
     expect(upstream.seen).toHaveLength(1)
 
     const seenBody = upstream.seen[0]?.body ?? ""
-    // CLI headers and English reminder bullets stay intact (no Swedish NER false positives)
+    // CLI headers, git status, code fences, and English reminder paragraphs stay intact
     expect(seenBody).toContain("x-anthropic-billing-header: cc_version=2.1.0")
-    expect(seenBody).toContain("You are Claude Code, Anthropic's official CLI for Claude.")
+    expect(seenBody).toContain("You are a Claude agent, built on Anthropic's Claude Agent SDK.")
     expect(seenBody).toContain("Always read the existing files before editing code")
-    // Swedish text inside reminder AND the user prompt are still fully redacted
+    expect(seenBody).toContain("M training/generate_data.mjs")
+    // Swedish paragraph inside reminder AND the user prompt are still fully redacted
     expect(seenBody).not.toContain("Anna Lindqvist")
     expect(seenBody).not.toContain("19900101-2385")
 
