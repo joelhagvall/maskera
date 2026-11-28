@@ -25,9 +25,16 @@ mkdir -p "$(dirname "$log")"
   done
 ) &
 watcher=$!
-trap 'kill "$watcher" 2>/dev/null || true' EXIT
+fifo="$(mktemp -u "${TMPDIR:-/tmp}/maskera-release-stdin.XXXXXX")"
+mkfifo "$fifo"
+# Hold stdin open via a FIFO instead of a pipeline so `sleep 3600` does not
+# keep the script alive for an hour after `pnpm release` exits.
+sleep 3600 >"$fifo" &
+keeper=$!
+trap 'kill "$watcher" "$keeper" 2>/dev/null || true; rm -f "$fifo"' EXIT
 
 status=0
-(sleep 3600) | script -q "$log" pnpm release >/dev/null 2>&1 || status=$?
+script -q "$log" pnpm release <"$fifo" >/dev/null 2>&1 || status=$?
+kill "$keeper" 2>/dev/null || true
 tr -d '\r' <"$log" | grep -E 'release: done|release FAILED' | tail -1
 exit "$status"
