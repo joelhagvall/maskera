@@ -10,15 +10,6 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://maskera.dev/utvecklare</loc>
-    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/utvecklare" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/developers" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://maskera.dev/utvecklare" />
-    <lastmod>2026-11-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://maskera.dev/integritet</loc>
     <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/integritet" />
     <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/privacy" />
@@ -89,15 +80,6 @@
     <lastmod>2026-11-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://maskera.dev/en/developers</loc>
-    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/utvecklare" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/developers" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://maskera.dev/utvecklare" />
-    <lastmod>2026-11-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://maskera.dev/en/privacy</loc>
@@ -172,15 +154,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://maskera.dev/guider</loc>
-    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/guider" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/guides" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://maskera.dev/guider" />
-    <lastmod>2026-11-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://maskera.dev/branscher</loc>
     <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/branscher" />
     <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/industries" />
@@ -194,15 +167,6 @@
     <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/fragor" />
     <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/faq" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://maskera.dev/fragor" />
-    <lastmod>2026-11-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://maskera.dev/en/guides</loc>
-    <xhtml:link rel="alternate" hreflang="sv" href="https://maskera.dev/guider" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://maskera.dev/en/guides" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://maskera.dev/guider" />
     <lastmod>2026-11-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

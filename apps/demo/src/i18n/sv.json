@@ -219,61 +219,6 @@
     "contactLead": "Fler frågor?",
     "contactCta": "Mejla hej@maskera.dev"
   },
-  "guides": {
-    "metaTitle": "Guider: Claude, Codex och Cursor",
-    "metaDescription": "Steg för steg: koppla in Maskeras lokala proxy eller MCP-server i Claude Desktop, Claude Code, Codex och Cursor, och testa med påhittade uppgifter.",
-    "title": "Guider",
-    "lede": "Proxyn maskerar det du skriver i chatten. MCP-servern maskerar filer som agenten läser.",
-    "sections": [
-      {
-        "id": "claude-desktop",
-        "codeLabel": "Terminal",
-        "title": "Claude Desktop",
-        "body": "Starta proxyn och låt den vara igång. Välj sedan Help → Troubleshooting → Enable Developer Mode, och därefter Developer → Configure Third-Party Inference…. Ange bas-URL http://127.0.0.1:8787 utan /v1, din Anthropic API-nyckel och auth-schemat x-api-key. Klicka Apply Changes och sedan Save & Restart.",
-        "code": "npx -y @maskera/mcp proxy",
-        "note": "Exakta fältnamn och hur du byter tillbaka till ditt Claude-konto finns i klientguiden.",
-        "noteLink": "desktop"
-      },
-      {
-        "id": "claude-code",
-        "codeLabel": "Terminal",
-        "title": "Claude Code",
-        "body": "Med proxyn maskeras allt Claude Code skickar, även verktygssvar. Med MCP läser Claude dina filer via Maskera i stället.",
-        "code": "# Proxy\nnpx -y @maskera/mcp proxy\nANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude\n\n# Eller MCP-server för filer\nclaude mcp add maskera -- npx -y @maskera/mcp --root .",
-        "note": "",
-        "noteLink": ""
-      },
-      {
-        "id": "codex",
-        "codeLabel": "Terminal",
-        "title": "Codex",
-        "body": "Med API-nyckel går Codex via proxyn. Är du inloggad med ChatGPT kräver Codex HTTPS, och då fungerar inte den lokala proxyn. Använd MCP-servern i stället.",
-        "code": "# Med API-nyckel\nnpx -y @maskera/mcp proxy\nOPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex\n\n# Inloggad med ChatGPT: MCP-server\ncodex mcp add maskera -- npx -y @maskera/mcp --root .",
-        "note": "",
-        "noteLink": ""
-      },
-      {
-        "id": "cursor",
-        "codeLabel": ".cursor/mcp.json",
-        "title": "Cursor",
-        "body": "Lägg till MCP-servern i projektets .cursor/mcp.json. Agenten läser då känsliga filer med maskera_read_file och skriver tillbaka med maskera_write_file.",
-        "code": "{\n  \"mcpServers\": {\n    \"maskera\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@maskera/mcp\", \"--root\", \".\"]\n    }\n  }\n}",
-        "note": "",
-        "noteLink": ""
-      },
-      {
-        "id": "testa",
-        "codeLabel": "Test",
-        "title": "Testa innan du använder riktiga uppgifter",
-        "body": "Öppna den lokala inspektören och skicka en påhittad adress. Inspektören ska visa [EPOST_1] på väg ut, och svaret ska visa adressen igen.",
-        "code": "# Inspektören\nopen http://127.0.0.1:8787/_maskera\n\n# Skriv i chatten\nSkriv ett kort mejl till provnamn.maskera@example.com och bekräfta mötet.",
-        "note": "",
-        "noteLink": ""
-      }
-    ],
-    "moreLead": "Alla lägen och flaggor:",
-    "moreCta": "Dokumentationen för @maskera/mcp"
-  },
   "industries": {
     "metaTitle": "Branscher: HR, vård, juridik, kommun",
     "metaDescription": "Så används Maskera i HR, vård, juridik, kommun och kundsupport: vilka personuppgifter som byts ut och vad som står kvar för AI:n.",
@@ -466,39 +411,11 @@
     "fallback": "Uppgift"
   },
   "developerApi": {
-    "title": "För utvecklare",
-    "toc": [
-      {
-        "href": "#agenter",
-        "label": "AI-agenter"
-      },
-      {
-        "href": "#installera",
-        "label": "Egen kod"
-      },
-      {
-        "href": "#sa-fungerar-det",
-        "label": "Så fungerar det"
-      }
-    ],
-    "lede": "Använd Maskera framför din AI-agent eller i din egen kod. Allt körs lokalt.",
-    "agentsTitle": "Skydda din AI-agent",
-    "agentsBody": "@maskera/mcp maskerar personuppgifter på din dator innan agenten skickar dem till modellen.",
-    "installTitle": "Bygg in i egen kod",
     "packageManagerLabel": "Pakethanterare",
     "codeExample": "import { createNerRecognizer, redactWithNer } from \"maskera\"\n\nconst recognizer = createNerRecognizer()\n\nconst { text, restore } = await redactWithNer(\n  \"hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala\",\n  { recognizer },\n)\n// text: \"hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]\"\n\nconst svar = await fragaAI(text) // valfri AI-tjänst\nrestore(svar) // platshållarna blir originalen igen, lokalt",
-    "practicalTitle": "Bra att veta",
-    "practicalItems": [
-      "Regler och AI-modell ingår i paketet. Modellen (ca 43 MB) hämtas första gången och cachas sedan lokalt.",
-      "Skapa recognizer en gång och återanvänd den mellan anrop.",
-      "Fungerar i webbläsare (WASM eller WebGPU) och i Node 18+."
-    ],
-    "practicalDocsCta": "SDK- och driftdokumentation",
     "sharedLanguageLabel": "JS / TS",
-    "diagramTitle": "Så fungerar det",
     "diagramAlt": "Diagram över maskeras två lager: din text delas upp mellan regler för uppgifter med bestämt format och en svensk AI-modell för fri text, och slås samman till maskerad text.",
     "diagramOpen": "Öppna i full storlek",
-    "resourcesLabel": "Utvecklarresurser",
     "npmCta": "maskera på npm",
     "mcpNpmCta": "@maskera/mcp på npm",
     "githubCta": "Källkod på GitHub",
@@ -630,7 +547,6 @@
     ]
   },
   "navigation": {
-    "developers": "För utvecklare",
     "services": "Produkter",
     "accuracy": "Träffsäkerhet",
     "security": "Säkerhet",
@@ -640,7 +556,6 @@
     "about": "Om & kontakt",
     "github": "GitHub",
     "faq": "Frågor och svar",
-    "guides": "Guider",
     "industries": "Branscher",
     "docs": "Dokumentation"
   },
@@ -1053,30 +968,7 @@
     "copyPromptCta": "Kopiera prompt till din agent",
     "copiedPromptCta": "Prompt kopierad",
     "llmsLinkCta": "Öppna llms.txt",
-    "manualLabel": "Eller kör kommandona själv:",
-    "promptText": "Läs https://maskera.dev/llms.txt och hjälp mig koppla in Maskera (@maskera/mcp) lokalt i min miljö (lokal LLM-proxy för text jag skriver i chatten, eller MCP-server för filer som agenten läser) och testa först med påhittade uppgifter så svenska personuppgifter aldrig lämnar min dator.",
-    "desktopGuideCta": "Guide: Claude Desktop via proxyn",
-    "modesLabel": "Välj läge för AI-agenter",
-    "modes": [
-      {
-        "id": "proxy",
-        "label": "Proxy",
-        "summary": "För klienter där du kan ange egen API-adress, som Claude Code, Codex med API-nyckel och Cursor. Proxyn maskerar det du skriver och verktygens svar, och återställer svaret automatiskt.",
-        "code": "# 1. Starta lokal proxy + live-inspektör (http://127.0.0.1:8787/_maskera)\nnpx -y @maskera/mcp proxy\n\n# 2. Peka din klient på proxyn:\nANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude\nOPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex"
-      },
-      {
-        "id": "mcp",
-        "label": "MCP-server",
-        "summary": "maskera_read_file maskerar filer innan modellen ser dem. maskera_write_file skriver tillbaka originalen till disk.",
-        "code": "{\n  \"mcpServers\": {\n    \"maskera\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@maskera/mcp\", \"--root\", \"/path/to/workspace\"]\n    }\n  }\n}"
-      },
-      {
-        "id": "guard",
-        "label": "Guard",
-        "summary": "Stoppar promptar med personuppgifter i agentens hooks och loggar bara antal och typ. Med --redact maskerar den text i en pipe.",
-        "code": "# Stoppa PII i agent-hooks (exit 2 vid träff):\nnpx -y @maskera/mcp guard\n\n# Maskera en fil lokalt via pipe:\ncat underlag.txt | npx -y @maskera/mcp guard --redact"
-      }
-    ]
+    "promptText": "Läs https://maskera.dev/llms.txt och hjälp mig koppla in Maskera (@maskera/mcp) lokalt i min miljö (lokal LLM-proxy för text jag skriver i chatten, eller MCP-server för filer som agenten läser) och testa först med påhittade uppgifter så svenska personuppgifter aldrig lämnar min dator."
   },
   "services": {
     "title": "Ett skyddslager, tre sätt att använda det",
@@ -1166,14 +1058,14 @@
         "MCP-server: agenten läser filer med personuppgifterna redan utbytta.",
         "Guard: stoppar en prompt med personuppgifter innan den skickas."
       ],
-      "setupCta": "Sätt upp på utvecklarsidan",
+      "setupCta": "Kom igång i dokumentationen",
       "npmCta": "@maskera/mcp på npm"
     },
     "sdk": {
       "body": "Ett npm-paket med reglerna och den svenska AI-modellen. Körs i webbläsaren eller i Node 18+, med valfri vårdprofil som behåller diagnoser och doser.",
       "packageManagerLabel": "npm",
       "installCommand": "npm install maskera @huggingface/transformers",
-      "cta": "Öppna utvecklardokumentationen",
+      "cta": "Läs SDK-dokumentationen",
       "githubCta": "Källkod på GitHub"
     },
     "compare": {
@@ -1300,8 +1192,6 @@
   "meta": {
     "demoTitle": "Använd AI utan att dela personuppgifter",
     "demoDescription": "Maskera är det lokala skyddslagret framför alla AI-modeller: maskera svenska personuppgifter i webbläsaren, med tillägget, i AI-agenter via lokal proxy och MCP (@maskera/mcp) eller via npm. Endast maskerad text går vidare.",
-    "devTitle": "För utvecklare: proxy, MCP och npm",
-    "devDescription": "Koppla in lokal svensk PII-maskering framför AI-agenter med @maskera/mcp (proxy, MCP, guard) eller direkt i webbläsaren och Node med maskera.",
     "servicesTitle": "Produkter och priser",
     "servicesDescription": "Välj hur du använder Maskera lokalt: webbläsartillägg för AI-chattar som ChatGPT och Claude, lokal proxy och MCP för AI-agenter, eller npm-paket i egen kod.",
     "siteName": "maskera",
@@ -1651,7 +1541,7 @@
         {
           "id": "paket",
           "title": "Välj paket",
-          "body": "Båda paketen kör synkront på regler och har samma återställningskarta. maskera återexporterar hela @maskera/core.",
+          "body": "Båda paketen kör synkront på regler och har samma återställningskarta. maskera återexporterar hela @maskera/core. Båda körs i webbläsaren (WASM eller WebGPU) och i Node 18+.",
           "table": {
             "headers": ["Paket", "Innehåll", "När du väljer det"],
             "rows": [

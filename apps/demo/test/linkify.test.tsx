@@ -11,7 +11,6 @@ import {
   keepFlagsWhole,
 } from "../src/components/Docs"
 import { Faq } from "../src/components/Faq"
-import { Guides } from "../src/components/Guides"
 import { PrivacyPolicy } from "../src/components/PrivacyPolicy"
 import { Security } from "../src/components/Security"
 import { TestData } from "../src/components/TestData"
@@ -109,12 +108,11 @@ describe("linkify", () => {
       ["docsSdk", () => render(<DocsSdk go={noop} />)],
       ["docsTroubleshooting", () => render(<DocsTroubleshooting go={noop} />)],
       ["faq", () => render(<Faq go={noop} />)],
-      ["guides", () => render(<Guides go={noop} />)],
       ["about", () => render(<About go={noop} />)],
       ["privacy", () => render(<PrivacyPolicy go={noop} />)],
       ["security", () => render(<Security go={noop} />)],
       ["transparency", () => render(<Transparency go={noop} />)],
-      ["testdata", () => render(<TestData go={noop} />)],
+      ["testdata", () => render(<TestData go={noop} onTryDemo={noop} />)],
     ]
 
     for (const [name, mount] of pages) {

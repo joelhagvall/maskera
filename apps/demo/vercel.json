@@ -3,7 +3,27 @@
   "redirects": [
     {
       "source": "/developers",
-      "destination": "/en/developers",
+      "destination": "/en/docs",
+      "permanent": true
+    },
+    {
+      "source": "/utvecklare",
+      "destination": "/docs",
+      "permanent": true
+    },
+    {
+      "source": "/en/developers",
+      "destination": "/en/docs",
+      "permanent": true
+    },
+    {
+      "source": "/guider",
+      "destination": "/docs/klienter",
+      "permanent": true
+    },
+    {
+      "source": "/en/guides",
+      "destination": "/en/docs/clients",
       "permanent": true
     },
     {
@@ -33,10 +53,6 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/utvecklare",
-      "destination": "/utvecklare/index.html"
-    },
     {
       "source": "/integritet",
       "destination": "/integritet/index.html"
@@ -68,10 +84,6 @@
     {
       "source": "/en",
       "destination": "/en/index.html"
-    },
-    {
-      "source": "/en/developers",
-      "destination": "/en/developers/index.html"
     },
     {
       "source": "/en/privacy",
@@ -108,14 +120,6 @@
     {
       "source": "/en/faq",
       "destination": "/en/faq/index.html"
-    },
-    {
-      "source": "/guider",
-      "destination": "/guider/index.html"
-    },
-    {
-      "source": "/en/guides",
-      "destination": "/en/guides/index.html"
     },
     {
       "source": "/branscher",

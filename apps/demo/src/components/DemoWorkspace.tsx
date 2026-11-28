@@ -23,7 +23,7 @@ export interface DemoWorkspaceProps {
 
 /**
  * Interactive local-masking demo view, code-split into its own chunk so
- * content pages (/tjanster, /traffsakerhet, /utvecklare, etc.) never download
+ * content pages (/tjanster, /traffsakerhet, /docs, etc.) never download
  * the rules engine or NER worker glue unless the visitor enters the demo.
  */
 export function DemoWorkspace({

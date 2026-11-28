@@ -7,7 +7,7 @@ const TOKEN =
   /((?<![^\s])(?:\/\/|#)[^\n]*)|("(?:[^"\\]|\\.)*")|\b(import|from|type|const|await)\b|([A-Za-z_$][\w$]*)(?=\()/g
 
 /**
- * Tiny syntax highlighter for the site's static snippets (Developers page and
+ * Tiny syntax highlighter for the site's static snippets (docs pages and
  * the hero code scene): one source line in, text and `tok-*` spans out.
  */
 export function highlight(line: string): ReactNode[] {

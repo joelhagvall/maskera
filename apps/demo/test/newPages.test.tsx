@@ -2,7 +2,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { Faq } from "../src/components/Faq"
-import { Guides } from "../src/components/Guides"
 import { Industries } from "../src/components/Industries"
 import copy from "../src/i18n/sv.json"
 import { renderRouteHtml } from "../src/meta"
@@ -26,19 +25,6 @@ describe("FAQ page", () => {
     const ld = structuredData(renderRouteHtml("faq", "sv"))
     expect(ld["@type"]).toBe("FAQPage")
     expect(ld.mainEntity).toHaveLength(questions.length)
-  })
-})
-
-describe("Guides page", () => {
-  it("links every section, points Claude Desktop at /docs/klienter and never says Gateway", () => {
-    const { container } = render(<Guides go={vi.fn()} />)
-    for (const section of copy.guides.sections) {
-      expect(container.querySelector(`#${section.id}`)).toBeTruthy()
-    }
-    const desktop = screen.getByRole("link", { name: new RegExp(copy.guides.sections[0].note) })
-    expect(desktop.getAttribute("href")).toBe("/docs/klienter#claude-desktop")
-    // "Gateway" is Maskera's dormant self-hosted product name, kept off the public site.
-    expect(container.textContent?.toLowerCase()).not.toContain("gateway")
   })
 })
 

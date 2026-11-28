@@ -79,10 +79,6 @@ export function pageMeta(locale: Locale): Record<View, ViewMeta> {
       title: strings.meta.demoTitle,
       description: strings.meta.demoDescription,
     },
-    dev: {
-      title: strings.meta.devTitle,
-      description: strings.meta.devDescription,
-    },
     docs: {
       title: strings.docs.overview.metaTitle,
       description: strings.docs.overview.metaDescription,
@@ -135,10 +131,6 @@ export function pageMeta(locale: Locale): Record<View, ViewMeta> {
       title: strings.faq.metaTitle,
       description: strings.faq.metaDescription,
     },
-    guides: {
-      title: strings.guides.metaTitle,
-      description: strings.guides.metaDescription,
-    },
     industries: {
       title: strings.industries.metaTitle,
       description: strings.industries.metaDescription,
@@ -153,7 +145,6 @@ export const viewMeta = new Proxy(getViewMeta("sv"), {
 })
 
 export const routeHtmlViews = [
-  "dev",
   "docs",
   "docsMcp",
   "docsClients",
@@ -167,7 +158,6 @@ export const routeHtmlViews = [
   "security",
   "about",
   "faq",
-  "guides",
   "industries",
 ] as const
 export type RouteHtmlView = (typeof routeHtmlViews)[number]
@@ -236,8 +226,6 @@ function jsonLdFor(view: View, locale: Locale): object {
         return strings.about.title
       case "faq":
         return strings.faq.title
-      case "guides":
-        return strings.guides.title
       case "docs":
         return strings.docs.overview.title
       case "docsMcp":
@@ -402,23 +390,6 @@ function jsonLdFor(view: View, locale: Locale): object {
     }
   }
 
-  if (view === "dev") {
-    return {
-      ...shared,
-      "@type": "SoftwareSourceCode",
-      codeRepository: "https://github.com/joelhagvall/maskera",
-      programmingLanguage: "TypeScript",
-      runtimePlatform: ["Web browser", "Node.js"],
-      license: "https://opensource.org/license/mit",
-      sameAs: [
-        "https://www.npmjs.com/package/maskera",
-        "https://www.npmjs.com/package/@maskera/mcp",
-        "https://www.npmjs.com/package/@maskera/core",
-        "https://huggingface.co/joelhagvall/maskera-sv-ner",
-      ],
-    }
-  }
-
   if (view === "about") {
     return {
       ...shared,
@@ -464,11 +435,8 @@ export function renderRouteHtml(view: View, locale: Locale = activeLocale): stri
   const structuredData = JSON.stringify(jsonLdFor(view, locale), null, 2)
     .replace(/</g, "\\u003c")
     .replace(/\n/g, "\n      ")
-  const lightDiagram = locale === "sv" ? "/layers-sv.svg" : "/layers.svg"
-  const darkDiagram = locale === "sv" ? "/layers-sv-dark.svg" : "/layers-dark.svg"
-  // The demo and developer pages show mono text above the fold (the
-  // hand-authored Swedish index.html preloads it too); the diagrams are only
-  // on the developer page.
+  // The demo and docs pages show mono text above the fold (the hand-authored
+  // Swedish index.html preloads it too).
   const isDocsView =
     view === "docs" ||
     view === "docsMcp" ||
@@ -476,16 +444,10 @@ export function renderRouteHtml(view: View, locale: Locale = activeLocale): stri
     view === "docsSdk" ||
     view === "docsTroubleshooting"
   const monoPreload =
-    view === "demo" || view === "dev" || isDocsView
+    view === "demo" || isDocsView
       ? `
     <link rel="preload" href="/fonts/geist-mono-latin.woff2" as="font" type="font/woff2" crossorigin />`
       : ""
-  const devPreloads =
-    view === "dev"
-      ? `${monoPreload}
-    <link rel="preload" href="${lightDiagram}" as="image" type="image/svg+xml" fetchpriority="high" />
-    <link rel="preload" href="${darkDiagram}" as="image" type="image/svg+xml" fetchpriority="high" />`
-      : monoPreload
 
   return `<!doctype html>
 <html lang="${locale}">
@@ -527,7 +489,7 @@ export function renderRouteHtml(view: View, locale: Locale = activeLocale): stri
     <script type="application/ld+json">
       ${structuredData}
     </script>
-    <link rel="preload" href="/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />${devPreloads}
+    <link rel="preload" href="/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />${monoPreload}
   </head>
   <body>
     <div id="root"></div>

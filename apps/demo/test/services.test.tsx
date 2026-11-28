@@ -14,8 +14,7 @@ afterEach(() => {
 describe("Services", () => {
   it("shows every track on one page, without Gateway references", () => {
     const go = vi.fn()
-    const goSection = vi.fn()
-    const { container } = render(<Services go={go} goSection={goSection} onCoverage={vi.fn()} />)
+    const { container } = render(<Services go={go} onCoverage={vi.fn()} />)
 
     expect(screen.getByRole("banner")).toBeTruthy()
     expect(screen.getByText(copy.services.lede)).toBeTruthy()
@@ -82,16 +81,16 @@ describe("Services", () => {
     for (const point of copy.services.agents.points) {
       expect(agents.getByText(point)).toBeTruthy()
     }
-    // Setup lives on the developer page only: no second copy of the agent card here.
+    // Setup lives in the docs only: no second copy of the agent card here.
     expect(agents.queryByRole("button", { name: copy.agentSetup.copyPromptCta })).toBeNull()
     fireEvent.click(agents.getByRole("link", { name: copy.services.agents.setupCta }))
-    expect(goSection).toHaveBeenCalledWith("dev", "agenter")
+    expect(go).toHaveBeenCalledWith("docs")
 
     // Own code
     const code = within(container.querySelector("#kod") as HTMLElement)
     expect(code.getByRole("heading", { level: 2 }).textContent).toBe(copy.services.tracks[2].title)
     fireEvent.click(code.getByRole("link", { name: copy.services.sdk.cta }))
-    expect(go).toHaveBeenCalledWith("dev")
+    expect(go).toHaveBeenCalledWith("docsSdk")
   })
 })
 
@@ -111,7 +110,7 @@ describe("portal helpers", () => {
 
 describe("Services product scenes", () => {
   it("shows each product in its own section with the same scene as the hero, loaded lazily", () => {
-    const { container } = render(<Services go={vi.fn()} goSection={vi.fn()} onCoverage={vi.fn()} />)
+    const { container } = render(<Services go={vi.fn()} onCoverage={vi.fn()} />)
     const scenes = [...container.querySelectorAll<HTMLElement>("figure.product-scene")]
     expect(scenes.map((scene) => [scene.closest("section")?.id, scene.dataset.stage])).toEqual([
       ["tillagg", "browser"],
@@ -126,7 +125,7 @@ describe("Services product scenes", () => {
 
   it("shows included and not included as a check and a dash with their words for screen readers", () => {
     const compare = copy.services.compare
-    const { container } = render(<Services go={vi.fn()} goSection={vi.fn()} onCoverage={vi.fn()} />)
+    const { container } = render(<Services go={vi.fn()} onCoverage={vi.fn()} />)
     const cells = [...container.querySelectorAll(".ext-compare tbody td")]
     const values = compare.rows.flatMap((row) => [row.free, row.pro, row.team])
     expect(cells.map((cell) => (cell.querySelector(".sr-only") ?? cell).textContent)).toEqual(

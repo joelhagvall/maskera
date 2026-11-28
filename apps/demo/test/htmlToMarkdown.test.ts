@@ -44,13 +44,13 @@ describe("htmlToMarkdown", () => {
     expect(accuracy).toMatch(/^\| .+ \|$/m)
     expect(accuracy).toMatch(/^\| -{3,}/m)
 
-    const dev = markdownFor("/en/developers")
+    const dev = markdownFor("/en/docs/sdk")
     expect(dev).toContain("```")
     expect(dev).toContain("## ")
     expect(dev).not.toMatch(/\]\(\/[a-z]/)
     expect(dev).toContain("](https://maskera.dev/")
     // Multi-line code blocks keep line breaks instead of smashing .code-line spans together.
-    expect(dev).toContain("\nnpx -y @maskera/mcp proxy\n")
+    expect(dev).toContain("\nnpm install maskera @huggingface/transformers\n")
     expect(dev).toContain("\nconst recognizer = createNerRecognizer()\n")
 
     const services = markdownFor("/tjanster")

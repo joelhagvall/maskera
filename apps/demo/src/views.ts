@@ -4,32 +4,23 @@ import type { View } from "./routing"
 
 export interface ViewComponents {
   demo: FunctionComponent<DemoWorkspaceProps>
-  dev: FunctionComponent<{
-    go: (next: View) => void
-    goSection?: (next: View, id: string) => void
-    onCoverage: () => void
-  }>
   docs: FunctionComponent<{ go: (next: View) => void; onCoverage: () => void }>
   docsMcp: FunctionComponent<{ go: (next: View) => void }>
   docsClients: FunctionComponent<{ go: (next: View) => void }>
   docsSdk: FunctionComponent<{ go: (next: View) => void }>
   docsTroubleshooting: FunctionComponent<{ go: (next: View) => void }>
   transparency: FunctionComponent<{ go: (next: View) => void }>
-  testdata: FunctionComponent<{ go: (next: View) => void }>
+  testdata: FunctionComponent<{ go: (next: View) => void; onTryDemo: () => void }>
   privacy: FunctionComponent<{ go: (next: View) => void }>
-  services: FunctionComponent<{
+  services: FunctionComponent<{ go: (next: View) => void; onCoverage: () => void }>
+  accuracy: FunctionComponent<{
     go: (next: View) => void
-    goSection: (next: View, id: string) => void
-    onCoverage: () => void
+    onTryContext?: () => void
+    onTryDemo?: () => void
   }>
-  accuracy: FunctionComponent<{ go: (next: View) => void; onTryContext?: () => void }>
   security: FunctionComponent<{ go: (next: View) => void }>
   about: FunctionComponent<{ go: (next: View) => void }>
   faq: FunctionComponent<{ go: (next: View) => void }>
-  guides: FunctionComponent<{
-    go: (next: View) => void
-    goSection?: (next: View, id: string) => void
-  }>
   industries: FunctionComponent<{ go: (next: View) => void; onTryScenario: (id: string) => void }>
 }
 
@@ -38,7 +29,6 @@ const inflight: Partial<Record<View, Promise<unknown>>> = {}
 
 const importers: { [K in View]: () => Promise<ViewComponents[K]> } = {
   demo: () => import("./components/DemoWorkspace").then((m) => m.DemoWorkspace),
-  dev: () => import("./components/Developers").then((m) => m.Developers),
   docs: () => import("./components/Docs").then((m) => m.DocsOverview),
   docsMcp: () => import("./components/Docs").then((m) => m.DocsMcp),
   docsClients: () => import("./components/Docs").then((m) => m.DocsClients),
@@ -52,7 +42,6 @@ const importers: { [K in View]: () => Promise<ViewComponents[K]> } = {
   security: () => import("./components/Security").then((m) => m.Security),
   about: () => import("./components/About").then((m) => m.About),
   faq: () => import("./components/Faq").then((m) => m.Faq),
-  guides: () => import("./components/Guides").then((m) => m.Guides),
   industries: () => import("./components/Industries").then((m) => m.Industries),
 }
 

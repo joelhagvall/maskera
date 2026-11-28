@@ -219,61 +219,6 @@
     "contactLead": "More questions?",
     "contactCta": "Email hej@maskera.dev"
   },
-  "guides": {
-    "metaTitle": "Guides: Claude, Codex and Cursor",
-    "metaDescription": "Step by step: connect Maskera's local proxy or MCP server in Claude Desktop, Claude Code, Codex and Cursor, and test with made-up data.",
-    "title": "Guides",
-    "lede": "The proxy masks what you type in the chat. The MCP server masks files the agent reads.",
-    "sections": [
-      {
-        "id": "claude-desktop",
-        "codeLabel": "Terminal",
-        "title": "Claude Desktop",
-        "body": "Start the proxy and keep it running. Then choose Help → Troubleshooting → Enable Developer Mode, followed by Developer → Configure Third-Party Inference…. Enter the base URL http://127.0.0.1:8787 without /v1, your Anthropic API key and the x-api-key auth scheme. Click Apply Changes and then Save & Restart.",
-        "code": "npx -y @maskera/mcp proxy",
-        "note": "The exact field names, and how to switch back to your Claude account, are in the client guide.",
-        "noteLink": "desktop"
-      },
-      {
-        "id": "claude-code",
-        "codeLabel": "Terminal",
-        "title": "Claude Code",
-        "body": "With the proxy, everything Claude Code sends is masked, tool results included. With MCP, Claude reads your files through Maskera instead.",
-        "code": "# Proxy\nnpx -y @maskera/mcp proxy\nANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude\n\n# Or the MCP server for files\nclaude mcp add maskera -- npx -y @maskera/mcp --root .",
-        "note": "",
-        "noteLink": ""
-      },
-      {
-        "id": "codex",
-        "codeLabel": "Terminal",
-        "title": "Codex",
-        "body": "With an API key, Codex goes through the proxy. Signed in with ChatGPT, Codex requires HTTPS, so the local proxy does not work. Use the MCP server instead.",
-        "code": "# With an API key\nnpx -y @maskera/mcp proxy\nOPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex\n\n# Signed in with ChatGPT: MCP server\ncodex mcp add maskera -- npx -y @maskera/mcp --root .",
-        "note": "",
-        "noteLink": ""
-      },
-      {
-        "id": "cursor",
-        "codeLabel": ".cursor/mcp.json",
-        "title": "Cursor",
-        "body": "Add the MCP server to the project's .cursor/mcp.json. The agent then reads sensitive files with maskera_read_file and writes back with maskera_write_file.",
-        "code": "{\n  \"mcpServers\": {\n    \"maskera\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@maskera/mcp\", \"--root\", \".\"]\n    }\n  }\n}",
-        "note": "",
-        "noteLink": ""
-      },
-      {
-        "id": "testa",
-        "codeLabel": "Test",
-        "title": "Test before you use real data",
-        "body": "Open the local inspector and send a made-up address. The inspector should show [EPOST_1] going out, and the reply should show the address again.",
-        "code": "# The inspector\nopen http://127.0.0.1:8787/_maskera\n\n# Type in the chat\nSkriv ett kort mejl till provnamn.maskera@example.com och bekräfta mötet.",
-        "note": "",
-        "noteLink": ""
-      }
-    ],
-    "moreLead": "Every mode and flag:",
-    "moreCta": "The @maskera/mcp documentation"
-  },
   "industries": {
     "metaTitle": "Industries: HR, health, legal, public",
     "metaDescription": "How Maskera is used in HR, healthcare, legal, the public sector and customer support: which personal data is swapped out and what stays for the AI.",
@@ -466,39 +411,11 @@
     "fallback": "Data"
   },
   "developerApi": {
-    "title": "For developers",
-    "toc": [
-      {
-        "href": "#agenter",
-        "label": "AI agents"
-      },
-      {
-        "href": "#installera",
-        "label": "Your own code"
-      },
-      {
-        "href": "#sa-fungerar-det",
-        "label": "How it works"
-      }
-    ],
-    "lede": "Use Maskera in front of your AI agent or in your own code. Everything runs locally.",
-    "agentsTitle": "Protect your AI agent",
-    "agentsBody": "@maskera/mcp masks personal data on your machine before the agent sends it to the model.",
-    "installTitle": "Build it into your own code",
     "packageManagerLabel": "Package manager",
     "codeExample": "import { createNerRecognizer, redactWithNer } from \"maskera\"\n\nconst recognizer = createNerRecognizer()\n\nconst { text, restore } = await redactWithNer(\n  \"hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala\",\n  { recognizer },\n)\n// text: \"hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]\"\n\nconst answer = await askAI(text) // any AI service\nrestore(answer) // placeholders become the originals again, locally",
-    "practicalTitle": "Good to know",
-    "practicalItems": [
-      "Rules and the AI model ship in the package. The model (about 43 MB) downloads on first run and is then cached locally.",
-      "Create the recognizer once and reuse it between calls.",
-      "Works in browsers (WASM or WebGPU) and in Node 18+."
-    ],
-    "practicalDocsCta": "SDK and operations docs",
     "sharedLanguageLabel": "JS / TS",
-    "diagramTitle": "How it works",
     "diagramAlt": "Diagram of maskera's two layers: your text is split between rules for fixed-format data and a Swedish AI model for free text, then merged into masked text.",
     "diagramOpen": "Open full size",
-    "resourcesLabel": "Developer resources",
     "npmCta": "maskera on npm",
     "mcpNpmCta": "@maskera/mcp on npm",
     "githubCta": "Source code on GitHub",
@@ -630,7 +547,6 @@
     ]
   },
   "navigation": {
-    "developers": "For developers",
     "services": "Products",
     "accuracy": "Accuracy",
     "security": "Security",
@@ -640,7 +556,6 @@
     "about": "About & contact",
     "github": "GitHub",
     "faq": "FAQ",
-    "guides": "Guides",
     "industries": "Industries",
     "docs": "Documentation"
   },
@@ -1053,30 +968,7 @@
     "copyPromptCta": "Copy prompt for your agent",
     "copiedPromptCta": "Prompt copied",
     "llmsLinkCta": "Open llms.txt",
-    "manualLabel": "Or run the commands yourself:",
-    "promptText": "Read https://maskera.dev/llms.txt and help me connect Maskera (@maskera/mcp) locally in my setup (local LLM proxy for text I type in the chat, or MCP server for files the agent reads) and test with made-up data first so Swedish personal data never leaves my machine.",
-    "desktopGuideCta": "Guide: Claude Desktop through the proxy",
-    "modesLabel": "Choose AI agent mode",
-    "modes": [
-      {
-        "id": "proxy",
-        "label": "Proxy",
-        "summary": "For clients that accept a custom API URL, such as Claude Code, Codex with an API key and Cursor. The proxy masks what you type and tool results, and restores the reply automatically.",
-        "code": "# 1. Start local proxy + live inspector (http://127.0.0.1:8787/_maskera)\nnpx -y @maskera/mcp proxy\n\n# 2. Point your client at the proxy:\nANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude\nOPENAI_BASE_URL=http://127.0.0.1:8787/v1 codex"
-      },
-      {
-        "id": "mcp",
-        "label": "MCP server",
-        "summary": "maskera_read_file masks files before the model sees them. maskera_write_file writes the originals back to disk.",
-        "code": "{\n  \"mcpServers\": {\n    \"maskera\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@maskera/mcp\", \"--root\", \"/path/to/workspace\"]\n    }\n  }\n}"
-      },
-      {
-        "id": "guard",
-        "label": "Guard",
-        "summary": "Blocks prompts containing personal data in agent hooks and logs only counts and types. With --redact it masks text in a pipe.",
-        "code": "# Block PII in agent hooks (exits 2 on match):\nnpx -y @maskera/mcp guard\n\n# Redact a local file through a pipe:\ncat document.txt | npx -y @maskera/mcp guard --redact"
-      }
-    ]
+    "promptText": "Read https://maskera.dev/llms.txt and help me connect Maskera (@maskera/mcp) locally in my setup (local LLM proxy for text I type in the chat, or MCP server for files the agent reads) and test with made-up data first so Swedish personal data never leaves my machine."
   },
   "services": {
     "title": "One privacy layer, three ways to use it",
@@ -1166,14 +1058,14 @@
         "MCP server: the agent reads files with the personal data already swapped out.",
         "Guard: stops a prompt that contains personal data before it is sent."
       ],
-      "setupCta": "Set up on the developer page",
+      "setupCta": "Get started in the docs",
       "npmCta": "@maskera/mcp on npm"
     },
     "sdk": {
       "body": "One npm package with the rules and the Swedish AI model. Runs in the browser or in Node 18+, with an optional clinical profile that keeps diagnoses and doses.",
       "packageManagerLabel": "npm",
       "installCommand": "npm install maskera @huggingface/transformers",
-      "cta": "Open developer documentation",
+      "cta": "Read the SDK docs",
       "githubCta": "Source code on GitHub"
     },
     "compare": {
@@ -1300,8 +1192,6 @@
   "meta": {
     "demoTitle": "Use AI without sharing personal data",
     "demoDescription": "Maskera is the local privacy layer in front of every AI model: mask Swedish personal data in the browser extension, in AI agents via local proxy and MCP (@maskera/mcp), or in your own code via npm.",
-    "devTitle": "For developers: proxy, MCP and npm",
-    "devDescription": "Connect local Swedish PII masking in front of AI agents with @maskera/mcp (proxy, MCP, guard) or directly in the browser and Node with maskera.",
     "servicesTitle": "Products and pricing",
     "servicesDescription": "Choose how you use Maskera locally: browser extension for AI chats such as ChatGPT and Claude, local proxy and MCP for AI agents, or npm packages in your own code.",
     "siteName": "maskera",
@@ -1655,7 +1545,7 @@
         {
           "id": "paket",
           "title": "Pick a package",
-          "body": "Both packages share the same synchronous rule engine and restore map. maskera re-exports everything from @maskera/core.",
+          "body": "Both packages share the same synchronous rule engine and restore map. maskera re-exports everything from @maskera/core. Both run in the browser (WASM or WebGPU) and in Node 18+.",
           "table": {
             "headers": ["Package", "Includes", "Best when"],
             "rows": [

@@ -1,6 +1,5 @@
 {
   "og.png": "26d7eb032cd766be",
-  "og/sv/dev.png": "47a5525bd0901153",
   "og/sv/docs.png": "2c06c9f0b89f4574",
   "og/sv/docsMcp.png": "749f9a8107d1596f",
   "og/sv/docsClients.png": "71ade1b8054de896",
@@ -14,10 +13,8 @@
   "og/sv/security.png": "15ee7a1a4c5d3535",
   "og/sv/about.png": "391ddc34414fa280",
   "og/sv/faq.png": "43e930c98c83f156",
-  "og/sv/guides.png": "06f59906c3f3446a",
   "og/sv/industries.png": "0d6a18371ce4c89d",
   "og-en.png": "eea26370264eb3c6",
-  "og/en/dev.png": "f8614dcfc4f34035",
   "og/en/docs.png": "296860c4e9df3dcc",
   "og/en/docsMcp.png": "717a3add57668610",
   "og/en/docsClients.png": "dfbe57c0b93e3584",
@@ -31,6 +28,5 @@
   "og/en/security.png": "5c27de00500ae297",
   "og/en/about.png": "b1c3895738af29dc",
   "og/en/faq.png": "007e1d7cb458b720",
-  "og/en/guides.png": "a8637c48693972c6",
   "og/en/industries.png": "251ab2577a7894db"
 }

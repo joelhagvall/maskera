@@ -51,7 +51,6 @@ export function applyViewMeta(view: View, locale = activeLocale) {
 export function viewFromPath(pathname: string): View {
   const path = pathname.replace(/\/+$/, "") || "/"
   const paths = getViewPaths(localeFromPath(path))
-  if (path === paths.dev) return "dev"
   if (path === paths.docs) return "docs"
   if (path === paths.docsMcp) return "docsMcp"
   if (path === paths.docsClients) return "docsClients"
@@ -65,7 +64,6 @@ export function viewFromPath(pathname: string): View {
   if (path === paths.security) return "security"
   if (path === paths.about) return "about"
   if (path === paths.faq) return "faq"
-  if (path === paths.guides) return "guides"
   if (path === paths.industries) return "industries"
   return "demo"
 }

@@ -21,9 +21,7 @@ export function Footer({ go }: { go: (view: View) => void }) {
       heading: copy.footer.columns.product,
       links: [
         { view: "services", label: copy.navigation.services },
-        { view: "dev", label: copy.navigation.developers },
         { view: "docs", label: copy.navigation.docs },
-        { view: "guides", label: copy.navigation.guides },
         { view: "industries", label: copy.navigation.industries },
         { view: "accuracy", label: copy.navigation.accuracy },
         { href: portalUrl("/login", "footer_portal"), label: copy.footer.portal },

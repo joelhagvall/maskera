@@ -21,9 +21,9 @@ describe("Footer", () => {
     expect(screen.getByRole("link", { name: copy.navigation.services }).getAttribute("href")).toBe(
       "/tjanster",
     )
-    expect(
-      screen.getByRole("link", { name: copy.navigation.developers }).getAttribute("href"),
-    ).toBe("/utvecklare")
+    expect(screen.getByRole("link", { name: copy.navigation.docs }).getAttribute("href")).toBe(
+      "/docs",
+    )
   })
 
   it("links the about and contact page", () => {
@@ -36,13 +36,10 @@ describe("Footer", () => {
     expect(go).toHaveBeenCalledWith("about")
   })
 
-  it("links the FAQ, guides and industries pages", () => {
+  it("links the FAQ and industries pages", () => {
     render(<Footer go={vi.fn()} />)
     expect(screen.getByRole("link", { name: copy.navigation.faq }).getAttribute("href")).toBe(
       "/fragor",
-    )
-    expect(screen.getByRole("link", { name: copy.navigation.guides }).getAttribute("href")).toBe(
-      "/guider",
     )
     expect(
       screen.getByRole("link", { name: copy.navigation.industries }).getAttribute("href"),

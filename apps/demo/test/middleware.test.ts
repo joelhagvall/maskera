@@ -30,10 +30,10 @@ describe("Markdown content negotiation (acceptmarkdown.com)", () => {
   }
 
   it("honours q-values and specificity when picking markdown", () => {
-    const preferred = call("/utvecklare", { accept: "text/html;q=0.5, text/markdown;q=0.9" })
-    expect(preferred.headers.get("x-middleware-rewrite")).toBe(`${ORIGIN}/utvecklare.md`)
-    const rejectedHtml = call("/utvecklare", { accept: "*/*, text/html;q=0" })
-    expect(rejectedHtml.headers.get("x-middleware-rewrite")).toBe(`${ORIGIN}/utvecklare.md`)
+    const preferred = call("/tjanster", { accept: "text/html;q=0.5, text/markdown;q=0.9" })
+    expect(preferred.headers.get("x-middleware-rewrite")).toBe(`${ORIGIN}/tjanster.md`)
+    const rejectedHtml = call("/tjanster", { accept: "*/*, text/html;q=0" })
+    expect(rejectedHtml.headers.get("x-middleware-rewrite")).toBe(`${ORIGIN}/tjanster.md`)
   })
 
   it("serves HTML to browsers and advertises the Markdown alternate with Vary: Accept", () => {
@@ -49,8 +49,8 @@ describe("Markdown content negotiation (acceptmarkdown.com)", () => {
   })
 
   it("normalises trailing slashes before matching a page", () => {
-    const response = call("/en/developers/", { accept: "text/markdown" })
-    expect(response.headers.get("x-middleware-rewrite")).toBe(`${ORIGIN}/en/developers.md`)
+    const response = call("/en/docs/sdk/", { accept: "text/markdown" })
+    expect(response.headers.get("x-middleware-rewrite")).toBe(`${ORIGIN}/en/docs/sdk.md`)
   })
 
   it("answers 406 with the available types when Accept rules out both", async () => {
@@ -73,7 +73,7 @@ describe("Markdown content negotiation (acceptmarkdown.com)", () => {
 describe("pass-through", () => {
   const files = [
     "/index.md",
-    "/en/developers.md",
+    "/en/docs.md",
     "/llms.txt",
     "/sitemap.xml",
     "/robots.txt",
@@ -117,7 +117,7 @@ describe("agent-friendly 404s", () => {
         "https://maskera.dev/llms.txt",
         "https://maskera.dev/sitemap.xml",
         "https://maskera.dev/en/services",
-        "https://maskera.dev/en/developers",
+        "https://maskera.dev/en/docs",
         "https://maskera.dev/en/about",
         "Accept: text/markdown",
       ]) {
@@ -177,7 +177,7 @@ describe("agent-friendly 404s", () => {
   })
 
   it("never serves a 200 app shell for an unknown path", () => {
-    for (const path of ["/unknown", "/en/unknown", "/utvecklare/unknown", "/docs/unknown"]) {
+    for (const path of ["/unknown", "/en/unknown", "/tjanster/unknown", "/docs/unknown"]) {
       expect(call(path, { accept: BROWSER }).status).toBe(404)
     }
   })

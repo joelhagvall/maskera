@@ -173,12 +173,9 @@ describe("renderRouteHtml", () => {
     }
   })
 
-  it("only the developers page preloads its mono font and architecture images", () => {
-    expect(renderRouteHtml("dev")).toContain("geist-mono-latin.woff2")
-    expect(renderRouteHtml("dev")).toContain('href="/layers-sv.svg"')
-    expect(renderRouteHtml("dev")).toContain('href="/layers-sv-dark.svg"')
+  it("only the docs pages preload the mono font their code needs", () => {
+    expect(renderRouteHtml("docsSdk")).toContain("geist-mono-latin.woff2")
     expect(renderRouteHtml("transparency")).not.toContain("geist-mono-latin.woff2")
-    expect(renderRouteHtml("transparency")).not.toContain('href="/layers-sv.svg"')
     expect(renderRouteHtml("testdata")).not.toContain("geist-mono-latin.woff2")
     expect(renderRouteHtml("privacy")).not.toContain("geist-mono-latin.woff2")
     expect(renderRouteHtml("services")).not.toContain("geist-mono-latin.woff2")
@@ -187,19 +184,17 @@ describe("renderRouteHtml", () => {
   })
 
   it("renders English shells with matching paths, metadata and locale alternates", () => {
-    const html = renderRouteHtml("dev", "en")
-    const meta = getViewMeta("en").dev
+    const html = renderRouteHtml("docsSdk", "en")
+    const meta = getViewMeta("en").docsSdk
 
     expect(html).toContain('<html lang="en">')
     expect(html).toContain(`<title>${meta.title}</title>`)
-    expect(html).toContain('<link rel="canonical" href="https://maskera.dev/en/developers" />')
+    expect(html).toContain('<link rel="canonical" href="https://maskera.dev/en/docs/sdk" />')
     expect(html).toContain(
-      '<link rel="alternate" hreflang="sv" href="https://maskera.dev/utvecklare" />',
+      '<link rel="alternate" hreflang="sv" href="https://maskera.dev/docs/sdk" />',
     )
     expect(html).toContain(
-      '<link rel="alternate" hreflang="en" href="https://maskera.dev/en/developers" />',
+      '<link rel="alternate" hreflang="en" href="https://maskera.dev/en/docs/sdk" />',
     )
-    expect(html).toContain('href="/layers.svg"')
-    expect(html).toContain('href="/layers-dark.svg"')
   })
 })

@@ -5,7 +5,7 @@
 // 1. Markdown content negotiation (acceptmarkdown.com): a page request whose
 //    Accept header prefers text/markdown over text/html is rewritten to the
 //    page's Markdown sibling that scripts/prerender.mjs wrote into dist/
-//    (/ -> /index.md, /utvecklare -> /utvecklare.md). HTML responses carry
+//    (/ -> /index.md, /tjanster -> /tjanster.md). HTML responses carry
 //    Vary: Accept and a Link rel="alternate" to the Markdown so caches and
 //    agents can find the other representation. An Accept header that rules
 //    out both is answered 406 with the available types.

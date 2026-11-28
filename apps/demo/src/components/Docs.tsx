@@ -6,9 +6,10 @@ import { ArrowUpRightIcon } from "../icons"
 import { linkify } from "../linkify"
 import { navClick, type View, viewPaths } from "../routing"
 import { loadView } from "../views"
-import { AgentPromptCard } from "./AgentSetupCard"
+import { AgentPromptCard } from "./AgentPromptCard"
 import { ArchitectureFigure } from "./ArchitectureFigure"
 import { Code } from "./CodeSnippet"
+import { InstallTabs } from "./InstallTabs"
 import { PageToc } from "./PageToc"
 import { TopBar } from "./TopBar"
 
@@ -313,7 +314,23 @@ export function DocsClients({ go }: { go: (view: View) => void }) {
 }
 
 export function DocsSdk({ go }: { go: (view: View) => void }) {
-  return <DocsPage current="docsSdk" data={copy.docs.sdk} go={go} />
+  return (
+    <DocsPage
+      current="docsSdk"
+      data={copy.docs.sdk}
+      go={go}
+      afterSection={{
+        paket: (
+          <>
+            <InstallTabs />
+            <Code languageLabel={copy.developerApi.sharedLanguageLabel}>
+              {copy.developerApi.codeExample}
+            </Code>
+          </>
+        ),
+      }}
+    />
+  )
 }
 
 export function DocsTroubleshooting({ go }: { go: (view: View) => void }) {

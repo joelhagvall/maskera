@@ -12,7 +12,7 @@
  *
  * Run against a running dev server or preview (default http://127.0.0.1:5179):
  *   pnpm --filter @maskera/demo capture:pages [--base=URL] [--lang=sv|en|all] [--theme=light|dark]
- *     [--only=/utvecklare,/en/developers]
+ *     [--only=/tjanster,/en/services]
  *
  * --only keeps just the listed sitemap paths (after --lang), for checking one
  * page before and after an edit without shooting the whole site.

@@ -41,15 +41,7 @@ function PlanCell({ value }: { value: string }) {
  * ids are the old tab hashes (#tillagg, #agenter, #kod, #jamfor), so earlier
  * links still land on the right track.
  */
-export function Services({
-  go,
-  goSection,
-  onCoverage,
-}: {
-  go: (view: View) => void
-  goSection: (view: View, anchor: string) => void
-  onCoverage: () => void
-}) {
+export function Services({ go, onCoverage }: { go: (view: View) => void; onCoverage: () => void }) {
   const services = copy.services
   const compare = services.compare
   const track = (id: string) => {
@@ -245,8 +237,8 @@ export function Services({
               <div className="services-cta-row">
                 <a
                   className="ext-trial-cta"
-                  href={`${viewPaths.dev}#agenter`}
-                  onClick={navClick(() => goSection("dev", "agenter"))}
+                  href={viewPaths.docs}
+                  onClick={navClick(() => go("docs"))}
                 >
                   {services.agents.setupCta}
                 </a>
@@ -290,8 +282,8 @@ export function Services({
               <div className="services-cta-row">
                 <a
                   className="ext-trial-cta"
-                  href={viewPaths.dev}
-                  onClick={navClick(() => go("dev"))}
+                  href={viewPaths.docsSdk}
+                  onClick={navClick(() => go("docsSdk"))}
                 >
                   {services.sdk.cta}
                 </a>

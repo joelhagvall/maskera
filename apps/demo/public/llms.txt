@@ -87,7 +87,7 @@ Choose the mode by where the text comes from: **proxy for text typed straight in
    - Install the local Maskera browser extension (Chrome and Edge; Firefox and Safari coming later) from https://maskera.dev/en/services (Swedish: https://maskera.dev/tjanster; Free with unlimited rules + 20 AI maskings/month, Pro at SEK 149/month incl. VAT with a 7-day free trial, or Team at SEK 249/user/month excl. VAT (min. 5 users) with a shared, optionally client-side encrypted (AES-256-GCM) protected-word list and MDM support, via https://app.maskera.dev).
 
 7. **On this site:**
-   - Every page has a Markdown rendering. Send `Accept: text/markdown` to any page URL, or fetch the `.md` sibling directly (`https://maskera.dev/index.md`, `https://maskera.dev/en/developers.md`, `https://maskera.dev/en/about.md`). Unknown paths return HTTP 404 with a Markdown (default), JSON (`Accept: application/json` or `/api/*`) or HTML body that lists these entry points. `maskera.dev/api/*` is not an API: it answers 404 in JSON with the same hints.
+   - Every page has a Markdown rendering. Send `Accept: text/markdown` to any page URL, or fetch the `.md` sibling directly (`https://maskera.dev/index.md`, `https://maskera.dev/en/docs.md`, `https://maskera.dev/en/about.md`). Unknown paths return HTTP 404 with a Markdown (default), JSON (`Accept: application/json` or `/api/*`) or HTML body that lists these entry points. `maskera.dev/api/*` is not an API: it answers 404 in JSON with the same hints.
 
 ## Docs
 
@@ -116,8 +116,6 @@ Choose the mode by where the text comes from: **proxy for text typed straight in
 - [About and contact](https://maskera.dev/en/about): operator (Hägvall Labs AB, org.nr 559598-0110, Stockholm), hej@maskera.dev, security reporting; Swedish: https://maskera.dev/om; `/about`, `/contact` and `/privacy` redirect here and to the privacy policy
 - [Agent setup prompt](https://maskera.dev/setup-prompt.md): copy-paste prompt for coding agents to configure and verify `@maskera/mcp` locally
 - [Documentation](https://maskera.dev/en/docs): mode comparison, quickstart, `@maskera/mcp` reference (`/en/docs/mcp`), client guides (`/en/docs/clients`), SDK & self-hosting (`/en/docs/sdk`), troubleshooting (`/en/docs/troubleshooting`); Swedish: https://maskera.dev/docs (`/docs/mcp`, `/docs/klienter`, `/docs/sdk`, `/docs/felsokning`)
-- [Developer overview](https://maskera.dev/en/developers): AI agent proxy/MCP setup, SDK install, API and restore flow; Swedish: https://maskera.dev/utvecklare; `/developers` redirects here
-- [Guides](https://maskera.dev/en/guides): step-by-step setup for Claude Desktop, Claude Code, Codex and Cursor, with a made-up-data test; Swedish: https://maskera.dev/guider
 - [FAQ](https://maskera.dev/en/faq): data protection, agreements, browsers, offline use, pricing, invoicing and MDM rollout; Swedish: https://maskera.dev/fragor
 - [Industries](https://maskera.dev/en/industries): HR, healthcare, legal, public sector and customer support, with what is masked in each; Swedish: https://maskera.dev/branscher
 

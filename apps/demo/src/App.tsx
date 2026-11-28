@@ -82,7 +82,6 @@ export function App({ initialView }: { initialView?: View }) {
   const goDemo = useCallback(() => goSection("demo", DEMO_ANCHOR), [goSection])
 
   const DemoView = view === "demo" ? getLoadedView("demo") : undefined
-  const DevView = view === "dev" ? getLoadedView("dev") : undefined
   const DocsView = view === "docs" ? getLoadedView("docs") : undefined
   const DocsMcpView = view === "docsMcp" ? getLoadedView("docsMcp") : undefined
   const DocsClientsView = view === "docsClients" ? getLoadedView("docsClients") : undefined
@@ -97,7 +96,6 @@ export function App({ initialView }: { initialView?: View }) {
   const SecurityView = view === "security" ? getLoadedView("security") : undefined
   const AboutView = view === "about" ? getLoadedView("about") : undefined
   const FaqView = view === "faq" ? getLoadedView("faq") : undefined
-  const GuidesView = view === "guides" ? getLoadedView("guides") : undefined
   const IndustriesView = view === "industries" ? getLoadedView("industries") : undefined
 
   return (
@@ -114,7 +112,6 @@ export function App({ initialView }: { initialView?: View }) {
           onRequestedScenarioConsumed={consumeRequestedScenario}
         />
       )}
-      {DevView && <DevView go={go} goSection={goSection} onCoverage={goCoverage} />}
       {DocsView && <DocsView go={go} onCoverage={goCoverage} />}
       {DocsMcpView && <DocsMcpView go={go} />}
       {DocsClientsView && <DocsClientsView go={go} />}
@@ -123,12 +120,11 @@ export function App({ initialView }: { initialView?: View }) {
       {TransparencyView && <TransparencyView go={go} />}
       {TestDataView && <TestDataView go={go} onTryDemo={goDemo} />}
       {PrivacyView && <PrivacyView go={go} />}
-      {ServicesView && <ServicesView go={go} goSection={goSection} onCoverage={goCoverage} />}
+      {ServicesView && <ServicesView go={go} onCoverage={goCoverage} />}
       {AccuracyView && <AccuracyView go={go} onTryDemo={goDemo} onTryContext={goContextDemo} />}
       {SecurityView && <SecurityView go={go} />}
       {AboutView && <AboutView go={go} />}
       {FaqView && <FaqView go={go} />}
-      {GuidesView && <GuidesView go={go} goSection={goSection} />}
       {IndustriesView && <IndustriesView go={go} onTryScenario={goScenario} />}
       <Footer go={go} />
     </div>

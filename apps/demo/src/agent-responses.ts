@@ -11,15 +11,13 @@ const LINKS = {
   sitemap: `${SITE_ORIGIN}/sitemap.xml`,
   docs: `${SITE_ORIGIN}/en/docs`,
   docsMarkdown: `${SITE_ORIGIN}/en/docs.md`,
-  developers: `${SITE_ORIGIN}/en/developers`,
-  developersMarkdown: `${SITE_ORIGIN}/en/developers.md`,
   extension: `${SITE_ORIGIN}/en/services`,
   about: `${SITE_ORIGIN}/en/about`,
   source: "https://github.com/joelhagvall/maskera",
 } as const
 
 const NO_API_HINT =
-  "maskera.dev hosts no HTTP masking API: masking runs locally in your browser, with the Maskera browser extension for Chrome and Edge, or in your own Node.js process via the npm packages (maskera, @maskera/core)."
+  "maskera.dev hosts no HTTP masking API: masking runs locally in your browser, with the Maskera browser extension for Chrome and Edge, in front of AI agents via @maskera/mcp, or in your own Node.js process via the npm packages (maskera, @maskera/core)."
 
 function escapeHtml(value: string): string {
   return value
@@ -45,7 +43,7 @@ export function notFoundMarkdown(pathname: string): string {
   const path = displayPath(pathname)
   return `# 404: nothing at ${path} on maskera.dev
 
-maskera.dev is the public site for Maskera: Swedish-first, client-side PII redaction for AI apps (open-source npm packages plus the local browser extension for ChatGPT and Claude).
+maskera.dev is the public site for Maskera: Swedish-first, on-device masking of personal data before text reaches AI (a browser extension for AI chats, a local proxy and MCP server for AI agents, and open-source npm packages).
 
 ${NO_API_HINT}
 
@@ -56,11 +54,10 @@ Where to look next:
 - Sitemap: ${LINKS.sitemap}
 - Browser extension: ${LINKS.extension}
 - Documentation: ${LINKS.docs} (Swedish: ${SITE_ORIGIN}/docs), Markdown: ${LINKS.docsMarkdown}
-- Developer overview: ${LINKS.developers} (Swedish: ${SITE_ORIGIN}/utvecklare), Markdown: ${LINKS.developersMarkdown}
 - About and contact: ${LINKS.about}
 - Source code: ${LINKS.source}
 
-Every page is also served as Markdown: send \`Accept: text/markdown\` or append \`.md\` to the path (for example \`/index.md\` or \`/en/developers.md\`).
+Every page is also served as Markdown: send \`Accept: text/markdown\` or append \`.md\` to the path (for example \`/index.md\` or \`/en/docs.md\`).
 `
 }
 
@@ -111,7 +108,7 @@ const STRINGS: Record<"sv" | "en", Strings> = {
     lang: "sv",
     title: "Sidan finns inte",
     home: "Till startsidan",
-    docs: "För utvecklare",
+    docs: "Dokumentation",
     about: "Om Maskera och kontakt",
     llms: "Maskinläsbar översikt (llms.txt)",
   },
@@ -119,7 +116,7 @@ const STRINGS: Record<"sv" | "en", Strings> = {
     lang: "en",
     title: "Page not found",
     home: "Go to the start page",
-    docs: "For developers",
+    docs: "Documentation",
     about: "About Maskera and contact",
     llms: "Machine-readable overview (llms.txt)",
   },
@@ -129,11 +126,11 @@ export function notFoundHtml(pathname: string): string {
   const english = pathname === "/en" || pathname.startsWith("/en/")
   const t = english ? STRINGS.en : STRINGS.sv
   const home = english ? "/en" : "/"
-  const docs = english ? "/en/developers" : "/utvecklare"
+  const docs = english ? "/en/docs" : "/docs"
   const about = english ? "/en/about" : "/om"
   const path = escapeHtml(displayPath(pathname))
   // Same tokens and font as the app's styles.css so the page reads as part of
-  // the site; the theme follows the stored choice like theme-init.js does.
+  // the site; /theme-init.js applies the stored theme before first paint.
   return `<!doctype html>
 <html lang="${t.lang}">
 <head>
@@ -141,6 +138,7 @@ export function notFoundHtml(pathname: string): string {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>404 · Maskera</title>
+<script src="/theme-init.js"></script>
 <style>
 @font-face{font-family:"Geist";font-style:normal;font-weight:100 900;font-display:swap;src:url("/fonts/geist-latin.woff2") format("woff2")}
 :root{color-scheme:light;--bg:#ffffff;--fg:#000000;--muted:#666666;--border:#eaeaea}

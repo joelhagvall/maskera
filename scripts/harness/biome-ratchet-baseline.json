@@ -5,9 +5,6 @@
   "apps/demo/scripts/evaluate-candidate-gates.mjs": {
     "lint/suspicious/noAssignInExpressions": 1
   },
-  "apps/demo/src/components/AgentSetupCard.tsx": {
-    "lint/suspicious/noArrayIndexKey": 1
-  },
   "apps/demo/src/components/CodeSnippet.tsx": {
     "lint/suspicious/noArrayIndexKey": 1
   },

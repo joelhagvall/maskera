@@ -7,7 +7,6 @@ export type Locale = "sv" | "en"
 
 export type View =
   | "demo"
-  | "dev"
   | "docs"
   | "docsMcp"
   | "docsClients"
@@ -21,7 +20,6 @@ export type View =
   | "security"
   | "about"
   | "faq"
-  | "guides"
   | "industries"
 
 export const SITE_ORIGIN = "https://maskera.dev"
@@ -29,7 +27,6 @@ export const SITE_ORIGIN = "https://maskera.dev"
 export const pathsByLocale: Record<Locale, Record<View, string>> = {
   sv: {
     demo: "/",
-    dev: "/utvecklare",
     docs: "/docs",
     docsMcp: "/docs/mcp",
     docsClients: "/docs/klienter",
@@ -43,12 +40,10 @@ export const pathsByLocale: Record<Locale, Record<View, string>> = {
     security: "/sakerhet",
     about: "/om",
     faq: "/fragor",
-    guides: "/guider",
     industries: "/branscher",
   },
   en: {
     demo: "/en",
-    dev: "/en/developers",
     docs: "/en/docs",
     docsMcp: "/en/docs/mcp",
     docsClients: "/en/docs/clients",
@@ -62,7 +57,6 @@ export const pathsByLocale: Record<Locale, Record<View, string>> = {
     security: "/en/security",
     about: "/en/about",
     faq: "/en/faq",
-    guides: "/en/guides",
     industries: "/en/industries",
   },
 }
@@ -74,8 +68,8 @@ export const PAGE_PATHS: readonly string[] = [
 ]
 
 /**
- * The Markdown sibling of a page: `/` -> `/index.md`, `/utvecklare` ->
- * `/utvecklare.md`, `/en` -> `/en.md`. scripts/prerender.mjs writes these
+ * The Markdown sibling of a page: `/` -> `/index.md`, `/tjanster` ->
+ * `/tjanster.md`, `/en` -> `/en.md`. scripts/prerender.mjs writes these
  * into dist/ and middleware.ts rewrites `Accept: text/markdown` requests to
  * them; the files are also fetchable directly.
  */
@@ -89,7 +83,12 @@ export function markdownPathFor(pagePath: string): string {
  * middleware pass them through and a test keep vercel.json in sync.
  */
 export const ALIAS_REDIRECTS: Readonly<Record<string, string>> = {
-  "/developers": "/en/developers",
+  "/developers": "/en/docs",
+  // Former pages, merged into the docs on 2026-11-28; old links keep working.
+  "/utvecklare": "/docs",
+  "/en/developers": "/en/docs",
+  "/guider": "/docs/klienter",
+  "/en/guides": "/en/docs/clients",
   "/about": "/en/about",
   "/contact": "/en/about#kontakt",
   "/privacy": "/en/privacy-policy",

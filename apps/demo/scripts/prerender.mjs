@@ -45,7 +45,7 @@ const speculationRules = readFileSync(join(root, "public", "speculation-rules.js
 
 let count = 0
 for (const file of htmlFiles(dist)) {
-  // dist/utvecklare/index.html -> /utvecklare, dist/index.html -> /
+  // dist/tjanster/index.html -> /tjanster, dist/index.html -> /
   const dir = relative(dist, dirname(file)).replaceAll("\\", "/")
   const pathname = dir ? `/${dir}` : "/"
 
@@ -86,7 +86,7 @@ for (const file of htmlFiles(dist)) {
   writeFileSync(file, html)
 
   // The page's text/markdown representation, next to it in dist/ (/ ->
-  // /index.md, /utvecklare -> /utvecklare.md). middleware.ts rewrites
+  // /index.md, /tjanster -> /tjanster.md). middleware.ts rewrites
   // Accept: text/markdown requests here; the file is also fetchable directly.
   const markdown = htmlToMarkdown(markup, routeInfo(pathname))
   if (markdown.length < 500) throw new Error(`markdown for ${pathname} is implausibly short`)

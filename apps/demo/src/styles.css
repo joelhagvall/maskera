@@ -1169,7 +1169,6 @@ html[data-theme="dark"] .stage-window .hl {
   .clear,
   .link,
   .install-tabs .code-tab,
-  .prose .pkg-cta,
   .model-action,
   .crumbs a {
     min-height: 44px;
@@ -1420,13 +1419,6 @@ html[data-theme="dark"] .token {
   background: var(--pii-dark-bg);
 }
 
-.num {
-  font-size: 26px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-}
-
 .tag {
   display: inline-flex;
   align-items: center;
@@ -1539,35 +1531,6 @@ html[data-theme="dark"] .tag {
   gap: 8px 10px;
   margin-top: 14px;
 }
-/* arrow + step as one unit, so a wrap never strands an arrow at line end */
-.flow-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-.flow-step {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 3px 10px;
-  white-space: nowrap;
-}
-/* the payoff step (the restored, human-readable answer) */
-.flow-item:last-child .flow-step {
-  color: var(--fg);
-  border-color: var(--border-2);
-}
-.flow-step svg {
-  color: var(--fg);
-}
-.flow-arrow {
-  font-size: 12px;
-  color: var(--muted);
-}
 
 /* ---- extension: hero call to action + install section ---- */
 .hero-install {
@@ -1612,14 +1575,7 @@ html[data-browser="safari"] .hero-cta-primary[data-for="safari"],
 html[data-browser="mobile"] .hero-cta-primary[data-for="mobile"] {
   display: inline-flex;
 }
-.hero-cta-secondary {
-  color: var(--fg);
-  background: var(--bg);
-}
-.hero-cta-secondary:hover {
-  border-color: var(--border-hover);
-  background: var(--gray-200);
-}
+
 /* Overlapping circular coding-agent marks inside the dashed agent-prompt CTA. */
 .agent-logo-stack {
   display: inline-flex;
@@ -2291,33 +2247,7 @@ main:has(.prose-foot) + .footer {
 .code-block.install-tabs pre {
   padding-top: 12px;
 }
-.developer-notes {
-  margin: 0 0 32px;
-  padding: 12px 14px;
-  color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-.developer-notes-title {
-  margin: 0 0 6px;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--fg);
-}
-.prose .developer-notes li {
-  margin: 5px 0;
-  font-size: 13.5px;
-  line-height: 1.6;
-  color: var(--muted);
-}
-.prose .developer-notes-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 44px;
-  font-size: 13.5px;
-  font-weight: 500;
-}
+
 /* The two-layer architecture diagram, framed like the code blocks (bordered
    card, gray-100 caption strip). The SVG carries its own background; the
    light and dark variants are two <img>s swapped on the data-theme attribute
@@ -2564,12 +2494,7 @@ html[data-theme="dark"] .stage-window .tok-c {
   margin: 12px 0 0;
   font-size: 14px;
 }
-.historical-details-body h3 {
-  margin: 0 0 6px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--fg);
-}
+
 .bench-bar-row {
   display: grid;
   gap: 5px;
@@ -2610,32 +2535,7 @@ html[data-theme="dark"] .stage-window .tok-c {
 .bench-bar-row.is-ours .bench-bar-fill {
   background: var(--fg);
 }
-.historical-details {
-  margin-top: 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px 14px;
-}
-.historical-details summary {
-  cursor: pointer;
-  color: var(--fg);
-  font-size: 13.5px;
-  font-weight: 500;
-}
-.historical-details[open] summary {
-  margin-bottom: 14px;
-}
-.comparison-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 16px;
-}
-.historical-comparison-grid {
-  display: grid;
-  gap: 12px;
-  margin-top: 12px;
-}
+
 .comparison-case {
   overflow: hidden;
   border: 1px solid var(--border);
@@ -2647,28 +2547,7 @@ html[data-theme="dark"] .stage-window .tok-c {
   border-bottom: 1px solid var(--border);
   font-size: 13px;
 }
-.model-link,
-.model-links a {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  color: inherit;
-  text-decoration-color: var(--border-2);
-  text-underline-offset: 2px;
-}
-.model-link:hover,
-.model-links a:hover {
-  text-decoration-color: currentColor;
-}
-.model-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px 9px;
-  margin-top: 3px;
-  color: var(--muted);
-  font-size: 10.5px;
-  font-weight: 400;
-}
+
 .model-description {
   display: block;
   margin-top: 2px;
@@ -2726,7 +2605,6 @@ html[data-theme="dark"] .stage-window .tok-c {
   font-weight: 600;
 }
 
-.redaction-comparison,
 .model-comparison {
   overflow-x: auto;
   margin-top: 12px;
@@ -2741,7 +2619,6 @@ html[data-theme="dark"] .stage-window .tok-c {
 .model-comparison {
   margin-top: 0;
 }
-.redaction-comparison table,
 .model-comparison table {
   min-width: 560px;
 }
@@ -2768,56 +2645,42 @@ html[data-theme="dark"] .stage-window .tok-c {
     padding-left: 0;
     border-left: 0;
   }
-  .comparison-grid {
-    grid-template-columns: 1fr;
-  }
 }
 @media (max-width: 560px) {
-  .redaction-comparison table,
   .model-comparison table {
     min-width: 0;
   }
-  .redaction-comparison thead,
   .model-comparison thead {
     display: none;
   }
-  .redaction-comparison tbody tr,
   .model-comparison tbody tr {
     display: grid;
     padding: 11px 0;
     border-bottom: 1px solid var(--border);
   }
-  .redaction-comparison tbody tr:last-child,
   .model-comparison tbody tr:last-child {
     border-bottom: 0;
   }
-  .redaction-comparison tbody th,
-  .redaction-comparison tbody td,
   .model-comparison tbody th,
   .model-comparison tbody td {
     padding: 4px 0;
     border: 0;
   }
-  .redaction-comparison tbody th,
   .model-comparison tbody th {
     padding-bottom: 7px;
     font-weight: 600;
   }
-  .redaction-comparison tbody td,
   .model-comparison tbody td {
     display: flex;
     gap: 12px;
     justify-content: space-between;
   }
-  .redaction-comparison tbody td::before,
   .model-comparison tbody td::before {
     color: var(--muted);
     content: attr(data-label);
     font-weight: 400;
     text-align: left;
   }
-  .redaction-comparison .comparison-own th,
-  .redaction-comparison .comparison-own td,
   .model-comparison .comparison-own th,
   .model-comparison .comparison-own td {
     background: transparent;
@@ -2848,142 +2711,6 @@ html[data-theme="dark"] .stage-window .tok-c {
   }
 }
 
-/* ---- services ---- */
-.pkgs {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin: 28px 0 0;
-}
-@media (max-width: 720px) {
-  .pkgs {
-    grid-template-columns: 1fr;
-  }
-}
-.pkg {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-  background: var(--bg);
-}
-.prose .pkg-name {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-.pkg-price {
-  margin: 10px 0 2px;
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-}
-.pkg-pilot {
-  /* The pilot is the card's big .pkg-price; this block sits under it with
-     the annual license as the secondary price line and the pilot's credit
-     condition as small print. */
-  margin: 2px 0 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.pkg-annual {
-  font-size: 16px;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-}
-.pkg-pilot-terms {
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: var(--muted);
-}
-.pkg-tag {
-  margin: 0 0 12px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--muted);
-}
-.prose .pkg ul {
-  flex: 1;
-  margin: 0 0 18px;
-}
-.prose .pkg li {
-  padding-left: 15px;
-  margin: 8px 0;
-  font-size: 13.5px;
-  line-height: 1.55;
-}
-.prose .pkg li::before {
-  left: 1px;
-  top: 8px;
-  width: 4px;
-  height: 4px;
-}
-.pkg-actions {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-}
-.prose .pkg-cta {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-  padding: 8px 14px;
-  font: 500 13.5px var(--sans);
-  color: var(--fg);
-  background: var(--bg);
-  border: 1px solid var(--border-2);
-  border-radius: var(--radius);
-  text-decoration: none;
-}
-.prose .pkg-cta:hover {
-  border-color: var(--border-hover);
-  background: var(--gray-100);
-}
-.prose .pkg.featured .pkg-cta {
-  color: var(--bg);
-  background: var(--fg);
-  border-color: var(--fg);
-}
-.prose .pkg.featured .pkg-cta:hover {
-  opacity: 0.85;
-}
-.prose .pkg.featured .pkg-cta-secondary {
-  color: var(--fg);
-  background: var(--bg);
-  border-color: var(--border-2);
-}
-.prose .pkg.featured .pkg-cta-secondary:hover {
-  opacity: 1;
-  border-color: var(--border-hover);
-  background: var(--gray-100);
-}
-/* Helper caption beneath the product actions. */
-.prose .pkg-dest {
-  margin: 8px 0 0;
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--muted);
-  text-align: center;
-}
-.prose .pkg-dest-ghost {
-  visibility: hidden;
-}
-
-/* Pilot-offer row inside the featured card, between the list and the CTA. */
-.pkg-note {
-  margin: 0 0 12px;
-  padding: 8px 10px;
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: var(--fg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
 /* Free vs Pro comparison table on /tjanster. */
 .prose .ext-trial-cta {
   display: inline-flex;
@@ -3183,13 +2910,7 @@ html[data-theme="dark"] .stage-window .tok-c {
   gap: 16px;
   margin-top: 22px;
 }
-/* Reusable agent prompt + Proxy/MCP/Guard setup block. */
-.agent-setup {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin: 18px 0 24px;
-}
+
 .agent-prompt-card {
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -3255,21 +2976,7 @@ html[data-theme="dark"] .stage-window .tok-c {
   color: var(--fg);
   border-color: var(--fg);
 }
-.agent-modes-block {
-  margin: 0;
-}
-.prose .agent-modes-label {
-  margin: 0 0 8px;
-  font-size: 13px;
-  color: var(--muted);
-}
-.prose .agent-mode-summary {
-  margin: 0;
-  padding: 11px 14px 0;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--muted);
-}
+
 .prose .sdk-points {
   margin: 18px 0 0;
 }

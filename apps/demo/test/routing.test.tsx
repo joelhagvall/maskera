@@ -40,7 +40,7 @@ function mountAt(path: string) {
 describe("useRoute: initial view from pathname", () => {
   const cases = [
     ["/", "demo"],
-    ["/utvecklare", "dev"],
+    ["/docs/sdk", "docsSdk"],
     ["/integritet", "transparency"],
     ["/testdata", "testdata"],
     ["/integritetspolicy", "privacy"],
@@ -48,7 +48,7 @@ describe("useRoute: initial view from pathname", () => {
     ["/traffsakerhet", "accuracy"],
     ["/sakerhet", "security"],
     ["/om", "about"],
-    ["/utvecklare/", "dev"], // trailing slash
+    ["/docs/sdk/", "docsSdk"], // trailing slash
     ["/tjanster///", "services"], // repeated trailing slashes
     ["/okand-sida", "demo"], // unknown path falls back to home
   ] as const
@@ -65,7 +65,7 @@ describe("useRoute: initial view from pathname", () => {
 describe("viewFromPath: localized paths", () => {
   const cases = [
     ["/en", "demo"],
-    ["/en/developers", "dev"],
+    ["/en/docs/sdk", "docsSdk"],
     ["/en/privacy", "transparency"],
     ["/en/test-data", "testdata"],
     ["/en/privacy-policy", "privacy"],
@@ -94,8 +94,8 @@ describe("useRoute: document.title", () => {
   })
 
   it("fresh landing on a sub-page sets its title immediately", () => {
-    const { unmount } = mountAt("/utvecklare")
-    expect(document.title).toBe("För utvecklare: proxy, MCP och npm · Maskera")
+    const { unmount } = mountAt("/docs/sdk")
+    expect(document.title).toBe("SDK och drift · Maskera")
     unmount()
   })
 
@@ -111,9 +111,9 @@ describe("useRoute: document.title", () => {
 
   it("navigating away from home sets the sub-page title", () => {
     const { result, unmount } = mountAt("/")
-    act(() => result.current.navigate("dev"))
-    expect(document.title).toBe("För utvecklare: proxy, MCP och npm · Maskera")
-    expect(window.location.pathname).toBe("/utvecklare")
+    act(() => result.current.navigate("docsSdk"))
+    expect(document.title).toBe("SDK och drift · Maskera")
+    expect(window.location.pathname).toBe("/docs/sdk")
     unmount()
   })
 
@@ -152,18 +152,18 @@ describe("useRoute: route metadata", () => {
   })
 
   it("sets canonical, description and social metadata on a direct sub-page landing", () => {
-    const { unmount } = mountAt("/utvecklare")
+    const { unmount } = mountAt("/docs/sdk")
     expect(document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.href).toBe(
-      "https://maskera.dev/utvecklare",
+      "https://maskera.dev/docs/sdk",
     )
     expect(document.querySelector<HTMLMetaElement>('meta[name="description"]')?.content).toContain(
-      "@maskera/mcp",
+      "@maskera/core",
     )
     expect(document.querySelector<HTMLMetaElement>('meta[property="og:url"]')?.content).toBe(
-      "https://maskera.dev/utvecklare",
+      "https://maskera.dev/docs/sdk",
     )
     expect(document.querySelector<HTMLMetaElement>('meta[name="twitter:title"]')?.content).toBe(
-      "För utvecklare: proxy, MCP och npm · Maskera",
+      "SDK och drift · Maskera",
     )
     unmount()
   })

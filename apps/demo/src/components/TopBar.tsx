@@ -18,7 +18,6 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
   // prerendering for /en/* and in-page locale switches stay in sync.
   const pageNames: Record<Exclude<View, "demo">, string> = {
     services: copy.navigation.services,
-    dev: copy.navigation.developers,
     docs: copy.navigation.docs,
     docsMcp: `${copy.navigation.docs} / ${copy.docs.nav.mcp}`,
     docsClients: `${copy.navigation.docs} / ${copy.docs.nav.clients}`,
@@ -31,11 +30,9 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
     privacy: copy.navigation.privacyPolicy,
     about: copy.navigation.about,
     faq: copy.navigation.faq,
-    guides: copy.navigation.guides,
     industries: copy.navigation.industries,
   }
   const isDocsCurrent =
-    current === "dev" ||
     current === "docs" ||
     current === "docsMcp" ||
     current === "docsClients" ||
