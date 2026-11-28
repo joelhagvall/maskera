@@ -268,7 +268,7 @@ function shouldSkipToolArgRestore(toolName: unknown, argsText: string): boolean 
   return false
 }
 
-export type RedactFieldKind = "message" | "system" | "tool_description"
+export type RedactFieldKind = "message" | "system" | "tool_description" | "reasoning"
 
 const SWEDISH_DIACRITIC_RE = /[åäöÅÄÖ]/
 const SWEDISH_STOP_WORDS = new Set([
@@ -464,12 +464,98 @@ const FENCED_CODE_SPLIT_RE = /(```[\s\S]*?```)/g
 const GIT_STATUS_LINE_RE = /^(?:[MADRCU?!]{1,2}\s+\S|[0-9a-f]{7,40}\s+\S)/
 const XML_TAG_ONLY_RE = /^<\/?[a-z][a-z0-9_-]*(?:\s[^>]*)?>$/i
 const MARKDOWN_HEADING_RE = /^#{1,6}\s+\S/
+const CODE_SIGNATURE_RE =
+  /(?:\/\*\*|\?\s*:\s*(?:string|number|boolean|object|unknown|any|Record|Array)\b|\b(?:string|number|boolean)\s*\||\b(?:interface|namespace|type)\s+[A-Z]\w*|\bPromise<|=>\s*\{)/
 const BROWSER_PROBE_PATHS = new Set([
   "/favicon.ico",
   "/apple-touch-icon.png",
   "/apple-touch-icon-precomposed.png",
   "/robots.txt",
 ])
+
+/**
+ * Recognizes Code Mode tool-catalog JSON returned by `search(...)` inside a
+ * `role: "tool"` message (`{"items":[{"path":"tools.…","description":"…"}]}`).
+ * Those payloads are tool definitions (identical to top-level `tools[]`), so
+ * they use deterministic rules + `customTerms` instead of Swedish NER.
+ */
+const PLACEHOLDER_TOKEN_RE = /\[[A-ZÅÄÖ][A-ZÅÄÖ0-9_]*_\d+\]/g
+
+function collectPlaceholdersFromUnknown(value: unknown, out: Set<string>): void {
+  if (typeof value === "string") {
+    if (!value.includes("[")) return
+    const matches = value.match(PLACEHOLDER_TOKEN_RE)
+    if (matches) {
+      for (const tok of matches) out.add(tok)
+    }
+    return
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) collectPlaceholdersFromUnknown(item, out)
+    return
+  }
+  if (isPlainObject(value)) {
+    for (const v of Object.values(value)) collectPlaceholdersFromUnknown(v, out)
+  }
+}
+
+/**
+ * Collects Maskera placeholder tokens that already appear verbatim inside raw
+ * tool results (`role: "tool"`, Anthropic `tool_result`, OpenAI Responses
+ * `function_call_output`) BEFORE proxy redaction runs. Such placeholders come
+ * from an external MCP vault (e.g. `maskera_read_file` over stdio) and must
+ * not be overwritten by colliding system-prompt tokens from the proxy vault.
+ */
+function collectExternalToolResultPlaceholders(
+  body: Record<string, unknown>,
+  out: Set<string>,
+): void {
+  if (Array.isArray(body.messages)) {
+    for (const msg of body.messages) {
+      if (!isPlainObject(msg)) continue
+      if (msg.role === "tool") {
+        collectPlaceholdersFromUnknown(msg.content, out)
+        continue
+      }
+      if (Array.isArray(msg.content)) {
+        for (const block of msg.content) {
+          if (isPlainObject(block) && block.type === "tool_result") {
+            collectPlaceholdersFromUnknown(block.content, out)
+          }
+        }
+      }
+    }
+  }
+  if (Array.isArray(body.input)) {
+    for (const item of body.input) {
+      if (isPlainObject(item) && item.type === "function_call_output") {
+        collectPlaceholdersFromUnknown(item.output, out)
+      }
+    }
+  }
+}
+
+function isToolCatalogJson(text: string): boolean {
+  const trimmed = text.trim()
+  if (!trimmed.startsWith("{") || !trimmed.includes('"items"') || !trimmed.includes('"tools.')) {
+    return false
+  }
+  try {
+    const parsed = JSON.parse(trimmed) as unknown
+    if (!isPlainObject(parsed) || !Array.isArray(parsed.items) || parsed.items.length === 0) {
+      return false
+    }
+    return parsed.items.every(
+      (item) =>
+        isPlainObject(item) &&
+        typeof item.path === "string" &&
+        item.path.startsWith("tools.") &&
+        (item.description === undefined || typeof item.description === "string"),
+    )
+  } catch {
+    return false
+  }
+}
 
 function isEnglishSystemParagraph(paragraph: string): boolean {
   const trimmed = paragraph.trim()
@@ -525,6 +611,11 @@ function isEnglishSystemParagraph(paragraph: string): boolean {
     svDiacriticWords === 0 &&
     trimmed.length < 120
   ) {
+    return true
+  }
+
+  // Unfenced TypeScript / JSDoc tool declarations (e.g. OpenCode Code Mode schemas)
+  if (svTotal === 0 && svDiacriticWords === 0 && CODE_SIGNATURE_RE.test(trimmed)) {
     return true
   }
 
@@ -768,13 +859,15 @@ export async function redactLlmRequestBody(
         noteBinary("input_audio")
       }
       if (typeof block.text === "string") {
-        block.text = await redactString(block.text, kind)
+        const blockKind: RedactFieldKind =
+          kind === "message" && isToolCatalogJson(block.text) ? "tool_description" : kind
+        block.text = await redactString(block.text, blockKind)
       }
       if (typeof block.refusal === "string") {
         block.refusal = await redactString(block.refusal, kind)
       }
       if (typeof block.thinking === "string") {
-        const redactedThinking = await redactString(block.thinking, kind)
+        const redactedThinking = await redactString(block.thinking, "reasoning")
         if (redactedThinking !== block.thinking) {
           block.thinking = redactedThinking
           // Mutating a signed thinking block invalidates its signature; drop
@@ -789,12 +882,18 @@ export async function redactLlmRequestBody(
         block.context = await redactString(block.context, kind)
       }
       if (typeof block.content === "string") {
-        block.content = await redactString(block.content, kind)
+        const blockKind: RedactFieldKind =
+          blockType === "tool_result" && isToolCatalogJson(block.content)
+            ? "tool_description"
+            : kind
+        block.content = await redactString(block.content, blockKind)
       } else if (Array.isArray(block.content)) {
         await redactContentBlocks(block.content, kind)
       }
       if (typeof block.output === "string") {
-        block.output = await redactString(block.output, kind)
+        const blockKind: RedactFieldKind =
+          kind === "message" && isToolCatalogJson(block.output) ? "tool_description" : kind
+        block.output = await redactString(block.output, blockKind)
       } else if (Array.isArray(block.output)) {
         await redactContentBlocks(block.output, kind)
       }
@@ -962,15 +1061,17 @@ export async function redactLlmRequestBody(
         msg.name = await redactString(msg.name, "tool_description")
       }
       if (typeof msg.content === "string") {
-        msg.content = await redactString(msg.content, msgKind)
+        const contentKind: RedactFieldKind =
+          msg.role === "tool" && isToolCatalogJson(msg.content) ? "tool_description" : msgKind
+        msg.content = await redactString(msg.content, contentKind)
       } else if (Array.isArray(msg.content)) {
         await redactContentBlocks(msg.content, msgKind)
       }
       if (typeof msg.reasoning_content === "string") {
-        msg.reasoning_content = await redactString(msg.reasoning_content, msgKind)
+        msg.reasoning_content = await redactString(msg.reasoning_content, "reasoning")
       }
       if (typeof msg.reasoning === "string") {
-        msg.reasoning = await redactString(msg.reasoning, msgKind)
+        msg.reasoning = await redactString(msg.reasoning, "reasoning")
       }
       if (typeof msg.refusal === "string") {
         msg.refusal = await redactString(msg.refusal, msgKind)
@@ -1014,7 +1115,11 @@ export async function redactLlmRequestBody(
           await redactContentBlocks(item.content, itemKind)
         }
         if (typeof item.output === "string") {
-          item.output = await redactString(item.output, itemKind)
+          const outKind: RedactFieldKind =
+            item.type === "function_call_output" && isToolCatalogJson(item.output)
+              ? "tool_description"
+              : itemKind
+          item.output = await redactString(item.output, outKind)
         } else if (Array.isArray(item.output)) {
           await redactContentBlocks(item.output, itemKind)
         }
@@ -1024,10 +1129,10 @@ export async function redactLlmRequestBody(
           item.input = await redactObjectStrings(item.input, itemKind)
         }
         if (typeof item.reasoning_content === "string") {
-          item.reasoning_content = await redactString(item.reasoning_content, itemKind)
+          item.reasoning_content = await redactString(item.reasoning_content, "reasoning")
         }
         if (typeof item.reasoning === "string") {
-          item.reasoning = await redactString(item.reasoning, itemKind)
+          item.reasoning = await redactString(item.reasoning, "reasoning")
         }
         if (typeof item.refusal === "string") {
           item.refusal = await redactString(item.refusal, itemKind)
@@ -1045,6 +1150,18 @@ export async function redactLlmRequestBody(
   return clone
 }
 
+function filterMapExcluding(
+  map: Readonly<Record<string, string>>,
+  excluded?: ReadonlySet<string>,
+): Readonly<Record<string, string>> {
+  if (!excluded || excluded.size === 0) return map
+  const out: Record<string, string> = {}
+  for (const [token, value] of Object.entries(map)) {
+    if (!excluded.has(token)) out[token] = value
+  }
+  return out
+}
+
 /**
  * Restores Maskera placeholders in a non-streaming Anthropic or OpenAI JSON
  * response without touching IDs, model names, or usage metadata.
@@ -1052,10 +1169,11 @@ export async function redactLlmRequestBody(
 export function restoreLlmResponseBody(
   body: unknown,
   map: Readonly<Record<string, string>>,
-  options: { mutate?: boolean } = {},
+  options: { mutate?: boolean; reasoningExcludedTokens?: ReadonlySet<string> } = {},
 ): unknown {
   if (!isPlainObject(body) || Object.keys(map).length === 0) return body
   const clone = options.mutate ? body : structuredClone(body)
+  const reasoningMap = filterMapExcluding(map, options.reasoningExcludedTokens)
 
   // Anthropic Messages: `content: [{ type: "text", text }, { type: "tool_use", input }]`
   if (Array.isArray(clone.content)) {
@@ -1065,7 +1183,7 @@ export function restoreLlmResponseBody(
         block.text = restorePlainText(block.text, map)
       }
       if (typeof block.thinking === "string" && typeof block.signature !== "string") {
-        block.thinking = restorePlainText(block.thinking, map)
+        block.thinking = restorePlainText(block.thinking, reasoningMap)
       }
       if (isPlainObject(block.input)) {
         const skipRestore =
@@ -1090,10 +1208,10 @@ export function restoreLlmResponseBody(
           msg.content = restorePlainText(msg.content, map)
         }
         if (typeof msg.reasoning_content === "string") {
-          msg.reasoning_content = restorePlainText(msg.reasoning_content, map)
+          msg.reasoning_content = restorePlainText(msg.reasoning_content, reasoningMap)
         }
         if (typeof msg.reasoning === "string") {
-          msg.reasoning = restorePlainText(msg.reasoning, map)
+          msg.reasoning = restorePlainText(msg.reasoning, reasoningMap)
         }
         if (Array.isArray(msg.tool_calls)) {
           for (const call of msg.tool_calls) {
@@ -1156,7 +1274,11 @@ export function restoreLlmResponseBody(
  * Transforms an SSE (`text/event-stream`) stream from Anthropic or OpenAI,
  * incrementally restoring Maskera placeholders even when split across chunks.
  */
-export function createSseRestorer(map: Readonly<Record<string, string>>) {
+export function createSseRestorer(
+  map: Readonly<Record<string, string>>,
+  options: { reasoningExcludedTokens?: ReadonlySet<string> } = {},
+) {
+  const reasoningMap = filterMapExcluding(map, options.reasoningExcludedTokens)
   const streams = new Map<string, StreamingRestorer>()
   // Track active tool names so proxy placeholders never overwrite MCP vault
   // placeholders inside `maskera_write_file`, `maskera_restore`, or OpenCode's
@@ -1164,10 +1286,14 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
   const toolNames = new Map<string, string>()
   const bufferedToolArgs = new Map<string, string>()
 
-  const getStream = (key: string, escapeForJsonString = false): StreamingRestorer => {
+  const getStream = (
+    key: string,
+    escapeForJsonString = false,
+    useReasoningMap = false,
+  ): StreamingRestorer => {
     let r = streams.get(key)
     if (!r) {
-      r = new StreamingRestorer(map, { escapeForJsonString })
+      r = new StreamingRestorer(useReasoningMap ? reasoningMap : map, { escapeForJsonString })
       streams.set(key, r)
     }
     return r
@@ -1375,7 +1501,9 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
           parsed.delta.type === "thinking_delta" &&
           typeof parsed.delta.thinking === "string"
         ) {
-          parsed.delta.thinking = getStream(`anth_thinking:${idx}`).push(parsed.delta.thinking)
+          parsed.delta.thinking = getStream(`anth_thinking:${idx}`, false, true).push(
+            parsed.delta.thinking,
+          )
         } else if (
           parsed.delta.type === "input_json_delta" &&
           typeof parsed.delta.partial_json === "string"
@@ -1444,12 +1572,14 @@ export function createSseRestorer(map: Readonly<Record<string, string>>) {
               delta.content = getStream(`openai_chat_text:${cIdx}`).push(delta.content)
             }
             if (typeof delta.reasoning_content === "string") {
-              delta.reasoning_content = getStream(`openai_chat_reasoning:${cIdx}`).push(
-                delta.reasoning_content,
-              )
+              delta.reasoning_content = getStream(
+                `openai_chat_reasoning:${cIdx}`,
+                false,
+                true,
+              ).push(delta.reasoning_content)
             }
             if (typeof delta.reasoning === "string") {
-              delta.reasoning = getStream(`openai_chat_reasoning_plain:${cIdx}`).push(
+              delta.reasoning = getStream(`openai_chat_reasoning_plain:${cIdx}`, false, true).push(
                 delta.reasoning,
               )
             }
@@ -2024,6 +2154,8 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
   }
   const mcpSessions = new Map<string, Required<Omit<MaskeraMcpPolicy, "sessionOwner">>>()
   const closedMcpSessions = new Set<string>()
+  const messageTokensBySession = new Map<string, Set<string>>()
+  const externalToolTokensBySession = new Map<string, Set<string>>()
 
   if (auditLogPath) {
     await mkdir(dirname(auditLogPath), { recursive: true })
@@ -2233,6 +2365,8 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
       approvals.clearAll()
       engine.clearCache()
       inspector.clear()
+      messageTokensBySession.clear()
+      externalToolTokensBySession.clear()
       totalRequests = 0
       totalRedactions = 0
       totalCounts = {}
@@ -2640,6 +2774,17 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
         return
       }
       sessionId = deriveProxySessionId(req.headers, parsed)
+      let externalTokensForSession = externalToolTokensBySession.get(sessionId)
+      const incomingToolTokens = new Set<string>()
+      collectExternalToolResultPlaceholders(parsed, incomingToolTokens)
+      if (incomingToolTokens.size > 0) {
+        if (!externalTokensForSession) {
+          externalTokensForSession = new Set<string>()
+          externalToolTokensBySession.set(sessionId, externalTokensForSession)
+        }
+        for (const tok of incomingToolTokens) externalTokensForSession.add(tok)
+      }
+      let messageTokensForSession = messageTokensBySession.get(sessionId)
       let redactedObj: Record<string, unknown>
       try {
         const messagePreviews: string[] = []
@@ -2658,6 +2803,15 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
           const applied = vault.apply(chunk, result, sessionId, proxyVaultOwner)
           stats.redactions += applied.totalRedactions
           mergeCounts(stats.counts, applied.counts)
+          if (previewable && applied.totalRedactions > 0) {
+            if (!messageTokensForSession) {
+              messageTokensForSession = new Set<string>()
+              messageTokensBySession.set(sessionId, messageTokensForSession)
+            }
+            for (const tok of Object.keys(applied.map)) {
+              messageTokensForSession.add(tok)
+            }
+          }
           const snippet =
             applied.redacted.length > 1200
               ? `${applied.redacted.slice(0, 1200)}...`
@@ -2681,7 +2835,7 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
             // Evaluate per paragraph/line so English boilerplate runs fast rules +
             // customTerms without Swedish NER false positives while Swedish
             // paragraphs keep full hybrid NER protection.
-            if (kind === "system") {
+            if (kind === "system" || kind === "reasoning") {
               return redactSystemText(text, redactChunk)
             }
             return redactMessageText(text, redactChunk)
@@ -2814,14 +2968,26 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
       outHeaders["x-maskera-warning"] = "uninspectable-binary-attachment"
     }
 
-    const sessionMap = restoreResponses ? vault.getMap(sessionId, proxyVaultOwner) : {}
+    const rawSessionMap = restoreResponses ? vault.getMap(sessionId, proxyVaultOwner) : {}
+    const externalTokens = externalToolTokensBySession.get(sessionId)
+    const messageTokens = messageTokensBySession.get(sessionId)
+    let sessionMap: Record<string, string> = rawSessionMap
+    if (externalTokens && externalTokens.size > 0) {
+      sessionMap = {}
+      for (const [token, value] of Object.entries(rawSessionMap)) {
+        if (externalTokens.has(token) && !messageTokens?.has(token)) continue
+        sessionMap[token] = value
+      }
+    }
     const hasMap = Object.keys(sessionMap).length > 0
     const resContentType = (upstreamRes.headers.get("content-type") ?? "").toLowerCase()
     const isSse = resContentType.includes("text/event-stream")
 
     if (isSse && upstreamRes.body) {
       res.writeHead(upstreamRes.status, outHeaders)
-      const sse = hasMap ? createSseRestorer(sessionMap) : null
+      const sse = hasMap
+        ? createSseRestorer(sessionMap, { reasoningExcludedTokens: externalTokens })
+        : null
       const decoder = sse ? new TextDecoder() : null
       const reader = upstreamRes.body.getReader()
       const onStreamAbort = () => {
@@ -2884,7 +3050,10 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
     if (hasMap && resContentType.includes("application/json")) {
       try {
         const parsed = JSON.parse(resBuf.toString("utf8")) as unknown
-        const restored = restoreLlmResponseBody(parsed, sessionMap, { mutate: true })
+        const restored = restoreLlmResponseBody(parsed, sessionMap, {
+          mutate: true,
+          reasoningExcludedTokens: externalTokens,
+        })
         const restoredBuf = Buffer.from(JSON.stringify(restored), "utf8")
         res.writeHead(upstreamRes.status, outHeaders)
         res.end(restoredBuf)

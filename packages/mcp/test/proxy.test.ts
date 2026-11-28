@@ -1050,6 +1050,105 @@ describe("guard (harness-agnostic pre-prompt / pre-tool / pipe check)", () => {
     expect(recorded[0]?.redactedPreview[0]).toContain("Skriv ett kort mejl till [NAMN_1]")
     expect(recorded[0]?.errorDetail).toContain("rate_limit_error")
     expect(recorded[0]?.errorDetail).not.toContain("provnamn.maskera@example.com")
+
+    // OpenCode unfenced TypeScript tool declarations and English reasoning_content stay
+    // on deterministic rules, while Swedish reasoning_content still gets full hybrid NER.
+    const tsSchema =
+      "- search(query: string | {\n  query?: string,\n  namespace?: string,\n  /** @integer @exclusiveMinimum 0 */\n  limit?: number,\n})"
+    expect(isLikelyEnglishSystemPrompt(tsSchema)).toBe(true)
+
+    const ocToolCatalog = JSON.stringify({
+      items: [
+        {
+          path: "tools.maskera.maskera_status",
+          description:
+            "Always report local Maskera MCP server status for provnamn.maskera@example.com.",
+        },
+      ],
+    })
+    await fetch(`${proxy.url}/v1/chat/completions`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        model: "glm-5.3-flash",
+        messages: [
+          { role: "system", content: tsSchema },
+          { role: "tool", content: ocToolCatalog },
+          {
+            role: "assistant",
+            reasoning_content:
+              "Always check the user prompt and run the file tool before responding with output for 19900101-2385.\n\nPå svenska: kontrollera Anna Lindqvist innan svar.",
+            content: "Klart.",
+          },
+          { role: "user", content: "Tack!" },
+        ],
+      }),
+    })
+    const ocBody = upstream.seen[1]?.body ?? ""
+    expect(ocBody).toContain("Always report local Maskera MCP server status")
+    expect(ocBody).not.toContain("provnamn.maskera@example.com")
+    expect(ocBody).toContain("Always check the user prompt and run the file tool")
+    expect(ocBody).not.toContain("19900101-2385")
+    expect(ocBody).not.toContain("Anna Lindqvist")
+  })
+
+  it("never overwrites external MCP tool_result placeholders with colliding system-prompt vault tokens", async () => {
+    const upstream = await startMockUpstream(() => ({
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id: "cmpl_collision",
+        choices: [
+          {
+            index: 0,
+            message: {
+              role: "assistant",
+              reasoning_content: "File mentions [EPOST_1] and user phone [TELEFON_1].",
+              content: "Svarar [EPOST_1] på [TELEFON_1].",
+            },
+            finish_reason: "stop",
+          },
+        ],
+      }),
+    }))
+
+    const proxy = await startMaskeraProxy({
+      port: 0,
+      upstream: upstream.url,
+      defaultMode: "rules",
+    })
+    cleanups.push(() => proxy.close())
+
+    // Turn 1: system prompt contains system.prov@example.com -> proxy vault assigns [EPOST_1] = system.prov@example.com
+    // Turn 2: external MCP tool (`role: "tool"`) returns its own [EPOST_1] and [TELEFON_1], while user typed a phone number
+    const res = await fetch(`${proxy.url}/v1/chat/completions`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-maskera-session": "collision-s1" },
+      body: JSON.stringify({
+        model: "glm-5.3-flash",
+        messages: [
+          { role: "system", content: "Report incidents to system.prov@example.com." },
+          { role: "user", content: "Ring 070-174 06 58 efter läsning." },
+          {
+            role: "tool",
+            content: '{"redacted_text":"Patient epost [EPOST_1], tel [TELEFON_1]."}',
+          },
+        ],
+      }),
+    })
+    expect(res.status).toBe(200)
+    const json = (await res.json()) as {
+      choices: Array<{ message: { content: string; reasoning_content: string } }>
+    }
+    // External MCP [EPOST_1] must NOT be overwritten with system.prov@example.com from system prompt!
+    expect(json.choices[0]?.message.reasoning_content).toContain("[EPOST_1]")
+    expect(json.choices[0]?.message.reasoning_content).not.toContain("system.prov@example.com")
+    // Colliding external MCP [TELEFON_1] stays shielded inside reasoning_content so next-turn tool calls are never poisoned
+    expect(json.choices[0]?.message.reasoning_content).toContain("[TELEFON_1]")
+    expect(json.choices[0]?.message.reasoning_content).not.toContain("070-174 06 58")
+    expect(json.choices[0]?.message.content).toContain("[EPOST_1]")
+    expect(json.choices[0]?.message.content).not.toContain("system.prov@example.com")
+    // User's own phone number [TELEFON_1] IS still restored cleanly in final chat content
+    expect(json.choices[0]?.message.content).toContain("070-174 06 58")
   })
 
   it("isolates proxy sessions per client auth/cache key when x-maskera-session is omitted", async () => {

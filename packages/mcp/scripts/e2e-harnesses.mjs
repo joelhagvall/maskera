@@ -1531,7 +1531,7 @@ async function testOpenCodeLive(workRoot) {
         opts.opencodeModel,
         'Use the execute tool to call await tools.maskera.maskera_read_file({ path: "klient.txt", session_id: "live-oc" }) and then await tools.maskera.maskera_write_file({ path: "svar.txt", session_id: "live-oc", text: ... }) with a short confirmation that includes ALL FIVE placeholders verbatim from maskera_read_file (name, place, personnummer, phone, email). Reply briefly.',
       ],
-      { cwd: dir, env: ocEnv, timeoutMs: 60_000 },
+      { cwd: dir, env: ocEnv, timeoutMs: 90_000 },
     )
     assert.equal(
       runRes.timedOut,
