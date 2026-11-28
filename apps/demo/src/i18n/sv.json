@@ -612,7 +612,7 @@
       }
     ],
     "currentTitle": "Kort sammanfattning",
-    "currentBody": "Andel uppgifter som Maskera v21 dolde i oberoende svensk text, mätt 2026-11-27. Dolt betyder att värdet inte syns i texten som skickas, oavsett vilken etikett det fick.",
+    "currentBody": "Andel uppgifter som Maskera v22 dolde i oberoende svensk text, mätt 2026-11-28. Dolt betyder att värdet inte syns i texten som skickas, oavsett vilken etikett det fick.",
     "cells": {
       "names": "Namn",
       "namesLowercase": "Namn i gemener, som i chatt",
@@ -637,7 +637,7 @@
     },
     "systems": {
       "maskera": {
-        "name": "Maskera v21",
+        "name": "Maskera v22",
         "description": "Svensk modell och formatregler, lokalt"
       },
       "presidio": {
@@ -653,7 +653,7 @@
         "description": "Flerspråkig modell, q4 ONNX"
       }
     },
-    "comparisonSummary": "Maskera döljer flest namn (även i gemener), flest platser och flest adresser. Presidio träffar färre meningar utan personuppgifter; dess spaCy-modell är tränad på SUC 3.0, ett av testen, vilket ger den en fördel där.",
+    "comparisonSummary": "Maskera döljer flest namn (även i gemener) och flest adresser. Presidio ligger marginellt högre på platser och träffar färre meningar utan personuppgifter; dess spaCy-modell är tränad på SUC 3.0, ett av testen, vilket ger den en fördel där.",
     "testsTitle": "Testerna",
     "tests": [
       {
@@ -700,7 +700,7 @@
       "Personnummer, organisationsnummer, bankgiro och IBAN saknar oberoende svensk testtext med giltiga värden. De hittas med formatregler och kontrollsiffror och testas i projektets egna tester på GitHub.",
       "Ingen automatisk maskering är felfri. Granska själv när ett misstag kan få stora konsekvenser."
     ],
-    "provenance": "Mätt på CPU 2026-11-27: Maskera v21 (q4), Presidio 2.2.366 med sv_core_news_lg 3.8.0, swedish-pii 1.2.0 och OpenAI Privacy Filter (q4 ONNX). Testtexterna hämtas från Hugging Face och Språkbanken Text när testet körs. Skript och checksummor ligger på GitHub.",
+    "provenance": "Mätt på CPU 2026-11-28: Maskera v22 (q4), Presidio 2.2.366 med sv_core_news_lg 3.8.0, swedish-pii 1.2.0 och OpenAI Privacy Filter (q4 ONNX). Testtexterna hämtas från Hugging Face och Språkbanken Text när testet körs. Skript och checksummor ligger på GitHub.",
     "demoCta": "Prova i webbläsardemon",
     "benchmarksCta": "Fullständig rapport och skript på GitHub"
   },
@@ -885,8 +885,8 @@
     "fullDocsPrefix": "Den fullständiga tekniska redovisningen och all källkod finns på GitHub.",
     "fullDocsCta": "Läs hela dokumentet",
     "training": {
-      "syntheticTitle": "Tränad på 100 % påhittad svensk text (v21).",
-      "syntheticBody": "Modellen är tränad på 121 200 genererade svenska texter, helt utan kunddata eller riktiga personuppgifter. Ett automatiskt filter stoppar personnummer, kontonummer, e-post, telefonnummer och riktiga gatuadresser innan träningen startar.",
+      "syntheticTitle": "Tränad på 100 % påhittad svensk text (v22).",
+      "syntheticBody": "Modellen är tränad på 176 600 genererade svenska texter, helt utan kunddata eller riktiga personuppgifter. Ett automatiskt filter stoppar personnummer, kontonummer, e-post, telefonnummer och riktiga gatuadresser innan träningen startar.",
       "policyCta": "Läs den tekniska dataskyddspolicyn",
       "attestationBody": "Varje version skeppas med en verifierbar checksumma (SHA-256) för träningsdatan och skripten i",
       "modelCardCta": "modellkortet",
@@ -1578,7 +1578,7 @@
           "title": "Modellen på egen server och offline",
           "body": "I standardläget hämtas modellvikterna en gång från Hugging Face, kontrolleras med sha256 mot en låst commit och cachas lokalt. I slutna nät laddar du hem modellen en gång och pekar ut mappen.",
           "codeLabel": "TypeScript",
-          "code": "// Hämta modellen en gång, låst till den publicerade versionen:\n// hf download joelhagvall/maskera-sv-ner onnx/model_quantized.onnx config.json \\\n//   tokenizer.json tokenizer_config.json special_tokens_map.json \\\n//   --revision 5bd47f3031fea64eb1ae98f77ebfc67882f792fa \\\n//   --local-dir /opt/models/maskera-sv-ner-v21\n\n// q8 är snabbast på Node CPU; använd q4 i webbläsare\nconst recognizer = createNerRecognizer({\n  localModelPath: \"/opt/models\",\n  model: \"maskera-sv-ner-v21\",\n  allowRemoteModels: false,\n  dtype: \"q8\",\n})"
+          "code": "// Hämta modellen en gång, låst till den publicerade versionen:\n// hf download joelhagvall/maskera-sv-ner onnx/model_quantized.onnx config.json \\\n//   tokenizer.json tokenizer_config.json special_tokens_map.json \\\n//   --revision 908c11ee9837a21e254c73fcd33399e636367b4e \\\n//   --local-dir /opt/models/maskera-sv-ner-v22\n\n// q8 är snabbast på Node CPU; använd q4 i webbläsare\nconst recognizer = createNerRecognizer({\n  localModelPath: \"/opt/models\",\n  model: \"maskera-sv-ner-v22\",\n  allowRemoteModels: false,\n  dtype: \"q8\",\n})"
         },
         {
           "id": "driftchecklista",
@@ -1646,7 +1646,7 @@
           "title": "Köra helt utan internetåtkomst",
           "body": "Om din arbetsstation eller server blockerar Hugging Face kan du förladda modellfilerna i en lokal mapp och stänga av fjärrhämtning helt.",
           "codeLabel": "Terminal",
-          "code": "# Installera paketet och hämta modellen en gång, låst till den publicerade versionen\nnpm install -g @maskera/mcp\nhf download joelhagvall/maskera-sv-ner onnx/model_q4.onnx config.json \\\n  tokenizer.json tokenizer_config.json special_tokens_map.json \\\n  --revision 5bd47f3031fea64eb1ae98f77ebfc67882f792fa \\\n  --local-dir /opt/models/maskera-sv-ner-v21\n\n# Kör sedan helt utan nätverk\nMASKERA_MODEL_PATH=/opt/models \\\nMASKERA_MODEL_ID=maskera-sv-ner-v21 \\\nMASKERA_ALLOW_REMOTE_MODELS=0 \\\nmaskera-mcp doctor --root ."
+          "code": "# Installera paketet och hämta modellen en gång, låst till den publicerade versionen\nnpm install -g @maskera/mcp\nhf download joelhagvall/maskera-sv-ner onnx/model_q4.onnx config.json \\\n  tokenizer.json tokenizer_config.json special_tokens_map.json \\\n  --revision 908c11ee9837a21e254c73fcd33399e636367b4e \\\n  --local-dir /opt/models/maskera-sv-ner-v22\n\n# Kör sedan helt utan nätverk\nMASKERA_MODEL_PATH=/opt/models \\\nMASKERA_MODEL_ID=maskera-sv-ner-v22 \\\nMASKERA_ALLOW_REMOTE_MODELS=0 \\\nmaskera-mcp doctor --root ."
         },
         {
           "id": "begransningar",

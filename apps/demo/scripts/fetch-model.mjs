@@ -30,12 +30,12 @@ const DEST = resolve(dirname(fileURLToPath(import.meta.url)), "../public/models"
 // the weights into a build. When the model is intentionally updated, refresh
 // these with: shasum -a 256 <file>
 const FILES = {
-  "config.json": "9a4345c97bba5b637fbb07779d56d45b0bac707bc413b623c99caa51bde125cc",
-  "tokenizer.json": "2def9a79067838fc8aa7b4ddf3b510bb7b61064607b946c8037732fb289b60c6",
+  "config.json": "8b70aecfb3097dd793080156b244fc15556ade183d52474627e2afe042b74f31",
+  "tokenizer.json": "7db274e95d9b613300a942f2b8c65c7f39a4cd9debd5c799b3a8486e84ba3543",
   "tokenizer_config.json": "3cf57fee187ab68479948ee43ecdb9054869fa9c232783f4f32d00a01669db4a",
   "special_tokens_map.json": "5d5b662e421ea9fac075174bb0688ee0d9431699900b90662acd44b2a350503a",
-  "vocab.txt": "88fe7b3889700997805216126810ad695595093824c6777673c2cb7403f68bcc",
-  "onnx/model_q4.onnx": "d9436cd6f8b710a0a38b9c8c162d6176d6c3612b75f896074061526918494e2b",
+  "vocab.txt": "0b2003090a0b1662bd70105058a0f062ea215902a1fab6bfe2811a216b71a2ad",
+  "onnx/model_q4.onnx": "698b0ae43b8022b0df2bb2e158f272c7d8756dea64d4f0254145eee2b0a015ce",
 }
 
 const sha256 = (buf) => createHash("sha256").update(buf).digest("hex")

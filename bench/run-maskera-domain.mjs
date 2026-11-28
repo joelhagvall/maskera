@@ -8,7 +8,7 @@
  *   node bench/run-maskera-domain.mjs
  */
 
-import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, relative, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { createNerRecognizer, redactWithNer } from "../packages/ner/dist/index.js"
@@ -20,7 +20,10 @@ const outputPath = resolve(
   repoRoot,
   outputFlag >= 0 ? process.argv[outputFlag + 1] : "tmp/maskera-domain.redacted.jsonl",
 )
-const model = process.env.MASKERA_MODEL ?? "maskera-sv-ner-v21"
+const modelMeta = JSON.parse(
+  readFileSync(resolve(repoRoot, "apps/demo/src/model-meta.json"), "utf8"),
+)
+const model = process.env.MASKERA_MODEL ?? modelMeta.directory
 const modelPath = resolve(repoRoot, process.env.MASKERA_MODEL_PATH ?? "apps/demo/public/models")
 const dtype = process.env.MASKERA_DTYPE ?? "q4"
 const profile = process.env.MASKERA_PROFILE ?? "general"

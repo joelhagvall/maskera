@@ -9,7 +9,7 @@
  *
  * Optional environment variables:
  *   MASKERA_MODEL_PATH  directory containing the model folder
- *   MASKERA_MODEL       model folder name (default: maskera-sv-ner-v20)
+ *   MASKERA_MODEL       model folder name (default: apps/demo/src/model-meta.json directory)
  *   MASKERA_DTYPE       quantization dtype (default: q4)
  *   MASKERA_PROFILE     general or clinical (default: general)
  *   MASKERA_HIT_FLOOR   minimum full-hit rate (default: 0.98)
@@ -17,14 +17,17 @@
  *   MASKERA_RESULT_FILE write aggregate machine-readable JSON to this path
  */
 
-import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { createNerRecognizer, redactWithNer } from "../../dist/index.js"
 
 const repoRoot = fileURLToPath(new URL("../../../../", import.meta.url))
 const corpusDirectory = new URL("./corpus/", import.meta.url)
-const model = process.env.MASKERA_MODEL ?? "maskera-sv-ner-v20"
+const modelMeta = JSON.parse(
+  readFileSync(resolve(repoRoot, "apps/demo/src/model-meta.json"), "utf8"),
+)
+const model = process.env.MASKERA_MODEL ?? modelMeta.directory
 const modelPath = resolve(repoRoot, process.env.MASKERA_MODEL_PATH ?? "apps/demo/public/models")
 const dtype = process.env.MASKERA_DTYPE ?? "q4"
 const profile = process.env.MASKERA_PROFILE ?? "general"

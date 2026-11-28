@@ -24,7 +24,10 @@ const outDir = resolve(repoRoot, outFlag >= 0 ? args[outFlag + 1] : "tmp/indep/p
 const files = args.filter((arg, index) => !arg.startsWith("--") && args[index - 1] !== "--out-dir")
 if (files.length === 0) throw new Error("pass at least one corpus .jsonl file")
 
-const model = process.env.MASKERA_MODEL ?? "maskera-sv-ner-v21"
+const modelMeta = JSON.parse(
+  readFileSync(resolve(repoRoot, "apps/demo/src/model-meta.json"), "utf8"),
+)
+const model = process.env.MASKERA_MODEL ?? modelMeta.directory
 const modelPath = resolve(repoRoot, process.env.MASKERA_MODEL_PATH ?? "apps/demo/public/models")
 const dtype = process.env.MASKERA_DTYPE ?? "q4"
 if (!existsSync(resolve(modelPath, model, "config.json"))) {

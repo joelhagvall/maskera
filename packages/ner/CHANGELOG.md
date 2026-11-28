@@ -1,5 +1,16 @@
 # maskera
 
+## 0.14.0
+
+### Minor Changes
+
+- Upgrade default Swedish NER weights to attested privacy-clean `maskera-sv-ner` v22 (Hub revision `908c11ee9837a21e254c73fcd33399e636367b4e`, 43.3 MB q4, 8-layer rank-256 student with 24k WordPiece vocabulary distilled from a 3-seed KB-BERT teacher ensemble over 176,600 attested synthetic training rows and 12,440 validation rows). On the independent 23,980-text Swedish benchmark (SUC 3.0, SIC2, MultiCoNER v2, ai4privacy), v22 raises name coverage to 95.3% (+0.7 pp) and street address + postcode coverage to 95.7% (+0.4 pp) while cutting over-masking on entity-free sentences by 54.5% (12.3% to 5.6%). On release gates, synthetic ADR reaches 100.0% span and labeled F1 (0/57 leaks), rare-surname masked recall rises to 99.32% (292/294, 87.76% PER-typed), and full hybrid domain regression rises to 941/952 (98.8%) with 92 candidate junk redactions (down from 112).
+
+### Patch Changes
+
+- Updated dependencies
+  - @maskera/core@0.9.1
+
 ## 0.13.0
 
 ### Minor Changes

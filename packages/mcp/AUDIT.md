@@ -8,9 +8,9 @@
 
 ## Latest audit run
 
-- **Run:** 2026-11-28 (`full` lane, `--release` gate: every gate must PASS), commit `c173fc57b7a5`
-- **Package:** `@maskera/mcp@0.4.6`
-- **Model:** `joelhagvall/maskera-sv-ner` (v21, pinned revision `5bd47f3031fea64eb1ae98f77ebfc67882f792fa`)
+- **Run:** 2026-11-28 (`full` lane, `--release` gate: every gate must PASS), commit `2244e09e49a4`
+- **Package:** `@maskera/mcp@0.4.7`
+- **Model:** `joelhagvall/maskera-sv-ner` (v22, pinned revision `908c11ee9837a21e254c73fcd33399e636367b4e`)
 - **Test machine:** Apple M4 Pro (12 cores), 24 GiB RAM, `darwin/arm64`, Node `v24.22.1`
 - **Checks:** PASS 31, FAIL 0, BLOCKED 0, NOT TESTED 3
 - **Release gates:** 10/10 PASS, verdict **CONDITIONALLY READY**
@@ -26,7 +26,7 @@
 | `offline-operation` | privacy-egress | **PASS** | Offline egress attempts blocked: 0 unexpected outbound connections |
 | `real-client-e2e` | integration | **PASS** | Real-client harnesses: 2 passed, 0 failed, 3 not tested; real CLI agents: PASS (claude, codex, opencode) |
 | `production-pipeline-quality` | probabilistic-ner-baseline | **PASS** | structuredRecall=100.0%, overallRecall=100.0%, roundtrip=100.0%, nonPiiRetention=95.0% |
-| `performance-and-soak` | reliability | **PASS** | coldStart=547.96ms, proxyP95=186.11ms, soakHeapDelta=2.46MB |
+| `performance-and-soak` | reliability | **PASS** | coldStart=160.7ms, proxyP95=19.32ms, soakHeapDelta=6.39MB |
 
 **Checks not tested in this run:**
 
@@ -34,29 +34,29 @@
 - `clients/cursor-ide-gui` (NOT_TESTED): Cursor.app installed, but IDE GUI session requires interactive sign-in; .cursor/mcp.json & beforeSubmitPrompt hook verified in unit/E2E tests
 - `clients/cloud-llm-live-opt-in` (NOT_TESTED): Opt-in only (zero paid API calls by default); run with `pnpm audit:clients -- --live --max-usd 0.25` to execute against live subscriptions
 
-**Real clients over the installed tarball:** 2.1.332 (Claude Code), codex-cli 0.172.0, opencode v2.4.2: claude/rules:pass(8099ms,redactions=7), claude/auto:pass(3150ms,redactions=43), codex/rules:pass(589ms,redactions=3), codex/auto:pass(2221ms,redactions=44), opencode/rules:pass(3433ms,redactions=28), opencode/auto:pass(3997ms,redactions=72)
+**Real clients over the installed tarball:** 2.1.332 (Claude Code), codex-cli 0.172.0, opencode v2.4.2: claude/rules:pass(3891ms,redactions=7), claude/auto:pass(1378ms,redactions=25), codex/rules:pass(694ms,redactions=3), codex/auto:pass(626ms,redactions=29), opencode/rules:pass(1608ms,redactions=28), opencode/auto:pass(1688ms,redactions=45)
 
 ### Production-pipeline quality (12 unseen documents, `auto` mode)
 
-Measured through the live MCP server and HTTP proxy. The standalone column is the v21 release contract (`docs/benchmark-release.json`, reported in `docs/BENCHMARKS.md`) on its own, larger corpora, so the two columns are not the same test set.
+Measured through the live MCP server and HTTP proxy. The standalone column is the v22 release contract (`docs/benchmark-release.json`, reported in `docs/BENCHMARKS.md`) on its own, larger corpora, so the two columns are not the same test set.
 
-| Metric | Pipeline (`@maskera/mcp@0.4.6`) | Standalone v21 |
+| Metric | Pipeline (`@maskera/mcp@0.4.7`) | Standalone v22 |
 | --- | ---: | ---: |
-| Structured PII recall | 100.0% | 98.4% (structured regression) |
-| Overall entity recall | 100.0% | 100.0% (curated) |
-| Span precision | 94.5% | 97.6% (curated) |
-| Span F1 | 97.2% | 98.8% (curated) |
-| Document leakage rate | 0.0% | 0 leaks / 149 documents (curated) |
+| Structured PII recall | 100.0% | 98.8% (structured regression) |
+| Overall entity recall | 100.0% | 99.0% (curated) |
+| Span precision | 94.5% | 99.5% (curated) |
+| Span F1 | 97.2% | 99.3% (curated) |
+| Document leakage rate | 0.0% | 1 leaks / 149 documents (curated) |
 | Protected non-PII retention | 95.0% | not measured |
 | Round-trip restoration | 100.0% | not measured |
 
 | Label | Gold | Recall | Precision | F1 |
 | --- | ---: | ---: | ---: | ---: |
-| `NAMN` | 16 | 100.0% | 88.9% | 94.1% |
+| `NAMN` | 16 | 100.0% | 100.0% | 100.0% |
 | `PERSONNUMMER` | 5 | 100.0% | 100.0% | 100.0% |
 | `EPOST` | 6 | 100.0% | 100.0% | 100.0% |
 | `TELEFON` | 6 | 100.0% | 100.0% | 100.0% |
-| `ADRESS` | 4 | 100.0% | 100.0% | 100.0% |
+| `ADRESS` | 4 | 100.0% | 80.0% | 88.9% |
 | `POSTNUMMER` | 2 | 100.0% | 100.0% | 100.0% |
 | `PLATS` | 4 | 100.0% | 100.0% | 100.0% |
 | `SAMORDNINGSNUMMER` | 1 | 100.0% | 100.0% | 100.0% |
@@ -72,21 +72,21 @@ Measured through the live MCP server and HTTP proxy. The standalone column is th
 
 One run on the machine above; latencies move with machine load, so compare against the gate ceilings in RELEASE_GATES.md, not run to run.
 
-- **CLI cold start (`--version`):** 547.96 ms
-- **Local ONNX model load:** 205 ms
-- **ONNX inference (cache disabled):** p50 81.47 ms, p95 167.75 ms, p99 167.75 ms
-- **HTTP proxy round trip:** p50 97.03 ms, p95 186.11 ms, p99 186.11 ms (median proxy overhead 15.56 ms)
-- **StreamingRestorer:** 10,000 chunks in 2.64 ms
-- **Concurrent burst:** 501.71 req/s
-- **Soak:** 500 operations, heap delta 2.46 MB, `SessionVault` bounded: yes
+- **CLI cold start (`--version`):** 160.7 ms
+- **Local ONNX model load:** 76 ms
+- **ONNX inference (cache disabled):** p50 13.04 ms, p95 17.23 ms, p99 17.23 ms
+- **HTTP proxy round trip:** p50 14.19 ms, p95 19.32 ms, p99 19.32 ms (median proxy overhead 1.15 ms)
+- **StreamingRestorer:** 10,000 chunks in 1.95 ms
+- **Concurrent burst:** 2004.86 req/s
+- **Soak:** 500 operations, heap delta 6.39 MB, `SessionVault` bounded: yes
 
 ### Packed tarballs
 
 | Package | Bytes | SHA-256 |
 | --- | ---: | --- |
-| `@maskera/core` | 94326 | `12371cbe9f3fef3f5a068f367c43ee5841ebbb04e20585e004f0ada501f896f8` |
-| `maskera` | 127261 | `20d35f93a0e8bd7238f32f715f2c0f1cdfb4d0b121283c393e4a47e528fbc7ec` |
-| `@maskera/mcp` | 385597 | `1b1c8719b58c839592ea6658d841c7764d00e7e68666a6fe6f2a6a688ed49822` |
+| `@maskera/core` | 94372 | `56c821b5591efd44d03efe2a650a21aa96aa0655d352d605197114397b8638d4` |
+| `maskera` | 127576 | `18e80f34ea50335c0c73278295c2c41ca75628d655c097e29d4697c8d87ba87c` |
+| `@maskera/mcp` | 385597 | `9f6db695c1f9ac6d0dd09c6b2aac29121b741dabf32b9a2c87bf50c68ee8b6c1` |
 
 <!-- audit-results:end -->
 

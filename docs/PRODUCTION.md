@@ -201,7 +201,7 @@ serve them from your own origin and forbid remote fetches:
 
 ```ts
 createNerRecognizer({
-  model: "maskera-sv-ner-v21", // version the folder name: the browser caches by URL
+  model: "maskera-sv-ner-v22", // version the folder name: the browser caches by URL
   localModelPath: "/models/",   // same-origin path (or a CDN reverse-proxied here)
   allowLocalModels: true,
   allowRemoteModels: false,
@@ -211,7 +211,7 @@ createNerRecognizer({
 Copy `config.json`, `tokenizer.json`, `tokenizer_config.json`,
 `special_tokens_map.json`, `vocab.txt` and `onnx/model_q4.onnx` from the
 [Hub repo](https://huggingface.co/joelhagvall/maskera-sv-ner) into
-`public/models/maskera-sv-ner-v21/`. Version the folder name; Transformers.js
+`public/models/maskera-sv-ner-v22/`. Version the folder name; Transformers.js
 caches by URL in the browser and never revalidates, so a renamed folder is
 what gets returning visitors onto a new model. After that, nothing leaves your
 infrastructure. Keep `localModelPath`
@@ -257,8 +257,8 @@ Transformers.js runtime includes a body-cancel fix for local metadata probes.
 maskera is **data minimisation, not a compliance guarantee**. The rule layer
 is deterministic and reliable for structured Swedish PII. The model layer
 catches free-text PII, but no model is perfect: unusual names, heavy
-misspellings and OCR noise will sometimes get through. The current v21 release
-scores 98.8% span F1 with 0/205 leaks on its curated release check and 0/53
+misspellings and OCR noise will sometimes get through. The current v22 release
+scores 99.3% span F1 with 1/205 leaks on its curated release check and 0/53
 leaks on the LinkedIn-style check. Those are synthetic or author-coupled
 release gates, not an independent universal estimate; validate your own domain
 locally before relying on them. Treat maskera as a strong first line, keep
@@ -267,18 +267,18 @@ line". See
 [TRANSPARENCY.md](TRANSPARENCY.md) for exactly what runs where and what
 network calls exist.
 
-The current v21 q4 artifact was also re-run on 2026-11-27 against KBLab
+The current v22 q4 artifact was also re-run on 2026-11-28 against KBLab
 lowermix fp32 on 121 hand-authored synthetic Swedish texts with 211 comparable
-PER/LOC/ORG entities. Maskera masked 210/211 with original casing and
+PER/LOC/ORG entities. Maskera masked 211/211 with original casing and
 211/211 lowercased; KBLab masked 205/211 and 187/211. Maskera led typed F1 on
-both original casing (89.6% vs 89.4%) and lowercase (88.4% vs 83.2%). This
+both original casing (91.6% vs 89.4%) and lowercase (89.9% vs 83.2%). This
 is author-coupled directional evidence, not an independent production claim.
 
-The complete products were compared separately on 2026-11-27 across 258
+The complete products were compared separately on 2026-11-28 across 258
 synthetic Swedish domain texts with 952 annotated PII strings. With the same
-strict full-removal scorer, Maskera v21 fully removed 935/952 (98.2%);
+strict full-removal scorer, Maskera v22 fully removed 939/952 (98.6%);
 LogosGuard 2.4.4 in Chrome, Free/`Balanced`, removed 606/952 (63.7%).
-Partial/clear-text leaks were 9/8 and 49/297. This evidence is author-coupled,
+Partial/clear-text leaks were 5/8 and 49/297. This evidence is author-coupled,
 does not report precision, and is not a substitute for validation on the
 deployment's own text. The canonical report contains the exact settings,
 per-document outcomes, capture hashes and LogosGuard file-encoding caveat.

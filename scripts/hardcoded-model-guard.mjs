@@ -7,8 +7,7 @@ const CODE_EXT_RE = /\.(?:[cm]?js|[cm]?ts|tsx)$/
 const HARDCODED_MODEL_RE = /maskera-sv-ner-v\d+/g
 const SKIP_SCAN_DIRS = new Set(["node_modules", "dist", "dist-ssr", "build", "coverage", "test"])
 
-// Frozen in v21 evaluation.suiteSha256; update to model-meta.json on next model release.
-const FROZEN_EVAL_FILES = new Set(["packages/ner/eval/domain-regression/run.mjs"])
+const FROZEN_EVAL_FILES = new Set([])
 
 /**
  * Strip block and single-line comments so doc examples do not trigger the

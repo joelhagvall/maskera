@@ -81,20 +81,22 @@ print(f"== distinct pieces seen: {len(freq)} ==")
 special_ids = set(tok.all_special_ids)
 single_char = {i for i, t in id2tok.items() if len(t.replace("##", "")) <= 1}
 must_keep = special_ids | single_char
-ranked = [i for i, _ in freq.most_common() if i not in must_keep]
-seen = must_keep | set(ranked)
-# Synthetic-only data intentionally has a narrower lexicon than the historical
-# public-corpus mix. Keep the requested model capacity without reading another
-# corpus: BERT vocab ids follow the pinned source tokenizer's native order, so
-# they provide a deterministic fallback for pieces not observed in task data.
+# Reserve KB-BERT's core native Swedish vocabulary so adding broad LLM prose
+# never evicts high-frequency Swedish tokens (e.g. genitives, countries, news words).
+default_native_floor = 12000 if TARGET >= 20000 else 0
+native_floor = int(os.environ.get("MASKERA_NATIVE_VOCAB_FLOOR", str(default_native_floor)))
+native_core = [i for i in range(min(V, native_floor)) if i not in must_keep]
+must_keep_plus_core = must_keep | set(native_core)
+ranked = [i for i, _ in freq.most_common() if i not in must_keep_plus_core]
+seen = must_keep_plus_core | set(ranked)
 native_fallback = [i for i in range(V) if i not in seen]
-fill = (ranked + native_fallback)[: max(0, TARGET - len(must_keep))]
-kept_ids = sorted(must_keep | set(fill))
+fill = (ranked + native_fallback)[: max(0, TARGET - len(must_keep_plus_core))]
+kept_ids = sorted(must_keep_plus_core | set(fill))
 N = len(kept_ids)
 frequent_count = min(len(ranked), len(fill))
 fallback_count = len(fill) - frequent_count
 print(
-    f"== keeping {N} tokens ({len(must_keep)} special/char + "
+    f"== keeping {N} tokens ({len(must_keep)} special/char + {len(native_core)} native-core + "
     f"{frequent_count} synthetic-frequency + {fallback_count} native-order) =="
 )
 

@@ -20,6 +20,7 @@
  */
 import { createHash } from "node:crypto"
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { trainingPrivacyIssues } from "./privacy_guard.mjs"
 
 let seed = Number(process.env.DATA_SEED ?? 1337) >>> 0
 if (!Number.isInteger(Number(process.env.DATA_SEED ?? 1337))) {
@@ -93,6 +94,17 @@ const MIXED_PRECISION_VAL_ROWS = Number(process.env.MIXED_PRECISION_VAL_ROWS ?? 
 // embeddings beyond token 40 are fine-tuned for realistic multi-sentence documents.
 const PARAGRAPH_TRAIN_ROWS = Number(process.env.PARAGRAPH_TRAIN_ROWS ?? 0)
 const PARAGRAPH_VAL_ROWS = Number(process.env.PARAGRAPH_VAL_ROWS ?? 0)
+// v22: deterministically verified LLM-generated Swedish prose pools (0-entity clean prose,
+// slot-marked multi-sentence prose, and paired minimal-contrast homograph/entity pairs).
+const LLM_PROSE_FILE = (process.env.LLM_PROSE_FILE ?? "").trim()
+const LLM_CLEAN_TRAIN_ROWS = Number(process.env.LLM_CLEAN_TRAIN_ROWS ?? 0)
+const LLM_CLEAN_VAL_ROWS = Number(process.env.LLM_CLEAN_VAL_ROWS ?? 0)
+const LLM_SLOTTED_TRAIN_ROWS = Number(process.env.LLM_SLOTTED_TRAIN_ROWS ?? 0)
+const LLM_SLOTTED_VAL_ROWS = Number(process.env.LLM_SLOTTED_VAL_ROWS ?? 0)
+const LLM_CONTRAST_TRAIN_ROWS = Number(process.env.LLM_CONTRAST_TRAIN_ROWS ?? 0)
+const LLM_CONTRAST_VAL_ROWS = Number(process.env.LLM_CONTRAST_VAL_ROWS ?? 0)
+const STRUCTURED_FORM_TRAIN_ROWS = Number(process.env.STRUCTURED_FORM_TRAIN_ROWS ?? 0)
+const STRUCTURED_FORM_VAL_ROWS = Number(process.env.STRUCTURED_FORM_VAL_ROWS ?? 0)
 
 for (const [name, value] of [
   ["LC_AUG", LC_AUG],
@@ -126,6 +138,14 @@ for (const [name, value] of [
   ["MIXED_PRECISION_VAL_ROWS", MIXED_PRECISION_VAL_ROWS],
   ["PARAGRAPH_TRAIN_ROWS", PARAGRAPH_TRAIN_ROWS],
   ["PARAGRAPH_VAL_ROWS", PARAGRAPH_VAL_ROWS],
+  ["LLM_CLEAN_TRAIN_ROWS", LLM_CLEAN_TRAIN_ROWS],
+  ["LLM_CLEAN_VAL_ROWS", LLM_CLEAN_VAL_ROWS],
+  ["LLM_SLOTTED_TRAIN_ROWS", LLM_SLOTTED_TRAIN_ROWS],
+  ["LLM_SLOTTED_VAL_ROWS", LLM_SLOTTED_VAL_ROWS],
+  ["LLM_CONTRAST_TRAIN_ROWS", LLM_CONTRAST_TRAIN_ROWS],
+  ["LLM_CONTRAST_VAL_ROWS", LLM_CONTRAST_VAL_ROWS],
+  ["STRUCTURED_FORM_TRAIN_ROWS", STRUCTURED_FORM_TRAIN_ROWS],
+  ["STRUCTURED_FORM_VAL_ROWS", STRUCTURED_FORM_VAL_ROWS],
 ]) {
   if (!Number.isInteger(value) || value < 0) {
     throw new Error(`${name} must be a non-negative integer; got ${value}`)
@@ -178,6 +198,8 @@ for (const [name, value] of [
   ["HOMOGRAPH_CONTRAST_VAL_ROWS", HOMOGRAPH_CONTRAST_VAL_ROWS],
   ["CASED_HOMOGRAPH_TRAIN_ROWS", CASED_HOMOGRAPH_TRAIN_ROWS],
   ["CASED_HOMOGRAPH_VAL_ROWS", CASED_HOMOGRAPH_VAL_ROWS],
+  ["LLM_CONTRAST_TRAIN_ROWS", LLM_CONTRAST_TRAIN_ROWS],
+  ["LLM_CONTRAST_VAL_ROWS", LLM_CONTRAST_VAL_ROWS],
 ]) {
   if (value % 2 !== 0) {
     throw new Error(`${name} must be divisible by 2 (paired name-use and word-use); got ${value}`)
@@ -326,6 +348,357 @@ const FIRST = [
   "Noa",
   "Iris",
   "Ester",
+  // v22: expanded Swedish, Nordic, European & global first names (0 benchmark copies)
+  "Åsa",
+  "Örjan",
+  "Mikael",
+  "Kristina",
+  "Magnus",
+  "Ulrika",
+  "Patrik",
+  "Camilla",
+  "Stefan",
+  "Carina",
+  "Niklas",
+  "Therese",
+  "Martin",
+  "Susanne",
+  "Tomas",
+  "Helena",
+  "Peter",
+  "Birgitta",
+  "Jan",
+  "Monica",
+  "Håkan",
+  "Annika",
+  "Mats",
+  "Katarina",
+  "Leif",
+  "Pia",
+  "Christer",
+  "Anette",
+  "Gunnar",
+  "Berit",
+  "Göran",
+  "Barbro",
+  "Kerstin",
+  "Rolf",
+  "Ingegerd",
+  "Bertil",
+  "Gun",
+  "Stig",
+  "Bo",
+  "Ove",
+  "Claes",
+  "Lennart",
+  "Kent",
+  "Kenneth",
+  "Roger",
+  "Tommy",
+  "Johnny",
+  "Conny",
+  "Sonny",
+  "Benny",
+  "Jörgen",
+  "Krister",
+  "Pelle",
+  "Kalle",
+  "Lasse",
+  "Bosse",
+  "Nisse",
+  "Uffe",
+  "Hasse",
+  "Sören",
+  "Torbjörn",
+  "Esbjörn",
+  "Hjalmar",
+  "Sigurd",
+  "Fritiof",
+  "Vilhelm",
+  "Edvin",
+  "Arvid",
+  "Malte",
+  "Tage",
+  "Ivar",
+  "Einar",
+  "Hilding",
+  "Holger",
+  "Sverker",
+  "Ingvar",
+  "Klas",
+  "Måns",
+  "Pontus",
+  "Rasmus",
+  "Filip",
+  "Sebastian",
+  "Alexander",
+  "William",
+  "Oliver",
+  "Lucas",
+  "Noah",
+  "Leo",
+  "Theo",
+  "Viggo",
+  "Ebbe",
+  "Olle",
+  "Axel",
+  "Isak",
+  "Anton",
+  "Simon",
+  "Samuel",
+  "Adam",
+  "David",
+  "Jakob",
+  "Gabriel",
+  "Jonathan",
+  "Benjamin",
+  "Emanuel",
+  "Joel",
+  "Jesper",
+  "Kasper",
+  "Hampus",
+  "Max",
+  "Loke",
+  "Freja",
+  "Alma",
+  "Ella",
+  "Selma",
+  "Signe",
+  "Ellie",
+  "Olivia",
+  "Stella",
+  "Ines",
+  "Lilly",
+  "Mila",
+  "Nova",
+  "Tyra",
+  "Ronja",
+  "Ida",
+  "Julia",
+  "Elin",
+  "Matilda",
+  "Felicia",
+  "Tove",
+  "Fanny",
+  "Rebecka",
+  "Johanna",
+  "Malin",
+  "Emelie",
+  "Josefin",
+  "Caroline",
+  "Linnea",
+  "Cornelia",
+  "Hedvig",
+  "Märta",
+  "Sigrid",
+  "Tekla",
+  "Ragnhild",
+  "Gunhild",
+  "Gudrun",
+  "Rigmor",
+  "Majken",
+  "Doris",
+  "Rut",
+  "Siri",
+  "Liv",
+  "Lova",
+  "Tanja",
+  "Nadia",
+  "Katarzyna",
+  "Agnieszka",
+  "Piotr",
+  "Krzysztof",
+  "Tomasz",
+  "Paweł",
+  "Marek",
+  "Jakub",
+  "Zofia",
+  "Jukka",
+  "Mikko",
+  "Pekka",
+  "Sami",
+  "Tapio",
+  "Ilkka",
+  "Tuomas",
+  "Anneli",
+  "Marja",
+  "Riitta",
+  "Sari",
+  "Minna",
+  "Kati",
+  "Pirjo",
+  "Espen",
+  "Frode",
+  "Geir",
+  "Kjetil",
+  "Morten",
+  "Steinar",
+  "Trond",
+  "Silje",
+  "Maren",
+  "Hilde",
+  "Mette",
+  "Søren",
+  "Mikkel",
+  "Frede",
+  "Birthe",
+  "Lene",
+  "Jørgen",
+  "Sigurður",
+  "Jón",
+  "Guðrún",
+  "Chloë",
+  "Renée",
+  "Zoë",
+  "Noël",
+  "André",
+  "José",
+  "Sofía",
+  "Lucía",
+  "Mateo",
+  "Carlos",
+  "Alejandro",
+  "Javier",
+  "Miguel",
+  "Elena",
+  "Carmen",
+  "Beatriz",
+  "Raúl",
+  "Inés",
+  "François",
+  "Jean-Luc",
+  "Marie-Claire",
+  "Camille",
+  "Antoine",
+  "Julien",
+  "Mathilde",
+  "Sophie",
+  "Lukas",
+  "Maximilian",
+  "Jürgen",
+  "Wolfgang",
+  "Klaus",
+  "Sabine",
+  "Katrin",
+  "Heike",
+  "Matteo",
+  "Lorenzo",
+  "Alessandro",
+  "Giulia",
+  "Francesca",
+  "Chiara",
+  "Marco",
+  "Luca",
+  "Paulo",
+  "Tiago",
+  "Inês",
+  "Mariana",
+  "Joana",
+  "Andriy",
+  "Olena",
+  "Taras",
+  "Kateryna",
+  "Dmytro",
+  "Serhiy",
+  "Nataliya",
+  "Maksym",
+  "Bogdan",
+  "Iryna",
+  "Nemanja",
+  "Marko",
+  "Milica",
+  "Jovana",
+  "Goran",
+  "Miroslav",
+  "Zoran",
+  "Vesna",
+  "Mustafa",
+  "Emre",
+  "Burak",
+  "Kemal",
+  "Hakan",
+  "Murat",
+  "Ayşe",
+  "Zeynep",
+  "Elif",
+  "Merve",
+  "Deniz",
+  "Selin",
+  "Tariq",
+  "Karim",
+  "Samir",
+  "Khalid",
+  "Rashid",
+  "Nabil",
+  "Walid",
+  "Faisal",
+  "Salma",
+  "Huda",
+  "Rania",
+  "Mona",
+  "Layla",
+  "Samira",
+  "Darius",
+  "Kaveh",
+  "Reza",
+  "Farhad",
+  "Behzad",
+  "Parisa",
+  "Shirin",
+  "Narges",
+  "Soraya",
+  "Abdi",
+  "Abdirahman",
+  "Fartun",
+  "Halima",
+  "Khadija",
+  "Amina",
+  "Dawit",
+  "Selam",
+  "Rahel",
+  "Chinedu",
+  "Emeka",
+  "Adebayo",
+  "Folake",
+  "Kofi",
+  "Ama",
+  "Arjun",
+  "Rohan",
+  "Vikram",
+  "Sanjay",
+  "Rajesh",
+  "Ananya",
+  "Kavita",
+  "Meera",
+  "Deepa",
+  "Neha",
+  "Bilal",
+  "Imran",
+  "Sana",
+  "Ayesha",
+  "Minh",
+  "Linh",
+  "Tuan",
+  "Huy",
+  "Thao",
+  "Somchai",
+  "Niran",
+  "Siriporn",
+  "Kanya",
+  "Kenji",
+  "Takashi",
+  "Yuki",
+  "Haruka",
+  "Sakura",
+  "Jie",
+  "Chen",
+  "Ying",
+  "Fang",
+  "Jun",
+  "Min-Jun",
+  "Seo-Yeon",
+  "Ji-Hoon",
+  "Hye-Jin",
 ]
 const LAST = [
   "Karlsson",
@@ -417,6 +790,798 @@ const LAST = [
   "Aronsson",
   "Bäckström",
   "Rydberg",
+  // v22: expanded Swedish, Nordic, European & global surnames (0 collisions with rare-surnames.txt)
+  "Olsson",
+  "Mattsson",
+  "Åkesson",
+  "Håkansson",
+  "Pålsson",
+  "Gunnarsson",
+  "Axelsson",
+  "Henriksson",
+  "Magnusson",
+  "Jakobsson",
+  "Samuelsson",
+  "Claesson",
+  "Göransson",
+  "Danielsson",
+  "Mikaelsson",
+  "Niklasson",
+  "Martinsson",
+  "Simonsson",
+  "Antonsson",
+  "Davidsson",
+  "Adolfsson",
+  "Algotsson",
+  "Arvidsson",
+  "Bertilsson",
+  "Birgersson",
+  "Börjesson",
+  "Edvinsson",
+  "Einarsson",
+  "Emanuelsson",
+  "Filipsson",
+  "Fransson",
+  "Helgesson",
+  "Hjalmarsson",
+  "Holgersson",
+  "Ingvarsson",
+  "Ivarsson",
+  "Kjellsson",
+  "Knutsson",
+  "Leifsson",
+  "Lennartsson",
+  "Melkersson",
+  "Oskarsson",
+  "Ragnarsson",
+  "Rolandsson",
+  "Runesson",
+  "Sigurdsson",
+  "Sixtensson",
+  "Staffansson",
+  "Stigsson",
+  "Sörensson",
+  "Tagesson",
+  "Torstensson",
+  "Ulfsson",
+  "Valdemarsson",
+  "Viktorsson",
+  "Vilhelmsson",
+  "Yngvesson",
+  "Ågren",
+  "Åhman",
+  "Åkerlund",
+  "Åkerman",
+  "Åström",
+  "Öhman",
+  "Östberg",
+  "Östergren",
+  "Österlund",
+  "Östlund",
+  "Östman",
+  "Öström",
+  "Almgren",
+  "Almqvist",
+  "Appelqvist",
+  "Asplund",
+  "Björk",
+  "Björklund",
+  "Björkman",
+  "Blomberg",
+  "Blomqvist",
+  "Blomström",
+  "Bodin",
+  "Borg",
+  "Borgström",
+  "Boström",
+  "Broman",
+  "Byström",
+  "Carlsson",
+  "Dahlberg",
+  "Dahlgren",
+  "Dahlman",
+  "Dahlqvist",
+  "Dahlström",
+  "Edlund",
+  "Edman",
+  "Edström",
+  "Ekberg",
+  "Ekblad",
+  "Ekblom",
+  "Ekdahl",
+  "Ekholm",
+  "Ekman",
+  "Eliasson",
+  "Engberg",
+  "Engdahl",
+  "Englund",
+  "Engman",
+  "Engqvist",
+  "Fagerström",
+  "Fahlén",
+  "Falkenberg",
+  "Ferm",
+  "Flodin",
+  "Fors",
+  "Forsell",
+  "Forslund",
+  "Forsman",
+  "Franzén",
+  "Friberg",
+  "Frisk",
+  "Fröberg",
+  "Granath",
+  "Granberg",
+  "Granlund",
+  "Granqvist",
+  "Granström",
+  "Grahn",
+  "Grönberg",
+  "Gröndahl",
+  "Grönlund",
+  "Grönqvist",
+  "Grönvall",
+  "Hagberg",
+  "Hagel",
+  "Haglund",
+  "Hagman",
+  "Hall",
+  "Hallberg",
+  "Halldin",
+  "Hallgren",
+  "Hallin",
+  "Hallman",
+  "Hallqvist",
+  "Hammar",
+  "Hammarberg",
+  "Hammarlund",
+  "Hammarström",
+  "Hedberg",
+  "Hedin",
+  "Hedman",
+  "Hedqvist",
+  "Hedström",
+  "Hellberg",
+  "Hellgren",
+  "Hellman",
+  "Hellqvist",
+  "Hellström",
+  "Hemberg",
+  "Hjorth",
+  "Holmér",
+  "Holmquist",
+  "Holmqvist",
+  "Holmström",
+  "Hult",
+  "Hultberg",
+  "Hultgren",
+  "Hultin",
+  "Hultman",
+  "Hultqvist",
+  "Hägg",
+  "Hägglund",
+  "Häggström",
+  "Högberg",
+  "Höglund",
+  "Högström",
+  "Hörberg",
+  "Jernberg",
+  "Järvinen",
+  "Kallin",
+  "Kempe",
+  "Kinnunen",
+  "Kjellberg",
+  "Kjellgren",
+  "Kjellman",
+  "Kjellström",
+  "Kling",
+  "Klingberg",
+  "Klint",
+  "Korhonen",
+  "Koskinen",
+  "Krantz",
+  "Kroon",
+  "Kullberg",
+  "Käll",
+  "Källberg",
+  "Källman",
+  "Källström",
+  "Lager",
+  "Lagerberg",
+  "Lagergren",
+  "Lagerkvist",
+  "Lagerlöf",
+  "Lagerström",
+  "Laine",
+  "Landin",
+  "Landström",
+  "Lantz",
+  "Lidén",
+  "Lidman",
+  "Lilja",
+  "Liljegren",
+  "Liljekvist",
+  "Lind",
+  "Lindahl",
+  "Lindblad",
+  "Lindblom",
+  "Lindbom",
+  "Linde",
+  "Lindeberg",
+  "Lindell",
+  "Lindén",
+  "Lindfors",
+  "Lindman",
+  "Lindmark",
+  "Lindroos",
+  "Lindskog",
+  "Lindvall",
+  "Ljung",
+  "Ljungberg",
+  "Ljungdahl",
+  "Ljunggren",
+  "Ljungqvist",
+  "Ljungström",
+  "Lundahl",
+  "Lundblad",
+  "Lundell",
+  "Lundén",
+  "Lundholm",
+  "Lundin",
+  "Lundman",
+  "Lundmark",
+  "Lundström",
+  "Lundvall",
+  "Löf",
+  "Löfgren",
+  "Löfqvist",
+  "Löfström",
+  "Löv",
+  "Lövgren",
+  "Lövqvist",
+  "Malm",
+  "Malmberg",
+  "Malmgren",
+  "Malmkvist",
+  "Malmqvist",
+  "Malmström",
+  "Marklund",
+  "Markström",
+  "Melin",
+  "Moberg",
+  "Modig",
+  "Modin",
+  "Molin",
+  "Mäkinen",
+  "Nieminen",
+  "Nordin",
+  "Nord",
+  "Nordberg",
+  "Nordgren",
+  "Nordholm",
+  "Nordlund",
+  "Nordman",
+  "Nordmark",
+  "Nordqvist",
+  "Nordström",
+  "Norén",
+  "Norlin",
+  "Norling",
+  "Norlund",
+  "Norman",
+  "Norrman",
+  "Nyblom",
+  "Nygren",
+  "Nyholm",
+  "Nylander",
+  "Nylén",
+  "Nylund",
+  "Nyman",
+  "Nymark",
+  "Nyqvist",
+  "Olander",
+  "Olin",
+  "Palm",
+  "Palmberg",
+  "Palmgren",
+  "Palmqvist",
+  "Pihl",
+  "Qvist",
+  "Rahm",
+  "Ramberg",
+  "Rask",
+  "Renman",
+  "Renström",
+  "Ring",
+  "Ringström",
+  "Roos",
+  "Rosén",
+  "Rosenberg",
+  "Rosengren",
+  "Rosenqvist",
+  "Roth",
+  "Rundqvist",
+  "Ryd",
+  "Rydén",
+  "Rydholm",
+  "Rydin",
+  "Rydqvist",
+  "Rydström",
+  "Rönn",
+  "Rönnberg",
+  "Rönnqvist",
+  "Sahlin",
+  "Sahlström",
+  "Salomonsson",
+  "Sand",
+  "Sandelin",
+  "Sandell",
+  "Sandén",
+  "Sandgren",
+  "Sandholm",
+  "Sandin",
+  "Sandlund",
+  "Sandqvist",
+  "Seger",
+  "Segerström",
+  "Selin",
+  "Setterberg",
+  "Sjö",
+  "Sjöblom",
+  "Sjödahl",
+  "Sjögren",
+  "Sjöholm",
+  "Sjölin",
+  "Sjölander",
+  "Sjölund",
+  "Sjöman",
+  "Sjöqvist",
+  "Sjöstedt",
+  "Sjöstrand",
+  "Sjöström",
+  "Skog",
+  "Skoglund",
+  "Sköld",
+  "Smedberg",
+  "Solberg",
+  "Spångberg",
+  "Stark",
+  "Stenberg",
+  "Stendahl",
+  "Stengård",
+  "Stenholm",
+  "Stenlund",
+  "Stenman",
+  "Stenqvist",
+  "Stenström",
+  "Stjärna",
+  "Strand",
+  "Strandlund",
+  "Strid",
+  "Strömberg",
+  "Strömgren",
+  "Strömqvist",
+  "Ståhl",
+  "Ståhlberg",
+  "Sund",
+  "Sundberg",
+  "Sundblad",
+  "Sundell",
+  "Sundén",
+  "Sundgren",
+  "Sundholm",
+  "Sundin",
+  "Sundkvist",
+  "Sundlund",
+  "Sundman",
+  "Sundqvist",
+  "Svan",
+  "Svanberg",
+  "Svedberg",
+  "Svärd",
+  "Söder",
+  "Södergren",
+  "Söderholm",
+  "Söderlund",
+  "Söderman",
+  "Söderqvist",
+  "Söderström",
+  "Sörberg",
+  "Sörlin",
+  "Tegnér",
+  "Thalin",
+  "Thorell",
+  "Thorén",
+  "Thorsén",
+  "Thulin",
+  "Thunberg",
+  "Törn",
+  "Törnberg",
+  "Törngren",
+  "Törnkvist",
+  "Törnqvist",
+  "Törnros",
+  "Törnström",
+  "Udd",
+  "Ullman",
+  "Vesterberg",
+  "Vestergaard",
+  "Vesterlund",
+  "Vik",
+  "Vikberg",
+  "Viklund",
+  "Vikman",
+  "Vikström",
+  "Wahl",
+  "Wahlberg",
+  "Wahlgren",
+  "Wahlman",
+  "Wahlqvist",
+  "Wahlström",
+  "Wall",
+  "Wallberg",
+  "Walldén",
+  "Wallén",
+  "Waller",
+  "Wallgren",
+  "Wallman",
+  "Wallqvist",
+  "Wallström",
+  "Wannberg",
+  "Wedin",
+  "Wenberg",
+  "Wennberg",
+  "Wennerberg",
+  "Wennerström",
+  "Werner",
+  "Wessman",
+  "Westberg",
+  "Wester",
+  "Westerberg",
+  "Westergren",
+  "Westerholm",
+  "Westerlund",
+  "Westin",
+  "Westling",
+  "Westlund",
+  "Westman",
+  "Wiberg",
+  "Wickman",
+  "Wickström",
+  "Widell",
+  "Widén",
+  "Widgren",
+  "Widholm",
+  "Widman",
+  "Widlund",
+  "Wigren",
+  "Wik",
+  "Wikberg",
+  "Wikholm",
+  "Wiklund",
+  "Wikman",
+  "Winberg",
+  "Winblad",
+  "Wingren",
+  "Winqvist",
+  "Wirtanen",
+  "Wiss",
+  "Wretman",
+  "Zetterberg",
+  "Zettergren",
+  "Zetterlund",
+  "Zetterqvist",
+  "Zetterström",
+  // International surnames common in Sweden & multilingual text
+  "Hansen",
+  "Jensen",
+  "Nielsen",
+  "Pedersen",
+  "Andersen",
+  "Christensen",
+  "Sørensen",
+  "Rasmussen",
+  "Jørgensen",
+  "Madsen",
+  "Kristensen",
+  "Olsen",
+  "Thomsen",
+  "Møller",
+  "Virtanen",
+  "Mäkelä",
+  "Hämäläinen",
+  "Heikkinen",
+  "Lehtonen",
+  "Salonen",
+  "Weber",
+  "Wagner",
+  "Becker",
+  "Schulz",
+  "Hoffmann",
+  "Schäfer",
+  "Koch",
+  "Bauer",
+  "Richter",
+  "Klein",
+  "Wolf",
+  "Schröder",
+  "Neumann",
+  "Schwarz",
+  "Zimmermann",
+  "Braun",
+  "Krüger",
+  "Hofmann",
+  "Hartmann",
+  "Lange",
+  "Dubois",
+  "Laurent",
+  "Simon",
+  "Michel",
+  "Lefèvre",
+  "Leroy",
+  "Roux",
+  "Moreau",
+  "Fournier",
+  "Girard",
+  "Bonnet",
+  "Dupont",
+  "Lambert",
+  "Fontaine",
+  "Rousseau",
+  "García",
+  "Rodríguez",
+  "Martínez",
+  "López",
+  "González",
+  "Hernández",
+  "Pérez",
+  "Sánchez",
+  "Ramírez",
+  "Torres",
+  "Flores",
+  "Rivera",
+  "Gómez",
+  "Díaz",
+  "Morales",
+  "Fernández",
+  "Russo",
+  "Ferrari",
+  "Esposito",
+  "Bianchi",
+  "Romano",
+  "Colombo",
+  "Ricci",
+  "Marino",
+  "Greco",
+  "Conti",
+  "De Luca",
+  "Mancini",
+  "Ferreira",
+  "Oliveira",
+  "Santos",
+  "Pereira",
+  "Rodrigues",
+  "Martins",
+  "Almeida",
+  "Sousa",
+  "Wiśniewski",
+  "Wójcik",
+  "Kamiński",
+  "Lewandowski",
+  "Zieliński",
+  "Szymański",
+  "Woźniak",
+  "Dąbrowski",
+  "Kozłowski",
+  "Jankowski",
+  "Mazur",
+  "Krawczyk",
+  "Shevchenko",
+  "Bondarenko",
+  "Kovalenko",
+  "Boyko",
+  "Tkachenko",
+  "Kravchenko",
+  "Oliynyk",
+  "Savchenko",
+  "Melnyk",
+  "Moroz",
+  "Smirnov",
+  "Kuznetsov",
+  "Popov",
+  "Sokolov",
+  "Lebedev",
+  "Kozlov",
+  "Novikov",
+  "Morozov",
+  "Volkov",
+  "Horvat",
+  "Kovačević",
+  "Babić",
+  "Marić",
+  "Jurić",
+  "Novak",
+  "Petrović",
+  "Jovanović",
+  "Nikolić",
+  "Marković",
+  "Đorđević",
+  "Stojanović",
+  "Ilić",
+  "Stanković",
+  "Kaya",
+  "Şahin",
+  "Çelik",
+  "Yıldız",
+  "Yıldırım",
+  "Öztürk",
+  "Aydın",
+  "Özdemir",
+  "Arslan",
+  "Doğan",
+  "Kılıç",
+  "Aslan",
+  "Çetin",
+  "Kara",
+  "Koç",
+  "Kurt",
+  "Özkan",
+  "Şimşek",
+  "Al-Mansoor",
+  "Al-Harbi",
+  "Al-Dosari",
+  "Al-Qahtani",
+  "Al-Zahrani",
+  "Al-Ghamdi",
+  "Al-Otaibi",
+  "Al-Shehri",
+  "Al-Amri",
+  "Mansour",
+  "Khoury",
+  "Nasser",
+  "Ibrahim",
+  "Hussein",
+  "Mahmoud",
+  "Mustafa",
+  "Farouk",
+  "Bakr",
+  "Darwish",
+  "Hosseini",
+  "Mohammadi",
+  "Rezaei",
+  "Karimi",
+  "Mousavi",
+  "Jafari",
+  "Sadeghi",
+  "Rahimi",
+  "Hashemi",
+  "Moradi",
+  "Farah",
+  "Warsame",
+  "Abdi",
+  "Mohamed",
+  "Ali",
+  "Omar",
+  "Yusuf",
+  "Osman",
+  "Dahir",
+  "Jama",
+  "Tesfaye",
+  "Bekele",
+  "Tadesse",
+  "Kebede",
+  "Girma",
+  "Alemayehu",
+  "Adeyemi",
+  "Ogunleye",
+  "Okonkwo",
+  "Eze",
+  "Balogun",
+  "Appiah",
+  "Boateng",
+  "Owusu",
+  "Asante",
+  "Diallo",
+  "Traoré",
+  "Coulibaly",
+  "Ndiaye",
+  "Diop",
+  "Patel",
+  "Sharma",
+  "Singh",
+  "Kumar",
+  "Gupta",
+  "Verma",
+  "Joshi",
+  "Reddy",
+  "Nair",
+  "Iyer",
+  "Das",
+  "Chatterjee",
+  "Banerjee",
+  "Kapoor",
+  "Malhotra",
+  "Mehta",
+  "Bhatia",
+  "Rao",
+  "Ahmed",
+  "Hussain",
+  "Malik",
+  "Butt",
+  "Chaudhry",
+  "Qureshi",
+  "Siddiqui",
+  "Sheikh",
+  "Rahman",
+  "Islam",
+  "Chowdhury",
+  "Hossain",
+  "Le",
+  "Pham",
+  "Hoang",
+  "Huynh",
+  "Phan",
+  "Vu",
+  "Vo",
+  "Dang",
+  "Bui",
+  "Do",
+  "Sato",
+  "Suzuki",
+  "Takahashi",
+  "Tanaka",
+  "Watanabe",
+  "Ito",
+  "Yamamoto",
+  "Kobayashi",
+  "Kato",
+  "Yoshida",
+  "Wang",
+  "Li",
+  "Zhang",
+  "Liu",
+  "Chen",
+  "Yang",
+  "Huang",
+  "Zhao",
+  "Wu",
+  "Zhou",
+  "Kim",
+  "Lee",
+  "Park",
+  "Choi",
+  "Jung",
+  "Kang",
+  "Cho",
+  "Yoon",
+  "Jang",
+  "Lim",
+  "Smith",
+  "Johnson",
+  "Williams",
+  "Brown",
+  "Jones",
+  "Miller",
+  "Davis",
+  "Wilson",
+  "Taylor",
+  "Anderson",
+  "Thomas",
+  "Jackson",
+  "White",
+  "Harris",
+  "Martin",
+  "Thompson",
+  "Robinson",
+  "Clark",
+  "Lewis",
+  "Walker",
+  "MacLeod",
+  "O'Connor",
+  "Murphy",
+  "Kelly",
+  "Sullivan",
+  "McCarthy",
 ]
 const CITIES = [
   "Stockholm",
@@ -498,6 +1663,70 @@ const CITIES = [
   "Vänersborg",
   "Lidköping",
   "Katrineholm",
+  "Båstad",
+  "Lysekil",
+  "Sala",
+  "Tierp",
+  "Älvkarleby",
+  "Munkedal",
+  "Brastad",
+  "Söderfors",
+  "Östervåla",
+  "Harbo",
+  "Kungsbacka",
+  "Varberg",
+  "Falkenberg",
+  "Laholm",
+  "Oskarshamn",
+  "Västervik",
+  "Norrtälje",
+  "Nynäshamn",
+  "Haninge",
+  "Solna",
+  "Sundbyberg",
+  "Nacka",
+  "Huddinge",
+  "Botkyrka",
+  "Kungsör",
+  "Arboga",
+  "Fagersta",
+  "Kramfors",
+  "Sollefteå",
+  "Timrå",
+  "Kalix",
+  "Haparanda",
+  "Gällivare",
+  "Lycksele",
+  "Mora",
+  "Leksand",
+  "Rättvik",
+  "Smedjebacken",
+  "Hedemora",
+  "Bollnäs",
+  "Söderhamn",
+  "Ljusdal",
+  "Simrishamn",
+  "Hässleholm",
+  "Eslöv",
+  "Höganäs",
+  "Lomma",
+  "Staffanstorp",
+  "Kävlinge",
+  "Ljungby",
+  "Älmhult",
+  "Alvesta",
+  "Vetlanda",
+  "Eksjö",
+  "Gislaved",
+  "Ulricehamn",
+  "Strömstad",
+  "Stenungsund",
+  "Lerum",
+  "Ale",
+  "Klippan",
+  "Bromölla",
+  "Sölvesborg",
+  "Olofström",
 ]
 const DISTRICTS = [
   "Kungsholmen",
@@ -1006,6 +2235,18 @@ const COUNTRIES_AND_REGIONS = [
   "Afrika",
   "Nordamerika",
   "Sydamerika",
+  "England",
+  "Skottland",
+  "Mellanöstern",
+  "Östersjön",
+  "Nordsjön",
+  "Medelhavet",
+  "Vänern",
+  "Vättern",
+  "Mälaren",
+  "Arlanda",
+  "Landvetter",
+  "Kastrup",
 ]
 const place = () => {
   const r = rand()
@@ -1259,8 +2500,14 @@ const org = () => {
 // v4 never saw them and dropped the whole entity. Swedish genitive appends
 // "s" with no apostrophe; names already ending in s/x/z stay bare.
 const genitive = (name) => (/[sxz]$/i.test(name) ? name : `${name}s`)
-// v9: full-name share up from 0.5; v5 still dropped capitalized "Anna Karlssons".
-const personGenitive = () => genitive(chance(0.35) ? pick(FIRST) : `${pick(FIRST)} ${pick(LAST)}`)
+// v22: include standalone surname genitives ("Bergmans", "Nyströms") alongside
+// first-name and full-name genitives so bare possessive surnames in prose are caught.
+const personGenitive = () => {
+  const r = rand()
+  if (r < 0.25) return genitive(pick(FIRST))
+  if (r < 0.5) return genitive(pick(LAST))
+  return genitive(`${pick(FIRST)} ${pick(LAST)}`)
+}
 const orgGenitive = () => genitive(pick(ORGS))
 
 const syntheticNumberExcept = (max, excluded) => {
@@ -1910,6 +3157,15 @@ const TEMPLATES = [
   "tjena, kan ni hjälpa mig med en faktura?",
   "hejhej, ville bara kolla status på mitt ärende.",
   "yo, funkar swish-betalningen igen eller?",
+  "hörru, fakturan skickades till fel adress, jag bor på {ADR} numera.",
+  "hörru kan du kolla varför leveransen till {ADR} blev sen?",
+  "hallå, vi behöver ändra adressen till {ADR} i {LOC}.",
+  "tja, har ni fått in ansökan från {PER} ännu?",
+  "Vittnet uppgav adressen {ADR} vid samtalet.",
+  "Sökanden bor på {ADR} i {LOC} enligt handlingarna.",
+  "Klaganden och ombudet {PER} närvarade vid mötet.",
+  "Beställaren angav {ADR} som ny leveransadress.",
+  "Målsäganden hördes om händelsen i {LOC}.",
   "Ring {PER} omgående om leveransen.",
   "KONTAKTA {PER} INNAN FREDAG.",
   // v7: genitive entities, which a stress test showed v4 dropped entirely.
@@ -3839,6 +5095,462 @@ const paragraphValDuplicates = appendSubfamilySet(
   "paragraph",
 )
 
+// v22: deterministically verified LLM-generated Swedish prose pools (clean 0-entity,
+// slotted multi-sentence prose, and paired minimal contrasts). Templates are partitioned
+// 92% train / 8% disjoint val BEFORE instantiation so zero templates leak across splits.
+let llmProseSha256 = null
+let llmCleanTrainDuplicates = 0
+let llmCleanValDuplicates = 0
+let llmSlottedTrainDuplicates = 0
+let llmSlottedValDuplicates = 0
+let llmContrastTrainDuplicates = 0
+let llmContrastValDuplicates = 0
+
+function applyLlmCasing(tokens, tags, preserveSentenceStartWord = false) {
+  if (!tokens.length) return
+  const r = rand()
+  if (r < LC_AUG) {
+    for (let k = 0; k < tokens.length; k++) tokens[k] = tokens[k].toLowerCase()
+  } else if (r < LC_AUG + UC_AUG) {
+    for (let k = 0; k < tokens.length; k++) tokens[k] = tokens[k].toUpperCase()
+  } else if (!preserveSentenceStartWord && chance(0.15) && tags[0] === "O") {
+    tokens[0] = tokens[0].toLowerCase()
+  }
+}
+
+function instantiateLlmProse(template, homoWord = null, forceCase = null) {
+  const tokens = []
+  const tags = []
+  const slotValues = {
+    PER1: () => ({ text: person(), tag: "PER" }),
+    PER1_GEN: () => ({ text: genitive(`${pick(FIRST)} ${pick(LAST)}`), tag: "PER" }),
+    PER2: () => ({ text: person(), tag: "PER" }),
+    PER_LAST: () => ({ text: pick(LAST), tag: "PER" }),
+    PER_LAST_GEN: () => ({ text: genitive(pick(LAST)), tag: "PER" }),
+    PER_FIRST: () => ({ text: pick(FIRST), tag: "PER" }),
+    LOC1: () => ({ text: place(), tag: "LOC" }),
+    LOC2: () => ({ text: place(), tag: "LOC" }),
+    ORG1: () => ({ text: org(), tag: "ORG" }),
+    ORG2: () => ({ text: org(), tag: "ORG" }),
+    ADR1: () => ({ text: address(), tag: "ADR" }),
+    HOMO_PER: () => ({ text: homoWord ?? pick(FIRST), tag: "PER" }),
+    HOMO_WORD: () => ({ text: homoWord ?? "sten", tag: "O" }),
+  }
+  const cache = new Map()
+  const parts = template.split(/(\{[A-Z0-9_]+\})/)
+  for (let pIdx = 0; pIdx < parts.length; pIdx++) {
+    const part = parts[pIdx]
+    const slotMatch = part.match(/^\{([A-Z0-9_]+)\}$/)
+    if (slotMatch) {
+      const name = slotMatch[1]
+      if (!cache.has(name)) {
+        const fn = slotValues[name]
+        if (!fn) throw new Error(`Unknown LLM prose slot: {${name}}`)
+        cache.set(name, fn())
+      }
+      const { text: rawVal, tag } = cache.get(name)
+      const atSentenceStart = tokens.length === 0 || /^[.!?]$/.test(tokens[tokens.length - 1] ?? "")
+      const val =
+        name === "HOMO_WORD"
+          ? atSentenceStart
+            ? rawVal.charAt(0).toUpperCase() + rawVal.slice(1).toLowerCase()
+            : rawVal.toLowerCase()
+          : rawVal
+      val
+        .trim()
+        .split(/\s+/)
+        .forEach((w, idx) => {
+          tokens.push(w)
+          tags.push(tag === "O" ? "O" : `${idx === 0 ? "B" : "I"}-${tag}`)
+        })
+    } else if (part) {
+      for (const t of tokenizeFiller(part)) {
+        tokens.push(t)
+        tags.push("O")
+      }
+    }
+  }
+  if (forceCase === "cased") {
+    // Keep canonical casing as generated
+  } else if (forceCase === "lower") {
+    for (let k = 0; k < tokens.length; k++) tokens[k] = tokens[k].toLowerCase()
+  } else if (forceCase === "upper") {
+    for (let k = 0; k < tokens.length; k++) tokens[k] = tokens[k].toUpperCase()
+  } else {
+    applyLlmCasing(tokens, tags, homoWord !== null)
+  }
+  return { tokens, tags }
+}
+
+function appendLlmRows(path, count, builder, label) {
+  if (count === 0) return 0
+  const lines = []
+  let attempts = 0
+  while (lines.length < count) {
+    const example = builder()
+    attempts++
+    if (trainingPrivacyIssues(example.tokens).length > 0) continue
+    const line = JSON.stringify(example)
+    if (usedExamples.has(line)) continue
+    usedExamples.add(line)
+    lines.push(line)
+    if (attempts > count * 80) {
+      throw new Error(
+        `Could not generate ${count} unique ${label} examples after ${attempts} attempts`,
+      )
+    }
+  }
+  if (lines.length) appendFileSync(path, `${lines.join("\n")}\n`)
+  return attempts - count
+}
+
+function appendLlmContrastRows(path, count, pairs, cleanContextPool, label) {
+  if (count === 0) return 0
+  const lines = []
+  let attempts = 0
+  // First emit deterministic cased + lower passes over every pair, then contextualized minimal pairs.
+  const deterministicQueue = []
+  for (const pair of pairs) deterministicQueue.push({ pair, forceCase: "cased" })
+  for (const pair of pairs) deterministicQueue.push({ pair, forceCase: "lower" })
+  let qIdx = 0
+
+  while (lines.length < count) {
+    let pair
+    let forceCase = null
+    let posTpl
+    let negTpl
+    if (qIdx < deterministicQueue.length) {
+      const item = deterministicQueue[qIdx++]
+      pair = item.pair
+      forceCase = item.forceCase
+      posTpl = pair.pos
+      negTpl = pair.neg
+    } else {
+      pair = pick(pairs)
+      const ctx = pick(cleanContextPool)
+      const prepend = chance(0.5)
+      posTpl = prepend ? `${ctx} ${pair.pos}` : `${pair.pos} ${ctx}`
+      negTpl = prepend ? `${ctx} ${pair.neg}` : `${pair.neg} ${ctx}`
+      const r = rand()
+      forceCase = r < LC_AUG ? "lower" : r < LC_AUG + UC_AUG ? "upper" : "cased"
+    }
+    const homoWord = pair.kind === "homograph" ? pair.word : null
+    const exPos = instantiateLlmProse(posTpl, homoWord, forceCase)
+    const exNeg = instantiateLlmProse(negTpl, homoWord, forceCase)
+    attempts += 2
+    if (
+      trainingPrivacyIssues(exPos.tokens).length > 0 ||
+      trainingPrivacyIssues(exNeg.tokens).length > 0
+    ) {
+      continue
+    }
+    const linePos = JSON.stringify(exPos)
+    const lineNeg = JSON.stringify(exNeg)
+    if (usedExamples.has(linePos) || usedExamples.has(lineNeg) || linePos === lineNeg) continue
+    usedExamples.add(linePos)
+    usedExamples.add(lineNeg)
+    lines.push(linePos, lineNeg)
+    if (attempts > count * 80) {
+      throw new Error(
+        `Could not generate ${count} unique ${label} pairs after ${attempts} attempts`,
+      )
+    }
+  }
+  if (lines.length) appendFileSync(path, `${lines.join("\n")}\n`)
+  return attempts - count
+}
+
+const totalLlmRows =
+  LLM_CLEAN_TRAIN_ROWS +
+  LLM_CLEAN_VAL_ROWS +
+  LLM_SLOTTED_TRAIN_ROWS +
+  LLM_SLOTTED_VAL_ROWS +
+  LLM_CONTRAST_TRAIN_ROWS +
+  LLM_CONTRAST_VAL_ROWS
+
+if (totalLlmRows > 0) {
+  if (!LLM_PROSE_FILE) {
+    throw new Error("LLM_*_ROWS > 0 requires LLM_PROSE_FILE pointing to llm_prose_pool.json")
+  }
+  const llmBytes = readFileSync(LLM_PROSE_FILE)
+  llmProseSha256 = createHash("sha256").update(llmBytes).digest("hex")
+  const pool = JSON.parse(llmBytes.toString("utf8"))
+  const UNLABELED_LANDMARK_RE =
+    /\b(centralstationen|centralsstationen|t-centralen|centralen|alperna)\b/i
+  const isPrivacyCleanTemplate = (tpl) =>
+    !UNLABELED_LANDMARK_RE.test(tpl) &&
+    trainingPrivacyIssues(tokenizeFiller(tpl.replace(/\{[A-Z0-9_]+\}/g, "entitet"))).length === 0
+  const splitPool = (arr) => {
+    const cut = Math.max(1, Math.floor(arr.length * 0.92))
+    return [arr.slice(0, cut), arr.slice(cut)]
+  }
+  const [cleanTrainT, cleanValT] = splitPool((pool.clean ?? []).filter(isPrivacyCleanTemplate))
+  const [slottedTrainT, slottedValT] = splitPool(
+    (pool.slotted ?? []).filter(isPrivacyCleanTemplate),
+  )
+  const skipLocContrast = process.env.LLM_SKIP_LOC_CONTRAST === "1"
+  const [contrastTrainT, contrastValT] = splitPool(
+    (pool.contrast_pairs ?? []).filter(
+      (p) =>
+        (!skipLocContrast || p.kind !== "loc_vs_generic") &&
+        isPrivacyCleanTemplate(p.pos) &&
+        isPrivacyCleanTemplate(p.neg),
+    ),
+  )
+
+  const splitSentences = (arr) => {
+    const out = []
+    for (const para of arr) {
+      for (const s of para.split(/(?<=[.!?])\s+/)) {
+        const t = s.trim()
+        if (t.length >= 25 && t.split(/\s+/).length >= 5) out.push(t)
+      }
+    }
+    return out.length ? out : arr
+  }
+  const cleanTrainSents = splitSentences(cleanTrainT)
+  const cleanValSents = splitSentences(cleanValT)
+
+  const buildCleanLlmDoc = (cleanPool, cleanSents) => {
+    // 62% single short natural Swedish sentences (matching short clean news/chat sentences)
+    // + 38% full 2-4 sentence paragraphs (never concatenate two long paragraphs).
+    if (chance(0.62)) return instantiateLlmProse(pick(cleanSents))
+    return instantiateLlmProse(pick(cleanPool))
+  }
+
+  llmCleanTrainDuplicates = appendLlmRows(
+    trainPath,
+    LLM_CLEAN_TRAIN_ROWS,
+    () => buildCleanLlmDoc(cleanTrainT, cleanTrainSents),
+    "llm-clean-train",
+  )
+  llmCleanValDuplicates = appendLlmRows(
+    valPath,
+    LLM_CLEAN_VAL_ROWS,
+    () => buildCleanLlmDoc(cleanValT, cleanValSents),
+    "llm-clean-val",
+  )
+  llmSlottedTrainDuplicates = appendLlmRows(
+    trainPath,
+    LLM_SLOTTED_TRAIN_ROWS,
+    () => instantiateLlmProse(pick(slottedTrainT)),
+    "llm-slotted-train",
+  )
+  llmSlottedValDuplicates = appendLlmRows(
+    valPath,
+    LLM_SLOTTED_VAL_ROWS,
+    () => instantiateLlmProse(pick(slottedValT)),
+    "llm-slotted-val",
+  )
+  llmContrastTrainDuplicates = appendLlmContrastRows(
+    trainPath,
+    LLM_CONTRAST_TRAIN_ROWS,
+    contrastTrainT,
+    cleanTrainT,
+    "llm-contrast-train",
+  )
+  llmContrastValDuplicates = appendLlmContrastRows(
+    valPath,
+    LLM_CONTRAST_VAL_ROWS,
+    contrastValT,
+    cleanValT,
+    "llm-contrast-val",
+  )
+}
+
+function buildStructuredFormExample() {
+  const title = pick(["Herr", "Fru", "Hr", "Frk", "Dr"])
+  const f1 = pick(FIRST)
+  const f2 = pick(FIRST)
+  const l1 = pick(LAST)
+  const l2 = pick(LAST)
+  const fullMulti = chance(0.45)
+    ? `${f1} ${f2} ${l1}`
+    : chance(0.35)
+      ? `${f1} ${f2} ${l1} ${l2}`
+      : `${f1} ${l1}`
+  const city = pick(CITIES)
+  const dist = pick(DISTRICTS)
+  const cityLoc = chance(0.35) ? `${city} ${dist}` : place()
+  const adr = address()
+  const orgName = org()
+  const tpl = Math.floor(rand() * 10)
+
+  const segments =
+    tpl === 0
+      ? [
+          ["1. Förnamn:", "O"],
+          [f1, "PER"],
+          ["2. Efternamn:", "O"],
+          [l1, "PER"],
+          ["3. Titel:", "O"],
+          [title, "O"],
+          ["4. Stad:", "O"],
+          [cityLoc, "LOC"],
+        ]
+      : tpl === 1
+        ? [
+            ["**Titel:**", "O"],
+            [title, "O"],
+            ["**Förnamn:**", "O"],
+            [f1, "PER"],
+            ["**Efternamn:**", "O"],
+            [l1, "PER"],
+            ["**Ort:**", "O"],
+            [cityLoc, "LOC"],
+          ]
+        : tpl === 2
+          ? [
+              ["Personuppgifter • Namn:", "O"],
+              [title, "O"],
+              [fullMulti, "PER"],
+              ["• Adress:", "O"],
+              [adr, "ADR"],
+              [",", "O"],
+              [cityLoc, "LOC"],
+            ]
+          : tpl === 3
+            ? [
+                ["Förnamn (", "O"],
+                [f1, "PER"],
+                ["), Efternamn (", "O"],
+                [l1, "PER"],
+                ["), Titel (", "O"],
+                [title, "O"],
+                ["), Stad (", "O"],
+                [cityLoc, "LOC"],
+                [")", "O"],
+              ]
+            : tpl === 4
+              ? [
+                  ["Till:", "O"],
+                  [title, "O"],
+                  [fullMulti, "PER"],
+                  ["Organisation:", "O"],
+                  [orgName, "ORG"],
+                  ["Gatuadress:", "O"],
+                  [adr, "ADR"],
+                  [",", "O"],
+                  [city, "LOC"],
+                ]
+              : tpl === 5
+                ? [
+                    ["Hej", "O"],
+                    [title, "O"],
+                    [fullMulti, "PER"],
+                    [", vi bekräftar registreringen för", "O"],
+                    [cityLoc, "LOC"],
+                    ["och kontaktperson", "O"],
+                    [`${pick(FIRST)} ${pick(LAST)}`, "PER"],
+                    [".", "O"],
+                  ]
+                : tpl === 6
+                  ? [
+                      ["Uppgifter för behörighet: Namn:", "O"],
+                      [fullMulti, "PER"],
+                      ["Ort:", "O"],
+                      [cityLoc, "LOC"],
+                      ["Arbetsgivare:", "O"],
+                      [orgName, "ORG"],
+                    ]
+                  : tpl === 7
+                    ? [
+                        ["Enligt uppgifter från", "O"],
+                        [genitive(place()), "LOC"],
+                        ["myndigheter och", "O"],
+                        [orgName, "ORG"],
+                        ["gäller ärendet", "O"],
+                        [fullMulti, "PER"],
+                        ["vid", "O"],
+                        [adr, "ADR"],
+                        [",", "O"],
+                        [city, "LOC"],
+                        [".", "O"],
+                      ]
+                    : tpl === 8
+                      ? [
+                          [
+                            pick([
+                              "Vi ses vid",
+                              "Tåget avgår från",
+                              "Mötet hålls nära",
+                              "Avresa sker vid",
+                            ]),
+                            "O",
+                          ],
+                          [pick(DISTRICTS), "LOC"],
+                          ["i", "O"],
+                          [city, "LOC"],
+                          [pick(["och", "medan", "samt"]), "O"],
+                          [
+                            pick([
+                              "besöket sker hos vårdcentralen",
+                              "eleverna går på skolan",
+                              "barnet går på förskolan",
+                              "patienten listas hos kliniken",
+                            ]),
+                            "O",
+                          ],
+                          [
+                            pick([
+                              "Skogsgläntan",
+                              "Tallbacken",
+                              "Björklunden",
+                              "Ekbacken",
+                              "Solbacken",
+                              "Lindbacken",
+                              "Ängsbacken",
+                              "Källbacken",
+                            ]),
+                            "ORG",
+                          ],
+                          ["i", "O"],
+                          [pick(CITIES), "LOC"],
+                          [".", "O"],
+                        ]
+                      : [
+                          ["Leveransadress:", "O"],
+                          [
+                            chance(0.5)
+                              ? `${1 + Math.floor(rand() * 199)} ${pick(STREET_STEMS)}${pick(STREET_SUFFIX)}`
+                              : adr,
+                            "ADR",
+                          ],
+                          [",", "O"],
+                          [pick(COUNTRIES_AND_REGIONS), "LOC"],
+                          ["• Region:", "O"],
+                          [pick(REGIONS), "LOC"],
+                          ["• Kontakt:", "O"],
+                          [fullMulti, "PER"],
+                        ]
+
+  const tokens = []
+  const tags = []
+  for (const [text, tag] of segments) {
+    if (tag === "O") {
+      for (const t of tokenizeFiller(text)) {
+        tokens.push(t)
+        tags.push("O")
+      }
+    } else {
+      text
+        .trim()
+        .split(/\s+/)
+        .forEach((w, idx) => {
+          tokens.push(w)
+          tags.push(`${idx === 0 ? "B" : "I"}-${tag}`)
+        })
+    }
+  }
+  applyLlmCasing(tokens, tags, false)
+  return { tokens, tags }
+}
+
+if (STRUCTURED_FORM_TRAIN_ROWS > 0 || STRUCTURED_FORM_VAL_ROWS > 0) {
+  appendLlmRows(trainPath, STRUCTURED_FORM_TRAIN_ROWS, buildStructuredFormExample, "form-train")
+  appendLlmRows(valPath, STRUCTURED_FORM_VAL_ROWS, buildStructuredFormExample, "form-val")
+}
+
 function fileDescription(path, rows) {
   const bytes = readFileSync(path)
   return { rows, sha256: createHash("sha256").update(bytes).digest("hex") }
@@ -3851,7 +5563,11 @@ const extraTrainRows =
   CASED_HOMOGRAPH_TRAIN_ROWS +
   CLEAN_PROSE_NEG_TRAIN_ROWS +
   MIXED_PRECISION_TRAIN_ROWS +
-  PARAGRAPH_TRAIN_ROWS
+  PARAGRAPH_TRAIN_ROWS +
+  LLM_CLEAN_TRAIN_ROWS +
+  LLM_SLOTTED_TRAIN_ROWS +
+  LLM_CONTRAST_TRAIN_ROWS +
+  STRUCTURED_FORM_TRAIN_ROWS
 const extraValRows =
   CLINICAL_CONTRAST_VAL_ROWS +
   HOMOGRAPH_CONTRAST_VAL_ROWS +
@@ -3859,7 +5575,11 @@ const extraValRows =
   CASED_HOMOGRAPH_VAL_ROWS +
   CLEAN_PROSE_NEG_VAL_ROWS +
   MIXED_PRECISION_VAL_ROWS +
-  PARAGRAPH_VAL_ROWS
+  PARAGRAPH_VAL_ROWS +
+  LLM_CLEAN_VAL_ROWS +
+  LLM_SLOTTED_VAL_ROWS +
+  LLM_CONTRAST_VAL_ROWS +
+  STRUCTURED_FORM_VAL_ROWS
 const v20Config =
   extraTrainRows > 0 || extraValRows > 0
     ? {
@@ -3876,7 +5596,10 @@ const v20Config =
         MIXED_PRECISION_TRAIN_ROWS > 0 ||
         MIXED_PRECISION_VAL_ROWS > 0 ||
         PARAGRAPH_TRAIN_ROWS > 0 ||
-        PARAGRAPH_VAL_ROWS > 0
+        PARAGRAPH_VAL_ROWS > 0 ||
+        STRUCTURED_FORM_TRAIN_ROWS > 0 ||
+        STRUCTURED_FORM_VAL_ROWS > 0 ||
+        totalLlmRows > 0
           ? {
               casedHomographTrainRows: CASED_HOMOGRAPH_TRAIN_ROWS,
               casedHomographValidationRows: CASED_HOMOGRAPH_VAL_ROWS,
@@ -3892,6 +5615,23 @@ const v20Config =
                 ? {
                     paragraphTrainRows: PARAGRAPH_TRAIN_ROWS,
                     paragraphValidationRows: PARAGRAPH_VAL_ROWS,
+                  }
+                : {}),
+              ...(STRUCTURED_FORM_TRAIN_ROWS > 0 || STRUCTURED_FORM_VAL_ROWS > 0
+                ? {
+                    structuredFormTrainRows: STRUCTURED_FORM_TRAIN_ROWS,
+                    structuredFormValidationRows: STRUCTURED_FORM_VAL_ROWS,
+                  }
+                : {}),
+              ...(totalLlmRows > 0
+                ? {
+                    llmProseSha256,
+                    llmCleanTrainRows: LLM_CLEAN_TRAIN_ROWS,
+                    llmCleanValidationRows: LLM_CLEAN_VAL_ROWS,
+                    llmSlottedTrainRows: LLM_SLOTTED_TRAIN_ROWS,
+                    llmSlottedValidationRows: LLM_SLOTTED_VAL_ROWS,
+                    llmContrastTrainRows: LLM_CONTRAST_TRAIN_ROWS,
+                    llmContrastValidationRows: LLM_CONTRAST_VAL_ROWS,
                   }
                 : {}),
             }
@@ -3964,7 +5704,10 @@ console.log(
     `${homographTrainDuplicates + homographValDuplicates} homograph / ` +
     `${registerTrainDuplicates + registerValDuplicates} register / ` +
     `${casedHomographTrainDuplicates + casedHomographValDuplicates} cased-homograph / ` +
-    `${cleanProseTrainDuplicates + cleanProseValDuplicates} clean-prose duplicates`,
+    `${cleanProseTrainDuplicates + cleanProseValDuplicates} clean-prose / ` +
+    `${mixedPrecisionTrainDuplicates + mixedPrecisionValDuplicates} mixed-precision / ` +
+    `${paragraphTrainDuplicates + paragraphValDuplicates} paragraph / ` +
+    `${llmCleanTrainDuplicates + llmCleanValDuplicates + llmSlottedTrainDuplicates + llmSlottedValDuplicates + llmContrastTrainDuplicates + llmContrastValDuplicates} llm duplicates`,
 )
 console.log(
   `Gazetteers: ${FIRST.length} first, ${LAST.length} last, ${CITIES.length} cities, ${ORGS.length} orgs, ${TEMPLATES.length} templates`,

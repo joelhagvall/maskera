@@ -45,13 +45,14 @@ function runNode(args, env = process.env) {
 }
 
 test("the checked-in benchmark contract and carriers are synchronized", async () => {
+  const contract = JSON.parse(await readFile(join(root, "docs/benchmark-release.json"), "utf8"))
   const result = await runNode(["scripts/check-benchmark-sync.mjs"])
   assert.equal(
     result.status,
     0,
     `status=${result.status} signal=${result.signal} timedOut=${result.timedOut}\n${result.stdout}\n${result.stderr}`,
   )
-  assert.match(result.stdout, /benchmark sync: v21 contract verified/)
+  assert.match(result.stdout, new RegExp(`benchmark sync: ${contract.release} contract verified`))
 })
 
 test("a changed canonical metric produces an explicit drift failure", async () => {

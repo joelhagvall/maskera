@@ -52,11 +52,11 @@ await redactWithNer(journalText, { recognizer, profile: "clinical" })
 
 ### Self-hosting the model
 
-Host the static model files from [`joelhagvall/maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner) under a versioned same-origin path (e.g. `/models/maskera-sv-ner-v21/`) to remove the Hugging Face runtime dependency:
+Host the static model files from [`joelhagvall/maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner) under a versioned same-origin path (e.g. `/models/maskera-sv-ner-v22/`) to remove the Hugging Face runtime dependency:
 
 ```ts
 createNerRecognizer({
-  model: "maskera-sv-ner-v21",
+  model: "maskera-sv-ner-v22",
   localModelPath: "/models/",
   allowLocalModels: true,
   allowRemoteModels: false,
@@ -85,7 +85,7 @@ In Node, `device` defaults to `"cpu"` (native ONNX; single-digit ms per sentence
 | --- | --- | --- |
 | `model` | `MASKERA_SV_NER_MODEL` | HF token-classification model id (developer-only) |
 | `revision` | `MASKERA_SV_NER_REVISION` | Pinned HF commit SHA for reproducibility; `"main"` tracks latest |
-| `dtype` | `"q4"` | `"q4"` (~43 MB, default), `"q8"` (~59 MB) or `"fp32"` (~233 MB) |
+| `dtype` | `"q4"` | `"q4"` (~43 MB, default), `"q8"` (~65 MB) or `"fp32"` (~254 MB) |
 | `device` | `"auto"` / `"cpu"` | `"auto"` in browser (WebGPU/WASM), `"cpu"` in Node |
 | `minScore` | `0.5` | Confidence threshold (raise e.g. to `0.7` for higher precision) |
 | `labelMap` | `defaultLabelMap` | Map raw BIO groups (`PER`, `LOC`, `ORG`, `ADR`) to placeholders or `null` |
@@ -97,18 +97,18 @@ For hardening, CSP headers, self-hosting caveats and custom `labelMap` compositi
 
 ## The model & benchmarks
 
-Default model: [`maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner) (MIT, 43 MB q4, `PER`/`LOC`/`ORG`/`ADR`), distilled from a 3-seed KB-BERT ensemble on 121,200 attested synthetic rows + 7,980 validation rows.
+Default model: [`maskera-sv-ner`](https://huggingface.co/joelhagvall/maskera-sv-ner) (MIT, 43 MB q4, `PER`/`LOC`/`ORG`/`ADR`), 8-layer rank-256 student with 24k vocab distilled from a 3-seed KB-BERT ensemble on 176,600 attested synthetic rows + 12,440 validation rows.
 
-**Published v21 measurements (2026-11-27, q4):**
+**Published v22 measurements (2026-11-28, q4):**
 
-- **Independent Swedish text (23,980 texts, 0 rows in training):** 94.6% names (11,885/12,570), 91.1% lowercase names, 97.3% places, 95.3% street addresses + postcodes, 12.3% over-masking on entity-free SUC + SIC2 sentences.
-- **Curated set:** 98.8% span F1, 0/205 leaks.
-- **Revised synthetic ADR:** 100.0% label-agnostic span F1, 0/57 leaks (35/35 ADDRESS precision, 98.2% labeled F1).
-- **LinkedIn-style set:** 98.1% span F1, 0/53 leaks.
-- **Full Swedish hybrid pipeline (258 domain texts, 952 PII):** 937/952 (98.4%) full hits (7 partial leaks, 8 clear-text misses).
-- **vs KBLab lowermix fp32 (496 MB, 121 texts, 211 PER/LOC/ORG):** Maskera masked 210/211 with original casing and 211/211 lowercased; KBLab masked 205/211 and 187/211 (typed F1: 89.6% vs 89.4% original, 88.4% vs 83.2% lowercased).
+- **Independent Swedish text (23,980 texts, 0 rows in training):** 95.3% names (11,974/12,570), 91.1% lowercase names, 96.2% places, 95.7% street addresses + postcodes, 5.6% over-masking on entity-free SUC + SIC2 sentences (-54.5% vs v21).
+- **Curated set:** 99.3% span F1, 1/205 leaks.
+- **Revised synthetic ADR:** 100.0% label-agnostic span F1, 0/57 leaks (35/35 ADDRESS precision, 100.0% labeled F1).
+- **LinkedIn-style set:** 95.3% span F1, 0/53 leaks.
+- **Full Swedish hybrid pipeline (258 domain texts, 952 PII):** 941/952 (98.8%) full hits (3 partial leaks, 8 clear-text misses).
+- **vs KBLab lowermix fp32 (496 MB, 121 texts, 211 PER/LOC/ORG):** Maskera masked 211/211 with original casing and 211/211 lowercased; KBLab masked 205/211 and 187/211 (typed F1: 91.6% vs 89.4% original, 89.9% vs 83.2% lowercased).
 
-The release-gate and KBLab v21 tests above are synthetic or author-coupled directional evidence, not an independent universal ranking. Historical v18 comparisons (99.8% curated span-F1, 94.7% independent real text, measured 2026-07-19) and reproduction commands live in [`docs/BENCHMARKS.md`](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md). Training-data attestation: [`docs/TRAINING_DATA_PROTECTION.md`](https://github.com/joelhagvall/maskera/blob/main/docs/TRAINING_DATA_PROTECTION.md).
+The release-gate and KBLab v22 tests above are synthetic or author-coupled directional evidence, not an independent universal ranking. Historical v18 comparisons (99.8% curated span-F1, 94.7% independent real text, measured 2026-07-19) and reproduction commands live in [`docs/BENCHMARKS.md`](https://github.com/joelhagvall/maskera/blob/main/docs/BENCHMARKS.md). Training-data attestation: [`docs/TRAINING_DATA_PROTECTION.md`](https://github.com/joelhagvall/maskera/blob/main/docs/TRAINING_DATA_PROTECTION.md).
 
 ## Limitations
 

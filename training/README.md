@@ -6,19 +6,19 @@ rule layer can't catch: **PER** (person), **LOC** (place), **ORG**
 phone, IBAN…) stays with `@maskera/core`'s deterministic detectors.
 
 > **Numbers note.** This file is the training *journal*: the tables below are
-> round-by-round history (v1 -> v21), measured with the Python harness
+> round-by-round history (v1 -> v22), measured with the Python harness
 > (overlap matching), kept for the lessons they carry. The canonical, dated
 > numbers for the **published** artifact live in
 > [`docs/BENCHMARKS.md`](../docs/BENCHMARKS.md), measured with the stricter
 > exact-span JS harness CI gates on. When the two disagree, BENCHMARKS.md wins.
-> Naming: the published Hub artifact is the **v21** privacy-clean round and is
-> byte-identical to the demo's `maskera-sv-ner-v21` folder. v1-v20 remain
+> Naming: the published Hub artifact is the **v22** privacy-clean round and is
+> byte-identical to the demo's `maskera-sv-ner-v22` folder. v1-v21 remain
 > historical journal entries.
 
-> **Current end-product comparison.** On 2026-11-27 the complete v21 hybrid
-> fully removed 935/952 (98.2%) annotated values across 258 synthetic Swedish
+> **Current end-product comparison.** On 2026-11-28 the complete v22 hybrid
+> fully removed 939/952 (98.6%) annotated values across 258 synthetic Swedish
 > domain texts; LogosGuard 2.4.4 in Chrome, Free/`Balanced`, removed 606/952
-> (63.7%). Partial/clear-text leaks were 9/8 and 49/297. This is
+> (63.7%). Partial/clear-text leaks were 5/8 and 49/297. This is
 > author-coupled evidence without a precision claim; settings, per-document
 > outcomes and capture hashes live in [`docs/BENCHMARKS.md`](../docs/BENCHMARKS.md).
 
@@ -1512,8 +1512,47 @@ casing and 211/211 lowercased; KBLab masked 205/211 and 187/211. Typed F1 was
 89.6% vs 89.4% with original casing and 88.4% vs 83.2% lowercased
 (`docs/benchmark-kblab-v21.json`).
 
+**Release state (v21, superseded by v22):** published on the Hub at revision
+`5bd47f3031fea64eb1ae98f77ebfc67882f792fa`.
+
+### v22 8-layer rank-256 + expanded synthetic prose round (PUBLISHED 2026-11-28)
+
+Rebuilt from the pinned KB-BERT revision using only `training/generate_data.mjs`
+and an audited 11,135-template synthetic Swedish prose pool
+(`LLM_PROSE_POOL=data/llm_prose_pool_v22f.json`, SHA-256
+`4d49241efb2c0848d04c1c1b637257b541613924c800c27d0701da2db0a6a9b5`): 90,000 base
+train / 5,000 base val, 2,400/300 balanced replay, 5,600/560 hard negatives,
+4,000/400 clinical contrast, 2,400/240 homograph contrast, 4,000/400 register
+precision, 1,200/120 cased homograph, 8,000/800 clean prose negatives,
+6,000/600 mixed precision, 4,000/300 paragraphs, 11,000/800 structured forms,
+12,000/1,000 clean prose templates, 22,000/1,600 slotted prose templates, and
+4,000/320 contrast templates (176,600 train / 12,440 disjoint val rows, 0
+duplicates, 0.00% overlap, `LC_AUG=0.38`, `UC_AUG=0.07`). Three KB-BERT
+teachers (seeds 1337, 2024, 42; 2 epochs) were distilled into an 8-layer
+rank-256 factorised-FFN student with a 24k WordPiece vocabulary
+(`student-v22g-s42-onnx`, q4 43,252,027 bytes, q8 64,545,015 bytes, fp32
+253,930,335 bytes).
+
+| Gate | Result |
+| --- | --- |
+| synthetic gold | type F1 97.68%; type recall 98.31%; masked recall 99.58% |
+| rare surnames | 99.32% masked (292/294), 87.76% PER-typed, 2 leaks |
+| curated | 99.5% precision, 99.0% recall, 99.3% span F1, 99.3% labeled F1, 1/205 leaks |
+| revised synthetic ADR | 100.0% span precision/recall/F1, 0/57 leaks; all 35 addresses exact (35/35 ADDRESS precision), 100.0% labeled F1 |
+| LinkedIn-style | 94.4% precision, 96.2% recall, 95.3% span F1, 95.3% labeled F1, 0/53 leaks |
+
+On the 23,980-text independent Swedish benchmark (SUC 3.0, SIC2, MultiCoNER v2,
+ai4privacy; 0 rows in training), v22 lifted name coverage from 94.6% to 95.3%,
+held lowercase name coverage at 91.1%, lifted street address + postcode
+coverage from 95.3% to 95.7%, and cut over-masking on 10,800 entity-free
+sentences by 54.5% (12.3% to 5.6%, beating `swedish-pii` 7.0%). On the
+2026-11-28 KBLab lowermix comparison (121 texts, 211 PER/LOC/ORG entities,
+overlap matching), Maskera masked 211/211 with original casing and 211/211
+lowercased; KBLab masked 205/211 and 187/211. Typed F1 was 91.6% vs 89.4% with
+original casing and 89.9% vs 83.2% lowercased (`docs/benchmark-kblab-v22.json`).
+
 **Release state:** published on the Hub at revision
-`5bd47f3031fea64eb1ae98f77ebfc67882f792fa`; the npm source pin, demo hashes
+`908c11ee9837a21e254c73fcd33399e636367b4e`; the npm source pin, demo hashes
 and versioned demo folder all target the same artifact.
 
 ## Publish to Hugging Face (single hosted source)

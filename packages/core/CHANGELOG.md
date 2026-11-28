@@ -1,5 +1,11 @@
 # @maskera/core
 
+## 0.9.1
+
+### Patch Changes
+
+- Refresh the published README with `maskera-sv-ner` v22 benchmark figures (`908c11ee9837a21e254c73fcd33399e636367b4e`).
+
 ## 0.9.0
 
 ### Minor Changes
