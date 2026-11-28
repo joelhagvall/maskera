@@ -556,6 +556,12 @@ async function testClaudeCode(workRoot, lane) {
       true,
       `expected proxy span cache hits across multi-turn claude run, got ${JSON.stringify(proxyStatus.engine)}`,
     )
+    const maxClaudeRedactions = isNer ? 120 : 25
+    assert.equal(
+      proxyStatus.total_redactions <= maxClaudeRedactions,
+      true,
+      `claude [${lane}] over-masked English system/boilerplate: got ${proxyStatus.total_redactions} redactions (max ${maxClaudeRedactions})`,
+    )
 
     // Guard hook verification (rules lane is fast and covers hook protocol)
     let hookMs = 0
@@ -939,6 +945,12 @@ async function testCodex(workRoot, lane) {
       true,
       `expected proxy span cache hits across multi-turn codex run`,
     )
+    const maxCodexRedactions = isNer ? 100 : 20
+    assert.equal(
+      proxyStatus.total_redactions <= maxCodexRedactions,
+      true,
+      `codex [${lane}] over-masked English system/boilerplate: got ${proxyStatus.total_redactions} redactions (max ${maxCodexRedactions})`,
+    )
 
     return {
       ms: res.ms,
@@ -1260,6 +1272,12 @@ async function testOpenCode(workRoot, lane) {
       proxyStatus.engine.cacheHits > 0,
       true,
       `expected proxy span cache hits across multi-turn opencode run`,
+    )
+    const maxOpenCodeRedactions = isNer ? 200 : 60
+    assert.equal(
+      proxyStatus.total_redactions <= maxOpenCodeRedactions,
+      true,
+      `opencode [${lane}] over-masked English system/boilerplate: got ${proxyStatus.total_redactions} redactions (max ${maxOpenCodeRedactions})`,
     )
 
     return {
