@@ -13,6 +13,7 @@ pnpm -r test --sequence.shuffle
 # Run pa11y against a fresh local build whenever outgoing commits touch apps/demo.
 demo_changed=""
 claims_changed=""
+mcp_changed=""
 while read -r local_ref local_oid remote_ref remote_oid; do
   case "$local_oid" in
     0000000000000000000000000000000000000000) continue ;;
@@ -31,6 +32,9 @@ while read -r local_ref local_oid remote_ref remote_oid; do
   if git diff --name-only "$base" "$local_oid" | grep -qE '^(apps/demo/|packages/(core|ner)/)'; then
     claims_changed=1
   fi
+  if git diff --name-only "$base" "$local_oid" | grep -q '^packages/mcp/'; then
+    mcp_changed=1
+  fi
 done
 
 if [ -n "$demo_changed" ]; then
@@ -45,4 +49,9 @@ if [ -n "$claims_changed" ]; then
   echo "pre-push: site, rules or model wrapper changed; checking every masked example on the site against the model..."
   [ -n "$demo_changed" ] || pnpm --filter @maskera/core --filter maskera build
   pnpm run check:claims
+fi
+if [ -n "$mcp_changed" ]; then
+  echo "pre-push: packages/mcp changed; building and running @maskera/mcp E2E..."
+  pnpm --filter @maskera/mcp... build
+  pnpm run test:mcp:e2e
 fi
