@@ -416,7 +416,7 @@ export function renderInspectorHtml(info: {
       return '<li><span class="receipt-tag' + cls + '">[' + esc(c.status) + ']</span><span><strong>' + esc(c.name) + ':</strong> ' + esc(c.detail) + '</span></li>';
     }).join("");
     const proofHtml = r.sampleProof && !r.sampleProof.rawPiiLeaked
-      ? '<p class="body-label">Verifierat maskerat utdata (0 läckor, återställning klar):</p><pre class="preview">' + highlightTokens(r.sampleProof.redactedPreview) + '</pre>'
+      ? '<p class="body-label">Maskerat utdata:</p><pre class="preview">' + highlightTokens(r.sampleProof.redactedPreview) + '</pre>'
       : "";
     receiptRoot.innerHTML =
       '<section class="receipt-box"><div class="receipt-head"><h2>Setup-kvitto (' + (r.ok ? "OK" : "FEL") + ' · v' + esc(r.version) + ' · ' + esc(r.sampleProof?.modeUsed || r.mode) + ')</h2>' +

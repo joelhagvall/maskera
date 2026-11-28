@@ -1377,7 +1377,7 @@
         {
           "id": "valj-lage",
           "title": "Välj rätt läge",
-          "body": "Alla ingångar använder samma svenska regel- och AI-motor. Välj den som sitter närmast där texten skapas.",
+          "body": "Alla ingångar använder samma svenska regel- och AI-motor.",
           "table": {
             "headers": ["Läge", "Passar när", "Kommando / ingång"],
             "rows": [
@@ -1505,7 +1505,7 @@
         {
           "id": "policy-godkannande",
           "title": "Begränsade anslutningar och godkännandelägen",
-          "body": "Du kan begränsa vad en enskild agent får göra både via CLI-flaggor och via URL-parametrar på /mcp. Parametrar på en URL kan bara skärpa serverns grundpolicy, aldrig försvaga den.",
+          "body": "URL-parametrar på /mcp kan bara skärpa serverns grundpolicy, aldrig försvaga den.",
           "table": {
             "headers": ["Flagga / parameter", "Effekt", "Rekommenderas för"],
             "rows": [
@@ -1626,7 +1626,6 @@
         {
           "id": "verifiera",
           "title": "Testa med påhittade uppgifter",
-          "body": "Inspektören lagrar allt i lokalt RAM och visar originalvärden först om du klickar på knappen.",
           "codeLabel": "Terminal",
           "code": "# Kör automatisk diagnostik\nnpx -y @maskera/mcp doctor --root .\n\n# Öppna lokal live-inspektör och godkännandevy\nopen http://127.0.0.1:8787/_maskera"
         }
@@ -1698,7 +1697,6 @@
         {
           "id": "vanliga-fel",
           "title": "Vanliga fel och lösningar",
-          "body": "Alla säkerhetskritiska lägen i @maskera/mcp misslyckas stängt (fail-closed) så rå text aldrig smiter förbi tyst.",
           "table": {
             "headers": ["Symptom", "Orsak", "Åtgärd"],
             "rows": [
@@ -1730,7 +1728,7 @@
               [
                 "maskera_restore saknas eller ger fel",
                 "Servern körs med --no-raw-restore eller ?no_raw_restore=1.",
-                "Det är avsiktligt skydd. Använd maskera_write_file för att återställa direkt till disk, eller --approval-mode browser."
+                "Använd maskera_write_file för att återställa direkt till disk, eller --approval-mode browser."
               ]
             ]
           }

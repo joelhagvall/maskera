@@ -1377,7 +1377,7 @@
         {
           "id": "valj-lage",
           "title": "Choose the right mode",
-          "body": "Every entry point runs the same Swedish rules and local AI model. Pick the one closest to where text is created.",
+          "body": "Every entry point runs the same Swedish rules and local AI model.",
           "table": {
             "headers": ["Mode", "Best when", "Command / entry point"],
             "rows": [
@@ -1505,7 +1505,7 @@
         {
           "id": "policy-godkannande",
           "title": "Scoped policies and approval modes",
-          "body": "Restrict what each agent connection is allowed to do via CLI flags or /mcp URL query parameters. URL parameters can only tighten server defaults, never weaken them.",
+          "body": "URL query parameters on /mcp can only tighten server defaults, never weaken them.",
           "table": {
             "headers": ["Flag / query param", "Effect", "Recommended for"],
             "rows": [
@@ -1630,7 +1630,6 @@
         {
           "id": "verifiera",
           "title": "Test with made-up data",
-          "body": "The inspector keeps everything in local RAM and hides original values until you click reveal.",
           "codeLabel": "Terminal",
           "code": "# Run automated diagnostics\nnpx -y @maskera/mcp doctor --root .\n\n# Open local live inspector and approvals view\nopen http://127.0.0.1:8787/_maskera"
         }
@@ -1702,7 +1701,6 @@
         {
           "id": "vanliga-fel",
           "title": "Common errors and fixes",
-          "body": "Every security-critical mode in @maskera/mcp fails closed so raw text is never forwarded silently.",
           "table": {
             "headers": ["Symptom", "Cause", "Fix"],
             "rows": [
@@ -1734,7 +1732,7 @@
               [
                 "maskera_restore is missing or rejected",
                 "The server runs with --no-raw-restore or ?no_raw_restore=1.",
-                "This is intentional protection. Use maskera_write_file to restore directly to disk, or --approval-mode browser."
+                "Use maskera_write_file to restore directly to disk, or --approval-mode browser."
               ]
             ]
           }
