@@ -1,11 +1,11 @@
 {
   "schema": "maskera-mcp-audit-report/v1",
   "lane": "full",
-  "timestamp": "2026-11-28T09:58:23.474Z",
-  "durationMs": 72815,
-  "commitSha": "6f23af82d4e3baaf364b212f2cf862c07808ff8a",
+  "timestamp": "2026-11-28T10:57:08.629Z",
+  "durationMs": 98480,
+  "commitSha": "c173fc57b7a5d8502d0fe8a9c977a3da5fa933bf",
   "packageName": "@maskera/mcp",
-  "packageVersion": "0.4.5",
+  "packageVersion": "0.4.6",
   "model": {
     "id": "joelhagvall/maskera-sv-ner",
     "revision": "5bd47f3031fea64eb1ae98f77ebfc67882f792fa",
@@ -121,7 +121,7 @@
         "category": "reliability",
         "status": "PASS",
         "passed": true,
-        "detail": "coldStart=110.57ms, proxyP95=15.71ms, soakHeapDelta=0MB"
+        "detail": "coldStart=547.96ms, proxyP95=186.11ms, soakHeapDelta=2.46MB"
       }
     ]
   },
@@ -129,7 +129,7 @@
     {
       "suite": "protocol",
       "status": "PASS",
-      "durationMs": 181,
+      "durationMs": 219,
       "total": 3,
       "passed": 3,
       "failed": 0,
@@ -148,14 +148,14 @@
           "id": "stdio-stdout-purity-and-elicitation",
           "description": "stdio transport emits strictly valid newline-delimited JSON-RPC (0 stdout corruption) and completes bidirectional elicitation",
           "status": "PASS",
-          "ms": 131,
+          "ms": 175,
           "detail": "stdout strictly JSON-RPC + bidirectional native elicitation verified"
         },
         {
           "id": "streamable-http-conformance",
           "description": "Streamable HTTP /mcp honors POST/DELETE/405/202/404, policy tightening (never weakening), and batch arrays",
           "status": "PASS",
-          "ms": 40,
+          "ms": 38,
           "detail": "Streamable HTTP verbs, status codes, and monotonic policy tightening verified"
         }
       ]
@@ -163,7 +163,7 @@
     {
       "suite": "privacy",
       "status": "PASS",
-      "durationMs": 1626,
+      "durationMs": 2807,
       "total": 4,
       "passed": 4,
       "failed": 0,
@@ -180,28 +180,28 @@
           "id": "proxy-egress-all-endpoints",
           "description": "Zero raw/URL/Base64 canary leaks across Anthropic, OpenAI Chat, Responses, Completions, Embeddings, Batches (auto)",
           "status": "PASS",
-          "ms": 621,
+          "ms": 937,
           "detail": "7 outbound LLM calls + inspector + audit.jsonl scanned: 0 leaks"
         },
         {
           "id": "mcp-stdio-zero-leak",
           "description": "MCP stdio tools (read/search/redact/write/list/status) leak 0 canaries to stdout/stderr",
           "status": "PASS",
-          "ms": 298,
+          "ms": 614,
           "detail": "MCP stdio stdout/stderr clean; disk restore verified"
         },
         {
           "id": "guard-doctor-wrap-zero-leak",
           "description": "Guard stderr, doctor receipt, and wrap receipt contain 0 raw canaries",
           "status": "PASS",
-          "ms": 640,
+          "ms": 1186,
           "detail": "Guard, doctor receipt, and wrap receipt all 0 leaks"
         },
         {
           "id": "error-retry-cancel-no-leak",
           "description": "Upstream 500, timeout, and client cancellation never leak raw canaries to logs or error responses",
           "status": "PASS",
-          "ms": 66,
+          "ms": 68,
           "detail": "0 leaks across upstream 500 and client abort"
         }
       ]
@@ -209,7 +209,7 @@
     {
       "suite": "security",
       "status": "PASS",
-      "durationMs": 201,
+      "durationMs": 422,
       "total": 5,
       "passed": 5,
       "failed": 0,
@@ -226,35 +226,35 @@
           "id": "mode-downgrade-and-search-exfil",
           "description": "Blocks mode='rules' downgrade on file tools, prevents placeholder search exfil under --no-raw-restore, redacts before truncating",
           "status": "PASS",
-          "ms": 57,
+          "ms": 78,
           "detail": "Mode downgrade, search exfil, truncation leak, and session oracle all blocked"
         },
         {
           "id": "proxy-fail-closed",
           "description": "Proxy blocks Content-Type smuggling (415), non-object JSON (400), malformed path (400), URL-encoded path redacts, NER crash fails closed (502)",
           "status": "PASS",
-          "ms": 3,
+          "ms": 7,
           "detail": "All fail-closed proxy checks passed (0 fail-open incidents)"
         },
         {
           "id": "cross-session-isolation",
           "description": "Strict isolation between /mcp sessions, proxy vault, resolveSessionFor, and ApprovalBroker",
           "status": "PASS",
-          "ms": 6,
+          "ms": 10,
           "detail": "0 cross-session leaks across /mcp, proxy vault, approvals, and DELETE cleanup"
         },
         {
           "id": "ssrf-loopback-perms-limits",
           "description": "Refuses wildcard/non-loopback bind, does not follow 302 redirects with API keys, enforces 0o600 permissions and resource caps",
           "status": "PASS",
-          "ms": 64,
+          "ms": 129,
           "detail": "Loopback bind, no-redirect SSRF guard, 0600 perms, symlink defense, and size caps verified"
         },
         {
           "id": "mutation-testing-controls",
           "description": "Sabotaging 4 critical security controls in isolated dist/ copies is caught 4/4 times",
           "status": "PASS",
-          "ms": 67,
+          "ms": 193,
           "detail": "4/4 mutations killed: MUT-01-disable-proxy-redaction->PROXY_RAW_LEAK, MUT-02-fail-open-on-ner-error->FAIL_OPEN_ON_NER_ERROR, MUT-03-break-session-isolation->CROSS_SESSION_LEAK, MUT-04-allow-mode-downgrade->MODE_DOWNGRADE_ALLOWED"
         }
       ]
@@ -262,7 +262,7 @@
     {
       "suite": "e2e",
       "status": "PASS",
-      "durationMs": 2619,
+      "durationMs": 5346,
       "total": 1,
       "passed": 1,
       "failed": 0,
@@ -274,7 +274,7 @@
           "id": "built-cli-e2e-agent-test",
           "description": "Runs scripts/e2e-agent-test.mjs (7 end-to-end suites on built dist/cli.js)",
           "status": "PASS",
-          "ms": 2619,
+          "ms": 5346,
           "detail": "7 suites passed"
         }
       ]
@@ -282,7 +282,7 @@
     {
       "suite": "adversarial",
       "status": "PASS",
-      "durationMs": 3688,
+      "durationMs": 26615,
       "total": 8,
       "passed": 8,
       "failed": 0,
@@ -297,21 +297,21 @@
           "id": "unicode-obfuscation",
           "description": "Catches ZWSP, soft hyphen, word joiner, bidi override, fullwidth digits, NFD custom terms; documents Cyrillic homoglyph boundary",
           "status": "PASS",
-          "ms": 61,
+          "ms": 145,
           "detail": "All invisible/NFKC/NFD/mixed-script Cyrillic obfuscation cases caught with lossless round-trip"
         },
         {
           "id": "swedish-linguistic-edge-cases",
           "description": "Evaluates lowercase names, Swedish compounds, and structured formats (JSON/Markdown/XML/CSV/code)",
           "status": "PASS",
-          "ms": 52,
+          "ms": 829,
           "detail": "JSON, Markdown, XML, CSV structured formats all masked & restored cleanly"
         },
         {
           "id": "large-payload-and-bert-seam",
           "description": "Masks PII accurately across 120 KB documents and across the 512-token BERT chunking seam",
           "status": "PASS",
-          "ms": 3477,
+          "ms": 25311,
           "detail": "Masked and restored 96860 chars across BERT seam cleanly"
         },
         {
@@ -325,28 +325,28 @@
           "id": "prompt-injection-and-placeholder-collisions",
           "description": "Resists literal placeholder collisions, fabricated placeholders, modified tokens, and prompt-injected tool calls under --no-raw-restore",
           "status": "PASS",
-          "ms": 0,
+          "ms": 1,
           "detail": "Placeholder collision avoidance and fabricated/modified token handling verified"
         },
         {
           "id": "concurrent-sessions-zero-contamination",
           "description": "20 concurrent /mcp sessions + 20 parallel proxy sessions maintain 0 cross-session contamination",
           "status": "PASS",
-          "ms": 26,
+          "ms": 128,
           "detail": "40 concurrent proxy + /mcp sessions completed with 0 leaks and 0 cross-contamination"
         },
         {
           "id": "corrupted-model-fail-closed",
           "description": "Corrupted ONNX model file fails loudly in MCP and returns 502 (0 upstream bytes) in proxy",
           "status": "PASS",
-          "ms": 57,
+          "ms": 177,
           "detail": "Corrupted ONNX model failed closed in both MCP and proxy (0 upstream bytes)"
         },
         {
           "id": "property-based-fuzzing-200-trials",
           "description": "200 randomized property trials for StreamingRestorer, SessionVault collision-freedom, and nested redactLlmRequestBody",
           "status": "PASS",
-          "ms": 5,
+          "ms": 8,
           "detail": "200/200 property-based fuzzing trials passed"
         }
       ]
@@ -354,46 +354,46 @@
     {
       "suite": "package",
       "status": "PASS",
-      "durationMs": 3857,
+      "durationMs": 5820,
       "total": 2,
       "passed": 2,
       "failed": 0,
       "blocked": 0,
       "notTested": 0,
       "metrics": {
-        "packageVersion": "0.4.5",
+        "packageVersion": "0.4.6",
         "modelId": "joelhagvall/maskera-sv-ner",
         "modelRevision": "5bd47f3031fea64eb1ae98f77ebfc67882f792fa",
         "tarballs": {
           "@maskera/core": {
-            "bytes": 86529,
-            "sha256": "94fb8e02a3e95e1c01d423a28cf1cc0cb35c17a610050f10d277cdd27f269517"
+            "bytes": 94326,
+            "sha256": "12371cbe9f3fef3f5a068f367c43ee5841ebbb04e20585e004f0ada501f896f8"
           },
           "maskera": {
-            "bytes": 109163,
-            "sha256": "510d46023d3f22b01e7fa08aa7a31a2eb2f88d988e9f690d18bd913645a2b4b6"
+            "bytes": 127261,
+            "sha256": "20d35f93a0e8bd7238f32f715f2c0f1cdfb4d0b121283c393e4a47e528fbc7ec"
           },
           "@maskera/mcp": {
-            "bytes": 385516,
-            "sha256": "e7aa0c4e0092be2e823d153a66cce8fd9716fdb17b7b5a5c330aa5221ce05bd4"
+            "bytes": 385597,
+            "sha256": "1b1c8719b58c839592ea6658d841c7764d00e7e68666a6fe6f2a6a688ed49822"
           }
         },
         "tarballFileCount": 8,
-        "installMs": 1403
+        "installMs": 1997
       },
       "checks": [
         {
           "id": "pack-and-inspect-contents",
           "description": "Packs tarballs, verifies license/metadata, SHA-256 checksums, and 0 forbidden/dev/secret files",
           "status": "PASS",
-          "ms": 1998,
-          "detail": "Packed 8 files (385516 bytes), clean install 1403ms"
+          "ms": 3132,
+          "detail": "Packed 8 files (385597 bytes), clean install 1997ms"
         },
         {
           "id": "installed-binary-cli-smoke",
           "description": "Exercises all documented CLI commands on the freshly installed tarball binary",
           "status": "PASS",
-          "ms": 1728,
+          "ms": 2479,
           "detail": "All documented CLI subcommands passed on installed tarball binary"
         }
       ]
@@ -401,7 +401,7 @@
     {
       "suite": "offline",
       "status": "PASS",
-      "durationMs": 598,
+      "durationMs": 1276,
       "total": 3,
       "passed": 3,
       "failed": 0,
@@ -424,21 +424,21 @@
           "id": "offline-rules-mode",
           "description": "MCP stdio, guard, and doctor run 100% offline in rules mode with 0 outbound attempts",
           "status": "PASS",
-          "ms": 118,
+          "ms": 198,
           "detail": "0 outbound network attempts in rules mode"
         },
         {
           "id": "offline-hybrid-onnx-local-model",
           "description": "Hybrid ONNX NER (MCP stdio + guard + doctor) runs 100% offline with local model and 0 outbound attempts",
           "status": "PASS",
-          "ms": 380,
+          "ms": 910,
           "detail": "0 outbound network attempts in hybrid ONNX offline mode"
         },
         {
           "id": "offline-cold-start-fails-closed",
           "description": "Cold-start without cached model fails closed when internet is blocked and documents Hugging Face download boundary",
           "status": "PASS",
-          "ms": 99,
+          "ms": 158,
           "detail": "Cold-start failed closed (exit 2); blocked remote host(s): huggingface.co"
         }
       ]
@@ -446,7 +446,7 @@
     {
       "suite": "clients",
       "status": "PASS",
-      "durationMs": 59221,
+      "durationMs": 50822,
       "total": 5,
       "passed": 2,
       "failed": 0,
@@ -472,8 +472,8 @@
           "id": "real-cli-harnesses-installed-artifact",
           "description": "Real clients (claude, codex, opencode) over cleanly installed @maskera/mcp tarball (both)",
           "status": "PASS",
-          "ms": 12826,
-          "detail": "claude/rules:pass(6309ms,redactions=4), claude/auto:pass(1513ms,redactions=58), codex/rules:pass(693ms,redactions=3), codex/auto:pass(625ms,redactions=49), opencode/rules:pass(1635ms,redactions=28), opencode/auto:pass(1776ms,redactions=72)"
+          "ms": 21802,
+          "detail": "claude/rules:pass(8099ms,redactions=7), claude/auto:pass(3150ms,redactions=43), codex/rules:pass(589ms,redactions=3), codex/auto:pass(2221ms,redactions=44), opencode/rules:pass(3433ms,redactions=28), opencode/auto:pass(3997ms,redactions=72)"
         },
         {
           "id": "claude-desktop-gui",
@@ -493,7 +493,7 @@
           "id": "local-llm-ollama",
           "description": "Real local Ollama model inference through maskera-mcp proxy with egress inspection and response restoration",
           "status": "PASS",
-          "ms": 44608,
+          "ms": 25301,
           "detail": "Ollama gpt-oss:20b: HTTP 200, 0 raw canaries leaked, redacted=3"
         },
         {
@@ -508,7 +508,7 @@
     {
       "suite": "benchmark",
       "status": "PASS",
-      "durationMs": 815,
+      "durationMs": 5145,
       "total": 3,
       "passed": 3,
       "failed": 0,
@@ -638,19 +638,19 @@
             "f1": 1
           }
         },
-        "cliColdStartMs": 110.57,
-        "modelLoadMs": 93,
-        "inferenceP50Ms": 9.92,
-        "inferenceP95Ms": 14.52,
-        "inferenceP99Ms": 14.52,
-        "proxyP50Ms": 11.17,
-        "proxyP95Ms": 15.71,
-        "proxyP99Ms": 15.71,
-        "proxyOverheadP50Ms": 1.25,
-        "streaming10kMs": 2.37,
-        "concurrentThroughputRps": 2294.17,
+        "cliColdStartMs": 547.96,
+        "modelLoadMs": 205,
+        "inferenceP50Ms": 81.47,
+        "inferenceP95Ms": 167.75,
+        "inferenceP99Ms": 167.75,
+        "proxyP50Ms": 97.03,
+        "proxyP95Ms": 186.11,
+        "proxyP99Ms": 186.11,
+        "proxyOverheadP50Ms": 15.56,
+        "streaming10kMs": 2.64,
+        "concurrentThroughputRps": 501.71,
         "soakOps": 500,
-        "soakHeapGrowthMb": 0,
+        "soakHeapGrowthMb": 2.46,
         "soakVaultSessionsBounded": true
       },
       "checks": [
@@ -658,22 +658,22 @@
           "id": "cli-cold-start",
           "description": "Measures CLI cold start (--version and MCP handshake)",
           "status": "PASS",
-          "ms": 111,
-          "detail": "CLI cold start: 110.57ms"
+          "ms": 548,
+          "detail": "CLI cold start: 547.96ms"
         },
         {
           "id": "production-pipeline-unseen-eval",
           "description": "Evaluates precision, recall, F1, doc leakage, over-masking, and roundtrip restoration on 12 unseen docs through live MCP + Proxy (auto)",
           "status": "PASS",
-          "ms": 499,
-          "detail": "Recall=100.0% (structured=100.0%), P=94.5%, F1=97.2%, roundtrip=100%, infP50=9.92ms, proxyP50=11.17ms"
+          "ms": 3483,
+          "detail": "Recall=100.0% (structured=100.0%), P=94.5%, F1=97.2%, roundtrip=100%, infP50=81.47ms, proxyP50=97.03ms"
         },
         {
           "id": "concurrency-and-soak-500-ops",
           "description": "Measures StreamingRestorer throughput, 80 concurrent proxy requests, and 500-op soak heap & SessionVault eviction stability",
           "status": "PASS",
-          "ms": 204,
-          "detail": "10k SSE chunks=2.37ms, concurrent=2294.17 req/s, soak 500 ops heapDelta=0MB, vault bounded (25<=25)"
+          "ms": 1107,
+          "detail": "10k SSE chunks=2.64ms, concurrent=501.71 req/s, soak 500 ops heapDelta=2.46MB, vault bounded (25<=25)"
         }
       ]
     }

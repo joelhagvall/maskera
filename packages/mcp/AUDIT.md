@@ -8,8 +8,8 @@
 
 ## Latest audit run
 
-- **Run:** 2026-11-28 (`full` lane, `--release` gate: every gate must PASS), commit `6f23af82d4e3`
-- **Package:** `@maskera/mcp@0.4.5`
+- **Run:** 2026-11-28 (`full` lane, `--release` gate: every gate must PASS), commit `c173fc57b7a5`
+- **Package:** `@maskera/mcp@0.4.6`
 - **Model:** `joelhagvall/maskera-sv-ner` (v21, pinned revision `5bd47f3031fea64eb1ae98f77ebfc67882f792fa`)
 - **Test machine:** Apple M4 Pro (12 cores), 24 GiB RAM, `darwin/arm64`, Node `v24.22.1`
 - **Checks:** PASS 31, FAIL 0, BLOCKED 0, NOT TESTED 3
@@ -26,7 +26,7 @@
 | `offline-operation` | privacy-egress | **PASS** | Offline egress attempts blocked: 0 unexpected outbound connections |
 | `real-client-e2e` | integration | **PASS** | Real-client harnesses: 2 passed, 0 failed, 3 not tested; real CLI agents: PASS (claude, codex, opencode) |
 | `production-pipeline-quality` | probabilistic-ner-baseline | **PASS** | structuredRecall=100.0%, overallRecall=100.0%, roundtrip=100.0%, nonPiiRetention=95.0% |
-| `performance-and-soak` | reliability | **PASS** | coldStart=110.57ms, proxyP95=15.71ms, soakHeapDelta=0MB |
+| `performance-and-soak` | reliability | **PASS** | coldStart=547.96ms, proxyP95=186.11ms, soakHeapDelta=2.46MB |
 
 **Checks not tested in this run:**
 
@@ -34,13 +34,13 @@
 - `clients/cursor-ide-gui` (NOT_TESTED): Cursor.app installed, but IDE GUI session requires interactive sign-in; .cursor/mcp.json & beforeSubmitPrompt hook verified in unit/E2E tests
 - `clients/cloud-llm-live-opt-in` (NOT_TESTED): Opt-in only (zero paid API calls by default); run with `pnpm audit:clients -- --live --max-usd 0.25` to execute against live subscriptions
 
-**Real clients over the installed tarball:** 2.1.332 (Claude Code), codex-cli 0.172.0, opencode v2.4.2: claude/rules:pass(6309ms,redactions=4), claude/auto:pass(1513ms,redactions=58), codex/rules:pass(693ms,redactions=3), codex/auto:pass(625ms,redactions=49), opencode/rules:pass(1635ms,redactions=28), opencode/auto:pass(1776ms,redactions=72)
+**Real clients over the installed tarball:** 2.1.332 (Claude Code), codex-cli 0.172.0, opencode v2.4.2: claude/rules:pass(8099ms,redactions=7), claude/auto:pass(3150ms,redactions=43), codex/rules:pass(589ms,redactions=3), codex/auto:pass(2221ms,redactions=44), opencode/rules:pass(3433ms,redactions=28), opencode/auto:pass(3997ms,redactions=72)
 
 ### Production-pipeline quality (12 unseen documents, `auto` mode)
 
 Measured through the live MCP server and HTTP proxy. The standalone column is the v21 release contract (`docs/benchmark-release.json`, reported in `docs/BENCHMARKS.md`) on its own, larger corpora, so the two columns are not the same test set.
 
-| Metric | Pipeline (`@maskera/mcp@0.4.5`) | Standalone v21 |
+| Metric | Pipeline (`@maskera/mcp@0.4.6`) | Standalone v21 |
 | --- | ---: | ---: |
 | Structured PII recall | 100.0% | 98.4% (structured regression) |
 | Overall entity recall | 100.0% | 100.0% (curated) |
@@ -72,21 +72,21 @@ Measured through the live MCP server and HTTP proxy. The standalone column is th
 
 One run on the machine above; latencies move with machine load, so compare against the gate ceilings in RELEASE_GATES.md, not run to run.
 
-- **CLI cold start (`--version`):** 110.57 ms
-- **Local ONNX model load:** 93 ms
-- **ONNX inference (cache disabled):** p50 9.92 ms, p95 14.52 ms, p99 14.52 ms
-- **HTTP proxy round trip:** p50 11.17 ms, p95 15.71 ms, p99 15.71 ms (median proxy overhead 1.25 ms)
-- **StreamingRestorer:** 10,000 chunks in 2.37 ms
-- **Concurrent burst:** 2294.17 req/s
-- **Soak:** 500 operations, heap delta 0 MB, `SessionVault` bounded: yes
+- **CLI cold start (`--version`):** 547.96 ms
+- **Local ONNX model load:** 205 ms
+- **ONNX inference (cache disabled):** p50 81.47 ms, p95 167.75 ms, p99 167.75 ms
+- **HTTP proxy round trip:** p50 97.03 ms, p95 186.11 ms, p99 186.11 ms (median proxy overhead 15.56 ms)
+- **StreamingRestorer:** 10,000 chunks in 2.64 ms
+- **Concurrent burst:** 501.71 req/s
+- **Soak:** 500 operations, heap delta 2.46 MB, `SessionVault` bounded: yes
 
 ### Packed tarballs
 
 | Package | Bytes | SHA-256 |
 | --- | ---: | --- |
-| `@maskera/core` | 86529 | `94fb8e02a3e95e1c01d423a28cf1cc0cb35c17a610050f10d277cdd27f269517` |
-| `maskera` | 109163 | `510d46023d3f22b01e7fa08aa7a31a2eb2f88d988e9f690d18bd913645a2b4b6` |
-| `@maskera/mcp` | 385516 | `e7aa0c4e0092be2e823d153a66cce8fd9716fdb17b7b5a5c330aa5221ce05bd4` |
+| `@maskera/core` | 94326 | `12371cbe9f3fef3f5a068f367c43ee5841ebbb04e20585e004f0ada501f896f8` |
+| `maskera` | 127261 | `20d35f93a0e8bd7238f32f715f2c0f1cdfb4d0b121283c393e4a47e528fbc7ec` |
+| `@maskera/mcp` | 385597 | `1b1c8719b58c839592ea6658d841c7764d00e7e68666a6fe6f2a6a688ed49822` |
 
 <!-- audit-results:end -->
 

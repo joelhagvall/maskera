@@ -1,5 +1,11 @@
 # @maskera/core
 
+## 0.9.0
+
+### Minor Changes
+
+- 998d123: Add contextual `fodelsedatum` (`FODELSEDATUM`) and `fastighetsbeteckning` (`FASTIGHETSBETECKNING`) detectors, widen `kontonummer` to match bank names and short verbs between the label and account digits (for example `bankkonto är SEB ...`), and add optional `canonicalKey` / `canonicalValue` hooks on `redactFromDetections`.
+
 ## 0.8.6
 
 ### Patch Changes
