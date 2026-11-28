@@ -65,6 +65,8 @@
      inline chips. test/designSystem.test.ts rejects any other value. */
   --radius: 6px;
   --radius-token: 3px;
+  /* The light product windows look the same in both themes. */
+  --hero-window-shadow: 0 24px 60px rgb(0 0 0 / 0.1), 0 2px 8px rgb(0 0 0 / 0.05);
   --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -266,9 +268,7 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
   border: 1px solid #dcdcdc;
   border-radius: var(--radius);
   background: #fff;
-  box-shadow:
-    0 24px 60px rgb(0 0 0 / 0.1),
-    0 2px 8px rgb(0 0 0 / 0.05);
+  box-shadow: var(--hero-window-shadow);
 }
 .hero-window-bar {
   display: flex;
@@ -371,10 +371,14 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
    scene's height and the active one fades in on top of the others. The
    outgoing scene stays opaque underneath until the fade ends, so the stage
    never shows through half-faded windows. The timer's switches fade slowly;
-   a scene the visitor picks swaps quickly. */
+   a scene the visitor picks swaps quickly. The stage casts the one window
+   shadow: a shadow per scene would stack during the fade and darken the
+   halo, then snap back when the outgoing scene hides. */
 .hero-stage {
   --stage-fade: 0.2s;
   display: grid;
+  border-radius: var(--radius);
+  box-shadow: var(--hero-window-shadow);
   text-align: left;
 }
 .hero-stage[data-playing] {
@@ -398,6 +402,7 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
 }
 .hero-stage-scene > .hero-window {
   flex: 1;
+  box-shadow: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-stage-scene,

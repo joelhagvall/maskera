@@ -146,4 +146,21 @@ describe("design system guard", () => {
       [],
     )
   })
+
+  it("casts the hero window shadow once, from the stage, never from the crossfading scenes", () => {
+    // Two scene shadows stack while the scenes crossfade, so the halo under
+    // the window darkens and then snaps back when the outgoing scene hides.
+    const body = (selector: string) =>
+      rules(css)
+        .filter(([sel]) => sel.split(",").some((part) => part.trim() === selector))
+        .map(([, b]) => b)
+        .join("")
+    expect(body(".hero-stage")).toMatch(/box-shadow:\s*var\(--hero-window-shadow\)/)
+    expect(body(".hero-stage-scene > .hero-window")).toMatch(/box-shadow:\s*none/)
+    const sceneShadows = rules(css)
+      .filter(([selector]) => /\.hero-stage-scene/.test(selector))
+      .filter(([, b]) => /box-shadow:(?!\s*none)/.test(b))
+      .map(([selector]) => selector)
+    expect(sceneShadows, "put the shadow on .hero-stage, not on a scene").toEqual([])
+  })
 })
