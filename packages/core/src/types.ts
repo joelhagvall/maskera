@@ -17,6 +17,8 @@ export type PiiLabel =
   | "KORTNUMMER"
   | "KONTONUMMER"
   | "JOURNALNUMMER"
+  | "FODELSEDATUM"
+  | "FASTIGHETSBETECKNING"
   | "ADRESS"
   | "LAGENHETSNUMMER"
   | "REGNUMMER"
@@ -57,6 +59,17 @@ export interface RedactOptions {
    * Defaults to ``(label, i) => `[${label}_${i}]` ``.
    */
   placeholder?: (label: PiiLabel, index: number) => string
+  /**
+   * Optional grouping key for placeholder reuse. Detections with the same
+   * label and grouping key share one placeholder token. Defaults to exact
+   * `detection.value` so `restore(redact(x)) === x` stays byte-exact.
+   */
+  canonicalKey?: (detection: Detection) => string
+  /**
+   * Optional display value stored in `map[token]` when a new token is created.
+   * Defaults to `detection.value`.
+   */
+  canonicalValue?: (detection: Detection) => string
 }
 
 export interface RedactResult {

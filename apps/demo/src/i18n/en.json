@@ -393,10 +393,12 @@
     "ADRESS": "Address",
     "POSTNUMMER": "Postcode",
     "LAGENHETSNUMMER": "Apartment no.",
+    "FASTIGHETSBETECKNING": "Property designation",
     "ORGANISATION": "Organisation",
     "ORGANISATIONSNUMMER": "Organisation no.",
     "PERSONNUMMER": "Swedish personal identity no.",
     "SAMORDNINGSNUMMER": "Coordination no.",
+    "FODELSEDATUM": "Date of birth",
     "EPOST": "Email",
     "TELEFON": "Phone",
     "IBAN": "IBAN",
@@ -519,6 +521,14 @@
           {
             "label": "JOURNALNUMMER",
             "name": "Context-labelled medical record numbers"
+          },
+          {
+            "label": "FODELSEDATUM",
+            "name": "Context-labelled dates of birth"
+          },
+          {
+            "label": "FASTIGHETSBETECKNING",
+            "name": "Context-labelled property designations"
           },
           {
             "label": "IP_ADRESS",

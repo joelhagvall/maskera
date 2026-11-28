@@ -92,7 +92,7 @@ const TEST_BANKGIRO = new Set(["9912346", "09912346"]) // Bankgirot test value +
 // explicitly that its bankgiro and account numbers are non-authentic test data.
 // https://www.bankgirot.se/globalassets/dokument/exempelfiler/bankgiro-link/bankgirolink_leverantorsbetalning_lb_exempelfil_sv.txt
 const ACCOUNT_PATTERN =
-  /\b(?:bankkontonummer|bankkonto|kontonummer|kontonr|utbetalningskonto|konto)(?:\s+nr\.?)?\s*[:#-]?\s*((?:\d(?:[ \t]|[-.,/][ \t]?)?){6,19}\d)\b/giu
+  /\b(?:bankkontonummer|bankkonto|kontonummer|kontonr|utbetalningskonto|konto)(?:\s+nr\.?)?(?:\s+(?:är|hos|på|i)){0,2}(?:(?:\s*[:#-]\s*|\s+)\(?(?:SEB|Swedbank|Handelsbanken|Nordea|Länsförsäkringar(?:\s+Bank)?|Skandiabanken|Skandia|Danske\s+Bank|SBAB|ICA\s+Banken|Avanza|Nordnet|Sparbanken)\)?)?(?:\s*[:#-]\s*|\s+)((?:\d(?:[ \t]|[-.,/][ \t]?)?){6,19}\d)\b/giu
 const TEST_BANK_ACCOUNTS = new Set(["3300003232323232"])
 const TEST_PLUSGIRO = new Set(["9201005"]) // Nordea Total IN test file
 const TEST_CARDS = new Set(["4242424242424242"]) // Stripe test card
@@ -339,6 +339,7 @@ for (const file of repoFiles) {
   }
 
   for (const match of accountMatches) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(match[1])) continue
     const digits = match[1].replace(/\D/g, "")
     if (!TEST_BANK_ACCOUNTS.has(digits)) {
       report(file, text, match.index + match[0].indexOf(match[1]), "bank account", match[1])

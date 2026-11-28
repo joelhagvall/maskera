@@ -4,7 +4,7 @@
   "status": "published",
   "release": "v21",
   "publishedAt": "2026-11-27",
-  "lastMeasuredAt": "2026-11-27",
+  "lastMeasuredAt": "2026-11-28",
   "scope": "Synthetic or author-coupled release gates, not an independent universal quality estimate.",
   "packages": {
     "maskera": "0.12.0",
@@ -29,7 +29,7 @@
   },
   "evaluation": {
     "command": "pnpm eval:release",
-    "suiteSha256": "a7e6d87910ff51413a95a3a79cde416c4a8397de7f9600956a5b914f9a0c467b",
+    "suiteSha256": "9a2f407c63dc7421ed8a5f08f3c1f77d27696283b566013fa6c58ba0192a040e",
     "files": [
       "apps/demo/scripts/evaluate-candidate-gates.mjs",
       "apps/demo/scripts/fetch-model.mjs",
@@ -164,8 +164,8 @@
     },
     "manualStep": "Redact both exported text chunks with LogosGuard 2.4.4 in Chrome, Free plan, Balanced accuracy, and save the two returned files under tmp before scoring.",
     "resultFile": "docs/benchmark-logosguard-2.4.4.json",
-    "resultSha256": "1a575ca723b5021ae25ef7422b41ee624d54010599ab44d302dc1791e2952498",
-    "suiteSha256": "94916f5f6c684aa499a6323220eed1905d0f8a911e028b4c28c0ddf8bd3627ff",
+    "resultSha256": "f5bd71689e693ae93c3db3d9d4e840ae2356251be69c5d280d1ef533642f4e56",
+    "suiteSha256": "4679058d7e588448bf8925dd3568bb5203dc576cd7f3a01d1e05bca2a03a0313",
     "files": [
       "apps/demo/scripts/fetch-model.mjs",
       "apps/demo/src/model-meta.json",
@@ -225,7 +225,7 @@
         "partialLeaks": 9,
         "misses": 8,
         "fullHitRatePct": "98.2",
-        "redactions": 1346
+        "redactions": 1349
       },
       "logosguard": {
         "version": "2.4.4",
@@ -253,8 +253,8 @@
       "score": "pnpm eval:independent:score"
     },
     "resultFile": "docs/benchmark-independent-v21.json",
-    "resultSha256": "e9bcacabd5b6616c0cda42e96ed6bda804e1b2c399d8919bde95228709866483",
-    "suiteSha256": "861aa04420d642879f1c722eca7dfe0fb35933ee8ee820504e979b03fc84d39b",
+    "resultSha256": "0247669c2be8ea2add9bb691fcb4d6e6facc1de4c475d8ae1b32d9c972ebb8ee",
+    "suiteSha256": "1cc6d67d8a0b125721f85ed32f750ed15a6f8bcf455501276e3aed1f6042db71",
     "files": [
       "bench/independent/build_corpora.py",
       "bench/independent/render-markdown.mjs",
@@ -368,15 +368,15 @@
       "partialLeaks": 7,
       "misses": 8,
       "hitRatePct": "98.4",
-      "redactions": 1346,
-      "classifiedJunk": 118
+      "redactions": 1349,
+      "classifiedJunk": 112
     },
     "clinicalCareSubset": {
       "entities": 165,
       "generalHits": 165,
       "clinicalHits": 165,
-      "generalClassifiedJunk": 34,
-      "clinicalClassifiedJunk": 25
+      "generalClassifiedJunk": 33,
+      "clinicalClassifiedJunk": 24
     }
   },
   "historical": {

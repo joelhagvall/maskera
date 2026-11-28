@@ -14,6 +14,8 @@ function defaultPlaceholder(label: PiiLabel, index: number): string {
 const SAME_SPAN_PRIORITY: Partial<Record<PiiLabel, number>> = {
   JOURNALNUMMER: -10,
   KONTONUMMER: -10,
+  FODELSEDATUM: -10,
+  FASTIGHETSBETECKNING: -10,
   TELEFON: 0,
   PERSONNUMMER: 10,
   SAMORDNINGSNUMMER: 11,
@@ -203,10 +205,12 @@ export function runDetectors(input: string, detectors: Detector[] = defaultDetec
 export function redactFromDetections(
   input: string,
   detections: Detection[],
-  options: Pick<RedactOptions, "placeholder"> = {},
+  options: Pick<RedactOptions, "placeholder" | "canonicalKey" | "canonicalValue"> = {},
 ): RedactResult {
   const placeholder = options.placeholder ?? defaultPlaceholder
   const ownPlaceholder = options.placeholder === undefined
+  const canonicalKey = options.canonicalKey
+  const canonicalValue = options.canonicalValue
 
   // Spans arrive from callers too (`redactWithNer`, anything model-shaped), and
   // a malformed one does not fail loudly on its own: `resolveOverlaps` sorts a
@@ -276,7 +280,7 @@ export function redactFromDetections(
   const occursInInput = createInputProbe(input, placeholder)
 
   for (const d of resolved) {
-    const key = tokenKey(d.label, d.value)
+    const key = tokenKey(d.label, canonicalKey ? canonicalKey(d) : d.value)
     let token = tokenByKey.get(key)
     if (!token) {
       // Never hand out a token that already occurs literally in the input
@@ -295,7 +299,7 @@ export function redactFromDetections(
         shortestToken.set(d.label, shortest)
         if (token.length > 0 && !occursInInput(d.label, token) && !(token in map)) break
         // Giving up after a fixed number of tries made a crafted input a denial
-        // of service: seeding "[EPOST_1]".."[EPOST_100]" was enough to make
+        // of service: seeding "[EPOST_1]".."[EPOST_N]" was enough to make
         // every later redact() throw. An input can only hold
         // input.length / token.length distinct colliding tokens OF ONE LENGTH,
         // but the colliding tokens in the input need not share the length of
@@ -318,7 +322,7 @@ export function redactFromDetections(
       }
       counters.set(d.label, next)
       tokenByKey.set(key, token)
-      map[token] = d.value
+      map[token] = canonicalValue ? canonicalValue(d) : d.value
     }
     redactions.push({ ...d, replacement: token })
   }

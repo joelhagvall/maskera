@@ -100,3 +100,79 @@ export function isOrganisationsnummer(value: string): boolean {
   if (Number(core[2]) < 2) return false
   return luhnValid(core)
 }
+
+const SWEDISH_MONTHS: Readonly<Record<string, number>> = {
+  januari: 1,
+  jan: 1,
+  februari: 2,
+  feb: 2,
+  mars: 3,
+  mar: 3,
+  april: 4,
+  apr: 4,
+  maj: 5,
+  juni: 6,
+  jun: 6,
+  juli: 7,
+  jul: 7,
+  augusti: 8,
+  aug: 8,
+  september: 9,
+  sep: 9,
+  sept: 9,
+  oktober: 10,
+  okt: 10,
+  november: 11,
+  nov: 11,
+  december: 12,
+  dec: 12,
+}
+
+function isValidCalendarDate(
+  year: number,
+  month: number,
+  day: number,
+  requireCentury: boolean,
+): boolean {
+  if (requireCentury && (year < 1900 || year > 2099)) return false
+  if (month < 1 || month > 12) return false
+  return day >= 1 && day <= daysInMonth(year, month)
+}
+
+/**
+ * Validate a calendar birth date in ISO (`YYYY-MM-DD`), compact (`YYYYMMDD` /
+ * `YYMMDD`), day-first numeric (`DD/MM YYYY`, `DD.MM.YYYY`) or Swedish written
+ * (`12 mars 1974`) form.
+ */
+export function isBirthDate(value: string): boolean {
+  const trimmed = value.trim()
+
+  const iso = /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/.exec(trimmed)
+  if (iso) {
+    return isValidCalendarDate(Number(iso[1]), Number(iso[2]), Number(iso[3]), true)
+  }
+
+  const compact8 = /^(\d{4})(\d{2})(\d{2})$/.exec(trimmed)
+  if (compact8) {
+    return isValidCalendarDate(Number(compact8[1]), Number(compact8[2]), Number(compact8[3]), true)
+  }
+
+  const compact6 = /^(\d{2})(\d{2})(\d{2})$/.exec(trimmed)
+  if (compact6) {
+    return isValidCalendarDate(Number(compact6[1]), Number(compact6[2]), Number(compact6[3]), false)
+  }
+
+  const dmy = /^(\d{1,2})[/. -](\d{1,2})(?:[/. -]|,\s*)(\d{4})$/.exec(trimmed)
+  if (dmy) {
+    return isValidCalendarDate(Number(dmy[3]), Number(dmy[2]), Number(dmy[1]), true)
+  }
+
+  const written = /^(\d{1,2})\s+([a-zåäö]+)\.?\s+(\d{4})$/i.exec(trimmed)
+  if (written) {
+    const month = SWEDISH_MONTHS[(written[2] as string).toLowerCase()]
+    if (!month) return false
+    return isValidCalendarDate(Number(written[3]), month, Number(written[1]), true)
+  }
+
+  return false
+}

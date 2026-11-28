@@ -280,6 +280,122 @@ describe("redactWithNer", () => {
     expect(restore(text)).toBe(input)
   })
 
+  it("drops sentence-initial possessive Hans when no person named Hans exists in the document", async () => {
+    const input = "Klienten Kalle Testsson bor här. Hans bror bor i Umeå."
+    const recognizer = fakeRecognizer((t) => [
+      {
+        start: t.indexOf("Kalle Testsson"),
+        end: t.indexOf("Kalle Testsson") + "Kalle Testsson".length,
+        value: "Kalle Testsson",
+        label: "NAMN",
+      },
+      { start: t.indexOf("Hans"), end: t.indexOf("Hans") + 4, value: "Hans", label: "NAMN" },
+    ])
+    const { text } = await redactWithNer(input, { recognizer, detectors: [] })
+    expect(text).toBe("Klienten [NAMN_1] bor här. Hans bror bor i Umeå.")
+  })
+
+  it("keeps sentence-initial Hans masked when a person named Hans appears in the document", async () => {
+    const input = "Vi pratade med Hans Testsson igår. Hans bror ringer idag."
+    const recognizer = fakeRecognizer((t) => {
+      const fullStart = t.indexOf("Hans Testsson")
+      const secondStart = t.lastIndexOf("Hans")
+      return [
+        {
+          start: fullStart,
+          end: fullStart + "Hans Testsson".length,
+          value: "Hans Testsson",
+          label: "NAMN",
+        },
+        { start: secondStart, end: secondStart + 4, value: "Hans", label: "NAMN" },
+      ]
+    })
+    const { text } = await redactWithNer(input, { recognizer, detectors: [] })
+    expect(text).toBe("Vi pratade med [NAMN_1] igår. [NAMN_1] bror ringer idag.")
+  })
+
+  it("widens unlabeled ADR spans to include a Swedish cadastral :unit suffix", async () => {
+    const input = "Tvisten gäller Provbyn Tallen 4:17 och mötet kl 14:30:00."
+    const recognizer = fakeRecognizer((t) => {
+      const start = t.indexOf("Provbyn Tallen 4")
+      return [
+        {
+          start,
+          end: start + "Provbyn Tallen 4".length,
+          value: "Provbyn Tallen 4",
+          label: "ADRESS",
+        },
+      ]
+    })
+    const { text, redactions } = await redactWithNer(input, { recognizer, detectors: [] })
+    expect(text).toBe("Tvisten gäller [ADRESS_1] och mötet kl 14:30:00.")
+    expect(redactions).toEqual([
+      expect.objectContaining({ label: "ADRESS", value: "Provbyn Tallen 4:17" }),
+    ])
+  })
+
+  it("propagates lowercase first+initial aliases and groups unambiguous coreferences under one ID", async () => {
+    const input =
+      "Klienten Kalle Testsson (kalle t.) och Anna-Lena Prov-Berg. Kalle och Annas bankkonto. Kalles och Kallés ombud. ANNA-LENA PROV-BERG ringde Kalle T. och Jonas."
+    const recognizer = fakeRecognizer((t) => {
+      const hit = (needle: string, from = 0): Detection => {
+        const start = t.indexOf(needle, from)
+        return { start, end: start + needle.length, value: needle, label: "NAMN" }
+      }
+      const kalleSingle = t.indexOf("Kalle och")
+      return [
+        hit("Kalle Testsson"),
+        hit("Anna-Lena Prov-Berg"),
+        { start: kalleSingle, end: kalleSingle + 5, value: "Kalle", label: "NAMN" },
+        hit("Annas"),
+        hit("Kalles"),
+        hit("Kallés"),
+        hit("ANNA-LENA PROV-BERG"),
+        hit("Kalle T"),
+        hit("Jonas"),
+      ]
+    })
+    const { text, map, restore } = await redactWithNer(input, { recognizer, detectors: [] })
+    expect(text).toBe(
+      "Klienten [NAMN_1] ([NAMN_1].) och [NAMN_2]. [NAMN_1] och [NAMN_2]s bankkonto. [NAMN_1]s och [NAMN_1]s ombud. [NAMN_2] ringde [NAMN_1]. och [NAMN_3].",
+    )
+    expect(map).toEqual({
+      "[NAMN_1]": "Kalle Testsson",
+      "[NAMN_2]": "Anna-Lena Prov-Berg",
+      "[NAMN_3]": "Jonas",
+    })
+    expect(restore("Kontakta [NAMN_1]s ombud och [NAMN_2].")).toBe(
+      "Kontakta Kalle Testssons ombud och Anna-Lena Prov-Berg.",
+    )
+  })
+
+  it("does not merge an ambiguous short name when two people share that first name", async () => {
+    const input = "Anna Testsson och Anna Provberg träffades. Anna ringde senare."
+    const recognizer = fakeRecognizer((t) => {
+      const first = t.indexOf("Anna Testsson")
+      const second = t.indexOf("Anna Provberg")
+      const third = t.lastIndexOf("Anna")
+      return [
+        {
+          start: first,
+          end: first + "Anna Testsson".length,
+          value: "Anna Testsson",
+          label: "NAMN",
+        },
+        {
+          start: second,
+          end: second + "Anna Provberg".length,
+          value: "Anna Provberg",
+          label: "NAMN",
+        },
+        { start: third, end: third + 4, value: "Anna", label: "NAMN" },
+      ]
+    })
+    const { text, map } = await redactWithNer(input, { recognizer, detectors: [] })
+    expect(text).toBe("[NAMN_1] och [NAMN_2] träffades. [NAMN_3] ringde senare.")
+    expect(map["[NAMN_3]"]).toBe("Anna")
+  })
+
   it("drops model fragments that overlap a structured rule (IBAN not shredded)", async () => {
     const input = "Konto IBAN SE4280000890119146168423 men ring Lars."
     // The model wrongly tags digit chunks of the IBAN as addresses, and a name.

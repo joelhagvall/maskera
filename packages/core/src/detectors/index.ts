@@ -1,5 +1,6 @@
 import type { Detection, Detector, PiiLabel } from "../types"
 import {
+  isBirthDate,
   isOrganisationsnummer,
   isPersonnummerShape,
   isSamordningsnummerShape,
@@ -58,8 +59,15 @@ export function regexDetector(
       scanner.lastIndex = 0
       for (const m of input.matchAll(scanner)) {
         if (m.index === undefined) continue
-        // If the pattern uses a capture group for the actual value, prefer it.
-        const group = m[1] !== undefined ? 1 : 0
+        // If the pattern uses capture groups for the actual value, prefer the
+        // first matched capture group (supports alternation branches).
+        let group = 0
+        for (let i = 1; i < m.length; i++) {
+          if (m[i] !== undefined) {
+            group = i
+            break
+          }
+        }
         const value = m[group] as string
         if (value.length === 0) continue
         const span = hasIndices ? (m as MatchWithIndices).indices?.[group] : undefined
@@ -394,11 +402,14 @@ export const iban = regexDetector("IBAN", /\bSE\d{2}(?:\s?\d){20}\b/gi)
  */
 // A clearing number may be written apart from the account by a comma, as in
 // Swedbank's "8327-9, 123 456 789-0". The comma must be followed by a space,
-// so a decimal amount ("12 345,50") is never read as one account.
+// so a decimal amount ("12 345,50") is never read as one account. Short
+// Swedish verbs/prepositions ("är", "hos") and a bank name ("SEB", "Nordea")
+// may sit between the label and the digits ("bankkonto är SEB 3300-0032 3232 3232").
 export const kontonummer = regexDetector(
   "KONTONUMMER",
-  /(?:^|[^\p{L}\p{N}])(?:bankkonto|kontonummer|utbetalningskonto|konto)(?:\s+nr\.?)?\s*[:#-]?\s*(\d{4}(?:\s?-\s?\d)?,\s+(?:\d[ -]?){5,14}\d|(?:\d[ -]?){6,19}\d)\b/giu,
+  /(?:^|[^\p{L}\p{N}])(?:bankkontonummer|bankkonto|kontonummer|kontonr|utbetalningskonto|konto)(?:\s+nr\.?)?(?:\s+(?:är|hos|på|i)){0,2}(?:(?:\s*[:#-]\s*|\s+)\(?(?:SEB|Swedbank|Handelsbanken|Nordea|Länsförsäkringar(?:\s+Bank)?|Skandiabanken|Skandia|Danske\s+Bank|SBAB|ICA\s+Banken|Avanza|Nordnet|Sparbanken)\)?)?(?:\s*[:#-]\s*|\s+)(\d{4}(?:\s?-\s?\d)?,\s+(?:\d[ -]?){5,14}\d|(?:\d[ -]?){6,19}\d)\b/giu,
   (value) => {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
     const digits = value.replace(/\D/g, "")
     return digits.length >= 7 && digits.length <= 20
   },
@@ -412,6 +423,39 @@ export const kontonummer = regexDetector(
 export const journalnummer = regexDetector(
   "JOURNALNUMMER",
   /(?:^|[^\p{L}\p{N}])(?:journalnummer|journalnr|journal-id|journalid)\s*[:#-]?\s*((?:[\p{L}\p{N}]{2,12}[-/]){1,3}[\p{L}\p{N}]{2,12}|\d{5,20})\b/giu,
+)
+
+const BIRTH_DATE_FULL =
+  "(?:\\d{4}[-/.]\\d{1,2}[-/.]\\d{1,2}|\\d{1,2}[/.]\\d{1,2}(?:[/. -])\\d{4}|\\d{1,2}\\s+(?:januari|februari|mars|april|maj|juni|juli|augusti|september|oktober|november|december|jan\\.?|feb\\.?|mar\\.?|apr\\.?|jun\\.?|jul\\.?|aug\\.?|sept?\\.?|okt\\.?|nov\\.?|dec\\.?)\\s+\\d{4}|\\d{8}(?![-+\\s]?\\d{4}))"
+
+/**
+ * Context-labeled birth date: "föddes 1974-03-12", "födelsedatum: 12 mars 1974",
+ * "född 810206". Bare dates without a birth cue stay untouched so contract,
+ * invoice and legal dates are never over-masked, and bare years ("född 1974")
+ * stay untouched to avoid over-masking biographical prose.
+ */
+export const fodelsedatum = regexDetector(
+  "FODELSEDATUM",
+  new RegExp(
+    `(?:^|[^\\p{L}\\p{N}])(?:(?:födelsedatum|föddes|född)(?:\\s+(?:är|den))?\\s*[:#-]?\\s*(${BIRTH_DATE_FULL}|\\d{6}(?![-+\\s]?\\d{4}))|(?<=^|[\\s(,])f\\.\\s*(${BIRTH_DATE_FULL}))(?=$|[^\\p{L}\\p{N}])`,
+    "giu",
+  ),
+  isBirthDate,
+)
+
+/**
+ * Context-labeled Swedish cadastral property designation (fastighetsbeteckning):
+ * "Fastighetsbeteckning: Provbyn Tallen 4:17", "fastigheten Provstad Söder 12:3".
+ * Requires the explicit block:unit suffix (`4:17`) so ordinary references to
+ * "fastigheten" without a cadastral id stay untouched.
+ */
+export const fastighetsbeteckning = regexDetector(
+  "FASTIGHETSBETECKNING",
+  /(?:^|[^\p{L}\p{N}])(?:fastighetsbeteckning|fastigheten|fastighet)(?:\s+är)?\s*[:#-]?\s*([A-ZÅÄÖ][A-Za-zÅÄÖåäö-]+(?:\s+[A-ZÅÄÖ][A-Za-zÅÄÖåäö-]+){0,3}\s+\d{1,4}:\d{1,5})(?=$|[^\p{L}\p{N}:])/giu,
+  (value) => {
+    const words = value.replace(/\s+\d{1,4}:\d{1,5}$/, "").split(/\s+/)
+    return words.length >= 1 && words.every((w) => /^[A-ZÅÄÖ]/.test(w))
+  },
 )
 
 // --- Generic / international ----------------------------------------------
@@ -487,7 +531,12 @@ export const regnummer = regexDetector(
 export const heuristicDetectors: Detector[] = [adress, lagenhetsnummer, regnummer]
 
 /** Context-dependent formats that are safe only when their label is present. */
-export const contextualDetectors: Detector[] = [kontonummer, journalnummer]
+export const contextualDetectors: Detector[] = [
+  kontonummer,
+  journalnummer,
+  fodelsedatum,
+  fastighetsbeteckning,
+]
 
 /**
  * Default detector set, ordered so that the most specific / highest-confidence

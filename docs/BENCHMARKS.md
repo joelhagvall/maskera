@@ -18,7 +18,7 @@ locks the selected resolved dependency closure that executes the evaluation.
 Type-only peers and unrelated build, lint, browser-audit and test-tool updates
 are outside that closure and cannot masquerade as changed accuracy evidence.
 The frozen suite checksum is
-`a7e6d87910ff51413a95a3a79cde416c4a8397de7f9600956a5b914f9a0c467b` and the
+`9a2f407c63dc7421ed8a5f08f3c1f77d27696283b566013fa6c58ba0192a040e` and the
 frozen evaluation-environment checksum is
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`.
 
@@ -66,7 +66,7 @@ product is judged on. Pooled cells count each independent sentence once.
 
 | System | ADDRESS hidden / F1 | CARD* hidden / F1 | EMAIL hidden / F1 | LOC hidden / F1 | PER hidden / F1 | PERSONNUMMER* hidden / F1 | PHONE* hidden / F1 | ZIPCODE hidden / F1 |
 |---|---|---|---|---|---|---|---|---|
-| Maskera v21 (q4) | 91.9% / 71.4% | 48.3% / 18.3% | 100.0% / 99.9% | 98.8% / 91.9% | 95.8% / 83.4% | 75.1% / 31.2% | 46.1% / 52.7% | 99.7% / 99.5% |
+| Maskera v21 (q4) | 91.9% / 71.5% | 48.3% / 18.3% | 100.0% / 99.9% | 98.8% / 92.0% | 95.8% / 83.4% | 75.1% / 31.2% | 46.1% / 52.7% | 99.7% / 99.5% |
 | Microsoft Presidio 2.2.366 + sv_core_news_lg 3.8.0 | 81.0% / 85.7% | 15.1% / 12.9% | 100.0% / 99.9% | 98.0% / 72.6% | 66.6% / 70.7% | 68.9% / 11.8% | 54.9% / 47.4% | 4.3% / 0.0% |
 | swedish-pii 1.2.0 | 85.2% / 78.3% | 26.9% / 42.3% | 100.0% / 99.7% | 99.2% / 93.6% | 65.3% / 56.2% | 75.0% / 49.5% | 26.2% / 38.3% | 67.4% / 80.5% |
 | OpenAI Privacy Filter (q4 ONNX) | 55.0% / 53.1% | 96.3% / 32.6% | 99.5% / 99.7% | 40.8% / 50.9% | 69.7% / 75.1% | 95.6% / 0.0% | 99.4% / 73.5% | 73.8% / 66.9% |
@@ -237,8 +237,8 @@ exported chunks manually in the pinned LogosGuard surface, then run
 `pnpm eval:logosguard:maskera` and `pnpm eval:logosguard:score`. Privacy-clean
 per-document outcomes, masked-text hashes and capture hashes are in
 [`benchmark-logosguard-2.4.4.json`](benchmark-logosguard-2.4.4.json).
-Product-comparison result checksum: `1a575ca723b5021ae25ef7422b41ee624d54010599ab44d302dc1791e2952498`.
-Product-comparison suite checksum: `94916f5f6c684aa499a6323220eed1905d0f8a911e028b4c28c0ddf8bd3627ff`.
+Product-comparison result checksum: `f5bd71689e693ae93c3db3d9d4e840ae2356251be69c5d280d1ef533642f4e56`.
+Product-comparison suite checksum: `4679058d7e588448bf8925dd3568bb5203dc576cd7f3a01d1e05bca2a03a0313`.
 Selected runtime-environment checksum:
 `e4be5f95e4df40c7352a23f9b9bbedf89b81a4dfeb8e2f5a46152536b1066f51`;
 corpus checksum:
@@ -355,11 +355,11 @@ synthetic or author-coupled checks, not as an independent universal quality clai
 
 | run | full hits | partial leaks | clear-text misses | hit rate | classified junk redactions |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| tracked privacy-safe baseline, general default | **937** | **7** | **8** | **98.4%** | 118 / 1,346 (8.8%) |
+| tracked privacy-safe baseline, general default | **937** | **7** | **8** | **98.4%** | 112 / 1,349 (8.3%) |
 
 Compared with v20 (943/3/6, 99.1%, 172 classified junk candidates), v21 clears
 the 98.0% full-hit floor (937/952, 98.4%) while cutting unannotated candidate
-junk redactions by 31.4% (172 to 118). Clinical precision is measured separately
+junk redactions by 34.9% (172 to 112). Clinical precision is measured separately
 because the `profile: "clinical"` policy is opt-in rather than part of this
 default-pipeline run.
 
@@ -384,13 +384,13 @@ snapshot.
 The same run was repeated with `profile: "clinical"` and compared on the three
 care categories (`sjukhus`, `vard-psyk`, `vard-remiss`): 165 annotated PII
 strings in total. Compared with v20 (44 general / 35 clinical classified junk),
-v21 reduces unannotated clinical junk further to 34 in the general profile and
-25 in the clinical profile while maintaining 165/165 masking recall.
+v21 reduces unannotated clinical junk further to 33 in the general profile and
+24 in the clinical profile while maintaining 165/165 masking recall.
 
 | profile | full hits | partial leaks | clear-text misses | classified junk redactions |
 | --- | ---: | ---: | ---: | ---: |
-| general default | **165** | **0** | **0** | 34 |
-| `clinical` | **165** | **0** | **0** | **25** (−26.5%) |
+| general default | **165** | **0** | **0** | 33 |
+| `clinical` | **165** | **0** | **0** | **24** (−27.3%) |
 
 This is a synthetic, author-coupled regression comparison, not a clinical
 safety claim. “Classified junk” is the report's coarse heuristic for

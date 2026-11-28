@@ -30,12 +30,18 @@ export const LABEL_META: Readonly<Record<string, LabelMeta>> = {
   ADRESS: { sv: copy.labels.ADRESS, color: "#b8420a", dark: "#db5c1f" }, // orange (kept apart from ORGANISATION's brown by lightness, measured) - 4.75 | 4.52
   POSTNUMMER: { sv: copy.labels.POSTNUMMER, color: "#3f6212", dark: "#7dc224" }, // lime - 6.09 | 7.14
   LAGENHETSNUMMER: { sv: copy.labels.LAGENHETSNUMMER, color: "#065f46", dark: "#1dc998" }, // emerald - 6.56 | 7.27
+  FASTIGHETSBETECKNING: {
+    sv: copy.labels.FASTIGHETSBETECKNING,
+    color: "#9a3412",
+    dark: "#fb923c",
+  }, // rust - 5.96 | 7.19
   // organisations
   ORGANISATION: { sv: copy.labels.ORGANISATION, color: "#713f12", dark: "#c66e20" }, // dark brown - 7.39 | 4.54
   ORGANISATIONSNUMMER: { sv: copy.labels.ORGANISATIONSNUMMER, color: "#854d0e", dark: "#c9781d" }, // yellow - 5.90 | 4.89
   // structured ids & contact
   PERSONNUMMER: { sv: copy.labels.PERSONNUMMER, color: "#b91c1c", dark: "#e55252" }, // red - 5.45 | 4.57
   SAMORDNINGSNUMMER: { sv: copy.labels.SAMORDNINGSNUMMER, color: "#be123c", dark: "#e64d72" }, // rose - 5.29 | 4.59
+  FODELSEDATUM: { sv: copy.labels.FODELSEDATUM, color: "#9f1239", dark: "#fb7185" }, // crimson - 6.40 | 6.15
   EPOST: { sv: copy.labels.EPOST, color: "#0369a1", dark: "#1d8cc9" }, // sky blue (kept apart from TELEFON's teal, measured) - 5.13 | 4.54
   TELEFON: { sv: copy.labels.TELEFON, color: "#115e59", dark: "#23c2b8" }, // teal - 6.49 | 7.09
   IBAN: { sv: copy.labels.IBAN, color: "#6d28d9", dark: "#9b6ce5" }, // violet - 6.04 | 4.53

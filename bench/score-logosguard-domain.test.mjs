@@ -38,7 +38,7 @@ test("the frozen comparison matches the measured v21 and LogosGuard totals", () 
     hits: 935,
     partials: 9,
     misses: 8,
-    redactions: 1346,
+    redactions: 1349,
     fullHitRatePct: "98.2",
     leakRatePct: "1.8",
   })

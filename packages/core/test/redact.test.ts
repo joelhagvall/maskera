@@ -140,6 +140,23 @@ describe("redact", () => {
     expect(Object.keys(map)).toHaveLength(1)
   })
 
+  it("supports optional canonicalKey and canonicalValue grouping in redactFromDetections", () => {
+    const input = "Kalle träffade Kalle Testsson."
+    const { text, map } = redactFromDetections(
+      input,
+      [
+        { start: 0, end: 5, value: "Kalle", label: "NAMN" },
+        { start: 15, end: 29, value: "Kalle Testsson", label: "NAMN" },
+      ],
+      {
+        canonicalKey: () => "kalle testsson",
+        canonicalValue: () => "Kalle Testsson",
+      },
+    )
+    expect(text).toBe("[NAMN_1] träffade [NAMN_1].")
+    expect(map).toEqual({ "[NAMN_1]": "Kalle Testsson" })
+  })
+
   it("round-trips via restore", () => {
     const input = `Personnummer ${PNR} och org ${ORGNR}.`
     const { text, restore: undo } = redact(input)

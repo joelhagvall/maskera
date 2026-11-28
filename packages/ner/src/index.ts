@@ -856,21 +856,27 @@ export function reconstruct(
         // Restrict the extension to A-D and require a non-word boundary after
         // it, so ordinary following words such as "i Stockholm" are untouched.
         if (base === "ADR" && DIGIT.test(prevCodePoint(text, end))) {
-          const suffix = text.slice(end).match(/^(\s+[A-Da-d])(?=$|[^\p{L}\p{N}])/u)
-          const suffixText = suffix?.[1]
-          if (suffixText) end += suffixText.length
+          const cadastral = text.slice(end).match(/^:\d{1,5}(?=$|[^\p{L}\p{N}:])/u)?.[0]
+          if (cadastral) {
+            end += cadastral.length
+          } else {
+            const suffix = text.slice(end).match(/^(\s+[A-Da-d])(?=$|[^\p{L}\p{N}])/u)
+            const suffixText = suffix?.[1]
+            if (suffixText) end += suffixText.length
+          }
         }
         // The complement: an ADR span that stops at the street words can leave
         // the house number exposed ("Maskeras plats" tagged, the "1"
         // leaked; the 2026-07-14 sweep found the same on saint-prefixed
         // streets). A bare number right after a street span narrows the
         // address materially, so widen to include it (and any detached A-D
-        // letter after it). Ordinary following words are untouched: the
-        // extension requires digits immediately after the span.
+        // letter or cadastral `:unit` suffix after it). Ordinary following
+        // words are untouched: the extension requires digits immediately after
+        // the span.
         if (base === "ADR" && LETTER.test(prevCodePoint(text, end))) {
           const houseNumber = text
             .slice(end)
-            .match(/^(\s+(?:nr\s+)?\d{1,4}(?:\s?[A-Da-d])?)(?=$|[^\p{L}\p{N}])/u)
+            .match(/^(\s+(?:nr\s+)?\d{1,4}(?::\d{1,5}|\s?[A-Da-d])?)(?=$|[^\p{L}\p{N}:])/u)
           const houseText = houseNumber?.[1]
           if (houseText) end += houseText.length
         }
@@ -961,8 +967,8 @@ export function reconstruct(
   return merged
 }
 
-// The house number reconstruct() appends to an ADR span that ends in letters.
-const WIDENED_HOUSE_NUMBER = /\s+(?:nr\s+)?\d{1,4}(?:\s?[A-Da-d])?$/u
+// The house number or cadastral unit reconstruct() appends to an ADR span that ends in letters.
+const WIDENED_HOUSE_NUMBER = /\s+(?:nr\s+)?\d{1,4}(?::\d{1,5}|\s?[A-Da-d])?$/u
 
 /**
  * Drops a detection whose whole surface form is a denylisted word. An address
@@ -1415,7 +1421,8 @@ const LOWERCASE_SWEDISH_LOCALITIES = new Set([
 
 const STREET_NAME_SURFACE =
   /(?:allén|backen|gata|gatan|gränd|gränden|gången|kajen|leden|plan|stigen|stranden|stråket|terrassen|torg|torget|väg|vägen)$/iu
-const HOUSE_NUMBER_AFTER = /^(\s+(?:nr\s+)?\d{1,4}(?:\s?[A-Da-d])?)(?=$|[^\p{L}\p{N}])/u
+const HOUSE_NUMBER_AFTER = /^(\s+(?:nr\s+)?\d{1,4}(?::\d{1,5}|\s?[A-Da-d])?)(?=$|[^\p{L}\p{N}:])/u
+const CADASTRAL_UNIT_AFTER = /^:\d{1,5}(?=$|[^\p{L}\p{N}:])/u
 
 /** Repair safe, surface-level q4 boundary/label errors before overlap merging. */
 function normalizeModelDetection(input: string, detection: Detection): Detection {
@@ -1445,8 +1452,451 @@ function normalizeModelDetection(input: string, detection: Detection): Detection
         label: "ADRESS",
       }
     }
+  } else if (normalized.label === "ADRESS" && DIGIT.test(prevCodePoint(input, normalized.end))) {
+    const unit = input.slice(normalized.end).match(CADASTRAL_UNIT_AFTER)?.[0]
+    if (unit) {
+      const end = normalized.end + unit.length
+      normalized = {
+        ...normalized,
+        end,
+        value: input.slice(normalized.start, end),
+      }
+    }
   }
   return normalized
+}
+
+// Lowercase Swedish nouns and possessive-compatible adjectives that follow the
+// sentence-initial possessive pronoun "Hans ..." ("Hans bror", "Hans bankkonto")
+// and are never finite verbs following the male given name "Hans".
+const POSSESSIVE_HANS_NEXT: ReadonlySet<string> = new Set([
+  "bror",
+  "broder",
+  "syster",
+  "sambo",
+  "fru",
+  "hustru",
+  "make",
+  "maka",
+  "man",
+  "partner",
+  "fästmö",
+  "fästman",
+  "son",
+  "dotter",
+  "barn",
+  "mamma",
+  "pappa",
+  "mor",
+  "far",
+  "föräldrar",
+  "förälder",
+  "familj",
+  "släkting",
+  "släktingar",
+  "kusin",
+  "moster",
+  "faster",
+  "morbror",
+  "farbror",
+  "mormor",
+  "morfar",
+  "farmor",
+  "farfar",
+  "barnbarn",
+  "svärfar",
+  "svärmor",
+  "svåger",
+  "svägerska",
+  "vän",
+  "kompis",
+  "advokat",
+  "ombud",
+  "jurist",
+  "chef",
+  "kollega",
+  "kollegor",
+  "läkare",
+  "psykolog",
+  "terapeut",
+  "kurator",
+  "handläggare",
+  "kontaktperson",
+  "förvaltare",
+  "förmyndare",
+  "granne",
+  "hyresvärd",
+  "arbetsgivare",
+  "klient",
+  "kund",
+  "patient",
+  "lärare",
+  "rektor",
+  "bankkonto",
+  "kontonummer",
+  "konto",
+  "telefon",
+  "telefonnummer",
+  "mobil",
+  "mobilnummer",
+  "nummer",
+  "adress",
+  "bostad",
+  "lägenhet",
+  "hus",
+  "fastighet",
+  "bil",
+  "fordon",
+  "namn",
+  "efternamn",
+  "förnamn",
+  "personnummer",
+  "samordningsnummer",
+  "mejl",
+  "mail",
+  "e-post",
+  "epost",
+  "ärende",
+  "avtal",
+  "kontrakt",
+  "hyresavtal",
+  "ansökan",
+  "anmälan",
+  "journal",
+  "diagnos",
+  "sjukskrivning",
+  "intyg",
+  "inkomst",
+  "lön",
+  "skuld",
+  "skulder",
+  "försäkring",
+  "uppgifter",
+  "svar",
+  "brev",
+  "meddelande",
+  "version",
+  "berättelse",
+  "påstående",
+  "krav",
+  "önskemål",
+  "behov",
+  "hälsa",
+  "tillstånd",
+  "situation",
+  "arbete",
+  "jobb",
+  "skola",
+  "företag",
+  "bolag",
+  "egna",
+  "eget",
+  "egen",
+  "nya",
+  "ny",
+  "nytt",
+  "gamla",
+  "tidigare",
+  "nuvarande",
+  "enda",
+  "första",
+  "andra",
+  "senaste",
+  "närmaste",
+  "äldsta",
+  "yngsta",
+])
+
+function isSentenceStartPossessiveHans(input: string, detection: Detection): boolean {
+  if (detection.label !== "NAMN" || detection.value !== "Hans") return false
+  const atSentenceStart =
+    detection.start === 0 ||
+    /(?:[.!?…]\s+|\n\s*)$/u.test(input.slice(Math.max(0, detection.start - 16), detection.start))
+  if (!atSentenceStart) return false
+  const nextWord = input
+    .slice(detection.end, detection.end + 32)
+    .match(/^[ \t]+([a-zåäö-]+)\b/u)?.[1]
+  return nextWord !== undefined && POSSESSIVE_HANS_NEXT.has(nextWord)
+}
+
+/**
+ * Drop sentence-initial possessive "Hans <noun>" when no actual person named
+ * Hans appears elsewhere in the same document. If the document does mention a
+ * person named Hans, fail closed and keep the detection masked.
+ */
+function filterPossessiveHans(input: string, detections: Detection[]): Detection[] {
+  const hasRealHans = detections.some((d) => {
+    if (d.label !== "NAMN") return false
+    const lower = d.value.toLowerCase()
+    if (lower.startsWith("hans ")) return true
+    if (lower === "hans" && !isSentenceStartPossessiveHans(input, d)) return true
+    return false
+  })
+  if (hasRealHans) return detections
+  return detections.filter((d) => !isSentenceStartPossessiveHans(input, d))
+}
+
+const ACCENT_FOLD: Readonly<Record<string, string>> = {
+  á: "a",
+  à: "a",
+  â: "a",
+  ã: "a",
+  ç: "c",
+  é: "e",
+  è: "e",
+  ê: "e",
+  ë: "e",
+  í: "i",
+  ì: "i",
+  î: "i",
+  ï: "i",
+  ñ: "n",
+  ó: "o",
+  ò: "o",
+  ô: "o",
+  õ: "o",
+  ú: "u",
+  ù: "u",
+  û: "u",
+  ü: "u",
+  ý: "y",
+  ÿ: "y",
+}
+
+/**
+ * Fold case and non-Swedish diacritics ("Kallé" -> "kalle") while keeping
+ * Swedish å, ä and ö distinct ("Åsa" never folds to "Asa").
+ */
+function foldNameKey(value: string): string {
+  const lower = value.trim().toLowerCase().replace(/\s+/g, " ")
+  let out = ""
+  for (const ch of lower) {
+    out += ACCENT_FOLD[ch] ?? ch
+  }
+  return out
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+
+function isMixedCase(value: string): boolean {
+  return value !== value.toUpperCase() && value !== value.toLowerCase()
+}
+
+function preferCanonicalDisplay(current: string, candidate: string): string {
+  if (isMixedCase(candidate) && !isMixedCase(current)) return candidate
+  return current
+}
+
+/**
+ * Propagate high-precision name aliases within the same document when a full
+ * multi-word NAMN was already detected:
+ * - exact full name (case-insensitive, whole-word)
+ * - `<FirstName> <LastInitial>` (case-insensitive, whole-word, first name >= 3 chars),
+ *   so "(kalle p.)" is masked once "Kalle Parkinson" has been recognised.
+ */
+function propagateNameAliases(input: string, existing: Detection[]): Detection[] {
+  const added: Detection[] = []
+  const occupied = [...existing]
+  const overlapsAny = (start: number, end: number) =>
+    occupied.some((d) => d.start < end && d.end > start)
+
+  const seenPatterns = new Set<string>()
+  for (const d of existing) {
+    if (d.label !== "NAMN") continue
+    const words = d.value.trim().split(/\s+/).filter(Boolean)
+    if (words.length < 2) continue
+    const first = words[0] as string
+    const last = words[words.length - 1] as string
+
+    // 1. Exact full name (case-insensitive)
+    const fullPattern = words.map(escapeRegExp).join("\\s+")
+    if (!seenPatterns.has(`full:${fullPattern.toLowerCase()}`)) {
+      seenPatterns.add(`full:${fullPattern.toLowerCase()}`)
+      const re = new RegExp(`(?<!\\p{L})(${fullPattern})(?!\\p{L})`, "giu")
+      for (const m of input.matchAll(re)) {
+        if (m.index === undefined) continue
+        const start = m.index
+        const end = start + m[0].length
+        if (overlapsAny(start, end)) continue
+        const det: Detection = { start, end, value: input.slice(start, end), label: "NAMN" }
+        added.push(det)
+        occupied.push(det)
+      }
+    }
+
+    // 2. First name + surname initial (e.g. "kalle p." / "Kalle P")
+    if ([...first].length >= 3 && LETTER.test(last[0] ?? "")) {
+      const initial = last[0] as string
+      const aliasKey = `init:${first.toLowerCase()} ${initial.toLowerCase()}`
+      if (!seenPatterns.has(aliasKey)) {
+        seenPatterns.add(aliasKey)
+        const re = new RegExp(
+          `(?<!\\p{L})(${escapeRegExp(first)}\\s+${escapeRegExp(initial)})(?=$|[^\\p{L}])`,
+          "giu",
+        )
+        for (const m of input.matchAll(re)) {
+          if (m.index === undefined) continue
+          const start = m.index
+          const end = start + m[0].length
+          if (overlapsAny(start, end)) continue
+          const det: Detection = { start, end, value: input.slice(start, end), label: "NAMN" }
+          added.push(det)
+          occupied.push(det)
+        }
+      }
+    }
+  }
+  return added
+}
+
+interface NameCluster {
+  key: string
+  canonical: string
+  first: string
+  firstHyphenHead: string | null
+  last: string
+  lastInitial: string
+}
+
+/**
+ * Link unambiguous surface variants of the same person within one document
+ * ("Kalle Parkinson", "Kalle", "Kalles", "Kallés", "Kalle P", "kalle p") to
+ * one stable placeholder, and keep trailing Swedish genitive `-s` outside the
+ * placeholder (`[NAMN_1]s`) when the stem matches an entity in the document.
+ *
+ * Ambiguous short forms (e.g. "Anna" when both "Anna Andersson" and "Anna Berg"
+ * appear in the same document) are never merged.
+ */
+function resolveNameCoreference(
+  input: string,
+  detections: Detection[],
+): {
+  detections: Detection[]
+  canonicalKey: (detection: Detection) => string
+  canonicalValue: (detection: Detection) => string
+} {
+  const clustersByKey = new Map<string, NameCluster>()
+  const standaloneDisplay = new Map<string, string>()
+
+  for (const d of detections) {
+    if (d.label !== "NAMN") continue
+    const folded = foldNameKey(d.value)
+    const words = folded.split(" ").filter(Boolean)
+    if (words.length >= 2) {
+      const lastWord = words[words.length - 1] as string
+      // Do not treat an initial-only form ("Kalle P") as a full-name cluster.
+      if ([...lastWord].length <= 1) continue
+      const existing = clustersByKey.get(folded)
+      if (existing) {
+        existing.canonical = preferCanonicalDisplay(existing.canonical, d.value)
+      } else {
+        const first = words[0] as string
+        const hyphenParts = first.split("-")
+        const firstHyphenHead =
+          hyphenParts.length > 1 && [...(hyphenParts[0] ?? "")].length >= 3
+            ? (hyphenParts[0] as string)
+            : null
+        clustersByKey.set(folded, {
+          key: folded,
+          canonical: d.value,
+          first,
+          firstHyphenHead,
+          last: lastWord,
+          lastInitial: lastWord[0] ?? "",
+        })
+      }
+    } else if (words.length === 1) {
+      const existing = standaloneDisplay.get(folded)
+      standaloneDisplay.set(folded, existing ? preferCanonicalDisplay(existing, d.value) : d.value)
+    }
+  }
+
+  const clusters = [...clustersByKey.values()]
+
+  const matchUniqueCluster = (folded: string): NameCluster | null => {
+    const exact = clustersByKey.get(folded)
+    if (exact) return exact
+
+    const words = folded.split(" ").filter(Boolean)
+    if (words.length === 2 && [...(words[1] as string)].length === 1) {
+      const [first, initial] = words as [string, string]
+      const hits = clusters.filter(
+        (c) => (c.first === first || c.firstHyphenHead === first) && c.lastInitial === initial,
+      )
+      return hits.length === 1 ? (hits[0] as NameCluster) : null
+    }
+
+    if (words.length === 1 && [...(words[0] as string)].length >= 2) {
+      const word = words[0] as string
+      const hits = clusters.filter(
+        (c) => c.first === word || c.firstHyphenHead === word || c.last === word,
+      )
+      return hits.length === 1 ? (hits[0] as NameCluster) : null
+    }
+
+    return null
+  }
+
+  const adjusted: Detection[] = []
+  const binding = new Map<string, { key: string; display: string }>()
+
+  for (const d of detections) {
+    if (d.label !== "NAMN") {
+      adjusted.push(d)
+      continue
+    }
+
+    let current = d
+    let folded = foldNameKey(current.value)
+    let cluster = matchUniqueCluster(folded)
+
+    // Swedish genitive `-s`: strip trailing s onto the surrounding prose when
+    // the stem matches a unique cluster or another standalone NAMN in this text.
+    if (
+      !cluster &&
+      current.value.length >= 3 &&
+      (current.value.endsWith("s") || current.value.endsWith("S"))
+    ) {
+      const stem = current.value.slice(0, -1)
+      const foldedStem = foldNameKey(stem)
+      const stemCluster = matchUniqueCluster(foldedStem)
+      if (stemCluster || standaloneDisplay.has(foldedStem)) {
+        const end = current.end - 1
+        current = { ...current, end, value: input.slice(current.start, end) }
+        folded = foldedStem
+        cluster = stemCluster
+      }
+    }
+
+    adjusted.push(current)
+    const spanId = `${current.start}:${current.end}:${current.label}`
+    if (cluster) {
+      binding.set(spanId, { key: cluster.key, display: cluster.canonical })
+    } else {
+      const display = standaloneDisplay.get(folded) ?? current.value
+      binding.set(spanId, { key: folded, display })
+    }
+  }
+
+  return {
+    detections: adjusted,
+    canonicalKey: (detection) => {
+      if (detection.label !== "NAMN") return detection.value
+      return (
+        binding.get(`${detection.start}:${detection.end}:${detection.label}`)?.key ??
+        foldNameKey(detection.value)
+      )
+    },
+    canonicalValue: (detection) => {
+      if (detection.label !== "NAMN") return detection.value
+      return (
+        binding.get(`${detection.start}:${detection.end}:${detection.label}`)?.display ??
+        detection.value
+      )
+    },
+  }
 }
 
 /**
@@ -1513,9 +1963,12 @@ export async function redactWithNer(
     (detection) => keepDetection(detection, "rule"),
   )
 
-  const modelDetections = (await options.recognizer.detect(input))
-    .map((detection) => normalizeModelDetection(input, detection))
-    .filter((detection) => keepDetection(detection, "model"))
+  const modelDetections = filterPossessiveHans(
+    input,
+    (await options.recognizer.detect(input))
+      .map((detection) => normalizeModelDetection(input, detection))
+      .filter((detection) => keepDetection(detection, "model")),
+  )
 
   // Rules are authoritative on THEIR spans, but a model span that merely
   // touches a rule span must not be dropped wholesale: the model sometimes
@@ -1559,7 +2012,15 @@ export async function redactWithNer(
     }
   }
 
-  return redactFromDetections(input, [...ruleDetections, ...keptModel], {
+  const propagated = propagateNameAliases(input, [...ruleDetections, ...keptModel]).filter(
+    (detection) => keepDetection(detection, "model"),
+  )
+
+  const resolved = resolveNameCoreference(input, [...ruleDetections, ...keptModel, ...propagated])
+
+  return redactFromDetections(input, resolved.detections, {
     placeholder: options.placeholder,
+    canonicalKey: resolved.canonicalKey,
+    canonicalValue: resolved.canonicalValue,
   })
 }

@@ -6,6 +6,8 @@ import {
   creditCard,
   defaultDetectors,
   email,
+  fastighetsbeteckning,
+  fodelsedatum,
   heuristicDetectors,
   iban,
   ipAddress,
@@ -543,15 +545,53 @@ describe("kontonummer detector (contextual)", () => {
       commaAccount.slice("konto ".length),
     ],
     ["kontonummer, clearing and comma", "kontonummer 3300, 0032 3232 3232", "3300, 0032 3232 3232"],
+    ["bankkonto är + bank name", `bankkonto är SEB ${testAccount}`, testAccount],
+    ["bankkonto hos + bank name", `bankkonto hos Handelsbanken: ${testAccount}`, testAccount],
+    ["konto är + account", `konto är ${testAccount}`, testAccount],
+    ["bankkonto + parenthesised bank", `bankkonto (Nordea) ${testAccount}`, testAccount],
   ])("matches with %s context", (_label, input, value) => expectHit(kontonummer, input, value))
 
   it.each([
     ["bare grouped number", `överföring ${testAccount} genomförd`],
     ["amount", "konto 12 500 kr"],
+    ["ISO date", "konto 2026-01-15"],
     ["comma without a space", "konto 3300,0032 3232 3232"],
     ["journal number", "journalnummer TEST-JOURNAL-01"],
     ["short value", "konto 123-45"],
   ])("rejects %s: %s", (_label, input) => expectMiss(kontonummer, input))
+})
+
+describe("fodelsedatum detector (contextual)", () => {
+  it.each([
+    ["föddes ISO", "Klienten föddes 1974-03-12 i staden.", "1974-03-12"],
+    ["födelsedatum ISO", "Födelsedatum: 1990-01-01", "1990-01-01"],
+    ["född den written", "Han är född den 12 mars 1974 i Provbyn.", "12 mars 1974"],
+    ["född compact 6-digit", "Undertecknad, född 810206, anmäler detta.", "810206"],
+    ["f. prefix", "Klienten (f. 1974-03-12) bor här.", "1974-03-12"],
+    ["day/month year", "Födelsedatum 12/3 1974.", "12/3 1974"],
+  ])("matches %s", (_label, input, value) => expectHit(fodelsedatum, input, value))
+
+  it.each([
+    ["bare date without cue", "Avtalet tecknades 2026-03-12."],
+    ["bare year after född", "Författaren var född 1849 i staden."],
+    ["impossible calendar date", "Klienten föddes 1985-02-29."],
+    ["invalid month", "Födelsedatum: 1974-13-12."],
+    ["personnummer prefix not matched as 6-digit", "född 900101-2385"],
+  ])("rejects %s: %s", (_label, input) => expectMiss(fodelsedatum, input))
+})
+
+describe("fastighetsbeteckning detector (contextual)", () => {
+  it.each([
+    ["Fastighetsbeteckning", "Fastighetsbeteckning: Provbyn Tallen 4:17.", "Provbyn Tallen 4:17"],
+    ["fastigheten", "Tvisten avser fastigheten Provstad Norra 12:3.", "Provstad Norra 12:3"],
+    ["hyphenated municipality", "Fastighet: Prov-Byn Skogen 2:15", "Prov-Byn Skogen 2:15"],
+  ])("matches %s", (_label, input, value) => expectHit(fastighetsbeteckning, input, value))
+
+  it.each([
+    ["law citation", "Vi hänvisar till lag (2018:218)."],
+    ["plain fastigheten prose", "Fastigheten ligger på våning 4:17."],
+    ["no block:unit", "Fastigheten Provbyn Tallen säljs."],
+  ])("rejects %s: %s", (_label, input) => expectMiss(fastighetsbeteckning, input))
 })
 
 describe("journalnummer detector (contextual)", () => {
@@ -584,8 +624,13 @@ describe("heuristicDetectors bundle", () => {
 })
 
 describe("contextualDetectors bundle", () => {
-  it("contains the account-number detector", () => {
-    expect(contextualDetectors.map((d) => d.label)).toEqual(["KONTONUMMER", "JOURNALNUMMER"])
+  it("contains the contextual detectors", () => {
+    expect(contextualDetectors.map((d) => d.label)).toEqual([
+      "KONTONUMMER",
+      "JOURNALNUMMER",
+      "FODELSEDATUM",
+      "FASTIGHETSBETECKNING",
+    ])
   })
 
   it("stays out of the conservative rules-only defaults", () => {

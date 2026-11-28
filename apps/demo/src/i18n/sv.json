@@ -393,10 +393,12 @@
     "ADRESS": "Adress",
     "POSTNUMMER": "Postnummer",
     "LAGENHETSNUMMER": "Lägenhetsnr",
+    "FASTIGHETSBETECKNING": "Fastighetsbeteckning",
     "ORGANISATION": "Organisation",
     "ORGANISATIONSNUMMER": "Org.nummer",
     "PERSONNUMMER": "Personnummer",
     "SAMORDNINGSNUMMER": "Samordningsnr",
+    "FODELSEDATUM": "Födelsedatum",
     "EPOST": "E-post",
     "TELEFON": "Telefon",
     "IBAN": "IBAN",
@@ -519,6 +521,14 @@
           {
             "label": "JOURNALNUMMER",
             "name": "Kontextmärkta journalnummer"
+          },
+          {
+            "label": "FODELSEDATUM",
+            "name": "Kontextmärkta födelsedatum"
+          },
+          {
+            "label": "FASTIGHETSBETECKNING",
+            "name": "Kontextmärkta fastighetsbeteckningar"
           },
           {
             "label": "IP_ADRESS",

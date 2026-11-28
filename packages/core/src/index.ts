@@ -9,6 +9,8 @@ export {
   defaultDetectors,
   // contact
   email,
+  fastighetsbeteckning,
+  fodelsedatum,
   // opt-in Swedish heuristics
   heuristicDetectors,
   iban,
@@ -37,6 +39,7 @@ export type {
   RedactResult,
 } from "./types"
 export {
+  isBirthDate,
   isOrganisationsnummer,
   isPersonnummer,
   isPersonnummerShape,

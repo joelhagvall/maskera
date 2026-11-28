@@ -72,7 +72,7 @@ Presidio's spaCy model is trained on SUC 3.0, one of the tests. Personnummer, ba
 | Revised synthetic ADR (41 docs / 57 entities) | **100.0% span F1**, **0/57 leaks** | 35/35 ADDRESS precision, 98.2% labeled F1 |
 | LinkedIn-style (32 docs / 53 entities) | **98.1% span F1**, **0/53 leaks** | Exact span, synthetic |
 | Rare decomposing surnames (294 entities) | **95.24% masked recall** (280/294) | Lowercase chat register |
-| Full Swedish hybrid pipeline (258 texts / 952 PII) | **937/952 (98.4%)** full hits | Rules + v21 NER across 19 domains (7 partial, 8 misses; 118 candidate junk vs 172 in v20) |
+| Full Swedish hybrid pipeline (258 texts / 952 PII) | **937/952 (98.4%)** full hits | Rules + v21 NER across 19 domains (7 partial, 8 misses; 112 candidate junk vs 172 in v20) |
 | NER vs KBLab lowermix fp32 (121 texts / 211 entities) | **210/211** orig & **211/211** lower vs 205/211 & 187/211 | 43 MB vs 496 MB; typed F1 **89.6%** vs 89.4% orig, **88.4%** vs 83.2% lower |
 
 All v21 sets above are synthetic or author-coupled directional evidence, not an independent universal ranking. The broader dated public-model comparison belongs to historical v18 and is kept separately in [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md).
