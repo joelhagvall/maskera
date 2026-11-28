@@ -75,3 +75,20 @@ export function heroTargets(browsers: readonly ExtensionBrowser[]): HeroTarget[]
       : { visitor, storeUrl: null, via: null }
   })
 }
+
+const BROWSER_NAMES: Record<BrowserId, string> = {
+  chrome: "Chrome",
+  edge: "Edge",
+  firefox: "Firefox",
+  safari: "Safari",
+}
+
+/**
+ * The desktop browsers the extension installs in today, for structured data
+ * ("Chrome, Edge"): those whose hero button links to a store, Edge included
+ * through the Chrome Web Store. Grows by itself when a storeUrl is set.
+ */
+export const SUPPORTED_EXTENSION_BROWSERS = heroTargets(EXTENSION_BROWSERS)
+  .filter(({ visitor, storeUrl }) => visitor !== "mobile" && storeUrl)
+  .map(({ visitor }) => BROWSER_NAMES[visitor as BrowserId])
+  .join(", ")

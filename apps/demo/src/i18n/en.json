@@ -414,7 +414,7 @@
     "packageManagerLabel": "Package manager",
     "codeExample": "import { createNerRecognizer, redactWithNer } from \"maskera\"\n\nconst recognizer = createNerRecognizer()\n\nconst { text, restore } = await redactWithNer(\n  \"hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala\",\n  { recognizer },\n)\n// text: \"hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]\"\n\nconst answer = await askAI(text) // any AI service\nrestore(answer) // placeholders become the originals again, locally",
     "sharedLanguageLabel": "JS / TS",
-    "diagramAlt": "Diagram of maskera's two layers: your text is split between rules for fixed-format data and a Swedish AI model for free text, then merged into masked text.",
+    "diagramAlt": "Diagram of Maskera's two layers: your text is split between rules for fixed-format data and a Swedish AI model for free text, then merged into masked text.",
     "diagramOpen": "Open full size",
     "npmCta": "maskera on npm",
     "mcpNpmCta": "@maskera/mcp on npm",
@@ -578,7 +578,6 @@
     "metaDescription": "How much of the names, places and addresses Maskera hides in Swedish text we did not write, compared with Presidio, swedish-pii and OpenAI Privacy Filter.",
     "title": "How well does Maskera find personal data?",
     "lede": "Measured on Swedish text we did not write and the model never trained on: SUC 3.0 from the National Library of Sweden, SIC2 from Språkbanken Text, MultiCoNER v2 and ai4privacy.",
-    "inlineCta": "the accuracy page",
     "servicesCta": "See test results and limitations",
     "toc": [
       {
@@ -1175,7 +1174,7 @@
     "licenseDesc": "open source"
   },
   "theme": {
-    "toggle": "Switch between light and dark mode"
+    "toggle": "Dark mode"
   },
   "language": {
     "switchCode": "Svenska",
@@ -1184,7 +1183,6 @@
   "topBar": {
     "navLabel": "Main menu",
     "breadcrumbLabel": "Breadcrumb",
-    "developers": "Developers",
     "services": "Products",
     "accuracy": "Accuracy",
     "docs": "Docs"
@@ -1445,7 +1443,7 @@
           "title": "Wrap, service, guard, install, and doctor",
           "body": "The wrap command runs everything in one terminal, and service keeps the proxy running in the background (launchd on macOS, systemd on Linux). Use install to configure your client; guard blocks PII in hooks and pipes, and doctor tests the whole chain.",
           "codeLabel": "Terminal",
-          "code": "# Start local proxy + verify + launch agent in one terminal\nnpx -y @maskera/mcp wrap --open -- claude\n\n# Install or check a persistent local background service (127.0.0.1:8787)\nnpx -y @maskera/mcp service install --root . --no-raw-restore\nnpx -y @maskera/mcp service status\n\n# Configure client + guard hook + save zero-PII receipt (maskera-setup-receipt/v1)\nnpx -y @maskera/mcp install claude-code --root . --no-raw-restore --apply --with-hook --receipt ./maskera-receipt.json\n\n# Block PII in hooks (exits 2 on match, prints counts only)\necho '{\"prompt\":\"Ring 070-174 06 58\"}' | npx -y @maskera/mcp guard\n\n# Self-test local engine, roots, proxy, and live /mcp\nnpx -y @maskera/mcp doctor --root . --json",
+          "code": "# Start local proxy + verify + launch agent in one terminal\nnpx -y @maskera/mcp wrap --open -- claude\n\n# Install or check a persistent local background service (127.0.0.1:8787)\nnpx -y @maskera/mcp service install --root . --no-raw-restore\nnpx -y @maskera/mcp service status\n\n# Configure client + guard hook + save zero-PII receipt (maskera-setup-receipt/v1)\nnpx -y @maskera/mcp install claude-code --root . --no-raw-restore \\\n  --apply --with-hook --receipt ./maskera-receipt.json\n\n# Block PII in hooks (exits 2 on match, prints counts only)\necho '{\"prompt\":\"Ring 070-174 06 58\"}' | npx -y @maskera/mcp guard\n\n# Self-test local engine, roots, proxy, and live /mcp\nnpx -y @maskera/mcp doctor --root . --json",
           "table": {
             "headers": ["Environment variable", "Default", "Purpose"],
             "rows": [

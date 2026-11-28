@@ -1,7 +1,12 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { EXTENSION_BROWSERS, heroTargets } from "../src/extensionBrowsers"
+import {
+  EXTENSION_BROWSERS,
+  heroTargets,
+  SUPPORTED_EXTENSION_BROWSERS,
+} from "../src/extensionBrowsers"
 import * as i18n from "../src/i18n"
+import { renderRouteHtml } from "../src/meta"
 
 /**
  * Product facts the site repeats in prose, checked against the one place
@@ -75,6 +80,16 @@ describe("browsers the extension runs in", () => {
           !path.startsWith("extensionInstall.browsers.") && claimsFor(value, name).length > 0,
       )
       expect(claims, `${locale}: ${name} has no store listing yet`).toEqual([])
+    }
+  })
+
+  it("are never claimed for an unshipped browser in the services page's structured data", () => {
+    for (const locale of ["sv", "en"] as const) {
+      const operatingSystem = renderRouteHtml("services", locale).match(
+        /"operatingSystem": "([^"]*)"/,
+      )?.[1]
+      expect(operatingSystem).toBe(SUPPORTED_EXTENSION_BROWSERS)
+      for (const browser of unshipped) expect(operatingSystem).not.toContain(browser.id.slice(1))
     }
   })
 

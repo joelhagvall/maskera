@@ -26,13 +26,16 @@ export const SERVICES_SECTIONS = {
 export function ExtensionHeroActions({
   go,
   goSection,
+  belowDemo = false,
 }: {
   go: (view: View) => void
   goSection: (view: View, anchor: string) => void
+  /** At the end of the home page the demo is behind the visitor: no "try it here". */
+  belowDemo?: boolean
 }) {
   const text = copy.extensionInstall
 
-  const primary: ReactElement[] = heroTargets(EXTENSION_BROWSERS).map(
+  const primary: (ReactElement | null)[] = heroTargets(EXTENSION_BROWSERS).map(
     ({ visitor, storeUrl, via }) => {
       if (visitor === "mobile") {
         return (
@@ -68,6 +71,7 @@ export function ExtensionHeroActions({
           </a>
         )
       }
+      if (belowDemo) return null
       return (
         <a
           key={visitor}
@@ -135,19 +139,24 @@ export function ExtensionInstall() {
         {EXTENSION_BROWSERS.map((browser) => {
           const Icon = BROWSER_ICONS[browser.id]
           const label = text.browsers[browser.id]
+          // Edge installs from the Chrome Web Store until its own listing is
+          // live: the same target the hero button uses.
+          const target = heroTargets(EXTENSION_BROWSERS).find((t) => t.visitor === browser.id)
+          const storeUrl = browser.storeUrl ?? target?.storeUrl ?? null
+          const store = target?.via ? text.browsers[target.via].store : label.store
           const body = (
             <>
               <Icon size={20} className="ext-browser-icon" />
               <span className="ext-browser-text">
                 <span className="ext-browser-name">{label.name}</span>{" "}
-                <span className="ext-browser-store">{label.store}</span>
+                <span className="ext-browser-store">{store}</span>
               </span>
             </>
           )
           return (
             <li key={browser.id}>
-              {browser.storeUrl ? (
-                <a className="ext-browser" href={browser.storeUrl} target="_blank" rel="noreferrer">
+              {storeUrl ? (
+                <a className="ext-browser" href={storeUrl} target="_blank" rel="noreferrer">
                   {body}
                   <ArrowUpRightIcon size={14} className="ext-browser-end" />
                 </a>

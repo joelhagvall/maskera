@@ -11,6 +11,7 @@ import {
   openChecks,
   publicGates,
 } from "../mcpAudit"
+import { portalUrl } from "../portal"
 import { navClick, type View, viewPaths } from "../routing"
 import { Code } from "./CodeSnippet"
 import { PageToc } from "./PageToc"
@@ -19,7 +20,6 @@ import { TopBar } from "./TopBar"
 const ADVISORY_URL = GITHUB + "/security/advisories/new"
 const ISSUES_URL = GITHUB + "/issues"
 const PRODUCTION_URL = GITHUB + "/blob/main/docs/PRODUCTION.md"
-const EXTENSION_PRIVACY_URL = "https://app.maskera.dev/extension/privacy"
 const AUDIT_URL = GITHUB + "/blob/main/packages/mcp/AUDIT.md"
 const AUDIT_JSON_URL = GITHUB + "/blob/main/packages/mcp/audit-results.json"
 
@@ -84,7 +84,11 @@ export function Security({ go }: { go: (view: View) => void }) {
 
           <p className="prose-foot">
             {copy.security.extensionBody}{" "}
-            <a href={EXTENSION_PRIVACY_URL}>
+            <a
+              href={portalUrl("/extension/privacy", "security_extension_privacy")}
+              target="_blank"
+              rel="noreferrer"
+            >
               {copy.security.extensionCta}
               <ArrowUpRightIcon size={13} />
             </a>

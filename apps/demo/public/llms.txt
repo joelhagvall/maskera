@@ -122,6 +122,6 @@ Choose the mode by where the text comes from: **proxy for text typed straight in
 ## Optional
 
 - [Live demo](https://maskera.dev/): paste Swedish text, watch it get masked in the browser
-- [Products: extension, AI agents and SDK](https://maskera.dev/tjanster): browser extension Free, Pro (SEK 149/user/month incl. VAT, 7-day free trial) and Team (SEK 249/user/month excl. VAT, min. 5 users), `@maskera/mcp` proxy/MCP setup, and open-source SDK (English: https://maskera.dev/en/services)
+- [Products: extension, AI agents and SDK](https://maskera.dev/tjanster): browser extension Free, Pro (SEK 149/month incl. VAT, 7-day free trial) and Team (SEK 249/user/month excl. VAT, min. 5 users), `@maskera/mcp` proxy/MCP setup, and open-source SDK (English: https://maskera.dev/en/services)
 - [Customer portal](https://app.maskera.dev/login): account sign-in, Pro subscription checkout, offline licence keys, and billing
 - [Source repository](https://github.com/joelhagvall/maskera): monorepo with packages, training pipeline, and CI that re-grades the published model against a gold corpus

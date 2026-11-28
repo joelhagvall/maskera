@@ -44,13 +44,15 @@ export function DemoWorkspace({
   const [text, setText] = useState<string>(active.text)
   const [mapOpen, setMapOpen] = useState(false)
   // 0 until the visitor heads for the demo: the model (about 40 MB) is only
-  // fetched when the demo comes near the viewport or is used.
+  // fetched when the demo comes within 200 px of the viewport or is used. The
+  // demo sits about 1 500 px down, so a 1080p or 1440p window does not
+  // trigger it on load.
   const [modelActivation, setModelActivation] = useState(0)
   const activateModel = useCallback(
     () => setModelActivation((current) => (current === 0 ? 1 : current)),
     [],
   )
-  const demoRef = useWhenNear(activateModel, "600px 0px")
+  const demoRef = useWhenNear(activateModel, "200px 0px")
 
   const deferredText = useDeferredValue(text)
   // Every example text is analyzed in the background once the model is ready,

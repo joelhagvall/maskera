@@ -2,6 +2,7 @@
 // runtime router and Vite's generated static HTML shells both read this file,
 // so direct landings and client navigation cannot drift.
 
+import { SUPPORTED_EXTENSION_BROWSERS } from "./extensionBrowsers"
 import { activeLocale, copies } from "./i18n"
 
 import { type Locale, markdownPathFor, pathsByLocale, SITE_ORIGIN, type View } from "./paths"
@@ -317,7 +318,7 @@ function jsonLdFor(view: View, locale: Locale): object {
               name: `Maskera ${extensionTrack.title}`,
               description: extensionTrack.summary,
               applicationCategory: "SecurityApplication",
-              operatingSystem: "Chrome, Edge, Firefox",
+              operatingSystem: SUPPORTED_EXTENSION_BROWSERS,
               url: `${url}#tillagg`,
               offers: [
                 {

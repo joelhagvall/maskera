@@ -81,6 +81,16 @@ describe("ExtensionHeroActions", () => {
     expect(go).toHaveBeenLastCalledWith("docs")
   })
 
+  it("drops the try-it-here button below the demo, where the demo is behind the visitor", () => {
+    chromeLive()
+    const { container } = render(
+      <ExtensionHeroActions go={vi.fn()} goSection={vi.fn()} belowDemo />,
+    )
+    expect(container.querySelector('[data-for="firefox"]')).toBeNull()
+    expect(container.querySelector('[data-for="safari"]')).toBeNull()
+    expect(container.querySelector('[data-for="chrome"]')).toBeTruthy()
+  })
+
   it("offers the Chrome Web Store to Chrome, and to Edge until Edge Add-ons is live", () => {
     chromeLive()
     const { container } = render(<ExtensionHeroActions go={vi.fn()} goSection={vi.fn()} />)
@@ -131,9 +141,12 @@ describe("ExtensionInstall", () => {
     render(<ExtensionInstall />)
 
     const list = screen.getByRole("list", { name: copy.extensionInstall.listLabel })
-    const [chrome] = within(list).getAllByRole("link")
+    const [chrome, edge] = within(list).getAllByRole("link")
     expect(chrome.getAttribute("href")).toBe("https://chromewebstore.google.com/detail/example")
-    expect(within(list).getAllByText(copy.extensionInstall.soon)).toHaveLength(3)
+    // Edge installs from the Chrome Web Store until Edge Add-ons is live.
+    expect(edge.getAttribute("href")).toBe("https://chromewebstore.google.com/detail/example")
+    expect(edge.textContent).toContain("Chrome Web Store")
+    expect(within(list).getAllByText(copy.extensionInstall.soon)).toHaveLength(2)
     const zipLink = screen.getByRole("link", { name: copy.extensionInstall.zipCta })
     expect(zipLink.className).not.toContain("ext-zip-cta")
   })

@@ -112,7 +112,7 @@ export function HomeClosing({
   return (
     <section className="home-closing" aria-labelledby="home-closing-title">
       <h2 id="home-closing-title">{closing.title}</h2>
-      <ExtensionHeroActions go={go} goSection={goSection} />
+      <ExtensionHeroActions go={go} goSection={goSection} belowDemo />
     </section>
   )
 }

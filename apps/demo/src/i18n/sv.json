@@ -414,7 +414,7 @@
     "packageManagerLabel": "Pakethanterare",
     "codeExample": "import { createNerRecognizer, redactWithNer } from \"maskera\"\n\nconst recognizer = createNerRecognizer()\n\nconst { text, restore } = await redactWithNer(\n  \"hej jag heter anna karlsson, personnummer 19900101-2385, och bor i uppsala\",\n  { recognizer },\n)\n// text: \"hej jag heter [NAMN_1], personnummer [PERSONNUMMER_1], och bor i [PLATS_1]\"\n\nconst svar = await fragaAI(text) // valfri AI-tjänst\nrestore(svar) // platshållarna blir originalen igen, lokalt",
     "sharedLanguageLabel": "JS / TS",
-    "diagramAlt": "Diagram över maskeras två lager: din text delas upp mellan regler för uppgifter med bestämt format och en svensk AI-modell för fri text, och slås samman till maskerad text.",
+    "diagramAlt": "Diagram över Maskeras två lager: din text delas upp mellan regler för uppgifter med bestämt format och en svensk AI-modell för fri text, och slås samman till maskerad text.",
     "diagramOpen": "Öppna i full storlek",
     "npmCta": "maskera på npm",
     "mcpNpmCta": "@maskera/mcp på npm",
@@ -578,7 +578,6 @@
     "metaDescription": "Hur stor andel av namn, platser och adresser Maskera döljer i svensk text som vi inte har skrivit, jämfört med Presidio, swedish-pii och OpenAI Privacy Filter.",
     "title": "Hur bra hittar Maskera personuppgifter?",
     "lede": "Mätt på svensk text som vi inte har skrivit och som modellen aldrig tränats på: SUC 3.0 från Kungliga biblioteket, SIC2 från Språkbanken, MultiCoNER v2 och ai4privacy.",
-    "inlineCta": "sidan om träffsäkerhet",
     "servicesCta": "Se testresultat och begränsningar",
     "toc": [
       {
@@ -1175,7 +1174,7 @@
     "licenseDesc": "öppen källkod"
   },
   "theme": {
-    "toggle": "Växla mellan ljust och mörkt läge"
+    "toggle": "Mörkt läge"
   },
   "language": {
     "switchCode": "English",
@@ -1184,7 +1183,6 @@
   "topBar": {
     "navLabel": "Huvudmeny",
     "breadcrumbLabel": "Brödsmulor",
-    "developers": "Utvecklare",
     "services": "Produkter",
     "accuracy": "Träffsäkerhet",
     "docs": "Dokumentation"
@@ -1445,7 +1443,7 @@
           "title": "Wrap, service, guard, install och doctor",
           "body": "Kommandot wrap kör allt i en terminal, och service håller proxyn igång i bakgrunden (launchd på macOS, systemd på Linux). Med install konfigurerar du klienten, guard stoppar PII i hooks och pipes, och doctor testar hela kedjan.",
           "codeLabel": "Terminal",
-          "code": "# Starta lokal proxy + verifiera + kör agent i samma terminal\nnpx -y @maskera/mcp wrap --open -- claude\n\n# Installera eller kontrollera lokal bakgrundstjänst (127.0.0.1:8787)\nnpx -y @maskera/mcp service install --root . --no-raw-restore\nnpx -y @maskera/mcp service status\n\n# Konfigurera klient + prompt-hook + spara kvitto (maskera-setup-receipt/v1)\nnpx -y @maskera/mcp install claude-code --root . --no-raw-restore --apply --with-hook --receipt ./maskera-receipt.json\n\n# Blockera PII i hooks (exit 2 vid träff, loggar bara antal)\necho '{\"prompt\":\"Ring 070-174 06 58\"}' | npx -y @maskera/mcp guard\n\n# Självtesta lokal motor, rötter, proxy och live /mcp\nnpx -y @maskera/mcp doctor --root . --json",
+          "code": "# Starta lokal proxy + verifiera + kör agent i samma terminal\nnpx -y @maskera/mcp wrap --open -- claude\n\n# Installera eller kontrollera lokal bakgrundstjänst (127.0.0.1:8787)\nnpx -y @maskera/mcp service install --root . --no-raw-restore\nnpx -y @maskera/mcp service status\n\n# Konfigurera klient + prompt-hook + spara kvitto (maskera-setup-receipt/v1)\nnpx -y @maskera/mcp install claude-code --root . --no-raw-restore \\\n  --apply --with-hook --receipt ./maskera-receipt.json\n\n# Blockera PII i hooks (exit 2 vid träff, loggar bara antal)\necho '{\"prompt\":\"Ring 070-174 06 58\"}' | npx -y @maskera/mcp guard\n\n# Självtesta lokal motor, rötter, proxy och live /mcp\nnpx -y @maskera/mcp doctor --root . --json",
           "table": {
             "headers": ["Miljövariabel", "Standard", "Funktion"],
             "rows": [
