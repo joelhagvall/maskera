@@ -273,6 +273,8 @@ export type RedactFieldKind = "message" | "system" | "tool_description"
 const SWEDISH_DIACRITIC_RE = /[åäöÅÄÖ]/
 const SWEDISH_SIGNAL_WORD_RE =
   /\b(?:och|inte|ska|eller|enligt|kund|personnummer|svenska|sekretess|arbetsgivare|utbetalning|sammanfatta|skriv|svara|nedan|uppgifter)\b/i
+const CLI_SYSTEM_HEADER_RE =
+  /^(?:x-anthropic-billing-header:|you are claude code\b|you are codex\b|you are opencode\b)/i
 const ENGLISH_BOILERPLATE_WORDS = new Set([
   "the",
   "and",
@@ -291,7 +293,9 @@ const ENGLISH_BOILERPLATE_WORDS = new Set([
   "never",
   "always",
   "tools",
+  "tool",
   "files",
+  "file",
   "code",
   "return",
   "output",
@@ -299,32 +303,185 @@ const ENGLISH_BOILERPLATE_WORDS = new Set([
   "assistant",
   "instructions",
   "command",
+  "commands",
   "user",
+  "for",
+  "into",
+  "only",
+  "before",
+  "after",
+  "run",
+  "check",
+  "edit",
+  "read",
+  "write",
+  "git",
+  "branch",
+  "commit",
+  "push",
+  "test",
+  "tests",
+  "error",
+  "path",
+  "directory",
+  "repository",
+  "session",
+  "agent",
+  "prompt",
+  "message",
+  "system",
+  "default",
+  "without",
+  "can",
+  "will",
+  "each",
+  "all",
+  "any",
+  "every",
+  "about",
+  "more",
+  "also",
+  "make",
+  "keep",
+  "does",
+  "have",
+  "been",
+  "its",
+  "their",
+  "them",
+  "then",
+  "than",
+  "using",
+  "following",
+  "other",
+  "same",
+  "first",
+  "next",
+  "existing",
+  "changes",
 ])
 const ASCII_WORD_RE = /\b[a-z]{2,}\b/g
+const SYSTEM_REMINDER_SPLIT_RE = /(<system-reminder>[\s\S]*?<\/system-reminder>)/g
+const BROWSER_PROBE_PATHS = new Set([
+  "/favicon.ico",
+  "/apple-touch-icon.png",
+  "/apple-touch-icon-precomposed.png",
+  "/robots.txt",
+])
 
 /**
- * Returns `true` when a `system` prompt block is clearly long English agent
- * boilerplate (e.g. Claude Code / Codex / OpenCode system instructions) with
- * zero Swedish characters or domain words. Those blocks still run deterministic
- * structured PII rules + `customTerms`, avoiding hundreds of false Swedish NER
- * hits on English keywords while keeping full NER on Swedish or short prompts.
+ * Returns `true` when a `system` prompt block is clearly English agent
+ * boilerplate (e.g. Claude Code / Codex / OpenCode system instructions,
+ * billing headers, or CLAUDE.md/MEMORY.md rules) with zero Swedish characters
+ * or domain words. Those blocks still run deterministic structured PII rules
+ * + `customTerms`, avoiding hundreds of false Swedish NER hits on English
+ * keywords while keeping full NER on Swedish or short prompts.
  */
 export function isLikelyEnglishSystemPrompt(text: string): boolean {
-  if (text.length < 240) return false
   if (SWEDISH_DIACRITIC_RE.test(text)) return false
   if (SWEDISH_SIGNAL_WORD_RE.test(text)) return false
+  const trimmed = text.trim()
+  if (CLI_SYSTEM_HEADER_RE.test(trimmed)) return true
+  if (trimmed.length < 60) return false
+  const minMatches = trimmed.length >= 240 ? 6 : 4
   const found = new Set<string>()
-  const lower = text.toLowerCase()
+  const lower = trimmed.toLowerCase()
   ASCII_WORD_RE.lastIndex = 0
   for (let m = ASCII_WORD_RE.exec(lower); m !== null; m = ASCII_WORD_RE.exec(lower)) {
     const word = m[0]
     if (word && ENGLISH_BOILERPLATE_WORDS.has(word)) {
       found.add(word)
-      if (found.size >= 6) return true
+      if (found.size >= minMatches) return true
     }
   }
   return false
+}
+
+async function redactSystemText(
+  text: string,
+  redactChunk: (chunk: string, forceRules: boolean, previewable: boolean) => Promise<string>,
+): Promise<string> {
+  if (isLikelyEnglishSystemPrompt(text)) {
+    return redactChunk(text, true, false)
+  }
+  const redactMixedBlock = async (block: string): Promise<string> => {
+    if (isLikelyEnglishSystemPrompt(block)) {
+      return redactChunk(block, true, false)
+    }
+    if (!block.includes("\n")) {
+      return redactChunk(block, false, false)
+    }
+    const lines = block.split("\n")
+    for (let j = 0; j < lines.length; j += 1) {
+      const line = lines[j] ?? ""
+      if (!line.trim()) continue
+      lines[j] = await redactChunk(line, isLikelyEnglishSystemPrompt(line), false)
+    }
+    return lines.join("\n")
+  }
+  if (text.includes("\n\n")) {
+    const parts = text.split(/(\n{2,})/)
+    for (let i = 0; i < parts.length; i += 2) {
+      const para = parts[i] ?? ""
+      if (!para.trim()) continue
+      parts[i] = await redactMixedBlock(para)
+    }
+    return parts.join("")
+  }
+  return redactMixedBlock(text)
+}
+
+async function redactMessageText(
+  text: string,
+  redactChunk: (chunk: string, forceRules: boolean, previewable: boolean) => Promise<string>,
+): Promise<string> {
+  if (!text.includes("<system-reminder>")) {
+    return redactChunk(text, false, true)
+  }
+  const parts = text.split(SYSTEM_REMINDER_SPLIT_RE)
+  for (let i = 0; i < parts.length; i += 1) {
+    const segment = parts[i] ?? ""
+    if (!segment.trim()) continue
+    if (segment.startsWith("<system-reminder>") && segment.endsWith("</system-reminder>")) {
+      parts[i] = await redactSystemText(segment, redactChunk)
+    } else {
+      parts[i] = await redactChunk(segment, false, true)
+    }
+  }
+  return parts.join("")
+}
+
+async function extractSafeUpstreamError(
+  resBuf: Buffer,
+  status: number,
+  engine: MaskeraEngine,
+): Promise<string | undefined> {
+  if (status < 400 || resBuf.byteLength === 0) return undefined
+  let summary = ""
+  try {
+    const parsed = JSON.parse(resBuf.toString("utf8")) as unknown
+    if (isPlainObject(parsed)) {
+      const errObj = isPlainObject(parsed.error) ? parsed.error : parsed
+      const parts: string[] = []
+      if (typeof errObj.type === "string" && errObj.type.trim()) parts.push(errObj.type.trim())
+      if (typeof errObj.code === "string" && errObj.code.trim()) parts.push(errObj.code.trim())
+      if (typeof errObj.message === "string" && errObj.message.trim()) {
+        parts.push(errObj.message.trim())
+      }
+      summary = parts.join(": ")
+    }
+  } catch {
+    const raw = resBuf.toString("utf8").trim()
+    if (raw && !raw.startsWith("<")) summary = raw
+  }
+  if (!summary) return undefined
+  const trimmed = summary.length > 240 ? `${summary.slice(0, 240)}...` : summary
+  try {
+    const { result } = await engine.redact(trimmed, { mode: "rules" })
+    return result.text
+  } catch {
+    return `HTTP ${status}`
+  }
 }
 
 function headerFirst(headers: IncomingMessage["headers"], name: string): string {
@@ -2046,6 +2203,12 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
       return
     }
 
+    if ((method === "GET" || method === "HEAD") && BROWSER_PROBE_PATHS.has(normalizedPath)) {
+      res.writeHead(204, INSPECTOR_SECURITY_HEADERS)
+      res.end()
+      return
+    }
+
     // Streamable HTTP MCP endpoint sharing the warm ONNX engine and live
     // inspector while strictly isolating each MCP session's vault & approvals.
     if (normalizedPath === "/mcp" || normalizedPath === "/mcp/") {
@@ -2312,7 +2475,13 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
       sessionId = deriveProxySessionId(req.headers, parsed)
       let redactedObj: Record<string, unknown>
       try {
-        const redactChunk = async (chunk: string, forceRules: boolean): Promise<string> => {
+        const messagePreviews: string[] = []
+        const fallbackPreviews: string[] = []
+        const redactChunk = async (
+          chunk: string,
+          forceRules: boolean,
+          previewable: boolean,
+        ): Promise<string> => {
           if (!chunk.trim()) return chunk
           const { result } = await engine.redact(chunk, {
             mode: forceRules ? "rules" : undefined,
@@ -2322,12 +2491,14 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
           const applied = vault.apply(chunk, result, sessionId, proxyVaultOwner)
           stats.redactions += applied.totalRedactions
           mergeCounts(stats.counts, applied.counts)
-          if (redactedPreview.length < 6) {
-            const snippet =
-              applied.redacted.length > 1200
-                ? `${applied.redacted.slice(0, 1200)}...`
-                : applied.redacted
-            redactedPreview.push(snippet)
+          const snippet =
+            applied.redacted.length > 1200
+              ? `${applied.redacted.slice(0, 1200)}...`
+              : applied.redacted
+          if (previewable) {
+            if (messagePreviews.length < 6) messagePreviews.push(snippet)
+          } else if (applied.totalRedactions > 0 && fallbackPreviews.length < 4) {
+            fallbackPreviews.push(snippet)
           }
           return applied.redacted
         }
@@ -2336,26 +2507,17 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
           async (text, kind) => {
             if (!text.trim()) return text
             if (kind === "tool_description") {
-              return redactChunk(text, true)
+              return redactChunk(text, true, false)
             }
             // Long coding-agent system prompts often mix English boilerplate
             // sections with user-supplied Swedish sections (e.g. AGENTS.md).
-            // Evaluate per paragraph so English boilerplate runs fast rules +
+            // Evaluate per paragraph/line so English boilerplate runs fast rules +
             // customTerms without Swedish NER false positives while Swedish
             // paragraphs keep full hybrid NER protection.
             if (kind === "system") {
-              if (text.length >= 600 && text.includes("\n\n")) {
-                const parts = text.split(/(\n{2,})/)
-                for (let i = 0; i < parts.length; i += 2) {
-                  const para = parts[i] ?? ""
-                  if (!para.trim()) continue
-                  parts[i] = await redactChunk(para, isLikelyEnglishSystemPrompt(para))
-                }
-                return parts.join("")
-              }
-              return redactChunk(text, isLikelyEnglishSystemPrompt(text))
+              return redactSystemText(text, redactChunk)
             }
-            return redactChunk(text, false)
+            return redactMessageText(text, redactChunk)
           },
           {
             mutate: true,
@@ -2364,6 +2526,7 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
             },
           },
         )
+        redactedPreview.push(...(messagePreviews.length > 0 ? messagePreviews : fallbackPreviews))
       } catch (err) {
         recordAuditAndInspector({
           timestamp: new Date().toISOString(),
@@ -2550,6 +2713,7 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
     } finally {
       res.off("close", onClientClose)
     }
+    const errorDetail = await extractSafeUpstreamError(resBuf, upstreamRes.status, engine)
     if (hasMap && resContentType.includes("application/json")) {
       try {
         const parsed = JSON.parse(resBuf.toString("utf8")) as unknown
@@ -2570,6 +2734,7 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
           redactions: stats.redactions,
           counts: stats.counts,
           redactedPreview,
+          ...(errorDetail ? { errorDetail } : {}),
           ...(requestWarnings ? { warnings: requestWarnings } : {}),
         })
         log(
@@ -2596,6 +2761,7 @@ export async function startMaskeraProxy(options: ProxyOptions = {}): Promise<Run
       redactions: stats.redactions,
       counts: stats.counts,
       redactedPreview,
+      ...(errorDetail ? { errorDetail } : {}),
       ...(requestWarnings ? { warnings: requestWarnings } : {}),
     })
     log(

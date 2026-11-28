@@ -15,6 +15,8 @@ export interface InspectedRequest {
   counts: Record<string, number>
   /** Redacted snippets sent upstream (never raw PII). */
   redactedPreview: string[]
+  /** Optional non-PII upstream error summary when status >= 400. */
+  errorDetail?: string
   /** Optional non-PII security warnings (e.g. uninspectable binary attachments). */
   warnings?: string[]
 }
@@ -331,6 +333,11 @@ export function renderInspectorHtml(info: {
     white-space: pre-wrap;
     word-break: break-word;
   }
+  .preview.err-preview {
+    border-color: var(--err);
+    background: var(--err-bg);
+    color: var(--err);
+  }
   .tok {
     display: inline-block;
     padding: 0 4px;
@@ -404,6 +411,16 @@ export function renderInspectorHtml(info: {
 
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
   const highlightTokens = (s) => esc(s).replace(/\\[[A-ZÅÄÖ][A-ZÅÄÖ0-9_]*_\\d+\\]/g, (m) => '<span class="tok">' + m + "</span>");
+  const formatLocalTime = (iso) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return String(iso).slice(11, 19);
+    try {
+      return d.toLocaleTimeString("sv-SE", { hour12: false });
+    } catch {
+      return String(iso).slice(11, 19);
+    }
+  };
 
   function renderReceipt() {
     if (!lastReceipt) {
@@ -543,15 +560,16 @@ export function renderInspectorHtml(info: {
     }
     for (const it of items) seenIds.add(it.id);
     feedEl.innerHTML = '<div class="list">' + items.map((it) => {
-      const time = (it.timestamp || "").slice(11, 19);
+      const time = formatLocalTime(it.timestamp);
       const tags = Object.entries(it.counts || {}).map(([k, v]) => '<span class="count-tag">' + esc(k) + " ×" + v + "</span>").join("");
       const previews = (it.redactedPreview || []).map((p) => '<pre class="preview">' + highlightTokens(p) + "</pre>").join("");
+      const errBlock = it.errorDetail ? '<p class="body-label">Svar från API (fel):</p><pre class="preview err-preview">' + esc(it.errorDetail) + "</pre>" : "";
       const statusCls = it.status >= 200 && it.status < 400 ? "" : " err";
       const isOpen = openIds.has(it.id);
       return '<details class="item" data-id="' + esc(it.id) + '"' + (isOpen ? " open" : "") + '>' +
         '<summary><span class="left"><span class="badge' + statusCls + '">' + it.status + '</span><span class="path">' + esc(it.method + " " + it.path) + '</span>' + tags + (it.redactions === 0 ? '<span style="color:var(--muted);font-size:12px">0 PII</span>' : "") + '</span>' +
         '<span class="right"><span>' + (it.streamed ? "SSE" : "JSON") + '</span><span>' + it.durationMs + ' ms</span><span>' + esc(time) + '</span></span></summary>' +
-        '<div class="body"><p class="body-label">Skickat vidare:</p>' + (previews || '<pre class="preview">(ingen text i anropet)</pre>') + '</div></details>';
+        '<div class="body">' + errBlock + '<p class="body-label">Skickat vidare:</p>' + (previews || '<pre class="preview">(ingen text i anropet)</pre>') + '</div></details>';
     }).join("") + "</div>";
     for (const det of feedEl.querySelectorAll("details.item")) {
       det.addEventListener("toggle", () => {

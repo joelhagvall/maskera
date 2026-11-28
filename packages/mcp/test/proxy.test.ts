@@ -949,6 +949,95 @@ describe("guard (harness-agnostic pre-prompt / pre-tool / pipe check)", () => {
     expect(seenBody).not.toContain("Anna Lindqvist")
   })
 
+  it("answers browser icon probes locally (204) and handles Claude Code system-reminder + upstream error details cleanly", async () => {
+    const upstream = await startMockUpstream(() => ({
+      status: 429,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        type: "error",
+        error: {
+          type: "rate_limit_error",
+          message: "Rate limit exceeded for account provnamn.maskera@example.com.",
+        },
+      }),
+    }))
+
+    const engine = createMaskeraEngine({
+      defaultMode: "auto",
+      recognizer: stubRecognizer([
+        { value: "Claude Code", label: "NAMN" },
+        { value: "Anthropic", label: "ORGANISATION" },
+        { value: "Always", label: "NAMN" },
+        { value: "Anna Lindqvist", label: "NAMN" },
+      ]),
+    })
+    const proxy = await startMaskeraProxy({
+      port: 0,
+      upstream: upstream.url,
+      engine,
+    })
+    cleanups.push(() => proxy.close())
+
+    // Browser icon probes must never hit upstream or pollute the inspector
+    for (const probePath of [
+      "/favicon.ico",
+      "/apple-touch-icon.png",
+      "/apple-touch-icon-precomposed.png",
+      "/robots.txt",
+    ]) {
+      const probeRes = await fetch(`${proxy.url}${probePath}`)
+      expect(probeRes.status).toBe(204)
+    }
+    expect(upstream.seen).toHaveLength(0)
+    expect(proxy.inspector.list()).toHaveLength(0)
+
+    // Inspector HTML uses local time formatting rather than raw UTC slicing
+    const inspectorHtml = await (await fetch(proxy.inspectorUrl)).text()
+    expect(inspectorHtml).toContain("toLocaleTimeString")
+
+    // Claude Code sends CLI billing/identity headers in system[] and long
+    // English <system-reminder> lists inside user messages.
+    const reminderList = [
+      "<system-reminder>",
+      "- Always read the existing files before editing code or running git commands in this repository.",
+      "- Never commit or push changes unless explicitly asked and always check test output first.",
+      "- På svenska: sammanfatta ärendet för Anna Lindqvist.",
+      "</system-reminder>",
+      "Skriv ett kort mejl till Anna Lindqvist (19900101-2385).",
+    ].join("\n")
+
+    const res = await fetch(`${proxy.url}/v1/messages?beta=true`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        system: [
+          { type: "text", text: "x-anthropic-billing-header: cc_version=2.1.0; cch=abc123;" },
+          { type: "text", text: "You are Claude Code, Anthropic's official CLI for Claude." },
+        ],
+        messages: [{ role: "user", content: reminderList }],
+      }),
+    })
+    expect(res.status).toBe(429)
+    expect(upstream.seen).toHaveLength(1)
+
+    const seenBody = upstream.seen[0]?.body ?? ""
+    // CLI headers and English reminder bullets stay intact (no Swedish NER false positives)
+    expect(seenBody).toContain("x-anthropic-billing-header: cc_version=2.1.0")
+    expect(seenBody).toContain("You are Claude Code, Anthropic's official CLI for Claude.")
+    expect(seenBody).toContain("Always read the existing files before editing code")
+    // Swedish text inside reminder AND the user prompt are still fully redacted
+    expect(seenBody).not.toContain("Anna Lindqvist")
+    expect(seenBody).not.toContain("19900101-2385")
+
+    // Inspector records the user prompt preview first and surfaces a redacted 429 error detail
+    const recorded = proxy.inspector.list()
+    expect(recorded).toHaveLength(1)
+    expect(recorded[0]?.redactedPreview[0]).toContain("Skriv ett kort mejl till [NAMN_1]")
+    expect(recorded[0]?.errorDetail).toContain("rate_limit_error")
+    expect(recorded[0]?.errorDetail).not.toContain("provnamn.maskera@example.com")
+  })
+
   it("isolates proxy sessions per client auth/cache key when x-maskera-session is omitted", async () => {
     expect(deriveProxySessionId({ authorization: "Bearer key-a", "user-agent": "cli/1" })).not.toBe(
       deriveProxySessionId({ authorization: "Bearer key-b", "user-agent": "cli/1" }),
