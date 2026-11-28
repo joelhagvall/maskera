@@ -85,7 +85,7 @@ function checkStaged() {
     if (result.missing.length > 0) console.error(`  missing: ${result.missing.join(", ")}`)
     if (result.stale.length > 0) console.error(`  stale:   ${result.stale.join(", ")}`)
     console.error(
-      "Run `pnpm run prova` (or `pnpm run prova -- --only=/tjanster,/en/services`) before committing.",
+      "Run `pnpm run prova` (or `pnpm run prova --only=/tjanster` and `pnpm run prova --lang=en --only=/en/services`) before committing.",
     )
     process.exit(1)
   }

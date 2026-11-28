@@ -52,6 +52,23 @@ test("pre-commit runs the identifier and training privacy guards", () => {
   assert.match(preCommit, /training\/privacy_attestation\.test\.mjs/)
 })
 
+test("the prova receipt hint suggests commands that run", () => {
+  const hint = read("scripts/harness/prova-receipt.mjs")
+  const commands = [...hint.matchAll(/`(pnpm run prova[^`]*)`/g)].map((m) => m[1])
+  assert.ok(commands.length > 0)
+  for (const command of commands) {
+    assert.doesNotMatch(command, /\s--\s/, `${command}: pnpm forwards a literal --`)
+    const lang = command.match(/--lang=(\w+)/)?.[1] ?? "sv"
+    for (const path of command.match(/--only=(\S+)/)?.[1].split(",") ?? []) {
+      const english = path === "/en" || path.startsWith("/en/")
+      assert.ok(
+        lang === "all" || (lang === "en") === english,
+        `${command}: ${path} needs --lang=${english ? "en" : "sv"}`,
+      )
+    }
+  }
+})
+
 test("pre-push runs prova over every sitemap page when apps/demo changes", () => {
   assert.match(prePush, /scripts\/harness\/prova\.mjs --no-build --lang=all --only=(\s|$)/m)
 })
