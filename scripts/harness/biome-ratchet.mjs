@@ -56,6 +56,21 @@ export function lowerBaseline(baseline, actual) {
   return next
 }
 
+/**
+ * Override entries in biome.json that name a single file (no glob) which no
+ * longer exists. A deleted or renamed file leaves its lint exemption behind,
+ * where the next file at that path would silently inherit it.
+ */
+export function staleOverrideFiles(biomeConfig, exists) {
+  const stale = []
+  for (const override of biomeConfig.overrides ?? []) {
+    for (const path of override.includes ?? []) {
+      if (!/[*?[\]{}!]/.test(path) && !exists(path)) stale.push(path)
+    }
+  }
+  return stale
+}
+
 function measureBaselineFiles(files) {
   const existing = files.filter((f) => existsSync(join(ROOT, f)))
   if (existing.length === 0) return {}
@@ -122,7 +137,15 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     process.exit(0)
   }
 
-  if (!result.ok) {
+  const biomeConfig = JSON.parse(readFileSync(join(ROOT, "biome.json"), "utf8"))
+  const stale = staleOverrideFiles(biomeConfig, (path) => existsSync(join(ROOT, path)))
+  for (const path of stale) {
+    console.error(
+      `biome-ratchet: biome.json overrides name ${path}, which no longer exists. Remove it from the override.`,
+    )
+  }
+
+  if (!result.ok || stale.length > 0) {
     for (const g of result.growth) {
       console.error(
         `biome-ratchet: GROWTH in ${g.file} (${g.rule}): ${g.baseline} -> ${g.actual}. Fix the violation instead of adding debt.`,

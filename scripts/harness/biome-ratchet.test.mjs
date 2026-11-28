@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { evaluateRatchet, lowerBaseline } from "./biome-ratchet.mjs"
+import { evaluateRatchet, lowerBaseline, staleOverrideFiles } from "./biome-ratchet.mjs"
 
 test("evaluateRatchet passes on exact match", () => {
   const base = { "a.ts": { "lint/a11y/useSemanticElements": 2 } }
@@ -35,4 +35,18 @@ test("lowerBaseline only lowers counts and drops zeroed entries", () => {
     "a.ts": { r1: 1 },
     "b.ts": { r1: 3 },
   })
+})
+
+test("staleOverrideFiles names single-file overrides that no longer exist, never globs", () => {
+  const config = {
+    overrides: [
+      { includes: ["apps/demo/src/Gone.tsx", "apps/demo/src/Here.tsx", "**/public/*.svg"] },
+      { includes: ["packages/mcp/src/files.ts"] },
+    ],
+  }
+  const present = new Set(["apps/demo/src/Here.tsx", "packages/mcp/src/files.ts"])
+  assert.deepEqual(
+    staleOverrideFiles(config, (path) => present.has(path)),
+    ["apps/demo/src/Gone.tsx"],
+  )
 })

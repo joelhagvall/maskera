@@ -75,7 +75,6 @@
     },
     {
       "includes": [
-        "apps/demo/src/components/AgentSetupCard.tsx",
         "apps/demo/src/components/CodeSnippet.tsx",
         "apps/demo/src/components/Docs.tsx",
         "apps/demo/src/components/Header.tsx",
