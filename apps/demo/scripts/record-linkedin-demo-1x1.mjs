@@ -19,6 +19,7 @@ import { tmpdir } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { chromium } from "playwright"
+import sv from "../src/i18n/sv.json" with { type: "json" }
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 const PORT = Number(process.env.PORT ?? 5201)
@@ -209,8 +210,9 @@ try {
   if (!demo) throw new Error("could not access demo iframe")
 
   await demo.waitForLoadState("networkidle")
-  await demo.getByText("maskeras AI-modell aktiv").waitFor({ timeout: 120000 })
+  // Picking a tab starts the model download (the page loads it on demand).
   await demo.getByRole("button", { name: "Egen text" }).click()
+  await demo.getByText(sv.controls.modelReady).waitFor({ timeout: 120000 })
 
   // Stack the two panels vertically: on a square canvas each panel gets the
   // full width, which roughly doubles the text size on mobile feeds compared

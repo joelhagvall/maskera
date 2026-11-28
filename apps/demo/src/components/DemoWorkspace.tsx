@@ -1,10 +1,11 @@
-import { useDeferredValue, useEffect, useMemo, useState } from "react"
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react"
 import { DEMO_ANCHOR } from "../constants"
 import { invalidPersonnummer } from "../hints"
 import copy, { activeLocale } from "../i18n"
 import { navClick, type View, viewPaths } from "../routing"
 import { getScenarios, type Scenario } from "../scenarios"
 import { useSwedishNer } from "../useSwedishNer"
+import { useWhenNear } from "../useWhenNear"
 import { Controls } from "./Controls"
 import { Header } from "./Header"
 import { HomeClosing, HomeProof, HomeTracks, HomeTrust } from "./HomeTracks"
@@ -42,7 +43,14 @@ export function DemoWorkspace({
   const active = scenarios.find((scenario) => scenario.id === activeId) ?? scenarios[0]
   const [text, setText] = useState<string>(active.text)
   const [mapOpen, setMapOpen] = useState(false)
-  const [modelActivation, setModelActivation] = useState(1)
+  // 0 until the visitor heads for the demo: the model (about 40 MB) is only
+  // fetched when the demo comes near the viewport or is used.
+  const [modelActivation, setModelActivation] = useState(0)
+  const activateModel = useCallback(
+    () => setModelActivation((current) => (current === 0 ? 1 : current)),
+    [],
+  )
+  const demoRef = useWhenNear(activateModel, "600px 0px")
 
   const deferredText = useDeferredValue(text)
   // Every example text is analyzed in the background once the model is ready,
@@ -80,6 +88,12 @@ export function DemoWorkspace({
   function pick(s: Scenario) {
     setActiveId(s.id)
     setText(s.text)
+    activateModel()
+  }
+
+  function edit(next: string) {
+    setText(next)
+    activateModel()
   }
 
   function retryModel() {
@@ -92,7 +106,7 @@ export function DemoWorkspace({
       <main id="main-content">
         <HomeProof go={go} />
         <HomeTracks goSection={goSection} />
-        <div className="home-try-head">
+        <div className="home-try-head" ref={demoRef}>
           <h2 id={DEMO_ANCHOR}>{copy.demo.tryTitle}</h2>
           {/* The examples are Swedish; say why where English readers meet them. */}
           {activeLocale === "en" ? <p>{copy.demo.languageNote}</p> : null}
@@ -110,7 +124,7 @@ export function DemoWorkspace({
             tagline={active.tagline}
             text={text}
             redactions={ner.result.redactions}
-            onChange={setText}
+            onChange={edit}
           />
           <OutputCard
             result={ner.result}

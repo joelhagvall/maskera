@@ -54,7 +54,7 @@
     "modelLoading": "Loading Maskera's AI model…",
     "modelLoadingAria": "Loading Maskera's AI model",
     "modelDownloadNote": "The first run downloads about 43 MB. The model is saved locally for your next visit.",
-    "modelError": "The AI model could not be loaded. Swedish personal identity numbers, phone numbers and other fixed-format data will still be masked.",
+    "modelError": "The AI model could not be loaded. Personal identity numbers, phone numbers and other fixed formats are still masked, but names and addresses in free text can be missed.",
     "modelRetry": "Try again",
     "modelReady": "Maskera's AI model is running"
   },

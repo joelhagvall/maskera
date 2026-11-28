@@ -54,7 +54,7 @@
     "modelLoading": "Laddar Maskeras AI-modell…",
     "modelLoadingAria": "Laddar Maskeras AI-modell",
     "modelDownloadNote": "Första gången hämtas cirka 43 MB. Modellen sparas lokalt till nästa besök.",
-    "modelError": "AI-modellen kunde inte laddas. Personnummer, telefonnummer och annat med bestämt format maskeras ändå.",
+    "modelError": "AI-modellen kunde inte laddas. Personnummer, telefonnummer och andra fasta format maskeras ändå, men namn och adresser i fri text kan missas.",
     "modelRetry": "Försök igen",
     "modelReady": "Maskeras AI-modell är igång"
   },

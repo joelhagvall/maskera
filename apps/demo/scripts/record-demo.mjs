@@ -4,7 +4,7 @@
  *
  * Spins up the Vite dev server, drives the free-text example with Playwright,
  * captures a video, and transcodes webm -> mp4 with ffmpeg. The clip shows the
- * green "maskeras AI-modell aktiv" status, the live masking as the text is
+ * green model-ready status (sv.controls.modelReady), the live masking as the text is
  * typed in, and then the round trip: opening "Se hela flödet" to reveal the AI
  * reply (placeholders) and the restored answer (real values back in place).
  *
@@ -22,6 +22,7 @@ import { tmpdir } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { chromium } from "playwright"
+import sv from "../src/i18n/sv.json" with { type: "json" }
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 const PORT = Number(process.env.PORT ?? 5199)
@@ -105,7 +106,7 @@ try {
   await frameGrid()
 
   // Wait for the model to finish loading -> green "aktiv" dot, then re-frame.
-  await page.getByText("maskeras AI-modell aktiv").waitFor({ timeout: 120000 })
+  await page.getByText(sv.controls.modelReady).waitFor({ timeout: 120000 })
   await frameGrid()
   await sleep(700)
 

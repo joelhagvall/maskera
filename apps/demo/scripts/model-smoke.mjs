@@ -11,6 +11,7 @@ import { existsSync, readdirSync, statSync } from "node:fs"
 import { dirname, extname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { chromium, webkit } from "playwright"
+import sv from "../src/i18n/sv.json" with { type: "json" }
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 const URL = process.env.MODEL_SMOKE_URL ?? "http://127.0.0.1:4173/"
@@ -81,9 +82,11 @@ async function smoke(name) {
     })
 
     await page.goto(URL, { waitUntil: "domcontentloaded", timeout: 30_000 })
+    // The model loads when the demo comes near the viewport.
+    await page.locator("#testa").scrollIntoViewIfNeeded()
 
-    const ready = page.getByText("maskeras AI-modell aktiv", { exact: true })
-    const failed = page.getByText("AI-modellen kunde inte laddas.", { exact: false })
+    const ready = page.getByText(sv.controls.modelReady, { exact: true })
+    const failed = page.getByText(sv.controls.modelError.split(". ")[0], { exact: false })
     const outcome = await Promise.race([
       ready.waitFor({ timeout: TIMEOUT_MS }).then(() => "ready"),
       failed.waitFor({ timeout: TIMEOUT_MS }).then(() => "failed"),

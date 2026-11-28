@@ -17,6 +17,7 @@ import { tmpdir } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { chromium } from "playwright"
+import sv from "../src/i18n/sv.json" with { type: "json" }
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 const PORT = Number(process.env.PORT ?? 5202)
@@ -80,8 +81,9 @@ try {
   const recordingStartedAt = Date.now()
 
   await page.goto(URL, { waitUntil: "networkidle" })
-  await page.getByText("maskeras AI-modell aktiv").waitFor({ timeout: 120000 })
+  // Picking a tab starts the model download (the page loads it on demand).
   await page.getByRole("button", { name: "Egen text" }).click()
+  await page.getByText(sv.controls.modelReady).waitFor({ timeout: 120000 })
 
   // Only the two cards, stacked so each gets the full width of the square
   // canvas. Everything else on the page is hidden.
