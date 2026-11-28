@@ -241,7 +241,11 @@ export function Accuracy({
             <h2 id="begransningar-heading">{a.limitsTitle}</h2>
             <ul>
               {a.limits.map((item) => (
-                <li key={item}>{item}</li>
+                <li key={item}>
+                  {own.overMasking
+                    ? fill(item, { overMasking: formatPct(own.overMasking.pct) })
+                    : item}
+                </li>
               ))}
             </ul>
             <p className="comparison-limit">{a.provenance}</p>

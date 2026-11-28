@@ -65,6 +65,8 @@ describe("htmlToMarkdown", () => {
       expect(md.startsWith("# "), page).toBe(true)
       expect(md, page).not.toContain("<div")
       expect(md, page).not.toContain("<svg")
+      expect(md, page).not.toContain("· ·")
+      expect(md, page).not.toMatch(/\b(?:i|på|in|at) · \[/)
     }
   })
 })

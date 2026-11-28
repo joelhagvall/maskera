@@ -767,7 +767,7 @@
     "limitsTitle": "Viktigt att veta",
     "limits": [
       "Ingen av testtexterna finns i Maskeras träning, som bara använder genererad text. Grundmodellen KB-BERT är förtränad av Kungliga biblioteket på bred svensk text och kan ha sett samma källtexter, men aldrig etiketterna.",
-      "Maskera träffar ord i ungefär var femte mening utan personuppgifter. Det är priset för att hitta namn i gemener och ovanliga namn.",
+      "Maskera träffar ord i {overMasking} av meningarna utan personuppgifter. Det är priset för att hitta namn i gemener och ovanliga namn.",
       "Personnummer, organisationsnummer, bankgiro och IBAN saknar oberoende svensk testtext. De hittas med formatregler och kontrollsiffror och testas i projektets egna tester på GitHub.",
       "Ingen automatisk maskering är felfri. Granska själv när ett misstag kan få stora konsekvenser."
     ],
@@ -1165,10 +1165,9 @@
       "npmCta": "@maskera/mcp på npm"
     },
     "sdk": {
-      "body": "Ett npm-paket med reglerna och den svenska AI-modellen. Körs i webbläsaren eller i Node 18+.",
+      "body": "Ett npm-paket med reglerna och den svenska AI-modellen. Körs i webbläsaren eller i Node 18+, med valfri vårdprofil som behåller diagnoser och doser.",
       "packageManagerLabel": "npm",
       "installCommand": "npm install maskera @huggingface/transformers",
-      "points": ["Valfri vårdprofil som behåller diagnoser och doser"],
       "cta": "Öppna utvecklardokumentationen",
       "githubCta": "Källkod på GitHub"
     },

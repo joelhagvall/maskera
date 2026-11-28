@@ -68,6 +68,13 @@ describe("Accuracy", () => {
     const over = (system: (typeof SYSTEMS)[number]) => summary[system]?.overMasking?.pct ?? 100
     expect(over("presidio")).toBeLessThan(over("maskera"))
   })
+
+  it("derives the over-masking limit note from the measured result instead of hardcoding it", () => {
+    render(<Accuracy go={vi.fn()} />)
+    const limits = document.querySelector("#begransningar")?.textContent ?? ""
+    expect(limits).not.toContain("{overMasking}")
+    expect(limits).toContain(formatPct(summary.maskera.overMasking?.pct ?? -1))
+  })
   it("shows each context example as the model's real output, same in both languages", () => {
     const sv = copy.accuracy.contextExamples
     expect(en.accuracy.contextExamples.map(({ input, masked }) => ({ input, masked }))).toEqual(

@@ -767,7 +767,7 @@
     "limitsTitle": "Worth knowing",
     "limits": [
       "None of the test texts are in Maskera's training, which uses only generated text. The base model KB-BERT was pretrained by the National Library of Sweden on broad Swedish text and may have seen the same source texts, but never the labels.",
-      "Maskera hits words in about one in five sentences without personal data. That is the price of finding lowercase and unusual names.",
+      "Maskera hits words in {overMasking} of sentences without personal data. That is the price of finding lowercase and unusual names.",
       "Personal identity numbers, organisation numbers, bankgiro and IBAN have no independent Swedish test text. They are found with format rules and check digits and are covered by the project's own tests on GitHub.",
       "No automatic masking is error-free. Review the text yourself when a mistake could have serious consequences."
     ],
@@ -1165,10 +1165,9 @@
       "npmCta": "@maskera/mcp on npm"
     },
     "sdk": {
-      "body": "One npm package with the rules and the Swedish AI model. Runs in the browser or in Node 18+.",
+      "body": "One npm package with the rules and the Swedish AI model. Runs in the browser or in Node 18+, with an optional clinical profile that keeps diagnoses and doses.",
       "packageManagerLabel": "npm",
       "installCommand": "npm install maskera @huggingface/transformers",
-      "points": ["Optional clinical profile that keeps diagnoses and doses"],
       "cta": "Open developer documentation",
       "githubCta": "Source code on GitHub"
     },

@@ -102,7 +102,15 @@ function normalizeForMarkdown(document) {
     pair.before(document.createTextNode(" "))
   }
   for (const link of document.querySelectorAll("a + a")) {
-    link.before(document.createTextNode(" · "))
+    const prev = link.previousSibling
+    const directlyAfterLink =
+      prev?.nodeName === "A" ||
+      (prev?.nodeType === 3 &&
+        (prev.textContent ?? "").trim() === "" &&
+        prev.previousSibling?.nodeName === "A")
+    if (directlyAfterLink) {
+      link.before(document.createTextNode(" · "))
+    }
   }
 }
 

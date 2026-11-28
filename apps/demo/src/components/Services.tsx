@@ -287,12 +287,6 @@ export function Services({
                 </pre>
               </div>
 
-              <ul className="sdk-points">
-                {services.sdk.points.map((point) => (
-                  <li key={point}>{point}</li>
-                ))}
-              </ul>
-
               <div className="services-cta-row">
                 <a
                   className="ext-trial-cta"
