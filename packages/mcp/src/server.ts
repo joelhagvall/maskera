@@ -79,7 +79,7 @@ const TOOLS: readonly ToolDefinition[] = [
   {
     name: "maskera_redact",
     description:
-      "Redact Swedish PII (names, personnummer, addresses, emails, phones, IBAN, etc.) locally on-device using Maskera's 43 MB Swedish NER model and deterministic rules. Stores the restore map locally under session_id so placeholders stay consistent across calls and can be restored later without exposing raw PII to the LLM.",
+      "Redact Swedish PII (names, personnummer, addresses, emails, phones, IBAN, etc.) locally on-device using Maskera's Swedish NER model and deterministic rules. Stores the restore map locally under session_id so placeholders stay consistent across calls and can be restored later without exposing raw PII to the LLM.",
     annotations: {
       title: "Redact Swedish PII locally",
       readOnlyHint: true,

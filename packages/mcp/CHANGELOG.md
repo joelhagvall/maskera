@@ -1,5 +1,11 @@
 # @maskera/mcp
 
+## 0.4.5
+
+### Patch Changes
+
+- The first-run model message now states the size of the quantization actually loaded (about 59 MB for the default q8 on Node, 43 MB for q4) instead of always saying 43 MB, and the README, the `maskera_redact` tool description and the bundled skill no longer quote a fixed size.
+
 ## 0.4.4
 
 ### Patch Changes

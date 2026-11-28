@@ -13,7 +13,7 @@ description: Redact Swedish personal data (names, personnummer, addresses, phone
 
 # Maskera: local Swedish PII redaction
 
-Maskera runs 100% locally on-device using deterministic Swedish rules plus the 43 MB Swedish ONNX NER model (\`joelhagvall/maskera-sv-ner\`). Raw PII and restore maps stay local so cloud LLMs only see placeholders such as \`[NAMN_1]\` and \`[PERSONNUMMER_1]\`.
+Maskera runs 100% locally on-device using deterministic Swedish rules plus the Swedish ONNX NER model (\`joelhagvall/maskera-sv-ner\`). Raw PII and restore maps stay local so cloud LLMs only see placeholders such as \`[NAMN_1]\` and \`[PERSONNUMMER_1]\`.
 
 ## Choose the right mode
 

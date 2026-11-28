@@ -24,6 +24,8 @@ export type MaskMode = "auto" | "rules"
 export interface ModelLoadEvent {
   phase: "loading" | "ready" | "error"
   model: string
+  /** The quantization being loaded (`"q8"` on Node by default, `"q4"` for a local model path). */
+  dtype?: string
   elapsedMs?: number
   error?: string
 }
@@ -335,7 +337,7 @@ export function createMaskeraEngine(options: EngineOptions = {}): MaskeraEngine 
       // may only bundle model_q4.onnx unless dtype is specified explicitly.
       const dtype = options.nerOptions?.dtype ?? (options.nerOptions?.localModelPath ? "q4" : "q8")
       const loadStartedAt = Date.now()
-      options.onModelStatus?.({ phase: "loading", model })
+      options.onModelStatus?.({ phase: "loading", model, dtype })
       recognizer = createNerRecognizer({
         ...options.nerOptions,
         model,
@@ -607,8 +609,16 @@ export function createMaskeraEngine(options: EngineOptions = {}): MaskeraEngine 
  * Returns an `onModelStatus` handler that prints a concise progress line on
  * stderr only when model loading takes longer than `delayMs` (default 350ms),
  * keeping warm/cached runs quiet while reassuring users during the initial
- * 43 MB ONNX download.
+ * ONNX download (size per dtype in MODEL_DOWNLOAD_MB).
  */
+/** Hub file sizes of the pinned model per dtype, rounded to MB (q4 is model_q4.onnx, q8 model_quantized.onnx). */
+export const MODEL_DOWNLOAD_MB: Readonly<Record<string, number>> = { q4: 43, q8: 59 }
+
+function downloadSize(dtype: string | undefined): string {
+  const mb = dtype ? MODEL_DOWNLOAD_MB[dtype] : undefined
+  return mb ? `, ~${mb} MB on first run` : ""
+}
+
 export function createModelProgressLogger(
   write: (line: string) => void = (line) => process.stderr.write(`${line}\n`),
   delayMs = 350,
@@ -623,7 +633,7 @@ export function createModelProgressLogger(
       timer = setTimeout(() => {
         announcedLoading = true
         write(
-          `[maskera] Loading Swedish ONNX model (${event.model}, ~43 MB on first run, cached locally)...`,
+          `[maskera] Loading Swedish ONNX model (${event.model}${downloadSize(event.dtype)}, cached locally)...`,
         )
       }, delayMs)
       timer.unref?.()

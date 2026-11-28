@@ -1194,11 +1194,13 @@ describe("MaskeraMcpServer JSON-RPC protocol and tools", () => {
 
     const slowLines: string[] = []
     const slowLogger = createModelProgressLogger((l) => slowLines.push(l), 15)
-    slowLogger({ phase: "loading", model: "maskera-sv-ner" })
+    slowLogger({ phase: "loading", model: "maskera-sv-ner", dtype: "q8" })
     await new Promise((r) => setTimeout(r, 40))
     slowLogger({ phase: "ready", model: "maskera-sv-ner", elapsedMs: 42 })
     expect(slowLines.length).toBe(2)
     expect(slowLines[0]).toContain("Loading Swedish ONNX model")
+    // The size follows the dtype being loaded: Node's default q8 is not the 43 MB q4.
+    expect(slowLines[0]).toContain("~59 MB")
     expect(slowLines[1]).toContain("ready (42ms)")
   })
 })

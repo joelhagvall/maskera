@@ -8,7 +8,7 @@ Local Swedish PII redaction for any AI agent or LLM client:
 4. **Hook / pipe guard (`maskera-mcp guard`)**: blocks PII in Claude Code / Cursor hooks or Unix pipelines (`exit 2`, never echoes raw PII) or redacts streams via `--redact`.
 5. **Client installer and diagnostics (`maskera-mcp install` / `maskera-mcp doctor`)**: auto-detects or configures clients (`--apply`, `--project`, `--with-hook`), runs an automatic Swedish PII self-test + live `/mcp` probe, and prints (or saves via `--receipt <file.json>`) a zero-PII setup receipt (`maskera-setup-receipt/v1`).
 
-All redaction runs 100% locally using `maskera` (deterministic Swedish rules + the 43 MB open Swedish ONNX NER model `joelhagvall/maskera-sv-ner`).
+All redaction runs 100% locally using `maskera` (deterministic Swedish rules + the open Swedish ONNX NER model `joelhagvall/maskera-sv-ner`, about 59 MB in the default q8 build on Node, 43 MB in q4).
 
 ## 1. Local LLM proxy + warm Streamable HTTP MCP
 
