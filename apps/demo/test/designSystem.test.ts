@@ -147,6 +147,33 @@ describe("design system guard", () => {
     )
   })
 
+  it("makes every code block focusable so a keyboard can scroll a long line", () => {
+    // axe scrollable-region-focusable: a <pre> scrolls sideways on a phone.
+    const components = resolve(root, "components")
+    const unfocusable = readdirSync(components)
+      .filter((file) => file.endsWith(".tsx"))
+      .flatMap((file) =>
+        [...readFileSync(resolve(components, file), "utf8").matchAll(/<pre\b[^>]*>/g)]
+          .filter((match) => !/tabIndex=\{0\}/.test(match[0]))
+          .map((match) => `${file}: ${match[0]}`),
+      )
+    expect(unfocusable, "give the <pre> tabIndex={0}, or render it with CodeSnippet").toEqual([])
+  })
+
+  it("uses only custom properties the stylesheet defines", () => {
+    // An undefined var() silently falls back (a transparent box, a full-ink
+    // underline). The --pii-* colours are set inline per label by labels.ts.
+    const source = css.replace(/\/\*[\s\S]*?\*\//g, "")
+    const defined = new Set([...source.matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]))
+    const undefinedVars = [
+      ...new Set([...source.matchAll(/var\(\s*(--[\w-]+)/g)].map((m) => m[1])),
+    ].filter((name) => !defined.has(name) && !name.startsWith("--pii-"))
+    expect(
+      undefinedVars,
+      "define the token in :root and the dark theme, or use an existing one",
+    ).toEqual([])
+  })
+
   it("casts the hero window shadow once, from the stage, never from the crossfading scenes", () => {
     // Two scene shadows stack while the scenes crossfade, so the halo under
     // the window darkens and then snaps back when the outgoing scene hides.

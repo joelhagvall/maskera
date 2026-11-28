@@ -80,7 +80,7 @@ describe("Docs pages", () => {
       "/docs/sdk",
       "/docs/felsokning",
     ])
-    expect(links[0].textContent).toContain(copy.docs.overview.lede)
+    expect(links[0].textContent).toContain(copy.docs.overview.summary)
     fireEvent.click(links[2])
     expect(go).toHaveBeenCalledWith("docsSdk")
   })

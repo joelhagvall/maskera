@@ -21,6 +21,7 @@ beforeEach(() => {
   document.head.innerHTML = `
     <title>${STATIC_TITLE}</title>
     <link rel="canonical" href="https://maskera.dev/">
+    <link rel="alternate" type="text/markdown" href="/index.md">
     <meta name="description" content="startsida">
     <meta property="og:url" content="https://maskera.dev/">
     <meta property="og:title" content="startsida">
@@ -179,6 +180,11 @@ describe("useRoute: route metadata", () => {
     expect(
       document.querySelector<HTMLMetaElement>('meta[name="twitter:description"]')?.content,
     ).toContain("webbläsartillägg")
+    expect(
+      document
+        .querySelector<HTMLLinkElement>('link[rel="alternate"][type="text/markdown"]')
+        ?.getAttribute("href"),
+    ).toBe("/tjanster.md")
     unmount()
   })
 })

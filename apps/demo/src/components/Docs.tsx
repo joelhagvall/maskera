@@ -99,7 +99,8 @@ function DocsSubNav({ current, go }: { current: DocsView; go: (view: View) => vo
 }
 
 /**
- * The other docs pages as cards at the end of each page: title and lede, so
+ * The other docs pages as cards at the end of each page: title and a one-line
+ * summary (the full lede would be cut mid-sentence), so
  * a reader who finished one page sees where to go next without the subnav.
  */
 function DocsNext({ current, go }: { current: DocsView; go: (view: View) => void }) {
@@ -117,7 +118,7 @@ function DocsNext({ current, go }: { current: DocsView; go: (view: View) => void
               onClick={navClick(() => go(item.view))}
             >
               <span className="docs-next-title">{copy.docs.nav[item.key]} →</span>
-              <span className="docs-next-lede">{copy.docs[item.key].lede}</span>
+              <span className="docs-next-lede">{copy.docs[item.key].summary}</span>
             </a>
           </li>
         ))}

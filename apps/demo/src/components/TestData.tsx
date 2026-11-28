@@ -1,9 +1,10 @@
+import { DEMO_ANCHOR } from "../constants"
 import copy from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
 import { navClick, type View, viewPaths } from "../routing"
 import { TopBar } from "./TopBar"
 
-export function TestData({ go }: { go: (view: View) => void }) {
+export function TestData({ go, onTryDemo }: { go: (view: View) => void; onTryDemo: () => void }) {
   return (
     <>
       <header>
@@ -25,7 +26,7 @@ export function TestData({ go }: { go: (view: View) => void }) {
             ))}
           </ul>
           <p className="prose-foot">
-            <a href={viewPaths.demo} onClick={navClick(() => go("demo"))}>
+            <a href={`${viewPaths.demo}#${DEMO_ANCHOR}`} onClick={navClick(onTryDemo)}>
               {copy.testData.demoCta}
             </a>
           </p>

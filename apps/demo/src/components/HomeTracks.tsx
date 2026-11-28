@@ -101,12 +101,18 @@ export function HomeTrust({ go }: { go: (view: View) => void }) {
  * buttons again (browser icon, agent prompt copy), for visitors who scrolled
  * through the demo.
  */
-export function HomeClosing({ goSection }: { goSection: (view: View, anchor: string) => void }) {
+export function HomeClosing({
+  go,
+  goSection,
+}: {
+  go: (view: View) => void
+  goSection: (view: View, anchor: string) => void
+}) {
   const closing = copy.homeClosing
   return (
     <section className="home-closing" aria-labelledby="home-closing-title">
       <h2 id="home-closing-title">{closing.title}</h2>
-      <ExtensionHeroActions goSection={goSection} />
+      <ExtensionHeroActions go={go} goSection={goSection} />
     </section>
   )
 }

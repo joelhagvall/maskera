@@ -53,41 +53,37 @@ afterEach(() => {
 describe("ExtensionHeroActions", () => {
   it("prerenders one primary button per visitor kind, none tied to the user agent", () => {
     allSoon()
-    const { container } = render(<ExtensionHeroActions goSection={vi.fn()} />)
+    const { container } = render(<ExtensionHeroActions go={vi.fn()} goSection={vi.fn()} />)
     const kinds = [...container.querySelectorAll(".hero-cta-primary")].map((a) =>
       a.getAttribute("data-for"),
     )
     expect(kinds).toEqual(["chrome", "edge", "firefox", "safari", "mobile"])
   })
 
-  it("points to the services install section while no store listing is live", () => {
+  it("sends a browser without a store listing to the demo on this page, not to a dead end", () => {
     allSoon()
+    const go = vi.fn()
     const goSection = vi.fn()
-    const { container } = render(<ExtensionHeroActions goSection={goSection} />)
+    const { container } = render(<ExtensionHeroActions go={go} goSection={goSection} />)
 
     for (const visitor of ["chrome", "edge", "firefox", "safari"]) {
-      const install = heroButton(container, visitor)
-      expect(install.textContent).toBe(copy.extensionInstall.heroInstall)
-      expect(install.getAttribute("href")).toBe("/tjanster#tillagg")
-      expect(install.querySelector("svg")).toBeTruthy()
+      const tryHere = heroButton(container, visitor)
+      expect(tryHere.textContent).toBe(copy.extensionInstall.heroTryHere)
+      expect(tryHere.getAttribute("href")).toBe("/#testa")
     }
-    fireEvent.click(heroButton(container, "chrome"))
-    expect(goSection).toHaveBeenLastCalledWith("services", "tillagg")
+    fireEvent.click(heroButton(container, "firefox"))
+    expect(goSection).toHaveBeenLastCalledWith("demo", "testa")
 
-    const writeText = vi.fn().mockResolvedValue(undefined)
-    Object.defineProperty(navigator, "clipboard", {
-      value: { writeText },
-      configurable: true,
-    })
-    const agents = screen.getByRole("button", { name: copy.extensionInstall.heroAgents })
+    const agents = screen.getByRole("link", { name: copy.extensionInstall.heroAgents })
     expect(agents.querySelectorAll(".agent-logo-badge")).toHaveLength(4)
+    expect(agents.getAttribute("href")).toBe("/docs")
     fireEvent.click(agents)
-    expect(writeText).toHaveBeenCalledWith(copy.agentSetup.promptText)
+    expect(go).toHaveBeenLastCalledWith("docs")
   })
 
   it("offers the Chrome Web Store to Chrome, and to Edge until Edge Add-ons is live", () => {
     chromeLive()
-    const { container } = render(<ExtensionHeroActions goSection={vi.fn()} />)
+    const { container } = render(<ExtensionHeroActions go={vi.fn()} goSection={vi.fn()} />)
 
     const add = heroButton(container, "chrome")
     expect(add.textContent).toBe("Lägg till i Chrome, gratis")
@@ -98,13 +94,13 @@ describe("ExtensionHeroActions", () => {
     const edge = heroButton(container, "edge")
     expect(edge.textContent).toBe("Lägg till i Edge via Chrome Web Store")
     expect(edge.getAttribute("href")).toBe("https://chromewebstore.google.com/detail/example")
-    expect(heroButton(container, "firefox").getAttribute("href")).toBe("/tjanster#tillagg")
+    expect(heroButton(container, "firefox").getAttribute("href")).toBe("/#testa")
   })
 
   it("sends phones to the desktop extension section without a browser icon", () => {
     chromeLive()
     const goSection = vi.fn()
-    const { container } = render(<ExtensionHeroActions goSection={goSection} />)
+    const { container } = render(<ExtensionHeroActions go={vi.fn()} goSection={goSection} />)
 
     const phone = heroButton(container, "mobile")
     expect(phone.textContent).toBe(copy.extensionInstall.heroDesktopExtension)

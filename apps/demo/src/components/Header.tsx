@@ -1,5 +1,5 @@
 import { Fragment } from "react"
-import copy, { activeLocale } from "../i18n"
+import copy from "../i18n"
 import { labelMeta, pillStyle } from "../labels"
 import type { View } from "../routing"
 import { ExtensionHeroActions } from "./ExtensionInstall"
@@ -41,10 +41,7 @@ export function Header({
           ))}{" "}
           {copy.header.browserLead} <strong>{copy.header.browserEmphasis}</strong>.
         </p>
-        <ExtensionHeroActions goSection={goSection} />
-        {activeLocale === "en" ? (
-          <p className="demo-language-note">{copy.demo.languageNote}</p>
-        ) : null}
+        <ExtensionHeroActions go={go} goSection={goSection} />
         <HeroStage />
       </div>
     </header>

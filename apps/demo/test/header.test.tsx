@@ -18,21 +18,15 @@ function renderHeader() {
 
 describe("Header", () => {
   it("gives the extension and AI agents a call to action each", async () => {
-    const writeText = vi.fn().mockResolvedValue(undefined)
-    Object.defineProperty(navigator, "clipboard", {
-      value: { writeText },
-      configurable: true,
-    })
     const { container } = renderHeader()
 
     expect(screen.getByRole("heading", { name: copy.header.title })).toBeTruthy()
     expect(screen.getByText(copy.header.browserEmphasis).tagName).toBe("STRONG")
     expect(container.querySelector(".lede-marker")?.textContent).toBe("[NAMN_1]")
     expect(container.querySelector(".lede")?.textContent).not.toContain("{marker}")
-    const agents = screen.getByRole("button", { name: copy.extensionInstall.heroAgents })
+    const agents = screen.getByRole("link", { name: copy.extensionInstall.heroAgents })
     expect(agents.querySelectorAll(".agent-logo-badge")).toHaveLength(4)
-    fireEvent.click(agents)
-    expect(writeText).toHaveBeenCalledWith(copy.agentSetup.promptText)
+    expect(agents.getAttribute("href")).toBe("/docs")
   })
 
   it("renders the hero heading text exactly once", () => {

@@ -81,7 +81,12 @@ function InstallTabs() {
           title={copy.copyButton.copy}
         />
       </div>
-      <pre role="tabpanel" id="install-command" aria-labelledby={`install-tab-${pm.id}`}>
+      <pre
+        role="tabpanel"
+        tabIndex={0}
+        id="install-command"
+        aria-labelledby={`install-tab-${pm.id}`}
+      >
         <code>
           <span className="code-line">{highlight(pm.cmd)}</span>
         </code>

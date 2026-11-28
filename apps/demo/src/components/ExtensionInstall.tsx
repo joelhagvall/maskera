@@ -1,14 +1,11 @@
 import type { ReactElement } from "react"
+import { DEMO_ANCHOR } from "../constants"
 import { EXTENSION_BROWSERS, EXTENSION_DOWNLOAD_URL, heroTargets } from "../extensionBrowsers"
 import copy from "../i18n"
 import { AgentLogoStack, ArrowUpRightIcon, BROWSER_ICONS } from "../icons"
 import { navClick, type View, viewPaths } from "../routing"
-import { CopyButton } from "./CopyButton"
 
 export const INSTALL_ANCHOR = "installera"
-
-/** The home page's try-it-yourself demo section. */
-export const DEMO_ANCHOR = "testa"
 
 /** Where the hero's buttons land on the services page (section ids there). */
 export const SERVICES_SECTIONS = {
@@ -20,14 +17,17 @@ export const SERVICES_SECTIONS = {
 
 /**
  * Hero call to action. One primary button that fits the visitor: the store
- * button for their browser once that listing is live, and the install section
- * on the services page until then. Phones cannot run desktop extensions, so
- * they get the same install section labelled as the desktop extension, with
- * no browser icon. The second button gives AI agents the same weight.
+ * button for their browser once that listing is live. A desktop browser
+ * without a listing yet gets the demo on this page instead of a dead-end
+ * install link. Phones cannot run desktop extensions, so they get the install
+ * section labelled as the desktop extension, with no browser icon. The second
+ * button takes AI agents to the docs, where the setup prompt is explained.
  */
 export function ExtensionHeroActions({
+  go,
   goSection,
 }: {
+  go: (view: View) => void
   goSection: (view: View, anchor: string) => void
 }) {
   const text = copy.extensionInstall
@@ -73,11 +73,10 @@ export function ExtensionHeroActions({
           key={visitor}
           data-for={visitor}
           className="hero-cta hero-cta-primary"
-          href={`${viewPaths.services}#${SERVICES_SECTIONS.extension}`}
-          onClick={navClick(() => goSection("services", SERVICES_SECTIONS.extension))}
+          href={`${viewPaths.demo}#${DEMO_ANCHOR}`}
+          onClick={navClick(() => goSection("demo", DEMO_ANCHOR))}
         >
-          <Icon size={16} />
-          {text.heroInstall}
+          {text.heroTryHere}
         </a>
       )
     },
@@ -87,17 +86,14 @@ export function ExtensionHeroActions({
     <div className="hero-install">
       <div className="hero-cta-row">
         {primary}{" "}
-        <CopyButton
-          text={copy.agentSetup.promptText}
+        <a
           className="hero-cta hero-cta-agent"
-          iconSize={14}
-          iconPosition="end"
-          leading={<AgentLogoStack />}
-          label={text.heroAgents}
-          copiedLabel={copy.agentSetup.copiedPromptCta}
-          ariaLabel={text.heroAgents}
-          title={copy.agentSetup.promptTitle}
-        />
+          href={viewPaths.docs}
+          onClick={navClick(() => go("docs"))}
+        >
+          <AgentLogoStack />
+          {text.heroAgents}
+        </a>
       </div>
     </div>
   )

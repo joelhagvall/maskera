@@ -1,6 +1,7 @@
 import { type MouseEvent, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { activeLocale, localeFromPath, setActiveLocale, useLocale } from "./i18n"
 import { getViewMeta, getViewPaths, manifestPath, type View, viewPaths, viewUrl } from "./meta"
+import { markdownPathFor } from "./paths"
 
 // Titles/descriptions live in meta.ts, shared with the generated static HTML
 // shells for the sub-pages (see vite.config.ts).
@@ -42,6 +43,9 @@ export function applyViewMeta(view: View, locale = activeLocale) {
   document
     .querySelector<HTMLLinkElement>('link[rel="manifest"]')
     ?.setAttribute("href", manifestPath(locale))
+  document
+    .querySelector<HTMLLinkElement>('link[rel="alternate"][type="text/markdown"]')
+    ?.setAttribute("href", markdownPathFor(getViewPaths(locale)[view]))
 }
 
 export function viewFromPath(pathname: string): View {

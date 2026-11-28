@@ -309,10 +309,10 @@
       },
       {
         "id": "kundsupport",
-        "scenario": "support",
+        "scenario": "klagomal",
         "title": "Customer support",
         "body": "Tickets and complaints are masked even when the customer writes in capitals.",
-        "masked": "Names, card numbers, IBAN and phone"
+        "masked": "Names, personal identity numbers, card numbers and phone"
       }
     ],
     "maskedLabel": "Masked:",
@@ -1246,7 +1246,7 @@
   "extensionInstall": {
     "heroAddTo": "Add to {browser}, it's free",
     "heroAddToVia": "Add to {browser} via {store}",
-    "heroInstall": "Install the extension",
+    "heroTryHere": "Try the masking here",
     "heroDesktopExtension": "See the desktop extension",
     "heroAgents": "Connect to your agent",
     "body": "No account is needed until you activate Pro.",
@@ -1290,6 +1290,7 @@
     "switchLabel": "Visa sidan på svenska"
   },
   "topBar": {
+    "navLabel": "Main menu",
     "breadcrumbLabel": "Breadcrumb",
     "developers": "Developers",
     "services": "Products",
@@ -1374,6 +1375,7 @@
       "metaDescription": "Choose the right Maskera mode: browser extension, local LLM proxy, Streamable HTTP or stdio MCP, guard hooks, and npm SDK.",
       "title": "Documentation",
       "lede": "All masking in Maskera runs locally on your device. Pick the mode that fits where your text lives and verify with made-up data.",
+      "summary": "Pick a mode and check that masking works.",
       "verifyTitle": "You know it worked when",
       "verifyBody": "Run npx -y @maskera/mcp doctor. The report should start with OK and end with a sample redaction that shows 0 leaks.",
       "doctorRoot": "/Users/you/project",
@@ -1436,6 +1438,7 @@
       "metaDescription": "Complete reference for @maskera/mcp: all MCP tools, Streamable HTTP /mcp, scoped policy flags, browser approvals, prompts, resources, guard, install, and doctor.",
       "title": "@maskera/mcp reference",
       "lede": "One npm package that masks what your AI agent sends and reads, locally on your machine. It runs as a proxy, an MCP server, or a hook.",
+      "summary": "Proxy, MCP server and hook for AI agents.",
       "verifyTitle": "You know it worked when",
       "verifyBody": "Ask your agent to call maskera_status. The reply lists your allowed folders and the active policy.",
       "sections": [
@@ -1588,6 +1591,7 @@
       "metaDescription": "Step-by-step setup for AI clients such as Claude Code, Codex, and Cursor, with a made-up Swedish data verification test.",
       "title": "Client guides",
       "lede": "Exact steps and commands per client. Every configuration can also be written or previewed with npx -y @maskera/mcp install <client>.",
+      "summary": "Ready-made steps for Claude, Codex, Cursor and more.",
       "verifyTitle": "You know it worked when",
       "verifyBody": "Type a made-up address such as provnamn.maskera@example.com. The inspector at http://127.0.0.1:8787/_maskera should show [EPOST_1] in what was sent.",
       "sections": [
@@ -1644,6 +1648,7 @@
       "metaDescription": "Mask Swedish personal data in browsers and Node.js with maskera and @maskera/core: clinical profile, custom rules, ONNX self-hosting, and production checklist.",
       "title": "SDK and operations",
       "lede": "Use maskera (rules + 43 MB Swedish AI model) or @maskera/core (rules only, zero dependencies) directly in your own TypeScript or JavaScript code.",
+      "summary": "Masking in your own TypeScript and JavaScript code.",
       "verifyTitle": "You know it worked when",
       "verifyBody": "The example below sends text without names or personnummer to the model, and restore(answer) brings back the exact original.",
       "sections": [
@@ -1699,6 +1704,7 @@
       "metaDescription": "Resolve common issues with @maskera/mcp and maskera: 502 fail-closed, Codex with ChatGPT login, offline models, loopback protection, and known boundaries.",
       "title": "Troubleshooting and boundaries",
       "lede": "Common issues, why Maskera blocks rather than silently forwarding unredacted text, and where local masking stops.",
+      "summary": "Common issues and what local masking does not cover.",
       "verifyTitle": "First step when debugging",
       "verifyBody": "Run npx -y @maskera/mcp doctor --root . to see which layer failed (Node version, directory access, ONNX model, or local proxy).",
       "sections": [

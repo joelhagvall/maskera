@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { Footer } from "./components/Footer"
+import { DEMO_ANCHOR } from "./constants"
 import copy from "./i18n"
 import { useRoute, type View } from "./routing"
 import { getLoadedView, loadView } from "./views"
@@ -68,15 +69,17 @@ export function App({ initialView }: { initialView?: View }) {
 
   const goCoverage = useCallback(() => goSection("transparency", "vad-maskeras"), [goSection])
 
-  // Open the home demo on one example (a scenario id from copy.scenarios).
+  // Open the home demo on one example (a scenario id from copy.scenarios),
+  // scrolled to the demo itself rather than the top of the home page.
   const goScenario = useCallback(
     (id: string) => {
       setRequestedScenarioId(id)
-      go("demo")
+      goSection("demo", DEMO_ANCHOR)
     },
-    [go],
+    [goSection],
   )
   const goContextDemo = useCallback(() => goScenario("kontext"), [goScenario])
+  const goDemo = useCallback(() => goSection("demo", DEMO_ANCHOR), [goSection])
 
   const DemoView = view === "demo" ? getLoadedView("demo") : undefined
   const DevView = view === "dev" ? getLoadedView("dev") : undefined
@@ -118,10 +121,10 @@ export function App({ initialView }: { initialView?: View }) {
       {DocsSdkView && <DocsSdkView go={go} />}
       {DocsTroubleshootingView && <DocsTroubleshootingView go={go} />}
       {TransparencyView && <TransparencyView go={go} />}
-      {TestDataView && <TestDataView go={go} />}
+      {TestDataView && <TestDataView go={go} onTryDemo={goDemo} />}
       {PrivacyView && <PrivacyView go={go} />}
       {ServicesView && <ServicesView go={go} goSection={goSection} onCoverage={goCoverage} />}
-      {AccuracyView && <AccuracyView go={go} onTryContext={goContextDemo} />}
+      {AccuracyView && <AccuracyView go={go} onTryDemo={goDemo} onTryContext={goContextDemo} />}
       {SecurityView && <SecurityView go={go} />}
       {AboutView && <AboutView go={go} />}
       {FaqView && <FaqView go={go} />}

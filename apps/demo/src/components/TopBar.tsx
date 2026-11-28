@@ -70,7 +70,7 @@ export function TopBar({ current, go }: { current: View; go: (view: View) => voi
           <ThemeToggle />
           <LanguageToggle current={current} />
         </div>
-        <nav className="head-links">
+        <nav className="head-links" aria-label={copy.topBar.navLabel}>
           {nav.map((item) => (
             <a
               key={item.view}

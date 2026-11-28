@@ -322,7 +322,7 @@ function CodeScene() {
         <span className="stage-window-title">{code.fileLabel}</span>
       </div>
       <div className="hero-code">
-        <pre>
+        <pre tabIndex={0}>
           <code>
             {CODE_LINES.map((line, i) => (
               <span key={`${i}-${line}`} className="code-line">

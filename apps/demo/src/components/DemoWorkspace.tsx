@@ -1,11 +1,11 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react"
+import { DEMO_ANCHOR } from "../constants"
 import { invalidPersonnummer } from "../hints"
-import copy from "../i18n"
+import copy, { activeLocale } from "../i18n"
 import { navClick, type View, viewPaths } from "../routing"
 import { getScenarios, type Scenario } from "../scenarios"
 import { useSwedishNer } from "../useSwedishNer"
 import { Controls } from "./Controls"
-import { DEMO_ANCHOR } from "./ExtensionInstall"
 import { Header } from "./Header"
 import { HomeClosing, HomeProof, HomeTracks, HomeTrust } from "./HomeTracks"
 import { InputCard } from "./InputCard"
@@ -94,6 +94,8 @@ export function DemoWorkspace({
         <HomeTracks goSection={goSection} />
         <div className="home-try-head">
           <h2 id={DEMO_ANCHOR}>{copy.demo.tryTitle}</h2>
+          {/* The examples are Swedish; say why where English readers meet them. */}
+          {activeLocale === "en" ? <p>{copy.demo.languageNote}</p> : null}
         </div>
         <Controls
           activeId={activeId}
@@ -129,7 +131,7 @@ export function DemoWorkspace({
           </a>
         </p>
         <HomeTrust go={go} />
-        <HomeClosing goSection={goSection} />
+        <HomeClosing go={go} goSection={goSection} />
       </main>
     </>
   )

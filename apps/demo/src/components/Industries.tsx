@@ -1,3 +1,4 @@
+import { DEMO_ANCHOR } from "../constants"
 import copy from "../i18n"
 import { navClick, type View, viewPaths } from "../routing"
 import { PageToc } from "./PageToc"
@@ -41,7 +42,10 @@ export function Industries({
                 <strong>{industries.maskedLabel}</strong> {section.masked}
               </p>
               <p className="prose-body">
-                <a href={viewPaths.demo} onClick={navClick(() => onTryScenario(section.scenario))}>
+                <a
+                  href={`${viewPaths.demo}#${DEMO_ANCHOR}`}
+                  onClick={navClick(() => onTryScenario(section.scenario))}
+                >
                   {industries.tryCta}
                   <span className="sr-only">: {section.title}</span> →
                 </a>

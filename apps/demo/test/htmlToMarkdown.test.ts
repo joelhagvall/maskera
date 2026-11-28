@@ -22,6 +22,11 @@ describe("htmlToMarkdown", () => {
     expect(md).not.toContain("Hoppa till huvudinnehållet")
     expect(md).not.toContain("Testa ett exempel")
     expect(md).not.toContain("Kopiera")
+    // One hero install link, not one per browser kind that CSS would hide,
+    // and the agent link to the docs
+    expect(md.match(/Lägg till i Chrome, gratis/g)?.length).toBe(2)
+    expect(md).not.toContain("Lägg till i Edge")
+    expect(md).toContain("[Koppla till din agent](https://maskera.dev/docs)")
     // The hero title is emitted once, not three times (sr-only + two aria-hidden copies)
     expect(md.match(/Använd AI utan att dela personuppgifter\./g)?.length).toBe(1)
     expect(md.length).toBeGreaterThan(500)

@@ -27,17 +27,29 @@ export function ArchitectureFigure({ onCoverage }: { onCoverage: () => void }) {
         width="1200"
         height="640"
         loading="lazy"
-        alt=""
-        aria-hidden="true"
+        alt={copy.developerApi.diagramAlt}
       />
       <figcaption>
         <a href={`${viewPaths.transparency}#vad-maskeras`} onClick={navClick(onCoverage)}>
           {copy.coverage.linkCta}
         </a>
-        <a className="layers-expand" href={lightDiagram} target="_blank" rel="noreferrer">
-          {copy.developerApi.diagramOpen}
-          <ArrowUpRightIcon size={13} />
-        </a>
+        {/* Exactly one image and one link is displayed per theme (styles.css),
+            so assistive tech reads the alt and the link once. */}
+        {[
+          ["layers-light", lightDiagram],
+          ["layers-dark", darkDiagram],
+        ].map(([theme, src]) => (
+          <a
+            key={theme}
+            className={`layers-expand ${theme}`}
+            href={src}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {copy.developerApi.diagramOpen}
+            <ArrowUpRightIcon size={13} />
+          </a>
+        ))}
       </figcaption>
     </figure>
   )

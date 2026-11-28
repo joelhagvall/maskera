@@ -11,5 +11,8 @@ export function contactMailto(subject: string): string {
 /** The Claude Desktop Gateway guide in the @maskera/mcp README. */
 export const MCP_DESKTOP_GUIDE = `${GITHUB}/tree/main/packages/mcp#claude-desktop-through-the-proxy`
 
+/** The home page's try-it-yourself demo section (its heading id). */
+export const DEMO_ANCHOR = "testa"
+
 /** Demo input cap, in characters (UTF-16 code units). See OverlayEditor. */
 export const MAX_INPUT_CHARS = 100_000

@@ -280,7 +280,7 @@ export function Services({
                     title={copy.copyButton.copy}
                   />
                 </div>
-                <pre>
+                <pre tabIndex={0}>
                   <code>
                     <span className="code-line">{services.sdk.installCommand}</span>
                   </code>

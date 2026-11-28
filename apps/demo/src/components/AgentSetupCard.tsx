@@ -135,7 +135,7 @@ export function AgentSetupCard({
                 </>
               ) : null}
             </p>
-            <pre>
+            <pre tabIndex={0}>
               <code>
                 {active.code.split("\n").map((line, i) => (
                   <span key={i} className="code-line">

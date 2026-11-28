@@ -309,10 +309,10 @@
       },
       {
         "id": "kundsupport",
-        "scenario": "support",
+        "scenario": "klagomal",
         "title": "Kundsupport",
         "body": "Ärenden och klagomål maskeras även när kunden skriver med versaler.",
-        "masked": "Namn, kortnummer, IBAN och telefon"
+        "masked": "Namn, personnummer, kortnummer och telefon"
       }
     ],
     "maskedLabel": "Maskeras:",
@@ -1246,7 +1246,7 @@
   "extensionInstall": {
     "heroAddTo": "Lägg till i {browser}, gratis",
     "heroAddToVia": "Lägg till i {browser} via {store}",
-    "heroInstall": "Installera tillägget",
+    "heroTryHere": "Testa maskeringen här",
     "heroDesktopExtension": "Se tillägget för datorn",
     "heroAgents": "Koppla till din agent",
     "body": "Ingen inloggning krävs förrän du vill aktivera Pro.",
@@ -1290,6 +1290,7 @@
     "switchLabel": "View this page in English"
   },
   "topBar": {
+    "navLabel": "Huvudmeny",
     "breadcrumbLabel": "Brödsmulor",
     "developers": "Utvecklare",
     "services": "Produkter",
@@ -1374,6 +1375,7 @@
       "metaDescription": "Välj rätt läge för Maskera: webbläsartillägg, lokal LLM-proxy, Streamable HTTP eller stdio MCP, guard-hooks och npm-SDK.",
       "title": "Dokumentation",
       "lede": "All maskering i Maskera körs lokalt på din enhet. Välj läge efter var texten uppstår och verifiera med påhittade uppgifter.",
+      "summary": "Välj läge och kontrollera att maskeringen fungerar.",
       "verifyTitle": "Du vet att det funkar när",
       "verifyBody": "Kör npx -y @maskera/mcp doctor. Svaret ska börja med OK och sluta med en provmaskering som visar 0 läckor.",
       "doctorRoot": "/Users/du/projekt",
@@ -1436,6 +1438,7 @@
       "metaDescription": "Komplett referens för @maskera/mcp: alla MCP-verktyg, Streamable HTTP /mcp, scoped policyflaggor, webbläsargodkännanden, prompts, resources, guard, install och doctor.",
       "title": "Referens för @maskera/mcp",
       "lede": "Ett npm-paket som maskerar det din AI-agent skickar och läser, lokalt på din dator. Det körs som proxy, MCP-server eller hook.",
+      "summary": "Proxy, MCP-server och hook för AI-agenter.",
       "verifyTitle": "Du vet att det funkar när",
       "verifyBody": "Be agenten anropa maskera_status. Svaret visar dina tillåtna mappar och vilken policy som gäller.",
       "sections": [
@@ -1584,6 +1587,7 @@
       "metaDescription": "Steg för steg för AI-klienter som Claude Code, Codex och Cursor, inklusive verifiering med påhittad svensk data.",
       "title": "Klientguider",
       "lede": "Exakta steg och färdiga kommandon per klient. Alla konfigurationer kan också skrivas eller förhandsgranskas med npx -y @maskera/mcp install <klient>.",
+      "summary": "Färdiga steg för Claude, Codex, Cursor och fler.",
       "verifyTitle": "Du vet att det funkar när",
       "verifyBody": "Skriv en påhittad adress som provnamn.maskera@example.com. Inspektören på http://127.0.0.1:8787/_maskera ska visa [EPOST_1] i det som skickades.",
       "sections": [
@@ -1640,6 +1644,7 @@
       "metaDescription": "Bygg in svensk PII-maskering i webbläsare och Node.js med maskera och @maskera/core: klinisk profil, egna regler, self-hosting av ONNX och driftschecklista.",
       "title": "SDK och drift",
       "lede": "Använd maskera (regler + 43 MB svensk AI-modell) eller @maskera/core (endast regler, noll beroenden) direkt i egen TypeScript- eller JavaScript-kod.",
+      "summary": "Maskering i egen TypeScript- och JavaScript-kod.",
       "verifyTitle": "Du vet att det funkar när",
       "verifyBody": "Exemplet nedan skickar text utan namn och personnummer till modellen, och restore(answer) ger tillbaka exakt originalet.",
       "sections": [
@@ -1695,6 +1700,7 @@
       "metaDescription": "Lös vanliga problem med @maskera/mcp och maskera: 502 fail-closed, Codex med ChatGPT-konto, offline-modeller, loopback-skydd och kända begränsningar.",
       "title": "Felsökning och begränsningar",
       "lede": "De vanligaste felen, varför Maskera hellre stoppar ett anrop än läcker rå text, och var verktygets gränser går.",
+      "summary": "Vanliga fel och vad lokal maskering inte täcker.",
       "verifyTitle": "Första steget vid problem",
       "verifyBody": "Kör npx -y @maskera/mcp doctor --root . för att se exakt vilken del som fallerar (Node-version, katalogrättigheter, ONNX-modell eller lokal proxy).",
       "sections": [

@@ -1,4 +1,4 @@
-import { GITHUB } from "../constants"
+import { DEMO_ANCHOR, GITHUB } from "../constants"
 import { restoreMap } from "../heroScenes"
 import copy, { fill } from "../i18n"
 import { ArrowUpRightIcon } from "../icons"
@@ -58,9 +58,11 @@ function ComparisonBars({
 export function Accuracy({
   go,
   onTryContext,
+  onTryDemo,
 }: {
   go: (view: View) => void
   onTryContext?: () => void
+  onTryDemo?: () => void
 }) {
   const a = copy.accuracy
   const own = summary.maskera
@@ -225,7 +227,7 @@ export function Accuracy({
             </div>
             <p className="context-action">
               <a
-                href={viewPaths.demo}
+                href={`${viewPaths.demo}#${DEMO_ANCHOR}`}
                 onClick={navClick(() => (onTryContext ? onTryContext() : go("demo")))}
               >
                 {a.contextDemoCta}
@@ -251,10 +253,13 @@ export function Accuracy({
             <p className="comparison-limit">{a.provenance}</p>
           </section>
 
-          <nav className="prose-foot foot-links" aria-label={a.limitsTitle}>
+          <nav className="prose-foot foot-links" aria-label={copy.docs.resourcesLabel}>
             <ul>
               <li>
-                <a href={viewPaths.demo} onClick={navClick(() => go("demo"))}>
+                <a
+                  href={`${viewPaths.demo}#${DEMO_ANCHOR}`}
+                  onClick={navClick(() => (onTryDemo ? onTryDemo() : go("demo")))}
+                >
                   {a.demoCta}
                 </a>
               </li>

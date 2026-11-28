@@ -33,6 +33,17 @@ const DROP_EVERYWHERE = [
   ".product-scene",
 ]
 
+/**
+ * Copies that CSS swaps, so only one is ever displayed. Dropped before the
+ * separators between adjacent links are added, so no "· ·" is left behind.
+ */
+const CSS_SWAPPED_COPIES = [
+  // One install button per browser; Markdown keeps the default (Chrome) one.
+  '.hero-cta-primary[data-for]:not([data-for="chrome"])',
+  // The light and dark architecture diagram and its link; keep the light one.
+  ".layers-fig .layers-dark",
+]
+
 /** Page-specific interactive regions (selectors per pathname prefix). */
 const DROP_BY_PAGE = {
   // The live demo: scenario tabs, model status, the editor/output cards and
@@ -140,6 +151,7 @@ function absolutize(document, origin) {
 export function htmlToMarkdown(html, info) {
   const dom = new JSDOM(`<!doctype html><html><body>${html}</body></html>`)
   const { document } = dom.window
+  for (const node of document.querySelectorAll(CSS_SWAPPED_COPIES.join(","))) node.remove()
   normalizeForMarkdown(document)
   const selectors = [...DROP_EVERYWHERE, ...(DROP_BY_PAGE[info.view] ?? [])]
   for (const node of document.querySelectorAll(selectors.join(","))) node.remove()

@@ -250,9 +250,6 @@ html[data-theme="dark"] .theme-toggle .theme-moon {
 .hero .hero-cta-row {
   justify-content: center;
 }
-.hero .demo-language-note {
-  text-align: left;
-}
 /* The hero window: a plain, light browser frame (grey dots, address field,
    the Maskera toolbar icon) around the real extension captures. The popup
    opens under the toolbar icon over the page's empty right side; the page
@@ -556,7 +553,11 @@ html[data-theme="dark"] .stage-window .hl {
 .agent-connector-title {
   flex: 1;
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+}
+/* A tool name (maskera_read_file) wraps as a whole, never mid-name. */
+.agent-call-name {
+  white-space: nowrap;
 }
 .agent-connector-title strong {
   font-weight: 600;
@@ -898,15 +899,6 @@ html[data-theme="dark"] .stage-window .hl {
 .lede strong {
   font-weight: 600;
   color: var(--fg);
-}
-.demo-language-note {
-  max-width: 68ch;
-  margin: 14px 0 0;
-  padding-left: 10px;
-  border-left: 2px solid var(--border-2);
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--muted);
 }
 
 /* ---- controls ---- */
@@ -1499,6 +1491,11 @@ html[data-theme="dark"] .tag {
      value column is the only thing that wraps. */
   white-space: nowrap;
 }
+/* Shrink the token and arrow columns to their content so the arrow sits
+   next to the token instead of mid-table. */
+.map :is(.map-token, .arrow) {
+  width: 1%;
+}
 .map .arrow {
   color: var(--muted-2);
   padding: 2px 8px;
@@ -1652,21 +1649,11 @@ html[data-browser="mobile"] .hero-cta-primary[data-for="mobile"] {
 .hero-cta-agent {
   color: var(--fg);
   background: transparent;
-  border: 1px dashed var(--border-2);
-  cursor: pointer;
-}
-.hero-cta-agent > svg {
-  color: var(--muted);
+  border: 1px solid var(--border-2);
 }
 .hero-cta-agent:hover {
   border-color: var(--border-hover);
   background: var(--gray-100);
-}
-.hero-cta-agent.copied {
-  border-color: var(--fg);
-}
-.hero-cta-agent.copied > svg {
-  color: var(--fg);
 }
 
 .ext-install {
@@ -1922,7 +1909,7 @@ main:has(.prose-foot) + .footer {
   gap: 3px;
   color: var(--fg);
   text-decoration: underline;
-  text-decoration-color: var(--border-strong);
+  text-decoration-color: var(--border-2);
   text-underline-offset: 2px;
 }
 .footer a:hover,
@@ -2355,6 +2342,11 @@ html[data-theme="dark"] .layers-fig img.layers-dark {
 html[data-theme="dark"] .layers-fig img.layers-light {
   display: none;
 }
+/* The full-size link follows the theme too, so dark mode opens the dark SVG. */
+html:not([data-theme="dark"]) .layers-fig a.layers-expand.layers-dark,
+html[data-theme="dark"] .layers-fig a.layers-expand.layers-light {
+  display: none;
+}
 .layers-fig figcaption {
   padding: 8px 14px;
   border-top: 1px solid var(--border);
@@ -2661,7 +2653,7 @@ html[data-theme="dark"] .stage-window .tok-c {
   align-items: center;
   gap: 3px;
   color: inherit;
-  text-decoration-color: var(--border-strong);
+  text-decoration-color: var(--border-2);
   text-underline-offset: 2px;
 }
 .model-link:hover,
@@ -3046,6 +3038,40 @@ html[data-theme="dark"] .stage-window .tok-c {
 }
 .ext-compare .data-table tbody tr:last-child :is(th, td) {
   border-bottom: 0;
+}
+/* On a phone the four columns cut Team off behind a sideways scroll. Each
+   feature becomes a full-width row title over the three plan values, and the
+   plan names and prices stay as a three-column header. */
+@media (max-width: 560px) {
+  .ext-compare .data-table :is(thead, tbody) {
+    display: block;
+  }
+  .ext-compare .data-table tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ext-compare .data-table thead tr {
+    border-bottom-color: var(--fg);
+  }
+  .ext-compare .data-table :is(th, td) {
+    padding: 0 0 11px;
+    border-bottom: 0;
+  }
+  .ext-compare .data-table thead th:first-child {
+    display: none;
+  }
+  .ext-compare .data-table tbody th {
+    grid-column: 1 / -1;
+    padding: 11px 0 6px;
+  }
+  .ext-compare .plan-price {
+    white-space: normal;
+  }
+  .ext-compare .data-table tbody tr:last-child {
+    border-bottom: 0;
+  }
 }
 .ext-plan-actions {
   display: grid;
@@ -3442,7 +3468,7 @@ html[data-theme="dark"] .stage-window .tok-c {
   padding: 14px 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--gray-100);
 }
 .docs-verify-title {
   margin: 0 0 6px;
@@ -3460,6 +3486,10 @@ html[data-theme="dark"] .stage-window .tok-c {
 }
 .code-output {
   color: var(--muted);
+  /* Real CLI output ends with its proof ("0 leaks, restored=ok"); wrap it
+     instead of hiding that end behind a sideways scroll. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .docs-page .table-wrap {
   overflow-x: auto;

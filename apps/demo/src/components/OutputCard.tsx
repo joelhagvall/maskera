@@ -7,9 +7,9 @@ import { TryStep } from "./TryStep"
 
 function RestoreMap({ map }: { map: Record<string, string> }) {
   return (
-    <div className="map" id="restore-map" lang="sv" translate="no">
+    <div className="map" id="restore-map">
       <p className="map-note">{copy.outputCard.restoreMapNote}</p>
-      <table>
+      <table lang="sv" translate="no">
         <tbody>
           {Object.entries(map).map(([token, value]) => (
             <tr key={token}>
