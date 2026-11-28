@@ -29,7 +29,7 @@ export const EXTENSION_BROWSERS: readonly ExtensionBrowser[] = [
  * `bun run release --upload` in maskera-extension; a production build refuses
  * a link that does not answer 200 (scripts/check-extension-download.mjs).
  */
-export const EXTENSION_ZIP_VERSION = "0.2.5"
+export const EXTENSION_ZIP_VERSION = "0.2.7"
 
 /** Manual-install fallback (load unpacked) until the stores are live. */
 export const EXTENSION_DOWNLOAD_URL = `${PORTAL_ORIGIN}/downloads/maskera-extension-${EXTENSION_ZIP_VERSION}.zip`
